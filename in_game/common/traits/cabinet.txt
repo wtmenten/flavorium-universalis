@@ -1,0 +1,376 @@
+########################
+# Cabinets and Choices — New Cabinet Traits
+########################
+
+########################
+# Tier 1: Simple Traits
+########################
+
+learned_counselor = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	modifier = {
+		global_monthly_literacy = 0.025
+	}
+}
+
+law_reformer = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	modifier = {
+		legislative_efficiency = 0.05
+	}
+}
+
+loyal_steward = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	modifier = {
+		subject_loyalty = 0.1
+	}
+}
+
+tactical_advisor = {
+	category = cabinet
+	custom_tags = { military }
+	flavor = personality
+
+	allow = {
+		mil > 66
+	}
+
+	modifier = {
+		military_tactics = 0.05
+	}
+}
+
+ecumenist = {
+	category = cabinet
+	custom_tags = { religious }
+	flavor = personality
+
+	modifier = {
+		tolerance_heretic = 1
+		tolerance_heathen = 1
+	}
+}
+
+colonial_planner = {
+	category = cabinet
+	custom_tags = { economical }
+	flavor = personality
+
+	modifier = {
+		colonial_migration_size_modifier = 0.1
+	}
+}
+
+prosperity_planner = {
+	category = cabinet
+	custom_tags = { economical }
+	flavor = personality
+
+	modifier = {
+		global_monthly_prosperity = 0.025
+	}
+}
+
+########################
+# Tier 2: Kiss-Curse Traits
+########################
+
+iron_disciplinarian = {
+	category = cabinet
+	custom_tags = { military administrative }
+	flavor = personality
+
+	modifier = {
+		discipline = 0.05
+		global_distance_from_capital_speed_propagation = 0.05
+		control_importance_modifier = 0.1
+		nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+		diplomatic_reputation = -1
+	}
+}
+
+shadow_counselor = {
+	category = cabinet
+	flavor = personality
+
+	modifier = {
+		spy_network_construction = 0.3
+		counter_espionage = 0.25
+		peace_offer_negotiation_power = 0.2
+		global_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+		diplomatic_reputation = -1
+	}
+}
+
+progressive_reformist = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	modifier = {
+		global_monthly_literacy = 0.05
+		legislative_efficiency = 0.05
+		monthly_towards_innovative = societal_value_minor_monthly_move
+		stability_decay = 0.0005
+		nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+	}
+}
+
+war_hawk = {
+	category = cabinet
+	custom_tags = { military }
+	flavor = personality
+
+	allow = {
+		mil > 50
+	}
+
+	modifier = {
+		military_tactics = 0.05
+		land_morale_modifier = 0.1
+		discipline = 0.025
+		aggressiveness_modifier = 0.2
+		coalition_strength_tolerance = 0.1
+	}
+}
+
+zealous_inquisitor = {
+	category = cabinet
+	custom_tags = { religious }
+	flavor = personality
+
+	modifier = {
+		global_pop_conversion_speed_modifier = 0.5
+		tolerance_own = 1
+		tolerance_heretic = -2
+		tolerance_heathen = -2
+	}
+}
+
+########################
+# Tier 3: Attribute-Scaled Triads
+########################
+
+# --- global_integration_speed_modifier ---
+
+fumbling_integrator = {
+	category = cabinet
+	custom_tags = { negative administrative }
+	flavor = personality
+
+	allow = {
+		OR = { 
+			adm < 33 
+			mil < 33
+			dip < 33
+		}
+	}
+
+	modifier = {
+		global_integration_speed_modifier = -0.2
+	}
+}
+
+able_integrator = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	allow = {
+		adm > 33
+		mil > 33
+		dip > 33
+        NOT = { has_trait = iron_integrator }
+        NOT = { has_trait = master_integrator }
+		NOT = {
+			OR = { 
+				adm > 66 
+				mil > 66 
+				dip > 66 
+			}
+		}
+	}
+
+	modifier = {
+		global_integration_speed_modifier = 2
+	}
+}
+
+master_integrator = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	allow = {
+		adm > 66
+		dip > 66
+        NOT = { has_trait = able_integrator }
+        NOT = { has_trait = iron_integrator }
+	}
+
+	modifier = {
+		global_integration_speed_modifier = 4
+	}
+}
+
+iron_integrator = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+	allow = {
+		adm > 66
+		mil > 66
+		dip > 66
+        NOT = { has_trait = able_integrator }
+        NOT = { has_trait = master_integrator }
+	}
+	modifier = {
+		global_integration_speed_modifier = 4
+		global_distance_from_capital_speed_propagation = 0.05
+		nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+		global_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+	}
+}
+
+# --- antagonism_received_modifier ---
+
+provocateur = {
+	category = cabinet
+	custom_tags = { negative diplomatic }
+	flavor = personality
+
+	allow = {
+		adm < 33
+		mil < 33
+		dip < 33
+	}
+
+	modifier = {
+		antagonism_received_modifier = 0.1
+	}
+}
+
+tactful_envoy = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = {
+		adm > 33
+		mil > 33
+		dip > 33
+		OR = {
+			NOT = { adm > 66 }
+			NOT = { mil > 66 }
+			NOT = { dip > 66 }
+		}
+	}
+
+	modifier = {
+		antagonism_received_modifier = -0.05
+	}
+}
+
+master_statesman = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = {
+		adm > 66
+		mil > 66
+		dip > 66
+	}
+
+	modifier = {
+		antagonism_received_modifier = -0.15
+	}
+}
+
+dove_of_court = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	modifier = {
+		antagonism_received_modifier = -0.15
+		diplomatic_reputation = 1
+		aggressiveness_modifier = -0.2
+		expected_warscore_modifier = -0.1
+	}
+}
+
+# --- exploration_mission_speed ---
+
+timid_landlubber = {
+	category = cabinet
+	custom_tags = { negative }
+	flavor = personality
+
+	allow = {
+		adm < 33
+		mil < 33
+		dip < 33
+	}
+
+	modifier = {
+		exploration_mission_speed = -0.1
+	}
+}
+
+capable_explorer = {
+	category = cabinet
+	flavor = personality
+
+	allow = {
+		adm > 33
+		mil > 33
+		dip > 33
+		OR = {
+			NOT = { adm > 66 }
+			NOT = { mil > 66 }
+			NOT = { dip > 66 }
+		}
+	}
+
+	modifier = {
+		exploration_mission_speed = 0.1
+	}
+}
+
+legendary_navigator = {
+	category = cabinet
+	flavor = personality
+
+	allow = {
+		adm > 66
+		mil > 66
+		dip > 66
+	}
+
+	modifier = {
+		exploration_mission_speed = 0.2
+	}
+}
+
+restless_pioneer = {
+	category = cabinet
+	flavor = personality
+
+	modifier = {
+		exploration_mission_speed = 0.15
+		colonial_migration_size_modifier = 0.1
+		aggressiveness_modifier = 0.15
+		coalition_strength_tolerance = 0.1
+	}
+}
