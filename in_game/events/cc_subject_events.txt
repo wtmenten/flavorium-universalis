@@ -1,0 +1,471 @@
+namespace = cc
+
+###############################################################################
+# CHAIN 1: THE SHADOW COMPACT
+# Fires from yearly pulse after shadow_diplomacy_advance is researched.
+###############################################################################
+
+# "Whispers in the Court"
+# Fires: yearly pulse, after shadow_diplomacy_advance; nobles power >= 45, power_projection >= 20.
+cc.shadow.1 = {
+	type = country_event
+	title = cc.shadow.1.title
+	desc = cc.shadow.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_advance = shadow_diplomacy_advance
+		nobles_estate_power >= 45
+		power_projection >= 20
+		NOT = { has_variable = cc_shadow_event_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_event_fired value = yes }
+	}
+
+	option = {
+		name = cc.shadow.1.a
+		add_estate_privilege = estate_privilege:ep_noble_shadow_network
+		trigger_event = { id = cc.shadow.2 months = 12 }
+	}
+
+	option = {
+		name = cc.shadow.1.b
+		monthly_prestige = 10
+	}
+}
+
+# "The Network Takes Shape"
+# Fires: 12 months after choosing option A in cc.shadow.1
+cc.shadow.2 = {
+	type = country_event
+	title = cc.shadow.2.title
+	desc = cc.shadow.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc.shadow.2.a
+		add_bureaucracy = bureaucracy_type:cc_shadow_court_bureau
+		nobles_estate_satisfaction = -5
+	}
+
+	option = {
+		name = cc.shadow.2.b
+		power_projection = 10
+	}
+}
+
+# "The Shadow Bureau Acts"
+# Fires from yearly pulse when shadow_court_bureau is active + has shadow_state subjects.
+# Offers discounted puppet_state upgrade for one shadow state.
+cc.shadow.bureau.1 = {
+	type = country_event
+	title = cc.shadow.bureau.1.title
+	desc = cc.shadow.bureau.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_bureaucracy_of_type = bureaucracy_type:cc_shadow_court_bureau
+		has_advance = puppet_state_advance
+		any_subject_country = { is_subject_type = shadow_state }
+		NOT = { has_variable = cc_shadow_bureau_event_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_bureau_event_fired value = yes years = 10 }
+		random_subject_country = {
+			limit = { is_subject_type = shadow_state }
+			save_scope_as = shadow_target
+		}
+	}
+
+	option = {
+		name = cc.shadow.bureau.1.a
+		# Upgrade shadow_state to puppet_state at reduced war score cost
+		scope:shadow_target = {
+			change_subject_type = puppet_state
+		}
+		power_projection = -5
+	}
+
+	option = {
+		name = cc.shadow.bureau.1.b
+		power_projection = 5
+	}
+}
+
+###############################################################################
+# CHAIN 2: PATRONAGE OF LEARNING
+# Fired via on_activate in ep_clergy_scholarly_college.
+###############################################################################
+
+# "The Scholars Seek a Home"
+# Fires: from ep_clergy_scholarly_college on_activate.
+cc.clergy.college.1 = {
+	type = country_event
+	title = cc.clergy.college.1.title
+	desc = cc.clergy.college.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
+		clergy_estate_power >= 50
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = { government_type = government_type:theocracy }
+			save_scope_as = college_candidate
+		}
+	}
+
+	option = {
+		name = cc.clergy.college.1.a
+		trigger = {
+			exists = scope:college_candidate
+		}
+		scope:college_candidate = {
+			add_opinion = { target = root value = 25 }
+		}
+		custom_tooltip = cc.clergy.college.1.a.tt
+		trigger_event = { id = cc.clergy.college.2 years = 2 }
+	}
+
+	option = {
+		name = cc.clergy.college.1.b
+		add_country_modifier = {
+			name = cc_internalized_scholarship
+			years = 10
+		}
+	}
+}
+
+# "The Learned Brotherhood"
+# Fires 2-5 years after Option A in cc.clergy.college.1, if scientific_college now exists.
+cc.clergy.college.2 = {
+	type = country_event
+	title = cc.clergy.college.2.title
+	desc = cc.clergy.college.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject_country = { is_subject_type = scientific_college }
+	}
+
+	option = {
+		name = cc.clergy.college.2.a
+		add_country_modifier = {
+			name = cc_scholarly_exchange_modifier
+			years = 20
+		}
+		every_subject_country = {
+			limit = { is_subject_type = scientific_college }
+			add_prestige = 25
+		}
+	}
+
+	option = {
+		name = cc.clergy.college.2.b
+	}
+}
+
+###############################################################################
+# CHAIN 3: THE ARTISANS' CHARTER
+# Fires from yearly pulse after artistic_patronage_advance.
+###############################################################################
+
+# "The Guild Masters Petition"
+# Fires: yearly pulse, after artistic_patronage_advance; cultural_tradition >= 60; burghers >= 30.
+cc.arts.1 = {
+	type = country_event
+	title = cc.arts.1.title
+	desc = cc.arts.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_advance = artistic_patronage_advance
+		cultural_tradition >= 60
+		burghers_estate_power >= 30
+		NOT = { has_variable = cc_arts_event_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_arts_event_fired value = yes }
+	}
+
+	option = {
+		name = cc.arts.1.a
+		custom_tooltip = cc.arts.1.a.tt
+		trigger_event = { id = cc.arts.2 months = 6 }
+	}
+
+	option = {
+		name = cc.arts.1.b
+		burghers_estate_satisfaction = -5
+		cultural_tradition = -20
+	}
+}
+
+# "A City of Culture"
+# Fires: 6 months after option A in cc.arts.1, if an artists_commune subject now exists.
+cc.arts.2 = {
+	type = country_event
+	title = cc.arts.2.title
+	desc = cc.arts.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject_country = { is_subject_type = artists_commune }
+	}
+
+	option = {
+		name = cc.arts.2.a
+		gold = -50
+		cultural_tradition = 100
+		cultural_influence = 200
+	}
+
+	option = {
+		name = cc.arts.2.b
+	}
+}
+
+###############################################################################
+# CHAIN 4: NAVAL DOMINION
+# Fires from yearly pulse after naval_charter_advance.
+###############################################################################
+
+# "The Admiralty Petition"
+# Fires: yearly pulse, after naval_charter_advance; burghers >= 35; num_of_ports >= 3.
+cc.naval.1 = {
+	type = country_event
+	title = cc.naval.1.title
+	desc = cc.naval.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_advance = naval_charter_advance
+		burghers_estate_power >= 35
+		num_of_ports >= 3
+		NOT = { has_variable = cc_naval_event_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_naval_event_fired value = yes }
+	}
+
+	option = {
+		name = cc.naval.1.a
+		if = {
+			limit = { NOT = { has_estate_privilege = estate_privilege:ep_burgher_naval_charter } }
+			add_estate_privilege = estate_privilege:ep_burgher_naval_charter
+		}
+		trigger_event = { id = cc.naval.2 months = 12 }
+	}
+
+	option = {
+		name = cc.naval.1.b
+		burghers_estate_satisfaction = -5
+	}
+}
+
+# "The Port Thrives"
+# Fires: 1 year after option A in cc.naval.1, if naval_administration subject now exists.
+cc.naval.2 = {
+	type = country_event
+	title = cc.naval.2.title
+	desc = cc.naval.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject_country = { is_subject_type = naval_administration }
+	}
+
+	option = {
+		name = cc.naval.2.a
+		gold = -30
+		add_country_modifier = {
+			name = cc_thriving_port_modifier
+			years = 15
+		}
+	}
+
+	option = {
+		name = cc.naval.2.b
+	}
+}
+
+###############################################################################
+# CHAIN 5: THE HOLY LEAGUE
+# Fires from yearly pulse when holy_patronage_advance + religious conditions.
+###############################################################################
+
+# "Coreligionists Seek Shelter"
+# Fires: yearly pulse, after holy_patronage_advance; high religious influence; weak neighbor with same religion group.
+cc.holy.1 = {
+	type = country_event
+	title = cc.holy.1.title
+	desc = cc.holy.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_advance = holy_patronage_advance
+		monthly_religious_influence >= 0.3
+		any_neighbor_country = {
+			religion = {
+				has_religion_group = root.religion.religion_group
+			}
+			NOT = { is_at_war_with = root }
+			relative_power_to_country = {
+				country = root
+				value < -0.3
+			}
+		}
+		NOT = { has_variable = cc_holy_event_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_holy_event_fired value = yes years = 15 }
+		random_neighbor_country = {
+			limit = {
+				religion = {
+					has_religion_group = root.religion.religion_group
+				}
+				NOT = { is_at_war_with = root }
+				relative_power_to_country = {
+					country = root
+					value < -0.3
+				}
+			}
+			save_scope_as = holy_candidate
+		}
+	}
+
+	option = {
+		name = cc.holy.1.a
+		scope:holy_candidate = {
+			change_subject_type = holy_protectorate
+		}
+		trigger_event = { id = cc.holy.2 years = 2 }
+	}
+
+	option = {
+		name = cc.holy.1.b
+		power_projection = -5
+	}
+}
+
+# "The Faith Protected"
+# Fires: 2 years after option A in cc.holy.1, if holy_protectorate subject still exists.
+cc.holy.2 = {
+	type = country_event
+	title = cc.holy.2.title
+	desc = cc.holy.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject_country = { is_subject_type = holy_protectorate }
+	}
+
+	option = {
+		name = cc.holy.2.a
+		add_country_modifier = {
+			name = cc_holy_league_modifier
+			years = 20
+		}
+		every_subject_country = {
+			limit = { is_subject_type = holy_protectorate }
+			add_prestige = 50
+		}
+		add_prestige = 50
+	}
+
+	option = {
+		name = cc.holy.2.b
+	}
+}
+
+###############################################################################
+# ESTATE PRIVILEGE FLAVOR EVENTS
+###############################################################################
+
+# Fires from ep_noble_elite_enclave on_activate
+cc.noble.enclave.1 = {
+	type = country_event
+	title = cc.noble.enclave.1.title
+	desc = cc.noble.enclave.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc.noble.enclave.1.a
+		nobles_estate_satisfaction = 5
+		custom_tooltip = cc.noble.enclave.1.a.tt
+	}
+}
+
+# Fires from ep_burgher_royal_charter on_activate
+cc.burgher.charter.1 = {
+	type = country_event
+	title = cc.burgher.charter.1.title
+	desc = cc.burgher.charter.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc.burgher.charter.1.a
+		burghers_estate_satisfaction = 5
+		custom_tooltip = cc.burgher.charter.1.a.tt
+	}
+}

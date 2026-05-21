@@ -1,0 +1,1575 @@
+###############################################################################
+# PERSONAL UNION CHAIN
+# fiefdom -> junior_partner (Renaissance) -> lesser_partner (upgrade, 50yr)
+###############################################################################
+
+junior_partner = {
+	color = subject_vassal
+	level = 2
+	annullment_favours_required = 25
+
+	# Only visible when upgrading from an existing fiefdom PU-dependent
+	visible = {
+		has_advance = royal_union_network_advance
+		country_rank_level >= scope:target.country_rank_level
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	visible_through_diplomacy = {
+		scope:target = {
+			is_subject = yes
+			is_subject_of = root
+			is_subject_type = fiefdom
+		}
+	}
+	enabled_through_diplomacy = {
+		custom_tooltip = {
+			text = junior_partner_tt
+			scope:target = { NOT = { has_variable = junior_partner_cooldown } }
+		}
+	}
+	creation_visible = { always = no }
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	annexation_speed = 0.75
+	annexation_min_years_before = 50
+	annexation_min_opinion = 150
+	annexation_stall_opinion = 125
+
+	strength_vs_overlord = -0.3
+	diplomatic_capacity_cost_scale = 0.2
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_junior_partner
+
+	overlord_modifier = {
+		monthly_prestige = 0.1
+		cultural_influence_modifier = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.15
+		monthly_stability = 0.2
+	}
+
+	minimum_opinion_for_offer = 150
+	great_power_score_transfer = 0.5
+
+	on_enable = {
+		lock_current_subject_type = yes
+	}
+	on_disable = {
+		unlock_current_subject_type = yes
+	}
+
+	diplo_chance_accept_subject = {
+		base = -92
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 2
+		receiving_defensive_support = 5
+		royal_ties = 1
+		trust_in_actor = 0.2
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.25
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = -52
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+lesser_partner = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 30
+
+	creation_visible = { always = no }
+
+	visible_through_diplomacy = {
+		scope:target = {
+			is_subject = yes
+			is_subject_of = root
+			is_subject_type = junior_partner
+		}
+	}
+	enabled_through_diplomacy = {
+		custom_tooltip = {
+			text = lesser_partner_upgrade_tt
+			scope:target = { NOT = { has_variable = junior_lesser_cooldown } }
+		}
+	}
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = yes
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	annexation_speed = 2
+	annexation_min_years_before = 50
+	annexation_min_opinion = 125
+	annexation_stall_opinion = 100
+
+	strength_vs_overlord = -0.15
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_lesser_partner
+
+	overlord_modifier = {
+		monthly_prestige = 0.1
+		cultural_influence_modifier = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.15
+		monthly_stability = 0.2
+	}
+
+	minimum_opinion_for_offer = 150
+	great_power_score_transfer = 0.5
+
+	on_enable = {
+		lock_current_subject_type = yes
+		hidden_effect = {
+			set_variable = { name = junior_lesser_cooldown value = yes years = 50 }
+		}
+	}
+	on_disable = {
+		unlock_current_subject_type = yes
+	}
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 2
+		receiving_defensive_support = 5
+		royal_ties = 2
+		trust_in_actor = 0.2
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.25
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = -32
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+###############################################################################
+# SHADOW / CLIENT CHAIN
+# shadow_state (Ren.) / client_state (Disc.) -> puppet_state (Abs.)
+###############################################################################
+
+shadow_state = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 10
+
+	visible = {
+		has_advance = shadow_diplomacy_advance
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = shadow_diplomacy_advance
+	}
+	# Cannot be created through province release
+	release_country_enabled = { always = no }
+	visible_through_treaty = { always = no }
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = yes
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	join_defensive_wars_can_call = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	can_be_annexed = no
+
+	strength_vs_overlord = -0.1
+	diplomatic_capacity_cost_scale = 0.2
+
+	overlord_can_cancel = yes
+	subject_can_cancel = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_mild
+
+	subject_pays = subject_pays_shadow_state
+
+	overlord_modifier = {
+		power_projection = 10
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.15
+		monthly_stability = 0.2
+	}
+
+
+	minimum_opinion_for_offer = 100
+	great_power_score_transfer = 0.1
+
+	diplo_chance_accept_subject = {
+		base = -45
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -5
+		giving_defensive_support = 5
+		receiving_defensive_support = 5
+		royal_ties = 2
+		trust_in_actor = 0.3
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 2
+		different_religion = -10
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.1
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 15
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+client_state = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 15
+
+	visible = {
+		has_advance = client_state_advance
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = client_state_advance
+	}
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = yes
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	join_defensive_wars_can_call = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	annexation_speed = 0.2
+	annexation_min_years_before = 50
+	annexation_min_opinion = 125
+	annexation_stall_opinion = 100
+
+	strength_vs_overlord = -0.25
+	diplomatic_capacity_cost_scale = 0.2
+
+	overlord_can_cancel = yes
+	subject_can_cancel = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_mild
+
+	subject_pays = subject_pays_client_state
+
+	overlord_modifier = {
+		power_projection = 10
+		diplomatic_reputation = 1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.1
+		diplomatic_reputation = 1
+	}
+
+	minimum_opinion_for_offer = 100
+	great_power_score_transfer = 0.15
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 3
+		receiving_defensive_support = 5
+		royal_ties = 1
+		trust_in_actor = 0.2
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 1
+		different_religion = -15
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -15
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.2
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 5
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -15
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+puppet_state = {
+	color = subject_vassal
+	level = 2
+	annullment_favours_required = 20
+
+	creation_visible = { always = no }
+
+	visible_through_diplomacy = {
+		scope:target = {
+			is_subject = yes
+			is_subject_of = root
+			OR = {
+				is_subject_type = shadow_state
+				is_subject_type = client_state
+			}
+		}
+	}
+	enabled_through_diplomacy = {
+		root = { has_advance = puppet_state_advance }
+		custom_tooltip = {
+			text = puppet_state_upgrade_tt
+			scope:target = { NOT = { has_variable = puppet_cooldown } }
+		}
+	}
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = yes
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	annexation_speed = 0.5
+	annexation_min_years_before = 50
+	annexation_min_opinion = 150
+	annexation_stall_opinion = 125
+
+	strength_vs_overlord = -0.15
+	diplomatic_capacity_cost_scale = 0.33
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_puppet_state
+
+	overlord_modifier = {
+		power_projection = 20
+		diplomatic_reputation = 1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.15
+		monthly_stability = 0.3
+	}
+
+	minimum_opinion_for_offer = 150
+	great_power_score_transfer = 0.4
+
+	on_enable = {
+		lock_current_subject_type = yes
+		hidden_effect = {
+			set_variable = { name = puppet_cooldown value = yes years = 50 }
+		}
+	}
+	on_disable = {
+		unlock_current_subject_type = yes
+	}
+
+	diplo_chance_accept_subject = {
+		base = -92
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 2
+		receiving_defensive_support = 5
+		royal_ties = 1
+		trust_in_actor = 0.2
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.25
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = -52
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+###############################################################################
+# NOBLE ENCLAVE CHAIN
+# elite_enclave (Ren.) -> palatinate (Reform., upgrade, 20yr)
+###############################################################################
+
+elite_enclave = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 10
+
+	visible = {
+		has_advance = noble_patronage_advance
+		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+		# Same culture or culture group as overlord
+		OR = {
+			scope:target = { culture = root.culture }
+			scope:target = {
+				culture = {
+					has_culture_group = root.culture.culture_group
+				}
+			}
+		}
+		# Limited to one of this type or its upgrade
+		NOT = {
+			any_subject_country = {
+				OR = {
+					is_subject_type = elite_enclave
+					is_subject_type = palatinate
+				}
+			}
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = noble_patronage_advance
+		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+	}
+	only_overlord_or_kindred_culture = yes
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = no
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+	join_offensive_wars_always = { always = no }
+	join_defensive_wars_always = { always = no }
+
+	strength_vs_overlord = -3.0
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_elite_enclave
+
+	overlord_modifier = {
+		monthly_prestige = 0.1
+		power_projection = 20
+		cultural_influence = 100
+		cultural_tradition = 100
+		nobles_estate_target_satisfaction = 0.05
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.2
+		monthly_stability = 0.2
+	}
+
+	minimum_opinion_for_offer = 100
+	great_power_score_transfer = 0.1
+
+	on_enable = {
+		lock_current_subject_type = yes
+		hidden_effect = {
+			set_variable = { name = enclave_cooldown value = yes years = 20 }
+		}
+	}
+	on_disable = {
+		unlock_current_subject_type = yes
+	}
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 3
+		receiving_defensive_support = 5
+		royal_ties = 2
+		trust_in_actor = 0.2
+		num_of_limited_subjects = -5
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 10
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+palatinate = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 20
+
+	creation_visible = { always = no }
+
+	visible_through_diplomacy = {
+		scope:target = {
+			is_subject = yes
+			is_subject_of = root
+			is_subject_type = elite_enclave
+		}
+	}
+	enabled_through_diplomacy = {
+		root = { has_advance = palatinate_advance }
+		custom_tooltip = {
+			text = palatinate_upgrade_tt
+			scope:target = { NOT = { has_variable = enclave_cooldown } }
+		}
+	}
+	only_overlord_or_kindred_culture = yes
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = no
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	strength_vs_overlord = -3.0
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_palatinate
+
+	overlord_modifier = {
+		monthly_prestige = 0.2
+		power_projection = 50
+		cultural_influence = 500
+		cultural_tradition = 500
+		nobles_estate_target_satisfaction = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.2
+		monthly_stability = 0.2
+		discipline = 0.05
+	}
+
+	minimum_opinion_for_offer = 150
+	great_power_score_transfer = 0.1
+
+	on_enable = {
+		lock_current_subject_type = yes
+	}
+	on_disable = {
+		unlock_current_subject_type = yes
+	}
+
+	diplo_chance_accept_subject = {
+		base = -45
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 5
+		receiving_defensive_support = 5
+		royal_ties = 3
+		trust_in_actor = 0.3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 15
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+###############################################################################
+# SINGLE-TYPE SUBJECTS
+###############################################################################
+
+associated_republic = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 15
+
+	visible = {
+		has_advance = republican_patronage_advance
+		scope:target = {
+			subject_type_is_not_locked = yes
+			government_type = government_type:republic
+		}
+	}
+	creation_visible = {
+		has_advance = republican_patronage_advance
+	}
+	enabled = {
+		scope:target = { government_type = government_type:republic }
+	}
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = yes
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	# Overlord always joins subject's defensive wars
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_always = { always = no }
+
+	can_be_annexed = no
+
+	strength_vs_overlord = -0.15
+	diplomatic_capacity_cost_scale = 0.33
+
+	overlord_can_cancel = yes
+	subject_can_cancel = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_mild
+
+	subject_pays = subject_pays_associated_republic
+
+	overlord_modifier = {
+		research_speed = 0.1
+		diplomatic_reputation = 1
+	}
+	subject_modifier = {
+		research_speed = 0.05
+		monthly_legitimacy = 0.1
+		diplomatic_reputation = 1
+	}
+
+	minimum_opinion_for_offer = 100
+	great_power_score_transfer = 0.15
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 5
+		receiving_defensive_support = 5
+		royal_ties = 1
+		trust_in_actor = 0.3
+		diplomatic_reputation = 2
+		different_religion = -15
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -30
+		same_government_type = 15
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 8
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 10
+		different_culture = -10
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+chartered_company = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 15
+
+	visible = {
+		has_advance = chartered_company_advance
+		has_reform = government_reform:cc_colonial_charter_reform
+		has_bureaucracy_of_type = bureaucracy_type:cc_royal_trading_bureau
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = chartered_company_advance
+		has_reform = government_reform:cc_colonial_charter_reform
+		has_bureaucracy_of_type = bureaucracy_type:cc_royal_trading_bureau
+	}
+	# Subject must be on a different sub-continent than overlord capital
+	subject_creation_enabled = {
+		NOT = {
+			scope:target_province = {
+				sub_continent = root.capital.sub_continent
+			}
+		}
+	}
+	release_country_enabled = {
+		NOT = {
+			scope:target_province = {
+				sub_continent = root.capital.sub_continent
+			}
+		}
+	}
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = yes
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	# Can declare wars only against countries not on overlord's sub-continent
+	allow_declaring_wars = { always = yes }
+
+	join_defensive_wars_always = { always = yes }
+	join_defensive_wars_can_call = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	strength_vs_overlord = -0.15
+	diplomatic_capacity_cost_scale = 0.33
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_chartered_company
+
+	overlord_modifier = {
+		research_speed = 0.1
+		global_trade_center_power = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.12
+		monthly_stability = 0.12
+		monthly_rebel_growth = -0.012
+		cultures_capacity = 2
+		cultures_capacity_modifier = 0.25
+	}
+
+	minimum_opinion_for_offer = 100
+	great_power_score_transfer = 0.5
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.1
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 3
+		receiving_defensive_support = 5
+		royal_ties = 1
+		trust_in_actor = 0.2
+		diplomatic_reputation = 1
+		different_religion = -10
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 8
+		border_distance = -0.1
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 5
+		same_court_language = 5
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.2
+	}
+}
+
+###############################################################################
+# CULTURAL SPECIAL SUBJECTS (single-province, no war, limited to one)
+###############################################################################
+
+artists_commune = {
+	color = subject_vassal
+	level = 0
+	annullment_favours_required = 5
+
+	visible = {
+		has_advance = artistic_patronage_advance
+		# Limited to one subject of this type
+		NOT = {
+			any_subject_country = { is_subject_type = artists_commune }
+		}
+		OR = {
+			scope:target = { culture = root.culture }
+			scope:target = {
+				culture = {
+					has_culture_group = root.culture.culture_group
+				}
+			}
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = artistic_patronage_advance
+	}
+	only_overlord_or_kindred_culture = yes
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = no
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+	join_offensive_wars_always = { always = no }
+	join_defensive_wars_always = { always = no }
+
+	strength_vs_overlord = -4.0
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = no
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_artists_commune
+
+	overlord_modifier = {
+		cultural_influence = 100
+		cultural_influence_modifier = 1.0
+		research_speed = 0.2
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.12
+		monthly_stability = 0.12
+		monthly_rebel_growth = -0.02
+	}
+
+	minimum_opinion_for_offer = 75
+	great_power_score_transfer = 0.05
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -5
+		trust_in_actor = 0.3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -30
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 15
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -30
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+scientific_college = {
+	color = subject_vassal
+	level = 0
+	annullment_favours_required = 5
+
+	visible = {
+		has_advance = scholarly_orders_advance
+		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
+		# Limited to one subject of this type
+		NOT = {
+			any_subject_country = { is_subject_type = scientific_college }
+		}
+		scope:target = {
+			subject_type_is_not_locked = yes
+			government_type = government_type:theocracy
+		}
+		OR = {
+			scope:target = { culture = root.culture }
+			scope:target = {
+				culture = {
+					has_culture_group = root.culture.culture_group
+				}
+			}
+		}
+	}
+	creation_visible = {
+		has_advance = scholarly_orders_advance
+		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
+	}
+	enabled = {
+		scope:target = { government_type = government_type:theocracy }
+	}
+	only_overlord_or_kindred_culture = yes
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = no
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+	join_offensive_wars_always = { always = no }
+	join_defensive_wars_always = { always = no }
+
+	strength_vs_overlord = -4.0
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = no
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_scientific_college
+
+	overlord_modifier = {
+		embrace_institution_cost_modifier = -0.2
+		global_institution_growth_modifier = 0.1
+		research_speed = 0.2
+		research_speed_modifier = 0.15
+		global_disease_resistance = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.12
+		monthly_stability = 0.12
+		monthly_rebel_growth = -0.02
+		embrace_institution_cost_modifier = -0.2
+		global_institution_growth_modifier = 0.1
+		global_disease_resistance = 0.1
+	}
+
+	minimum_opinion_for_offer = 75
+	great_power_score_transfer = 0.05
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -5
+		trust_in_actor = 0.3
+		diplomatic_reputation = 1
+		different_religion = -40
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 15
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		different_religion = -40
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+naval_administration = {
+	color = subject_vassal
+	level = 0
+	annullment_favours_required = 5
+
+	visible = {
+		has_advance = naval_charter_advance
+		has_estate_privilege = estate_privilege:ep_burgher_naval_charter
+		# Limited to one subject of this type
+		NOT = {
+			any_subject_country = { is_subject_type = naval_administration }
+		}
+		OR = {
+			scope:target = { culture = root.culture }
+			scope:target = {
+				culture = {
+					has_culture_group = root.culture.culture_group
+				}
+			}
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = naval_charter_advance
+		has_estate_privilege = estate_privilege:ep_burgher_naval_charter
+	}
+	only_overlord_or_kindred_culture = yes
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = no
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+	join_offensive_wars_always = { always = no }
+	join_defensive_wars_always = { always = no }
+
+	strength_vs_overlord = -4.0
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_naval_administration
+
+	overlord_modifier = {
+		global_sailors_modifier = 0.1
+		research_speed = 0.2
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.12
+		monthly_stability = 0.12
+		monthly_rebel_growth = -0.012
+	}
+
+	minimum_opinion_for_offer = 75
+	great_power_score_transfer = 0.05
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -5
+		trust_in_actor = 0.3
+		diplomatic_reputation = 1
+		different_religion = -15
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 15
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -20
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+###############################################################################
+# ADDITIONAL SUBJECTS
+###############################################################################
+
+protectorate = {
+	color = subject_vassal
+	level = 0
+	annullment_favours_required = 5
+
+	visible = {
+		has_advance = protectorate_rights_advance
+		scope:target = { subject_type_is_not_locked = yes }
+		# Subject must be smaller/weaker
+		country_rank_level >= scope:target.country_rank_level
+	}
+	creation_visible = {
+		has_advance = protectorate_rights_advance
+	}
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = yes
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+	join_defensive_wars_can_call = { always = yes }
+	join_offensive_wars_always = { always = no }
+
+	can_be_annexed = no
+
+	strength_vs_overlord = -0.05
+	diplomatic_capacity_cost_scale = 0.1
+
+	overlord_can_cancel = yes
+	subject_can_cancel = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_weak
+	institution_spread_to_subject = monthly_institution_spread_weak
+
+	subject_pays = subject_pays_protectorate
+
+	overlord_modifier = {
+		power_projection = 5
+		diplomatic_reputation = 1
+	}
+	subject_modifier = {
+		monthly_stability = 0.1
+		diplomatic_reputation = 1
+	}
+
+	minimum_opinion_for_offer = 50
+	great_power_score_transfer = 0.05
+
+	diplo_chance_accept_subject = {
+		base = -45
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -3
+		giving_defensive_support = 5
+		receiving_defensive_support = 10
+		royal_ties = 1
+		trust_in_actor = 0.3
+		diplomatic_reputation = 3
+		different_religion = -10
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -15
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 2
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 20
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -15
+		competing_power = -200
+		trust_in_actor = 0.4
+	}
+}
+
+crown_dependency = {
+	color = subject_vassal
+	level = 2
+	annullment_favours_required = 20
+
+	visible = {
+		has_advance = dynastic_governance_advance
+		# Must share ruler family
+		has_same_ruler_family = scope:target
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+	creation_visible = {
+		has_advance = dynastic_governance_advance
+	}
+
+	has_limited_diplomacy = yes
+	will_join_independence_wars = yes
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = no }
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_can_call = { always = yes }
+
+	annexation_speed = 1.5
+	annexation_min_years_before = 25
+	annexation_min_opinion = 150
+	annexation_stall_opinion = 125
+
+	strength_vs_overlord = -0.2
+	diplomatic_capacity_cost_scale = 0.15
+
+	overlord_can_cancel = yes
+	subject_can_cancel = no
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_severe
+	institution_spread_to_subject = monthly_institution_spread_severe
+
+	subject_pays = subject_pays_crown_dependency
+
+	overlord_modifier = {
+		monthly_prestige = 0.15
+		monthly_legitimacy = 0.1
+	}
+	subject_modifier = {
+		monthly_legitimacy = 0.2
+		monthly_stability = 0.15
+	}
+
+	minimum_opinion_for_offer = 125
+	great_power_score_transfer = 0.3
+
+	diplo_chance_accept_subject = {
+		base = -72
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 3
+		receiving_defensive_support = 5
+		royal_ties = 5
+		trust_in_actor = 0.3
+		diplomatic_reputation = 1
+		different_religion = -20
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -20
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = -25
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		royal_ties = 5
+		same_common_language = 10
+		same_court_language = 10
+		different_culture = -10
+		different_government_type = -20
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.3
+	}
+}
+
+holy_protectorate = {
+	color = subject_vassal
+	level = 1
+	annullment_favours_required = 10
+
+	visible = {
+		has_advance = holy_patronage_advance
+		scope:target = {
+			subject_type_is_not_locked = yes
+			religion = {
+				has_religion_group = root.religion.religion_group
+			}
+		}
+	}
+	creation_visible = {
+		has_advance = holy_patronage_advance
+	}
+	enabled = {
+		scope:target = {
+			religion = {
+				has_religion_group = root.religion.religion_group
+			}
+		}
+	}
+
+	has_limited_diplomacy = no
+	will_join_independence_wars = yes
+	can_change_rank = yes
+	can_change_heir_selection = yes
+
+	allow_declaring_wars = { always = yes }
+
+	# Both always join each other's defensive wars
+	join_defensive_wars_always = { always = yes }
+	join_offensive_wars_always = { always = no }
+
+	can_be_annexed = no
+
+	strength_vs_overlord = -0.15
+	diplomatic_capacity_cost_scale = 0.2
+
+	overlord_can_cancel = yes
+	subject_can_cancel = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_mild
+
+	subject_pays = subject_pays_holy_protectorate
+
+	overlord_modifier = {
+		monthly_religious_influence = 0.2
+		power_projection = 10
+		monthly_prestige = 0.05
+	}
+	subject_modifier = {
+		monthly_stability = 0.1
+		global_pop_conversion_speed = 0.05
+	}
+
+	minimum_opinion_for_offer = 75
+	great_power_score_transfer = 0.1
+
+	diplo_chance_accept_subject = {
+		base = -45
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		rank_difference = -3
+		giving_defensive_support = 5
+		receiving_defensive_support = 10
+		royal_ties = 1
+		trust_in_actor = 0.3
+		diplomatic_reputation = 2
+		different_religion = -50
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		actor_at_war = -20
+		competing_power = -200
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 2
+	}
+
+	diplo_chance_accept_overlord = {
+		base = 20
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.5
+		same_common_language = 5
+		same_court_language = 5
+		different_culture = -5
+		different_religion = -50
+		actor_at_war = -20
+		competing_power = -200
+		trust_in_actor = 0.4
+	}
+}

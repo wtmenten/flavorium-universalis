@@ -1,0 +1,49 @@
+
+ep_burgher_naval_charter = {
+	estate = burghers_estate
+
+	allow = {
+		has_advance = naval_charter_advance
+		burghers_estate_power >= 30
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject_country = {
+				is_subject_type = naval_administration
+			}
+		}
+	}
+
+	country_modifier = {
+		global_sailors_modifier = 0.05
+		naval_morale = 0.05
+	}
+}
+
+ep_burgher_royal_charter = {
+	estate = burghers_estate
+
+	allow = {
+		has_advance = chartered_company_advance
+		burghers_estate_power >= 40
+		has_reform = cc_colonial_charter_reform
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject_country = {
+				is_subject_type = chartered_company
+			}
+		}
+	}
+
+	country_modifier = {
+		global_trade_center_power = 0.05
+		diplomatic_capacity = 1
+	}
+
+	on_activate = {
+		trigger_event = { id = cc.burgher.charter.1 }
+	}
+}

@@ -1,0 +1,65 @@
+cc_force_shadow_state = {
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 15
+		}
+		add = {
+			desc = "RELATIVE_GREAT_POWER_SCORE"
+			value = 80
+			multiply = "scope:loser.great_power_score"
+			divide = {
+				value = "scope:winner.great_power_score"
+				min = 1
+			}
+			max = 55
+			min = 35
+		}
+	}
+
+	# Lower antagonism than a full subjugation — this is covert suzerainty, not outright conquest.
+	base_antagonism = {
+		value = {
+			value = 5
+			scope:loser = {
+				every_owned_location = {
+					add = location_tax_base
+					divide = 2
+				}
+				every_subject_or_below = {
+					every_owned_location = {
+						add = location_tax_base
+						divide = 2
+					}
+				}
+			}
+		}
+	}
+	antagonism_type = antagonism_cc_force_shadow_state
+
+	category = country
+
+	potential = {
+		scope:war = { is_no_cb_war = no }
+		scope:winner = { has_advance = shadow_diplomacy_advance }
+		scope:loser = {
+			is_subject = no
+		}
+	}
+	allow = {
+	}
+
+	effect = {
+		scope:loser = {
+			make_subject_of = {
+				target = scope:winner
+				type = subject_type:shadow_state
+				war = scope:war
+			}
+		}
+	}
+
+	ai_desire = {
+		value = 500
+	}
+}

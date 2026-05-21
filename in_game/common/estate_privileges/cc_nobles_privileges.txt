@@ -1,0 +1,57 @@
+
+ep_noble_elite_enclave = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = noble_patronage_advance
+		nobles_estate_power >= 40
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject_country = {
+				OR = {
+					is_subject_type = elite_enclave
+					is_subject_type = palatinate
+				}
+			}
+		}
+	}
+
+	country_modifier = {
+		nobles_estate_target_satisfaction = 0.05
+		monthly_prestige = 0.05
+		cultural_influence = 50
+	}
+
+	on_activate = {
+		trigger_event = { id = cc.noble.enclave.1 }
+	}
+}
+
+ep_noble_patronage_arts = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = artistic_patronage_advance
+	}
+
+	country_modifier = {
+		cultural_tradition = 50
+		cultural_influence_modifier = 0.1
+	}
+}
+
+ep_noble_shadow_network = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = shadow_diplomacy_advance
+		nobles_estate_power >= 45
+	}
+
+	country_modifier = {
+		power_projection = 5
+		diplomatic_reputation = 1
+	}
+}

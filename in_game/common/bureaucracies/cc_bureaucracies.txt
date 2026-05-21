@@ -1,0 +1,147 @@
+
+cc_shadow_court_bureau = {
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_advance = shadow_diplomacy_advance
+	}
+
+	allow = {
+		has_advance = shadow_diplomacy_advance
+		nobles_estate_power >= 45
+		OR = {
+			has_estate_privilege = ep_noble_shadow_network
+			has_estate_privilege = ep_noble_elite_enclave
+		}
+	}
+
+	estates_that_like = {
+		nobles_estate
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	neutral_modifier = {
+		power_projection = 5
+	}
+
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		power_projection = 15
+		diplomatic_reputation = 2
+	}
+
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		}
+		monthly_rebel_growth = 0.01
+		nobles_estate_satisfaction_decay = 0.02
+	}
+}
+
+cc_royal_trading_bureau = {
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_advance = chartered_company_advance
+		has_reform = cc_colonial_charter_reform
+	}
+
+	allow = {
+		has_advance = chartered_company_advance
+		has_reform = cc_colonial_charter_reform
+	}
+
+	estates_that_like = {
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	neutral_modifier = {
+		global_trade_center_power = 0.03
+	}
+
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		tax_income_efficiency = 0.05
+		global_sailors_modifier = 0.05
+		diplomatic_capacity = 1
+	}
+
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		}
+		burghers_estate_satisfaction_decay = 0.03
+	}
+}
+
+cc_scholarly_concordat = {
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_advance = scholarly_orders_advance
+	}
+
+	allow = {
+		has_advance = scholarly_orders_advance
+		clergy_estate_power >= 40
+		has_estate_privilege = ep_clergy_scholarly_college
+	}
+
+	estates_that_like = {
+		clergy_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+		nobles_estate
+	}
+
+	neutral_modifier = {
+		research_speed = 0.05
+	}
+
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		embrace_institution_cost_modifier = -0.15
+		global_disease_resistance = 0.05
+		global_institution_growth_modifier = 0.05
+	}
+
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		}
+		clergy_estate_satisfaction_decay = 0.03
+		stability_decay = 0.01
+	}
+}
