@@ -1,0 +1,480 @@
+namespace = cc_traits
+
+###############################################################################
+# INTEGRATION TRAIT GRANT
+# Fires yearly when a cabinet member is actively integrating but has no
+# integration trait. Silently assigns the appropriate tier based on attributes.
+###############################################################################
+
+cc_traits.1 = {
+	hide_portraits = yes
+	type = country_event
+	title = cc_traits.1.title
+	desc = cc_traits.1.desc
+	outcome = neutral
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			OR = {
+				cabinet_action = cabinet_action:integrate_area
+				cabinet_action = cabinet_action:integrate_province
+			}
+			NOR = {
+				has_trait = fumbling_integrator
+				has_trait = able_integrator
+				has_trait = master_integrator
+				has_trait = iron_integrator
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:integrate_area
+					cabinet_action = cabinet_action:integrate_province
+				}
+				NOR = {
+					has_trait = fumbling_integrator
+					has_trait = able_integrator
+					has_trait = master_integrator
+					has_trait = iron_integrator
+				}
+			}
+			save_scope_as = integrating_minister
+		}
+	}
+
+	option = {
+		name = cc_traits.1.a
+		hidden_effect = {
+			scope:integrating_minister = {
+				if = {
+					limit = { adm > 66  mil > 66  dip > 66 }
+					add_trait = trait:iron_integrator
+				}
+				else_if = {
+					limit = { adm > 66  dip > 66 }
+					add_trait = trait:master_integrator
+				}
+				else_if = {
+					limit = { adm > 33  mil > 33  dip > 33 }
+					add_trait = trait:able_integrator
+				}
+				else = {
+					add_trait = trait:fumbling_integrator
+				}
+			}
+		}
+	}
+}
+
+###############################################################################
+# AGE-SPECIFIC TRAIT SPAWNING
+# One event per age. Each fires via biyearly random_events.
+# Weight_multiplier reduces chance to 30% when the primary age has passed.
+###############################################################################
+
+# Age of Renaissance — renaissance_humanist
+cc_traits.10 = {
+	type = country_event
+	title = cc_traits.10.title
+	desc = cc_traits.10.desc
+	outcome = neutral
+
+	trigger = {
+		OR = {
+			current_age = age_2_renaissance
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait = renaissance_humanist }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_2_renaissance }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait = renaissance_humanist }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_traits.10.a
+		scope:minister = { add_trait = trait:renaissance_humanist }
+	}
+	
+	option = {
+		name = cc_traits.10.b
+	}
+}
+
+# Age of Discovery — pioneer (positive) or skeptic (negative)
+cc_traits.11 = {
+	type = country_event
+	title = cc_traits.11.title
+	desc = cc_traits.11.desc
+	outcome = neutral
+
+	trigger = {
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait = age_of_discovery_pioneer }
+			NOT = { has_trait = age_of_discovery_skeptic }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_3_discovery }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait = age_of_discovery_pioneer }
+				NOT = { has_trait = age_of_discovery_skeptic }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_traits.11.a
+		scope:minister = { add_trait = trait:age_of_discovery_pioneer }
+	}
+
+	option = {
+		name = cc_traits.11.b
+		scope:minister = { add_trait = trait:age_of_discovery_skeptic }
+	}
+}
+
+# Age of Reformation — preacher (tolerant) or inquisitor (zealous)
+cc_traits.12 = {
+	type = country_event
+	title = cc_traits.12.title
+	desc = cc_traits.12.desc
+	outcome = neutral
+
+	trigger = {
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait = reformation_preacher }
+			NOT = { has_trait = reformation_inquisitor }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_4_reformation }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait = reformation_preacher }
+				NOT = { has_trait = reformation_inquisitor }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_traits.12.a
+		scope:minister = { add_trait = trait:reformation_preacher }
+	}
+
+	option = {
+		name = cc_traits.12.b
+		scope:minister = { add_trait = trait:reformation_inquisitor }
+	}
+}
+
+# Age of Absolutism — one of four administrative postures
+cc_traits.13 = {
+	type = country_event
+	title = cc_traits.13.title
+	desc = cc_traits.13.desc
+	outcome = neutral
+
+	trigger = {
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait = absolute_administrator }
+			NOT = { has_trait = noble_patron }
+			NOT = { has_trait = parliamentarian }
+			NOT = { has_trait = privilege_reformer }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_5_absolutism }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait = absolute_administrator }
+				NOT = { has_trait = noble_patron }
+				NOT = { has_trait = parliamentarian }
+				NOT = { has_trait = privilege_reformer }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_traits.13.a
+		scope:minister = { add_trait = trait:absolute_administrator }
+	}
+
+	option = {
+		name = cc_traits.13.b
+		scope:minister = { add_trait = trait:noble_patron }
+	}
+
+	option = {
+		name = cc_traits.13.c
+		scope:minister = { add_trait = trait:parliamentarian }
+	}
+
+	option = {
+		name = cc_traits.13.d
+		scope:minister = { add_trait = trait:privilege_reformer }
+	}
+}
+
+# Age of Revolutions — agitator, counterrevolutionary, or privilege champion
+cc_traits.14 = {
+	type = country_event
+	title = cc_traits.14.title
+	desc = cc_traits.14.desc
+	outcome = neutral
+
+	trigger = {
+		current_age = age_6_revolutions
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait = revolutionary_agitator }
+			NOT = { has_trait = counterrevolutionary }
+			NOT = { has_trait = privilege_champion }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait = revolutionary_agitator }
+				NOT = { has_trait = counterrevolutionary }
+				NOT = { has_trait = privilege_champion }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_traits.14.a
+		scope:minister = { add_trait = trait:revolutionary_agitator }
+	}
+
+	option = {
+		name = cc_traits.14.b
+		scope:minister = { add_trait = trait:counterrevolutionary }
+	}
+
+	option = {
+		name = cc_traits.14.c
+		scope:minister = { add_trait = trait:privilege_champion }
+	}
+}
+
+###############################################################################
+# TEACHABLE TRAITS
+###############################################################################
+
+# Ruler Teaches a Cabinet Member
+# The ruler's expertise shapes the development of a young minister.
+cc_traits.20 = {
+	type = country_event
+	title = cc_traits.20.title
+	desc = cc_traits.20.desc
+	outcome = neutral
+
+	trigger = {
+		has_ruler = yes
+		ruler ?= {
+			adm > 55
+			dip > 55
+			mil > 55
+			OR = {
+				has_trait = war_hawk
+				has_trait = iron_disciplinarian
+				has_trait = ecumenist
+				has_trait = progressive_reformist
+				has_trait = shadow_counselor
+				has_trait = loyal_steward
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			age < 40
+		}
+	}
+
+	immediate = {
+		ruler ?= { save_scope_as = the_ruler }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				age < 40
+			}
+			save_scope_as = student
+		}
+	}
+
+	option = {
+		name = cc_traits.20.a
+		trigger = {
+			scope:the_ruler ?= {
+				OR = {
+					has_trait = war_hawk
+					has_trait = iron_disciplinarian
+				}
+			}
+		}
+		scope:student = { add_trait = trait:tactical_advisor }
+	}
+
+	option = {
+		name = cc_traits.20.b
+		trigger = {
+			scope:the_ruler ?= {
+				OR = {
+					has_trait = ecumenist
+					has_trait = progressive_reformist
+				}
+			}
+		}
+		scope:student = { add_trait = trait:learned_counselor }
+	}
+
+	option = {
+		name = cc_traits.20.c
+		trigger = {
+			scope:the_ruler ?= {
+				OR = {
+					has_trait = shadow_counselor
+					has_trait = loyal_steward
+				}
+			}
+		}
+		scope:student = { add_trait = trait:loyal_steward }
+	}
+
+	option = {
+		name = cc_traits.20.d
+	}
+}
+
+# Peer Learning — an idle young minister develops from observing peers
+cc_traits.21 = {
+	type = country_event
+	title = cc_traits.21.title
+	desc = cc_traits.21.desc
+	outcome = neutral
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+			age < 35
+			adm > 50
+			dip > 50
+			mil > 50
+			num_of_traits_of_category = { type = cabinet  value < 1 }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+				age < 35
+				adm > 50
+				dip > 50
+				mil > 50
+				num_of_traits_of_category = { type = cabinet  value < 1 }
+			}
+			save_scope_as = learner
+		}
+	}
+
+	option = {
+		name = cc_traits.21.a
+		scope:learner = { add_trait = trait:learned_counselor }
+	}
+
+	option = {
+		name = cc_traits.21.b
+		trigger = {
+			scope:learner ?= { mil > 55 }
+		}
+		scope:learner = { add_trait = trait:tactical_advisor }
+	}
+
+	option = {
+		name = cc_traits.21.c
+		scope:learner = { add_trait = trait:loyal_steward }
+	}
+}

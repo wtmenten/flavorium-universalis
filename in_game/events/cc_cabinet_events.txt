@@ -1,0 +1,944 @@
+namespace = cc_cabinet
+
+###############################################################################
+# RULER INTERACTION EVENTS (cc_cabinet.1–4)
+###############################################################################
+
+# "The Minister Seeks Counsel"
+# An idle cabinet member requests an audience to discuss statecraft.
+cc_cabinet.1 = {
+	type = country_event
+	title = cc_cabinet.1.title
+	desc = cc_cabinet.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		has_ruler = yes
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.1.a
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_trait = trait:learned_counselor }
+	}
+
+	option = {
+		name = cc_cabinet.1.b
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_trait = trait:loyal_steward }
+	}
+
+	option = {
+		name = cc_cabinet.1.c
+		trigger = {
+			scope:minister ?= { mil > 50 }
+		}
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_trait = trait:tactical_advisor }
+	}
+
+	option = {
+		name = cc_cabinet.1.d
+	}
+}
+
+# "A Request for Funds"
+# A cabinet member petitions the crown for resources.
+cc_cabinet.2 = {
+	type = country_event
+	title = cc_cabinet.2.title
+	desc = cc_cabinet.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+		gold >= 75
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.2.a
+		add_gold = -75
+		trigger_event = { id = cc_cabinet.3  months = 6 }
+	}
+
+	option = {
+		name = cc_cabinet.2.b
+		add_opinion = {
+			target = scope:minister
+			modifier = cc_refused_funds_opinion
+		}
+	}
+}
+
+# "The Minister Puts the Funds to Work" (follow-up to cc_cabinet.2 option A)
+cc_cabinet.3 = {
+	type = country_event
+	title = cc_cabinet.3.title
+	desc = cc_cabinet.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = { }
+
+	option = {
+		name = cc_cabinet.3.a
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_cabinet_ministerial_investment
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.3.b
+		add_gold = 25
+	}
+}
+
+# Age of Absolutism — "The Minister Advises on Parliamentary Affairs"
+cc_cabinet.4 = {
+	type = country_event
+	title = cc_cabinet.4.title
+	desc = cc_cabinet.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_5_absolutism
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.4.a
+		add_country_modifier = {
+			modifier = cc_cabinet_parliamentary_guidance
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.4.b
+		scope:minister = { add_trait = trait:parliamentarian }
+	}
+
+	option = {
+		name = cc_cabinet.4.c
+	}
+}
+
+###############################################################################
+# ESTATE INTERACTION EVENTS (cc_cabinet.10–13)
+###############################################################################
+
+# "Courting the Estates"
+# An idle minister uses their estate connections for political ends.
+cc_cabinet.10 = {
+	type = country_event
+	title = cc_cabinet.10.title
+	desc = cc_cabinet.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.10.a
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	option = {
+		name = cc_cabinet.10.b
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	option = {
+		name = cc_cabinet.10.c
+		add_gold = -50
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_weak_bonus
+		}
+	}
+
+	option = {
+		name = cc_cabinet.10.d
+	}
+}
+
+# "Estate Grievances"
+# A minister channels mounting tensions with the estates.
+cc_cabinet.11 = {
+	type = country_event
+	title = cc_cabinet.11.title
+	desc = cc_cabinet.11.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+		OR = {
+			nobles_estate_satisfaction < 40
+			burghers_estate_satisfaction < 40
+			clergy_estate_satisfaction < 40
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.11.a
+		add_gold = -100
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+
+	option = {
+		name = cc_cabinet.11.b
+		add_country_modifier = {
+			modifier = cc_cabinet_revoke_difficulty
+			years = 3
+			mode = add_and_extend
+		}
+	}
+}
+
+# Age of Revolutions — "Revolutionary Sentiments"
+cc_cabinet.12 = {
+	type = country_event
+	title = cc_cabinet.12.title
+	desc = cc_cabinet.12.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_6_revolutions
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.12.a
+		scope:minister = { add_trait = trait:revolutionary_agitator }
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+
+	option = {
+		name = cc_cabinet.12.b
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		add_prestige = prestige_weak_penalty
+	}
+
+	option = {
+		name = cc_cabinet.12.c
+	}
+}
+
+# Age of Absolutism — "The Minister's Ambitions"
+cc_cabinet.13 = {
+	type = country_event
+	title = cc_cabinet.13.title
+	desc = cc_cabinet.13.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_5_absolutism
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.13.a
+		scope:minister = { add_trait = trait:privilege_reformer }
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	option = {
+		name = cc_cabinet.13.b
+		scope:minister = { add_trait = trait:absolute_administrator }
+		add_country_modifier = {
+			modifier = cc_cabinet_revoke_difficulty
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.13.c
+	}
+}
+
+###############################################################################
+# NEIGHBORING COUNTRY INTERACTION EVENTS (cc_cabinet.20–23)
+###############################################################################
+
+# "Diplomatic Overtures"
+# A minister pursues diplomacy with a neighboring state.
+cc_cabinet.20 = {
+	type = country_event
+	title = cc_cabinet.20.title
+	desc = cc_cabinet.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_cabinet_action = no
+				cabinet_action = cabinet_action:diplomatic_endeavors
+			}
+		}
+		any_neighbor_country = {
+			NOT = { is_at_war_with = root }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_cabinet_action = no
+					cabinet_action = cabinet_action:diplomatic_endeavors
+				}
+			}
+			save_scope_as = minister
+		}
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_at_war_with = root }
+			}
+			save_scope_as = neighbor_country
+		}
+	}
+
+	option = {
+		name = cc_cabinet.20.a
+		add_opinion = {
+			target = scope:neighbor_country
+			modifier = cc_diplomatic_favor
+		}
+		scope:neighbor_country = {
+			add_opinion = {
+				target = root
+				modifier = cc_diplomatic_favor
+			}
+		}
+	}
+
+	option = {
+		name = cc_cabinet.20.b
+		add_country_modifier = {
+			modifier = cc_cabinet_diplomatic_influence
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.20.c
+	}
+}
+
+# "Border Tensions"
+# A minister escalates a border dispute with a neighbor.
+cc_cabinet.21 = {
+	type = country_event
+	title = cc_cabinet.21.title
+	desc = cc_cabinet.21.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_cabinet_action = no
+				cabinet_action = cabinet_action:diplomatic_endeavors
+			}
+		}
+		any_neighbor_country = {
+			NOT = { is_at_war_with = root }
+			NOT = { is_allied_with = { target = root } }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_cabinet_action = no
+					cabinet_action = cabinet_action:diplomatic_endeavors
+				}
+			}
+			save_scope_as = minister
+		}
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_at_war_with = root }
+				NOT = { is_allied_with = { target = root } }
+			}
+			save_scope_as = neighbor_country
+		}
+	}
+
+	option = {
+		name = cc_cabinet.21.a
+		add_opinion = {
+			target = scope:neighbor_country
+			modifier = cc_diplomatic_insult
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_cabinet.21.b
+		add_country_modifier = {
+			modifier = cc_cabinet_diplomatic_influence
+			years = 3
+			mode = add_and_extend
+		}
+	}
+}
+
+# Age of Discovery — "Overseas Contacts"
+cc_cabinet.22 = {
+	type = country_event
+	title = cc_cabinet.22.title
+	desc = cc_cabinet.22.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		current_age = age_3_discovery
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_cabinet_action = no
+				cabinet_action = cabinet_action:diplomatic_endeavors
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_cabinet_action = no
+					cabinet_action = cabinet_action:diplomatic_endeavors
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cabinet.22.a
+		scope:minister = { add_trait = trait:age_of_discovery_pioneer }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_cabinet.22.b
+		add_country_modifier = {
+			modifier = cc_cabinet_diplomatic_influence
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.22.c
+	}
+}
+
+# Age of Reformation — "Religious Tensions Abroad"
+cc_cabinet.23 = {
+	type = country_event
+	title = cc_cabinet.23.title
+	desc = cc_cabinet.23.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		current_age = age_4_reformation
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_cabinet_action = no
+				cabinet_action = cabinet_action:diplomatic_endeavors
+			}
+		}
+		any_neighbor_country = {
+			NOT = { is_at_war_with = root }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_cabinet_action = no
+					cabinet_action = cabinet_action:diplomatic_endeavors
+				}
+			}
+			save_scope_as = minister
+		}
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_at_war_with = root }
+			}
+			save_scope_as = neighbor_country
+		}
+	}
+
+	option = {
+		name = cc_cabinet.23.a
+		add_opinion = {
+			target = scope:neighbor_country
+			modifier = cc_diplomatic_favor
+		}
+		scope:neighbor_country = {
+			add_opinion = {
+				target = root
+				modifier = cc_diplomatic_favor
+			}
+		}
+	}
+
+	option = {
+		name = cc_cabinet.23.b
+		add_opinion = {
+			target = scope:neighbor_country
+			modifier = cc_diplomatic_insult
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_cabinet.23.c
+	}
+}
+
+###############################################################################
+# PROVINCE INTERACTION EVENTS (cc_cabinet.30–33)
+###############################################################################
+
+# "Provincial Investment"
+# A minister working on a province drives local development.
+cc_cabinet.30 = {
+	type = country_event
+	title = cc_cabinet.30.title
+	desc = cc_cabinet.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			cabinet_action = cabinet_action:develop_province
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				cabinet_action = cabinet_action:develop_province
+			}
+			save_scope_as = minister
+		}
+		random_owned_location = {
+			limit = { owner = root }
+			save_scope_as = target_province
+		}
+	}
+
+	option = {
+		name = cc_cabinet.30.a
+		add_gold = -50
+		scope:target_province = {
+			change_development = development_mild_bonus
+		}
+	}
+
+	option = {
+		name = cc_cabinet.30.b
+		scope:target_province = {
+			add_location_modifier = {
+				modifier = cc_cabinet_provincial_flourishing
+				years = 5
+				mode = add_and_extend
+			}
+		}
+	}
+
+	option = {
+		name = cc_cabinet.30.c
+	}
+}
+
+# "Cultural Affairs"
+# A minister facilitates cultural or religious change in a province.
+cc_cabinet.31 = {
+	type = country_event
+	title = cc_cabinet.31.title
+	desc = cc_cabinet.31.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+		any_owned_location = {
+			owner = root
+			NOT = { dominant_culture = root.culture }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+		random_owned_location = {
+			limit = {
+				owner = root
+				NOT = { dominant_culture = root.culture }
+			}
+			save_scope_as = target_province
+		}
+	}
+
+	option = {
+		name = cc_cabinet.31.a
+		scope:target_province = {
+			add_location_modifier = {
+				modifier = cc_cabinet_cultural_outreach
+				years = 5
+				mode = add_and_extend
+			}
+		}
+	}
+
+	option = {
+		name = cc_cabinet.31.b
+		add_country_modifier = {
+			modifier = cc_cabinet_pop_conversion
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.31.c
+	}
+}
+
+# Age of Reformation — "Confessional Province Work"
+cc_cabinet.32 = {
+	type = country_event
+	title = cc_cabinet.32.title
+	desc = cc_cabinet.32.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		current_age = age_4_reformation
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+		any_owned_location = {
+			owner = root
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+		random_owned_location = {
+			limit = { owner = root }
+			save_scope_as = target_province
+		}
+	}
+
+	option = {
+		name = cc_cabinet.32.a
+		scope:minister = { add_trait = trait:reformation_preacher }
+		add_country_modifier = {
+			modifier = cc_cabinet_pop_conversion
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_cabinet.32.b
+		scope:minister = { add_trait = trait:reformation_inquisitor }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_cabinet.32.c
+	}
+}
+
+# Age of Absolutism — "Administrative Reform"
+cc_cabinet.33 = {
+	type = country_event
+	title = cc_cabinet.33.title
+	desc = cc_cabinet.33.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		current_age = age_5_absolutism
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = no
+		}
+		any_owned_location = {
+			owner = root
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = no
+			}
+			save_scope_as = minister
+		}
+		random_owned_location = {
+			limit = { owner = root }
+			save_scope_as = target_province
+		}
+	}
+
+	option = {
+		name = cc_cabinet.33.a
+		scope:target_province = {
+			add_location_modifier = {
+				modifier = cc_cabinet_provincial_flourishing
+				years = 10
+				mode = add_and_extend
+			}
+		}
+		scope:minister = { add_trait = trait:absolute_administrator }
+	}
+
+	option = {
+		name = cc_cabinet.33.b
+		scope:target_province = {
+			change_development = development_mild_bonus
+		}
+		add_gold = -75
+	}
+
+	option = {
+		name = cc_cabinet.33.c
+	}
+}

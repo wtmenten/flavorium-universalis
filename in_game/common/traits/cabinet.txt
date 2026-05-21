@@ -165,15 +165,11 @@ zealous_inquisitor = {
 
 fumbling_integrator = {
 	category = cabinet
-	custom_tags = { negative administrative }
+	custom_tags = { negative integrator }
 	flavor = personality
 
 	allow = {
-		OR = { 
-			adm < 33 
-			mil < 33
-			dip < 33
-		}
+		in_cabinet = yes
 	}
 
 	modifier = {
@@ -183,22 +179,25 @@ fumbling_integrator = {
 
 able_integrator = {
 	category = cabinet
-	custom_tags = { administrative }
+	custom_tags = { integrator }
 	flavor = personality
 
 	allow = {
-		adm > 33
-		mil > 33
-		dip > 33
-        NOT = { has_trait = iron_integrator }
-        NOT = { has_trait = master_integrator }
-		NOT = {
-			OR = { 
-				adm > 66 
-				mil > 66 
-				dip > 66 
-			}
-		}
+		in_cabinet = yes
+	}
+
+	modifier = {
+		global_integration_speed_modifier = 1
+	}
+}
+
+master_integrator = {
+	category = cabinet
+	custom_tags = { integrator }
+	flavor = personality
+
+	allow = {
+		in_cabinet = yes
 	}
 
 	modifier = {
@@ -206,36 +205,17 @@ able_integrator = {
 	}
 }
 
-master_integrator = {
-	category = cabinet
-	custom_tags = { administrative }
-	flavor = personality
-
-	allow = {
-		adm > 66
-		dip > 66
-        NOT = { has_trait = able_integrator }
-        NOT = { has_trait = iron_integrator }
-	}
-
-	modifier = {
-		global_integration_speed_modifier = 4
-	}
-}
-
 iron_integrator = {
 	category = cabinet
-	custom_tags = { administrative }
+	custom_tags = { integrator }
 	flavor = personality
+
 	allow = {
-		adm > 66
-		mil > 66
-		dip > 66
-        NOT = { has_trait = able_integrator }
-        NOT = { has_trait = master_integrator }
+		in_cabinet = yes
 	}
+
 	modifier = {
-		global_integration_speed_modifier = 4
+		global_integration_speed_modifier = 2
 		global_distance_from_capital_speed_propagation = 0.05
 		nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
 		global_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
