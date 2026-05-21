@@ -8,6 +8,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 EU V Modding Documentation: https://eu5.paradoxwikis.com/Modding
 
+look for documentation reference excerpts in the website summarized docs first.
+[docs/eu5-modding-reference.md](Internal summarized modding reference)
+
+# lookup tools
+
+use this powershell command from the game/in_game/common dir or something similar in grep to search for type values in vanilla files quickly:
+`Get-ChildItem -Recurse -File | Select-String -Pattern "YOUR_TYPE_NAME_HERE:\w+" | ForEach-Object { $_.Matches.Value } | Select-Object -Unique`
+works for types like: societal_value,government_type,religion_group,sub_continent,government_reform,policy,estate_privilege and others.
+DO NOT try to do this from the root `/game` directory it will take a very long time
+
 ## Development Environment
 
 - **Game files location**: `F:\SteamLibrary\steamapps\common\Europa Universalis V\game` — reference these when checking vanilla definitions, scripting syntax, or effect/trigger scopes.
@@ -35,6 +45,6 @@ Paradox script files use the `.txt` extension and follow a Clausewitz scripting 
 
 ## Scripting Conventions
 
-EU V uses Clausewitz script. When writing traits, events, or decisions, follow the patterns found in the vanilla game files at `F:\SteamLibrary\steamapps\common\Europa Universalis V\game\common\` and `game\events\`. Key scoping rules, trigger names, and effect names must match vanilla exactly — the engine gives no helpful errors for typos in script keys.
+EU V uses Clausewitz script. When writing traits, events, or decisions, follow the patterns found in the vanilla game files at `F:\SteamLibrary\steamapps\common\Europa Universalis V\game\`. Key scoping rules, trigger names, and effect names must match vanilla exactly — the engine gives no helpful errors for typos in script keys.
 
 Localisation strings go in `in_game/localization/<language>/` as `.yml` files (UTF-8 BOM required by the engine).

@@ -1,0 +1,286 @@
+namespace = cc_legend
+
+###############################################################################
+# LEGEND QUEST CHAINS
+# Each quest fires once when conditions are fully met.
+# Legendary traits:   allow = { always = no } — granted only here.
+# Legendary reforms:  gated by has_variable set in these events.
+# Variable keys set: cc_legend_X_unlocked (checked in reform potential/allow)
+###############################################################################
+
+# Quest 1: "The Philosopher's Court"
+# Requires: dev > 50, innovative > 50, cabinet has enlightened/master_urbanist, all cabinet members admin
+cc_legend.1 = {
+	type = country_event
+	title = cc_legend.1.title
+	desc = cc_legend.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		capital.development > 50
+		societal_value:traditionalist_vs_innovative < -50
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:enlightenment_herald
+				has_trait = trait:master_urbanist
+				has_trait = trait:progressive_rationalist
+			}
+		}
+		all_cabinet_character = {
+			in_cabinet = yes
+			has_custom_tag = administrative
+		}
+		NOT = { has_variable = cc_legend_1_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_1_fired value = yes }
+	}
+
+	# Philosophers Court Reform + ruler legendary trait
+	option = {
+		name = cc_legend.1.a
+		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
+		ruler = { add_trait = trait:philosopher_king }
+		add_prestige = prestige_strong_bonus
+		custom_tooltip = cc_legend.1.a.tt
+	}
+
+	# Prestige only
+	option = {
+		name = cc_legend.1.b
+		add_prestige = prestige_strong_bonus
+		add_country_modifier = { modifier = cc_synergy_enlightened_court years = 20 }
+	}
+}
+
+# Quest 2: "The Holy Empire"
+# Requires: theocracy or christian, clergy >= 60%, crown_theologian + reformation_preacher/orthodox_defender in cabinet, age 5-6
+cc_legend.2 = {
+	type = country_event
+	title = cc_legend.2.title
+	desc = cc_legend.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		OR = {
+			government_type = government_type:theocracy
+			religion.group = religion_group:christian
+		}
+		"estate_power(estate_type:clergy_estate)" >= 0.60
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:mystical_patriarch
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:ecumenical_patriarch_advisor
+				has_trait = trait:traditionalist_guardian
+			}
+		}
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		NOT = { has_variable = cc_legend_2_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_2_fired value = yes }
+	}
+
+	# Clergy privilege + permanent holy empire modifier
+	option = {
+		name = cc_legend.2.a
+		grant_estate_privilege = estate_privilege:ep_clergy_holy_empire
+		add_country_modifier = { modifier = cc_legend_holy_empire years = 999 }
+		add_prestige = prestige_strong_bonus
+		custom_tooltip = cc_legend.2.a.tt
+	}
+
+	# Prestige + clergy satisfaction
+	option = {
+		name = cc_legend.2.b
+		add_prestige = prestige_strong_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.15 }
+	}
+}
+
+# Quest 3: "The Grand Bazaar"
+# Requires: muslim, >= 2 chartered_company or associated_republic subjects, grand_chancellor in cabinet
+cc_legend.3 = {
+	type = country_event
+	title = cc_legend.3.title
+	desc = cc_legend.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		religion.group = religion_group:muslim
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:grand_chancellor
+		}
+		count_subjects = {
+			limit = {
+				OR = {
+					is_subject_type = chartered_company
+					is_subject_type = associated_republic
+				}
+			}
+			value >= 2
+		}
+		NOT = { has_variable = cc_legend_3_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_3_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:grand_chancellor }
+			save_scope_as = minister
+		}
+	}
+
+	# Grand Bazaar Reform + legendary grand vizier trait
+	option = {
+		name = cc_legend.3.a
+		set_variable = { name = cc_legend_grand_bazaar_unlocked value = yes }
+		scope:minister = { add_trait = trait:grand_vizier_legendary }
+		add_prestige = prestige_strong_bonus
+		custom_tooltip = cc_legend.3.a.tt
+	}
+
+	# Prestige + diplomatic capacity
+	option = {
+		name = cc_legend.3.b
+		add_prestige = prestige_strong_bonus
+		add_country_modifier = { modifier = cc_synergy_diplomatic_network years = 20 }
+	}
+}
+
+# Quest 4: "The Iron Hegemon"
+# Requires: military_march subject, supreme_commander minister, iron_disciplinarian ruler, nobles >= 45%, >= 3 military cost traits in cabinet
+cc_legend.4 = {
+	type = country_event
+	title = cc_legend.4.title
+	desc = cc_legend.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		any_subject = { is_subject_type = military_march }
+		ruler = { has_trait = trait:iron_disciplinarian }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:supreme_commander
+		}
+		"estate_power(estate_type:nobles_estate)" >= 0.45
+		# At least 3 military cost specialists
+		count_cabinet_characters = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:cavalry_marshal
+					has_trait = trait:commissariat_officer
+					has_trait = trait:siege_engineer
+					has_trait = trait:infantry_drillmaster
+					has_trait = trait:scout_captain
+					has_trait = trait:military_engineer
+					has_trait = trait:elite_trainer
+					has_trait = trait:continental_marshal
+				}
+			}
+			value >= 3
+		}
+		NOT = { has_variable = cc_legend_4_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_4_fired value = yes }
+	}
+
+	# Iron Hegemony Reform
+	option = {
+		name = cc_legend.4.a
+		set_variable = { name = cc_legend_iron_hegemony_unlocked value = yes }
+		add_prestige = prestige_strong_bonus
+		custom_tooltip = cc_legend.4.a.tt
+	}
+
+	# Iron Hegemony modifier instead
+	option = {
+		name = cc_legend.4.b
+		add_country_modifier = { modifier = cc_synergy_iron_hegemony years = 999 }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Quest 5: "The People's Tribune"
+# Requires: age 6, republic or parliament, progressive_reformist ruler, all estate satisfaction > 0.50, parliamentary_broker in cabinet
+cc_legend.5 = {
+	type = country_event
+	title = cc_legend.5.title
+	desc = cc_legend.5.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_6_revolutions
+		OR = {
+			has_parliament = yes
+			government_type = government_type:republic
+		}
+		ruler = { has_trait = trait:progressive_reformist }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:parliamentary_broker
+		}
+		"estate_satisfaction(estate_type:nobles_estate)" > 0.50
+		"estate_satisfaction(estate_type:clergy_estate)" > 0.50
+		"estate_satisfaction(estate_type:burghers_estate)" > 0.50
+		NOT = { has_variable = cc_legend_5_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_5_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:parliamentary_broker }
+			save_scope_as = minister
+		}
+	}
+
+	# People's Assembly Reform + legendary Tribune of the People trait
+	option = {
+		name = cc_legend.5.a
+		set_variable = { name = cc_legend_peoples_assembly_unlocked value = yes }
+		scope:minister = { add_trait = trait:tribune_of_the_people }
+		add_prestige = prestige_strong_bonus
+		custom_tooltip = cc_legend.5.a.tt
+	}
+
+	# Prestige + peoples tribune modifier
+	option = {
+		name = cc_legend.5.b
+		add_prestige = prestige_strong_bonus
+		add_country_modifier = { modifier = cc_synergy_peoples_tribune years = 20 }
+	}
+}

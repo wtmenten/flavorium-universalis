@@ -1,0 +1,1371 @@
+namespace = cc_synergy
+
+###############################################################################
+# TYPE A — RULER + CABINET SYNERGY (cc_synergy.1–10)
+# Fires when ruler has trait X AND a cabinet member has trait Y.
+###############################################################################
+
+# Iron Disciplinarian + Cavalry Marshal / Commissariat Officer
+cc_synergy.1 = {
+	type = country_event
+	title = cc_synergy.1.title
+	desc = cc_synergy.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:iron_disciplinarian }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:cavalry_marshal
+				has_trait = trait:commissariat_officer
+			}
+		}
+		NOT = { has_variable = cc_synergy_1_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_1_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:cavalry_marshal
+					has_trait = trait:commissariat_officer
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Grant iron army modifier — 15 years
+	option = {
+		name = cc_synergy.1.a
+		add_country_modifier = { modifier = cc_synergy_iron_army years = 15 }
+	}
+
+	# Promote the minister — grant supreme_commander
+	option = {
+		name = cc_synergy.1.b
+		scope:minister = { add_trait = trait:supreme_commander }
+	}
+
+	# Decline the synergy
+	option = {
+		name = cc_synergy.1.c
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# Learned Counselor + Renaissance Humanist (western/eastern europe)
+cc_synergy.2 = {
+	type = country_event
+	title = cc_synergy.2.title
+	desc = cc_synergy.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:learned_counselor }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:renaissance_patron
+		}
+		OR = {
+			capital = { is_in_sub_continent = sub_continent:western_europe }
+			capital = { is_in_sub_continent = sub_continent:eastern_europe }
+		}
+		NOT = { has_variable = cc_synergy_2_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_2_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:renaissance_patron }
+			save_scope_as = minister
+		}
+	}
+
+	# Court of Learning — 20 years
+	option = {
+		name = cc_synergy.2.a
+		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 20 }
+	}
+
+	# Develop the culture further — chain to cc_synergy.20
+	option = {
+		name = cc_synergy.2.b
+		trigger_event_non_silently = { id = cc_synergy.20 months = 12 }
+	}
+}
+
+# Chain: Court of Learning deepens
+cc_synergy.20 = {
+	type = country_event
+	title = cc_synergy.20.title
+	desc = cc_synergy.20.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_synergy.20.a
+		add_country_modifier = { modifier = cc_synergy_scholarly_rivalry years = 20 }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Master Statesman + Caliphate Diplomat (muslim)
+cc_synergy.3 = {
+	type = country_event
+	title = cc_synergy.3.title
+	desc = cc_synergy.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:master_statesman }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:caliphate_diplomat
+		}
+		religion.group = religion_group:muslim
+		NOT = { has_variable = cc_synergy_3_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_3_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:caliphate_diplomat }
+			save_scope_as = minister
+		}
+	}
+
+	# Grant noble diplomatic court privilege + 20yr caliphate network modifier
+	option = {
+		name = cc_synergy.3.a
+		trigger = {
+			NOT = { has_estate_privilege = estate_privilege:ep_nobles_diplomatic_court }
+		}
+		grant_estate_privilege = estate_privilege:ep_nobles_diplomatic_court
+		add_country_modifier = { modifier = cc_synergy_caliphate_network years = 20 }
+	}
+
+	# Prestige + gold
+	option = {
+		name = cc_synergy.3.b
+		add_prestige = prestige_strong_bonus
+		add_gold = 100
+	}
+}
+
+# Parliamentarian + Tradition Keeper / Orthodox Counselor (parliamentary system)
+cc_synergy.4 = {
+	type = country_event
+	title = cc_synergy.4.title
+	desc = cc_synergy.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:parliamentarian }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:traditionalist_guardian
+				has_trait = trait:ecumenical_patriarch_advisor
+			}
+		}
+		has_parliament = yes
+		NOT = { has_variable = cc_synergy_4_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_4_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:traditionalist_guardian
+					has_trait = trait:ecumenical_patriarch_advisor
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Parliamentary Harmony — 10 years
+	option = {
+		name = cc_synergy.4.a
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony years = 10 }
+	}
+
+	# Prestige + estate satisfaction
+	option = {
+		name = cc_synergy.4.b
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+	}
+}
+
+# Progressive Reformist + Progressive Rationalist / Enlightenment Herald (dev > 40)
+cc_synergy.5 = {
+	type = country_event
+	title = cc_synergy.5.title
+	desc = cc_synergy.5.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:progressive_reformist }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:progressive_rationalist
+				has_trait = trait:enlightenment_herald
+			}
+		}
+		capital.development > 40
+		NOT = { has_variable = cc_synergy_5_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_5_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:progressive_rationalist
+					has_trait = trait:enlightenment_herald
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Institutional Leap — 15 years
+	option = {
+		name = cc_synergy.5.a
+		add_country_modifier = { modifier = cc_synergy_institutional_leap years = 15 }
+	}
+
+	# Reform implementation bureau
+	option = {
+		name = cc_synergy.5.b
+		trigger = {
+			NOT = { has_variable = cc_legend_philosophical_court_unlocked }
+		}
+		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
+		custom_tooltip = cc_synergy.5.b.tt
+	}
+}
+
+# Sufi Scholar + Caliphate Diplomat (muslim)
+cc_synergy.6 = {
+	type = country_event
+	title = cc_synergy.6.title
+	desc = cc_synergy.6.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:sufi_scholar }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:caliphate_diplomat
+		}
+		religion.group = religion_group:muslim
+		NOT = { has_variable = cc_synergy_6_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_6_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:caliphate_diplomat }
+			save_scope_as = minister
+		}
+	}
+
+	# Sufi Enlightenment — 20 years + clergy satisfaction
+	option = {
+		name = cc_synergy.6.a
+		add_country_modifier = { modifier = cc_synergy_sufi_enlightenment years = 20 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+	}
+
+	# Promote minister to grand chancellor
+	option = {
+		name = cc_synergy.6.b
+		scope:minister = { add_trait = trait:grand_chancellor }
+	}
+}
+
+# Eastern Pragmatist + Confucian Mandarin (east/se asia)
+cc_synergy.7 = {
+	type = country_event
+	title = cc_synergy.7.title
+	desc = cc_synergy.7.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:eastern_pragmatist }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:confucian_mandarin
+		}
+		OR = {
+			capital = { is_in_sub_continent = sub_continent:east_asia }
+			capital = { is_in_sub_continent = sub_continent:south_east_asia }
+		}
+		NOT = { has_variable = cc_synergy_7_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_7_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:confucian_mandarin }
+			save_scope_as = minister
+		}
+	}
+
+	# Mandate of Learning — 20 years
+	option = {
+		name = cc_synergy.7.a
+		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 20 }
+	}
+
+	# Unlock mandate bureaucracy reform variable
+	option = {
+		name = cc_synergy.7.b
+		set_variable = { name = cc_legend_mandate_bureaucracy_unlocked value = yes }
+		custom_tooltip = cc_synergy.7.b.tt
+	}
+}
+
+# Pioneer/Explorer ruler + Pioneer/Explorer minister (different chars, has overseas subject)
+cc_synergy.8 = {
+	type = country_event
+	title = cc_synergy.8.title
+	desc = cc_synergy.8.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		ruler = {
+			OR = {
+				has_trait = trait:restless_pioneer
+				has_trait = trait:legendary_navigator
+				has_trait = trait:new_world_pioneer
+				has_trait = trait:expansionist_advisor
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:new_world_pioneer
+				has_trait = trait:expansionist_advisor
+				has_trait = trait:maritime_champion
+				has_trait = trait:colonial_planner
+			}
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = chartered_company
+				is_subject_type = client_state
+			}
+		}
+		NOT = { has_variable = cc_synergy_8_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_8_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:new_world_pioneer
+					has_trait = trait:expansionist_advisor
+					has_trait = trait:maritime_champion
+					has_trait = trait:colonial_planner
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Colonial Syndicate — 15 years
+	option = {
+		name = cc_synergy.8.a
+		add_country_modifier = { modifier = cc_synergy_colonial_syndicate years = 15 }
+	}
+
+	# Gold + burgher satisfaction
+	option = {
+		name = cc_synergy.8.b
+		add_gold = 150
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
+	}
+}
+
+# Iron Disciplinarian ruler + Supreme Commander minister (has military_march, nobles >= 45%)
+cc_synergy.9 = {
+	type = country_event
+	title = cc_synergy.9.title
+	desc = cc_synergy.9.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:iron_disciplinarian }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:supreme_commander
+		}
+		any_subject = { is_subject_type = military_march }
+		"estate_power(estate_type:nobles_estate)" >= 0.45
+		NOT = { has_variable = cc_synergy_9_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_9_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:supreme_commander }
+			save_scope_as = minister
+		}
+	}
+
+	# Trigger legend chain — unlock iron hegemony
+	option = {
+		name = cc_synergy.9.a
+		trigger_event_non_silently = { id = cc_synergy.91 months = 6 }
+	}
+
+	# Iron Hegemony modifier — 20 years
+	option = {
+		name = cc_synergy.9.b
+		add_country_modifier = { modifier = cc_synergy_iron_hegemony years = 20 }
+	}
+}
+
+# Chain: Iron Hegemony legend unlock
+cc_synergy.91 = {
+	type = country_event
+	title = cc_synergy.91.title
+	desc = cc_synergy.91.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	option = {
+		name = cc_synergy.91.a
+		set_variable = { name = cc_legend_iron_hegemony_unlocked value = yes }
+		custom_tooltip = cc_synergy.91.a.tt
+	}
+}
+
+# Progressive Reformist + Parliamentary Broker (age 6, republic or parliament)
+cc_synergy.10 = {
+	type = country_event
+	title = cc_synergy.10.title
+	desc = cc_synergy.10.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		ruler = { has_trait = trait:progressive_reformist }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:parliamentary_broker
+		}
+		current_age = age_6_revolutions
+		OR = {
+			has_parliament = yes
+			government_type = government_type:republic
+		}
+		NOT = { has_variable = cc_synergy_10_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_10_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:parliamentary_broker }
+			save_scope_as = minister
+		}
+	}
+
+	# People's Tribune — 20 years + estate satisfactions
+	option = {
+		name = cc_synergy.10.a
+		add_country_modifier = { modifier = cc_synergy_peoples_tribune years = 20 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
+		add_estate_satisfaction = { type = estate_type:peasants_estate value = 0.08 }
+	}
+
+	# Unlock People's Assembly reform variable
+	option = {
+		name = cc_synergy.10.b
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony years = 10 }
+	}
+}
+
+
+###############################################################################
+# TYPE B — CABINET + CABINET SYNERGY (cc_synergy.11–18)
+# Fires when two different cabinet characters have complementary traits.
+###############################################################################
+
+# Innovative Counselor + Confucian Mandarin
+cc_synergy.11 = {
+	type = country_event
+	title = cc_synergy.11.title
+	desc = cc_synergy.11.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:innovative_counselor
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:confucian_mandarin
+		}
+		NOT = { has_variable = cc_synergy_11_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_11_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:innovative_counselor }
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = trait:confucian_mandarin
+				NOT = { this = scope:minister_a }
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Scholarly Rivalry — 20 years
+	option = {
+		name = cc_synergy.11.a
+		add_country_modifier = { modifier = cc_synergy_scholarly_rivalry years = 20 }
+	}
+
+	# Literacy bonus to capital
+	option = {
+		name = cc_synergy.11.b
+		capital = { change_development = development_weak_bonus }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Any burghers minister + any nobles minister (both in cabinet)
+cc_synergy.12 = {
+	type = country_event
+	title = cc_synergy.12.title
+	desc = cc_synergy.12.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:merchant_prince
+				has_trait = trait:merchant_syndic
+				has_trait = trait:free_market_advocate
+				has_trait = trait:maritime_champion
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:noble_champion
+				has_trait = trait:royal_absolutist
+				has_trait = trait:regional_magnate
+			}
+		}
+		NOT = { has_variable = cc_synergy_12_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_12_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:merchant_prince
+					has_trait = trait:merchant_syndic
+					has_trait = trait:free_market_advocate
+					has_trait = trait:maritime_champion
+				}
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { this = scope:minister_a }
+				OR = {
+					has_trait = trait:noble_champion
+					has_trait = trait:royal_absolutist
+					has_trait = trait:regional_magnate
+				}
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Trade Blade — 15 years
+	option = {
+		name = cc_synergy.12.a
+		add_country_modifier = { modifier = cc_synergy_trade_blade years = 15 }
+	}
+
+	# Mild estate satisfaction
+	option = {
+		name = cc_synergy.12.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+	}
+}
+
+# Innovative Counselor + Parliamentary Broker (parliament active)
+cc_synergy.13 = {
+	type = country_event
+	title = cc_synergy.13.title
+	desc = cc_synergy.13.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:innovative_counselor
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:parliamentary_broker
+		}
+		has_parliament = yes
+		NOT = { has_variable = cc_synergy_13_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_13_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:innovative_counselor }
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = trait:parliamentary_broker
+				NOT = { this = scope:minister_a }
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Unlock parliamentary compromise reform variable
+	option = {
+		name = cc_synergy.13.a
+		set_variable = { name = cc_legend_parliamentary_compromise_unlocked value = yes }
+		custom_tooltip = cc_synergy.13.a.tt
+	}
+
+	# Parliamentary Harmony — 15 years
+	option = {
+		name = cc_synergy.13.b
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony years = 15 }
+	}
+}
+
+# Minister integrating area + Minister developing province (has conquered province)
+cc_synergy.14 = {
+	type = country_event
+	title = cc_synergy.14.title
+	desc = cc_synergy.14.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			current_action = integrate_area
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			current_action = develop_province
+		}
+		any_owned_province = { has_variable = recently_conquered }
+		NOT = { has_variable = cc_synergy_14_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_14_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes current_action = integrate_area }
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				current_action = develop_province
+				NOT = { this = scope:minister_a }
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Integration Surge — 10 years
+	option = {
+		name = cc_synergy.14.a
+		add_country_modifier = { modifier = cc_synergy_integration_surge years = 10 }
+	}
+
+	# Dev bonus to capital
+	option = {
+		name = cc_synergy.14.b
+		capital = { change_development = development_weak_bonus }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Clergy minister + Burghers minister (parliament active)
+cc_synergy.15 = {
+	type = country_event
+	title = cc_synergy.15.title
+	desc = cc_synergy.15.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:mystical_patriarch
+				has_trait = trait:mystical_counselor
+				has_trait = trait:brahmin_counselor
+				has_trait = trait:dharma_minister
+				has_trait = trait:ecumenical_patriarch_advisor
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:merchant_prince
+				has_trait = trait:merchant_syndic
+				has_trait = trait:free_market_advocate
+				has_trait = trait:maritime_champion
+			}
+		}
+		has_parliament = yes
+		NOT = { has_variable = cc_synergy_15_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_15_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:mystical_patriarch
+					has_trait = trait:mystical_counselor
+					has_trait = trait:brahmin_counselor
+					has_trait = trait:dharma_minister
+					has_trait = trait:ecumenical_patriarch_advisor
+				}
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { this = scope:minister_a }
+				OR = {
+					has_trait = trait:merchant_prince
+					has_trait = trait:merchant_syndic
+					has_trait = trait:free_market_advocate
+					has_trait = trait:maritime_champion
+				}
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Parliamentary harmony + mild estate satisfactions
+	option = {
+		name = cc_synergy.15.a
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony years = 15 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+
+	# Prestige only
+	option = {
+		name = cc_synergy.15.b
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Cavalry Marshal + Siege Engineer (at war)
+cc_synergy.16 = {
+	type = country_event
+	title = cc_synergy.16.title
+	desc = cc_synergy.16.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:cavalry_marshal
+				has_trait = trait:commissariat_officer
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:siege_engineer
+		}
+		is_at_war = yes
+		NOT = { has_variable = cc_synergy_16_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_16_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:cavalry_marshal
+					has_trait = trait:commissariat_officer
+				}
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = trait:siege_engineer
+				NOT = { this = scope:minister_a }
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Warlords Council — 15 years
+	option = {
+		name = cc_synergy.16.a
+		add_country_modifier = { modifier = cc_synergy_warlords_council years = 15 }
+	}
+
+	# Prestige + gold + shorter modifier
+	option = {
+		name = cc_synergy.16.b
+		add_prestige = prestige_mild_bonus
+		add_gold = 50
+		add_country_modifier = { modifier = cc_synergy_iron_army years = 5 }
+	}
+}
+
+# Caliphate Diplomat / Grand Chancellor + Maritime Champion / Diplomatic Attaché
+cc_synergy.17 = {
+	type = country_event
+	title = cc_synergy.17.title
+	desc = cc_synergy.17.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:caliphate_diplomat
+				has_trait = trait:grand_chancellor
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:maritime_champion
+				has_trait = trait:diplomatic_attache
+			}
+		}
+		NOT = { has_variable = cc_synergy_17_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_17_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:caliphate_diplomat
+					has_trait = trait:grand_chancellor
+				}
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { this = scope:minister_a }
+				OR = {
+					has_trait = trait:maritime_champion
+					has_trait = trait:diplomatic_attache
+				}
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Diplomatic Network — 20 years
+	option = {
+		name = cc_synergy.17.a
+		add_country_modifier = { modifier = cc_synergy_diplomatic_network years = 20 }
+	}
+
+	# Permanent diplomatic capacity
+	option = {
+		name = cc_synergy.17.b
+		add_country_modifier = { modifier = cc_synergy_diplomatic_network years = 5 }
+		custom_tooltip = cc_synergy.17.b.tt
+	}
+}
+
+# Enlightened Vizier / Humanist Philosopher + Confucian Mandarin / Innovative Counselor (innovative > 40)
+cc_synergy.18 = {
+	type = country_event
+	title = cc_synergy.18.title
+	desc = cc_synergy.18.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:humanist_philosopher
+				has_trait = trait:enlightenment_herald
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:confucian_mandarin
+				has_trait = trait:innovative_counselor
+			}
+		}
+		societal_value:traditionalist_vs_innovative < -40
+		NOT = { has_variable = cc_synergy_18_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_18_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:humanist_philosopher
+					has_trait = trait:enlightenment_herald
+				}
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { this = scope:minister_a }
+				OR = {
+					has_trait = trait:confucian_mandarin
+					has_trait = trait:innovative_counselor
+				}
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Enlightened Court — 20 years
+	option = {
+		name = cc_synergy.18.a
+		add_country_modifier = { modifier = cc_synergy_enlightened_court years = 20 }
+	}
+
+	# Unlock Philosopher's Court legend variable
+	option = {
+		name = cc_synergy.18.b
+		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
+		custom_tooltip = cc_synergy.18.b.tt
+	}
+}
+
+
+###############################################################################
+# TYPE C — CABINET + ACTIVE CONTENT SYNERGY (cc_synergy.21–26)
+# Cabinet member trait interacts with active reform / privilege / subject type.
+###############################################################################
+
+# Caliphate Diplomat + ep_nobles_diplomatic_court privilege (muslim)
+cc_synergy.21 = {
+	type = country_event
+	title = cc_synergy.21.title
+	desc = cc_synergy.21.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:caliphate_diplomat
+		}
+		has_estate_privilege = estate_privilege:ep_nobles_diplomatic_court
+		religion.group = religion_group:muslim
+		NOT = { has_variable = cc_synergy_21_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_21_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:caliphate_diplomat }
+			save_scope_as = minister
+		}
+	}
+
+	# Shadow Network Activated — 20 years
+	option = {
+		name = cc_synergy.21.a
+		add_country_modifier = { modifier = cc_synergy_shadow_network_activated years = 20 }
+	}
+
+	# Spy network + diplomatic boost
+	option = {
+		name = cc_synergy.21.b
+		add_country_modifier = { modifier = cc_synergy_caliphate_network years = 15 }
+	}
+}
+
+# Confucian Mandarin + cc_scholarly_concordat bureaucracy (east/se asia)
+cc_synergy.22 = {
+	type = country_event
+	title = cc_synergy.22.title
+	desc = cc_synergy.22.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:confucian_mandarin
+		}
+		has_bureaucracy_of_type = bureaucracy_type:cc_scholarly_concordat
+		OR = {
+			capital = { is_in_sub_continent = sub_continent:east_asia }
+			capital = { is_in_sub_continent = sub_continent:south_east_asia }
+		}
+		NOT = { has_variable = cc_synergy_22_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_22_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:confucian_mandarin }
+			save_scope_as = minister
+		}
+	}
+
+	# Mandate of Learning — 20 years
+	option = {
+		name = cc_synergy.22.a
+		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 20 }
+	}
+
+	# Dev bonus to capital
+	option = {
+		name = cc_synergy.22.b
+		capital = { change_development = development_weak_bonus }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# Parliamentary Broker + cc_parliamentary_compromise_reform (parliament active)
+cc_synergy.23 = {
+	type = country_event
+	title = cc_synergy.23.title
+	desc = cc_synergy.23.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = trait:parliamentary_broker
+		}
+		has_reform = government_reform:cc_parliamentary_compromise_reform
+		has_parliament = yes
+		NOT = { has_variable = cc_synergy_23_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_23_fired value = yes }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes has_trait = trait:parliamentary_broker }
+			save_scope_as = minister
+		}
+	}
+
+	# Unlock parliamentary charter privilege
+	option = {
+		name = cc_synergy.23.a
+		trigger = {
+			NOT = { has_estate_privilege = estate_privilege:ep_burghers_parliamentary_charter }
+		}
+		grant_estate_privilege = estate_privilege:ep_burghers_parliamentary_charter
+	}
+
+	# Parliamentary Harmony — 15 years
+	option = {
+		name = cc_synergy.23.b
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony years = 15 }
+	}
+}
+
+# Commissariat Officer / Supreme Commander + cc_march_charter_reform + military_march subject (nobles >= 35%)
+cc_synergy.24 = {
+	type = country_event
+	title = cc_synergy.24.title
+	desc = cc_synergy.24.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:commissariat_officer
+				has_trait = trait:supreme_commander
+			}
+		}
+		has_reform = government_reform:cc_march_charter_reform
+		any_subject = { is_subject_type = military_march }
+		"estate_power(estate_type:nobles_estate)" >= 0.35
+		NOT = { has_variable = cc_synergy_24_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_24_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:commissariat_officer
+					has_trait = trait:supreme_commander
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Iron Hegemony — 15 years + nobles satisfaction
+	option = {
+		name = cc_synergy.24.a
+		add_country_modifier = { modifier = cc_synergy_iron_hegemony years = 15 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.08 }
+	}
+
+	# Permanent artillery cost reduction via trait upgrade
+	option = {
+		name = cc_synergy.24.b
+		scope:minister = {
+			trigger = { NOT = { has_trait = trait:siege_engineer } }
+			add_trait = trait:siege_engineer
+		}
+	}
+}
+
+# Efficiency Administrator + cc_governorate_reform + provincial_governorate subject
+cc_synergy.25 = {
+	type = country_event
+	title = cc_synergy.25.title
+	desc = cc_synergy.25.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:efficiency_administrator
+				has_trait = trait:legal_scholar
+			}
+		}
+		has_reform = government_reform:cc_governorate_reform
+		any_subject = { is_subject_type = provincial_governorate }
+		NOT = { has_variable = cc_synergy_25_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_25_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:efficiency_administrator
+					has_trait = trait:legal_scholar
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Governing Compact — 15 years
+	option = {
+		name = cc_synergy.25.a
+		add_country_modifier = { modifier = cc_synergy_governing_compact years = 15 }
+	}
+
+	# Shorter modifier + permanent remove_bureaucracy cost reduction
+	option = {
+		name = cc_synergy.25.b
+		add_country_modifier = { modifier = cc_synergy_governing_compact years = 5 }
+		custom_tooltip = cc_synergy.25.b.tt
+	}
+}
+
+# Maritime Champion / Free Market Advocate + chartered_company subject (burghers >= 40%)
+cc_synergy.26 = {
+	type = country_event
+	title = cc_synergy.26.title
+	desc = cc_synergy.26.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = trait:maritime_champion
+				has_trait = trait:free_market_advocate
+			}
+		}
+		any_subject = { is_subject_type = chartered_company }
+		"estate_power(estate_type:burghers_estate)" >= 0.40
+		any_estate = {
+			estate_type = estate_type:burghers_estate
+			estate_has_active_privilege = yes
+		}
+		NOT = { has_variable = cc_synergy_26_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_26_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = trait:maritime_champion
+					has_trait = trait:free_market_advocate
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Colonial Syndicate — 20 years
+	option = {
+		name = cc_synergy.26.a
+		add_country_modifier = { modifier = cc_synergy_colonial_syndicate years = 20 }
+	}
+
+	# Burghers satisfaction + gold
+	option = {
+		name = cc_synergy.26.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
+		add_gold = 100
+	}
+}

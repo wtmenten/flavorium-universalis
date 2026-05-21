@@ -3,7 +3,7 @@ namespace = cc_traits
 ###############################################################################
 # INTEGRATION TRAIT GRANT
 # Fires yearly when a cabinet member is actively integrating but has no
-# integration trait. Silently assigns the appropriate tier based on attributes.
+# integration trait.
 ###############################################################################
 
 cc_traits.1 = {
@@ -52,35 +52,40 @@ cc_traits.1 = {
 
 	option = {
 		name = cc_traits.1.a
-		hidden_effect = {
-			scope:integrating_minister = {
-				if = {
-					limit = { adm > 66  mil > 66  dip > 66 }
-					add_trait = trait:iron_integrator
-				}
-				else_if = {
-					limit = { adm > 66  dip > 66 }
-					add_trait = trait:master_integrator
-				}
-				else_if = {
-					limit = { adm > 33  mil > 33  dip > 33 }
-					add_trait = trait:able_integrator
-				}
-				else = {
-					add_trait = trait:fumbling_integrator
-				}
+		scope:integrating_minister = {
+			if = {
+				limit = { adm > 66  mil > 66  dip > 66 }
+				add_trait = trait:iron_integrator
+			}
+			else_if = {
+				limit = { adm > 66  dip > 66 }
+				add_trait = trait:master_integrator
+			}
+			else_if = {
+				limit = { adm > 33  mil > 33  dip > 33 }
+				add_trait = trait:able_integrator
+			}
+			else = {
+				add_trait = trait:fumbling_integrator
 			}
 		}
+	}
+	option = {
+		name = cc_traits.1.b
 	}
 }
 
 ###############################################################################
 # AGE-SPECIFIC TRAIT SPAWNING
-# One event per age. Each fires via biyearly random_events.
-# Weight_multiplier reduces chance to 30% when the primary age has passed.
+# One event per age. Each fires via monthly random_events.
+# Options are gated by capital sub_continent, religion group, government type,
+# active cabinet actions, and minister estate type.
 ###############################################################################
 
-# Age of Renaissance — renaissance_humanist
+# Age of Renaissance — culturally branched intellectual trait
+# Western/Eastern Europe → renaissance_humanist
+# East/SE Asia          → eastern_pragmatist
+# Muslim world          → sufi_scholar
 cc_traits.10 = {
 	type = country_event
 	title = cc_traits.10.title
@@ -88,6 +93,14 @@ cc_traits.10 = {
 	outcome = neutral
 
 	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = renaissance_humanist
+				has_trait = eastern_pragmatist
+				has_trait = sufi_scholar
+			}
+		}
 		OR = {
 			current_age = age_2_renaissance
 			current_age = age_3_discovery
@@ -95,17 +108,28 @@ cc_traits.10 = {
 			current_age = age_5_absolutism
 			current_age = age_6_revolutions
 		}
-		any_cabinet_character = {
-			in_cabinet = yes
-			NOT = { has_trait = renaissance_humanist }
+		# Fire only when at least one cultural option would be visible
+		OR = {
+			capital.sub_continent = sub_continent:western_europe
+			capital.sub_continent = sub_continent:eastern_europe
+			capital.sub_continent = sub_continent:east_asia
+			capital.sub_continent = sub_continent:south_east_asia
+			religion.group = religion_group:muslim
 		}
 	}
 
 	weight_multiplier = {
 		base = 10
 		modifier = {
-			factor = 0.3
+			subtract = 3
 			NOT = { current_age = age_2_renaissance }
+		}
+		modifier = {
+			subtract = 3
+			NOR = {
+				current_age = age_2_renaissance
+				current_age = age_3_discovery
+			}
 		}
 	}
 
@@ -113,23 +137,58 @@ cc_traits.10 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
-				NOT = { has_trait = renaissance_humanist }
+				NOR = {
+					has_trait = renaissance_humanist
+					has_trait = eastern_pragmatist
+					has_trait = sufi_scholar
+				}
 			}
 			save_scope_as = minister
 		}
 	}
 
+	# Western/Eastern Europe
 	option = {
 		name = cc_traits.10.a
+		trigger = {
+			OR = {
+				capital.sub_continent = sub_continent:western_europe
+				capital.sub_continent = sub_continent:eastern_europe
+			}
+		}
 		scope:minister = { add_trait = trait:renaissance_humanist }
 	}
-	
+
+	# East/SE Asia
 	option = {
 		name = cc_traits.10.b
+		trigger = {
+			OR = {
+				capital.sub_continent = sub_continent:east_asia
+				capital.sub_continent = sub_continent:south_east_asia
+			}
+		}
+		scope:minister = { add_trait = trait:eastern_pragmatist }
+	}
+
+	# Muslim world
+	option = {
+		name = cc_traits.10.c
+		trigger = {
+			religion.group = religion_group:muslim
+		}
+		scope:minister = { add_trait = trait:sufi_scholar }
+	}
+
+	# Dismiss
+	option = {
+		name = cc_traits.10.d
 	}
 }
 
-# Age of Discovery — pioneer (positive) or skeptic (negative)
+# Age of Discovery — pioneer (bold), skeptic (cautious), or cautious_merchant
+# cautious_merchant only available to burgher estate ministers
+# Event weighted higher when a minister is actively running colonial cabinet actions
 cc_traits.11 = {
 	type = country_event
 	title = cc_traits.11.title
@@ -145,8 +204,11 @@ cc_traits.11 = {
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
-			NOT = { has_trait = age_of_discovery_pioneer }
-			NOT = { has_trait = age_of_discovery_skeptic }
+			NOR = {
+				has_trait = age_of_discovery_pioneer
+				has_trait = age_of_discovery_skeptic
+				has_trait = cautious_merchant
+			}
 		}
 	}
 
@@ -156,14 +218,29 @@ cc_traits.11 = {
 			factor = 0.3
 			NOT = { current_age = age_3_discovery }
 		}
+		modifier = {
+			add = 3
+			any_cabinet_character = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:send_people_to_the_colonies
+					cabinet_action = cabinet_action:send_people_to_colonial_charter
+					cabinet_action = cabinet_action:settle_the_frontier
+				}
+			}
+		}
 	}
 
 	immediate = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
-				NOT = { has_trait = age_of_discovery_pioneer }
-				NOT = { has_trait = age_of_discovery_skeptic }
+				NOR = {
+					has_trait = age_of_discovery_pioneer
+					has_trait = age_of_discovery_skeptic
+					has_trait = cautious_merchant
+				}
 			}
 			save_scope_as = minister
 		}
@@ -178,9 +255,21 @@ cc_traits.11 = {
 		name = cc_traits.11.b
 		scope:minister = { add_trait = trait:age_of_discovery_skeptic }
 	}
+
+	# Burgher minister only: trade-focused alternative to colonial adventure
+	option = {
+		name = cc_traits.11.c
+		trigger = {
+			scope:minister = { has_estate = estate_type:burghers_estate }
+		}
+		scope:minister = { add_trait = trait:cautious_merchant }
+	}
 }
 
-# Age of Reformation — preacher (tolerant) or inquisitor (zealous)
+# Age of Reformation — split by religion group
+# Christian → preacher (tolerant) or inquisitor (zealous)
+# Non-Christian → reformist_theologian (renewal) or orthodox_defender (tradition)
+# Clergy estate ministers weighted higher for selection
 cc_traits.12 = {
 	type = country_event
 	title = cc_traits.12.title
@@ -195,8 +284,12 @@ cc_traits.12 = {
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
-			NOT = { has_trait = reformation_preacher }
-			NOT = { has_trait = reformation_inquisitor }
+			NOR = {
+				has_trait = reformation_preacher
+				has_trait = reformation_inquisitor
+				has_trait = reformist_theologian
+				has_trait = orthodox_defender
+			}
 		}
 	}
 
@@ -206,31 +299,98 @@ cc_traits.12 = {
 			factor = 0.3
 			NOT = { current_age = age_4_reformation }
 		}
-	}
-
-	immediate = {
-		random_cabinet_character = {
-			limit = {
+		# More likely when a clergy minister in cabinet lacks a reformation trait
+		modifier = {
+			add = 3
+			any_cabinet_character = {
 				in_cabinet = yes
-				NOT = { has_trait = reformation_preacher }
-				NOT = { has_trait = reformation_inquisitor }
+				has_estate = estate_type:clergy_estate
+				NOR = {
+					has_trait = reformation_preacher
+					has_trait = reformation_inquisitor
+					has_trait = reformist_theologian
+					has_trait = orthodox_defender
+				}
 			}
-			save_scope_as = minister
 		}
 	}
 
+	immediate = {
+		# Prefer clergy estate ministers; fall back to any qualifying minister
+		if = {
+			limit = {
+				any_cabinet_character = {
+					in_cabinet = yes
+					has_estate = estate_type:clergy_estate
+					NOR = {
+						has_trait = reformation_preacher
+						has_trait = reformation_inquisitor
+						has_trait = reformist_theologian
+						has_trait = orthodox_defender
+					}
+				}
+			}
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					has_estate = estate_type:clergy_estate
+					NOR = {
+						has_trait = reformation_preacher
+						has_trait = reformation_inquisitor
+						has_trait = reformist_theologian
+						has_trait = orthodox_defender
+					}
+				}
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					NOR = {
+						has_trait = reformation_preacher
+						has_trait = reformation_inquisitor
+						has_trait = reformist_theologian
+						has_trait = orthodox_defender
+					}
+				}
+				save_scope_as = minister
+			}
+		}
+	}
+
+	# Christian countries
 	option = {
 		name = cc_traits.12.a
+		trigger = { religion.group = religion_group:christian }
 		scope:minister = { add_trait = trait:reformation_preacher }
 	}
 
 	option = {
 		name = cc_traits.12.b
+		trigger = { religion.group = religion_group:christian }
 		scope:minister = { add_trait = trait:reformation_inquisitor }
+	}
+
+	# Non-Christian countries
+	option = {
+		name = cc_traits.12.c
+		trigger = { NOT = { religion.group = religion_group:christian } }
+		scope:minister = { add_trait = trait:reformist_theologian }
+	}
+
+	option = {
+		name = cc_traits.12.d
+		trigger = { NOT = { religion.group = religion_group:christian } }
+		scope:minister = { add_trait = trait:orthodox_defender }
 	}
 }
 
-# Age of Absolutism — one of four administrative postures
+# Age of Absolutism — one of five governance postures
+# noble_patron gated to monarchies
+# parliamentarian gated to countries with a parliamentary system
+# crown_theologian gated to clergy estate ministers
 cc_traits.13 = {
 	type = country_event
 	title = cc_traits.13.title
@@ -244,10 +404,13 @@ cc_traits.13 = {
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
-			NOT = { has_trait = absolute_administrator }
-			NOT = { has_trait = noble_patron }
-			NOT = { has_trait = parliamentarian }
-			NOT = { has_trait = privilege_reformer }
+			NOR = {
+				has_trait = absolute_administrator
+				has_trait = noble_patron
+				has_trait = parliamentarian
+				has_trait = privilege_reformer
+				has_trait = crown_theologian
+			}
 		}
 	}
 
@@ -263,10 +426,13 @@ cc_traits.13 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
-				NOT = { has_trait = absolute_administrator }
-				NOT = { has_trait = noble_patron }
-				NOT = { has_trait = parliamentarian }
-				NOT = { has_trait = privilege_reformer }
+				NOR = {
+					has_trait = absolute_administrator
+					has_trait = noble_patron
+					has_trait = parliamentarian
+					has_trait = privilege_reformer
+					has_trait = crown_theologian
+				}
 			}
 			save_scope_as = minister
 		}
@@ -277,13 +443,17 @@ cc_traits.13 = {
 		scope:minister = { add_trait = trait:absolute_administrator }
 	}
 
+	# Monarchies only — noble patronage makes little sense in a republic
 	option = {
 		name = cc_traits.13.b
+		trigger = { government_type = government_type:monarchy }
 		scope:minister = { add_trait = trait:noble_patron }
 	}
 
+	# Countries with a parliamentary system only
 	option = {
 		name = cc_traits.13.c
+		trigger = { modifier:has_a_parliamentary_system = yes }
 		scope:minister = { add_trait = trait:parliamentarian }
 	}
 
@@ -291,9 +461,20 @@ cc_traits.13 = {
 		name = cc_traits.13.d
 		scope:minister = { add_trait = trait:privilege_reformer }
 	}
+
+	# Clergy estate ministers only
+	option = {
+		name = cc_traits.13.e
+		trigger = {
+			scope:minister = { has_estate = estate_type:clergy_estate }
+		}
+		scope:minister = { add_trait = trait:crown_theologian }
+	}
 }
 
 # Age of Revolutions — agitator, counterrevolutionary, or privilege champion
+# Burgher/peasant ministers weighted higher for selection (they feel revolutionary
+# pressures most acutely); all three options remain available to any minister
 cc_traits.14 = {
 	type = country_event
 	title = cc_traits.14.title
@@ -304,21 +485,79 @@ cc_traits.14 = {
 		current_age = age_6_revolutions
 		any_cabinet_character = {
 			in_cabinet = yes
-			NOT = { has_trait = revolutionary_agitator }
-			NOT = { has_trait = counterrevolutionary }
-			NOT = { has_trait = privilege_champion }
+			NOR = {
+				has_trait = revolutionary_agitator
+				has_trait = counterrevolutionary
+				has_trait = privilege_champion
+			}
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		# More likely when a burgher or peasant minister is present and unassigned
+		modifier = {
+			add = 2
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_estate = estate_type:burghers_estate
+					has_estate = estate_type:peasants_estate
+				}
+				NOR = {
+					has_trait = revolutionary_agitator
+					has_trait = counterrevolutionary
+					has_trait = privilege_champion
+				}
+			}
 		}
 	}
 
 	immediate = {
-		random_cabinet_character = {
+		# Prefer burgher/peasant ministers; fall back to any qualifying minister
+		if = {
 			limit = {
-				in_cabinet = yes
-				NOT = { has_trait = revolutionary_agitator }
-				NOT = { has_trait = counterrevolutionary }
-				NOT = { has_trait = privilege_champion }
+				any_cabinet_character = {
+					in_cabinet = yes
+					OR = {
+						has_estate = estate_type:burghers_estate
+						has_estate = estate_type:peasants_estate
+					}
+					NOR = {
+						has_trait = revolutionary_agitator
+						has_trait = counterrevolutionary
+						has_trait = privilege_champion
+					}
+				}
 			}
-			save_scope_as = minister
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					OR = {
+						has_estate = estate_type:burghers_estate
+						has_estate = estate_type:peasants_estate
+					}
+					NOR = {
+						has_trait = revolutionary_agitator
+						has_trait = counterrevolutionary
+						has_trait = privilege_champion
+					}
+				}
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					NOR = {
+						has_trait = revolutionary_agitator
+						has_trait = counterrevolutionary
+						has_trait = privilege_champion
+					}
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -367,7 +606,7 @@ cc_traits.20 = {
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
-			age < 40
+			character_age < 40
 		}
 	}
 
@@ -376,7 +615,7 @@ cc_traits.20 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
-				age < 40
+				character_age < 40
 			}
 			save_scope_as = student
 		}
@@ -437,7 +676,7 @@ cc_traits.21 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
-			age < 35
+			character_age < 35
 			adm > 50
 			dip > 50
 			mil > 50
@@ -450,7 +689,7 @@ cc_traits.21 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
-				age < 35
+				character_age < 35
 				adm > 50
 				dip > 50
 				mil > 50

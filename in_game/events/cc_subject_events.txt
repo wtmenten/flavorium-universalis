@@ -1,4 +1,4 @@
-namespace = cc
+﻿namespace = cc
 
 ###############################################################################
 # CHAIN 1: THE SHADOW COMPACT
@@ -6,8 +6,7 @@ namespace = cc
 ###############################################################################
 
 # "Whispers in the Court"
-# Fires: yearly pulse, after shadow_diplomacy_advance; nobles power >= 45, power_projection >= 20.
-cc.shadow.1 = {
+cc.101 = {
 	type = country_event
 	title = cc.shadow.1.title
 	desc = cc.shadow.1.desc
@@ -19,8 +18,7 @@ cc.shadow.1 = {
 
 	trigger = {
 		has_advance = shadow_diplomacy_advance
-		nobles_estate_power >= 45
-		power_projection >= 20
+		"estate_power(estate_type:nobles_estate)" >= 0.45
 		NOT = { has_variable = cc_shadow_event_fired }
 	}
 
@@ -31,7 +29,7 @@ cc.shadow.1 = {
 	option = {
 		name = cc.shadow.1.a
 		grant_estate_privilege = estate_privilege:ep_noble_shadow_network
-		trigger_event = { id = cc.shadow.2 months = 12 }
+		trigger_event_non_silently = { id = cc.102 months = 12 }
 	}
 
 	option = {
@@ -41,8 +39,8 @@ cc.shadow.1 = {
 }
 
 # "The Network Takes Shape"
-# Fires: 12 months after choosing option A in cc.shadow.1
-cc.shadow.2 = {
+# Fires: 12 months after choosing option A in cc.101
+cc.102 = {
 	type = country_event
 	title = cc.shadow.2.title
 	desc = cc.shadow.2.desc
@@ -55,19 +53,18 @@ cc.shadow.2 = {
 	option = {
 		name = cc.shadow.2.a
 		add_bureaucracy = bureaucracy_type:cc_shadow_court_bureau
-		nobles_estate_satisfaction = -5
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
 	}
 
 	option = {
 		name = cc.shadow.2.b
-		power_projection = 10
+		add_prestige = prestige_weak_bonus
 	}
 }
 
 # "The Shadow Bureau Acts"
 # Fires from yearly pulse when shadow_court_bureau is active + has shadow_state subjects.
-# Offers discounted puppet_state upgrade for one shadow state.
-cc.shadow.bureau.1 = {
+cc.103 = {
 	type = country_event
 	title = cc.shadow.bureau.1.title
 	desc = cc.shadow.bureau.1.desc
@@ -80,13 +77,13 @@ cc.shadow.bureau.1 = {
 	trigger = {
 		has_bureaucracy_of_type = bureaucracy_type:cc_shadow_court_bureau
 		has_advance = puppet_state_advance
-		any_subject_country = { is_subject_type = shadow_state }
+		any_subject = { is_subject_type = shadow_state }
 		NOT = { has_variable = cc_shadow_bureau_event_fired }
 	}
 
 	immediate = {
 		set_variable = { name = cc_shadow_bureau_event_fired value = yes years = 10 }
-		random_subject_country = {
+		random_subject = {
 			limit = { is_subject_type = shadow_state }
 			save_scope_as = shadow_target
 		}
@@ -94,16 +91,15 @@ cc.shadow.bureau.1 = {
 
 	option = {
 		name = cc.shadow.bureau.1.a
-		# Upgrade shadow_state to puppet_state at reduced war score cost
 		scope:shadow_target = {
-			change_subject_type = puppet_state
+			change_subject_type = subject_type:puppet_state
 		}
-		power_projection = -5
+		add_prestige = prestige_weak_penalty
 	}
 
 	option = {
 		name = cc.shadow.bureau.1.b
-		power_projection = 5
+		add_prestige = prestige_weak_bonus
 	}
 }
 
@@ -113,8 +109,7 @@ cc.shadow.bureau.1 = {
 ###############################################################################
 
 # "The Scholars Seek a Home"
-# Fires: from ep_clergy_scholarly_college on_activate.
-cc.clergy.college.1 = {
+cc.104 = {
 	type = country_event
 	title = cc.clergy.college.1.title
 	desc = cc.clergy.college.1.desc
@@ -126,7 +121,7 @@ cc.clergy.college.1 = {
 
 	trigger = {
 		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
-		clergy_estate_power >= 50
+		"estate_power(estate_type:clergy_estate)" >= 0.50
 	}
 
 	immediate = {
@@ -142,24 +137,25 @@ cc.clergy.college.1 = {
 			exists = scope:college_candidate
 		}
 		scope:college_candidate = {
-			add_opinion = { target = root value = 25 }
+			add_opinion = { target = root modifier = cc_diplomatic_favor }
 		}
 		custom_tooltip = cc.clergy.college.1.a.tt
-		trigger_event = { id = cc.clergy.college.2 years = 2 }
+		trigger_event_non_silently = { id = cc.105 years = 2 }
 	}
 
 	option = {
 		name = cc.clergy.college.1.b
 		add_country_modifier = {
-			name = cc_internalized_scholarship
+			modifier = cc_internalized_scholarship
 			years = 10
+			mode = add_and_extend
 		}
 	}
 }
 
 # "The Learned Brotherhood"
-# Fires 2-5 years after Option A in cc.clergy.college.1, if scientific_college now exists.
-cc.clergy.college.2 = {
+# Fires 2 years after Option A in cc.104, if scientific_college now exists.
+cc.105 = {
 	type = country_event
 	title = cc.clergy.college.2.title
 	desc = cc.clergy.college.2.desc
@@ -170,18 +166,19 @@ cc.clergy.college.2 = {
 	}
 
 	trigger = {
-		any_subject_country = { is_subject_type = scientific_college }
+		any_subject = { is_subject_type = scientific_college }
 	}
 
 	option = {
 		name = cc.clergy.college.2.a
 		add_country_modifier = {
-			name = cc_scholarly_exchange_modifier
+			modifier = cc_scholarly_exchange_modifier
 			years = 20
+			mode = add_and_extend
 		}
-		every_subject_country = {
+		every_subject = {
 			limit = { is_subject_type = scientific_college }
-			add_prestige = 25
+			add_prestige = prestige_mild_bonus
 		}
 	}
 
@@ -196,8 +193,7 @@ cc.clergy.college.2 = {
 ###############################################################################
 
 # "The Guild Masters Petition"
-# Fires: yearly pulse, after artistic_patronage_advance; cultural_tradition >= 60; burghers >= 30.
-cc.arts.1 = {
+cc.106 = {
 	type = country_event
 	title = cc.arts.1.title
 	desc = cc.arts.1.desc
@@ -209,8 +205,7 @@ cc.arts.1 = {
 
 	trigger = {
 		has_advance = artistic_patronage_advance
-		cultural_tradition >= 60
-		burghers_estate_power >= 30
+		"estate_power(estate_type:burghers_estate)" >= 0.30
 		NOT = { has_variable = cc_arts_event_fired }
 	}
 
@@ -221,19 +216,19 @@ cc.arts.1 = {
 	option = {
 		name = cc.arts.1.a
 		custom_tooltip = cc.arts.1.a.tt
-		trigger_event = { id = cc.arts.2 months = 6 }
+		trigger_event_non_silently = { id = cc.107 months = 6 }
 	}
 
 	option = {
 		name = cc.arts.1.b
-		burghers_estate_satisfaction = -5
-		cultural_tradition = -20
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
+		add_cultural_tradition = -20
 	}
 }
 
 # "A City of Culture"
-# Fires: 6 months after option A in cc.arts.1, if an artists_commune subject now exists.
-cc.arts.2 = {
+# Fires: 6 months after option A in cc.106, if an artists_commune subject now exists.
+cc.107 = {
 	type = country_event
 	title = cc.arts.2.title
 	desc = cc.arts.2.desc
@@ -244,14 +239,14 @@ cc.arts.2 = {
 	}
 
 	trigger = {
-		any_subject_country = { is_subject_type = artists_commune }
+		any_subject = { is_subject_type = artists_commune }
 	}
 
 	option = {
 		name = cc.arts.2.a
-		gold = -50
-		cultural_tradition = 100
-		cultural_influence = 200
+		add_gold = -50
+		add_cultural_tradition = cultural_tradition_mild_bonus
+		add_cultural_influence = cultural_influence_mild_bonus
 	}
 
 	option = {
@@ -265,8 +260,7 @@ cc.arts.2 = {
 ###############################################################################
 
 # "The Admiralty Petition"
-# Fires: yearly pulse, after naval_charter_advance; burghers >= 35; num_of_ports >= 3.
-cc.naval.1 = {
+cc.108 = {
 	type = country_event
 	title = cc.naval.1.title
 	desc = cc.naval.1.desc
@@ -278,7 +272,7 @@ cc.naval.1 = {
 
 	trigger = {
 		has_advance = naval_charter_advance
-		burghers_estate_power >= 35
+		"estate_power(estate_type:burghers_estate)" >= 0.35
 		num_of_ports >= 3
 		NOT = { has_variable = cc_naval_event_fired }
 	}
@@ -293,18 +287,18 @@ cc.naval.1 = {
 			limit = { NOT = { has_estate_privilege = estate_privilege:ep_burgher_naval_charter } }
 			grant_estate_privilege = estate_privilege:ep_burgher_naval_charter
 		}
-		trigger_event = { id = cc.naval.2 months = 12 }
+		trigger_event_non_silently = { id = cc.109 months = 12 }
 	}
 
 	option = {
 		name = cc.naval.1.b
-		burghers_estate_satisfaction = -5
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
 	}
 }
 
 # "The Port Thrives"
-# Fires: 1 year after option A in cc.naval.1, if naval_administration subject now exists.
-cc.naval.2 = {
+# Fires: 1 year after option A in cc.108, if naval_administration subject now exists.
+cc.109 = {
 	type = country_event
 	title = cc.naval.2.title
 	desc = cc.naval.2.desc
@@ -315,15 +309,16 @@ cc.naval.2 = {
 	}
 
 	trigger = {
-		any_subject_country = { is_subject_type = naval_administration }
+		any_subject = { is_subject_type = naval_administration }
 	}
 
 	option = {
 		name = cc.naval.2.a
-		gold = -30
+		add_gold = -30
 		add_country_modifier = {
-			name = cc_thriving_port_modifier
+			modifier = cc_thriving_port_modifier
 			years = 15
+			mode = add_and_extend
 		}
 	}
 
@@ -338,8 +333,7 @@ cc.naval.2 = {
 ###############################################################################
 
 # "Coreligionists Seek Shelter"
-# Fires: yearly pulse, after holy_patronage_advance; high religious influence; weak neighbor with same religion group.
-cc.holy.1 = {
+cc.110 = {
 	type = country_event
 	title = cc.holy.1.title
 	desc = cc.holy.1.desc
@@ -351,16 +345,11 @@ cc.holy.1 = {
 
 	trigger = {
 		has_advance = holy_patronage_advance
-		monthly_religious_influence >= 0.3
+		religious_influence >= 30
 		any_neighbor_country = {
-			religion = {
-				has_religion_group = root.religion.religion_group
-			}
+			religion.group = root.religion.group
 			NOT = { is_at_war_with = root }
-			relative_power_to_country = {
-				country = root
-				value < -0.3
-			}
+			country_rank_level < root.country_rank_level
 		}
 		NOT = { has_variable = cc_holy_event_fired }
 	}
@@ -369,14 +358,9 @@ cc.holy.1 = {
 		set_variable = { name = cc_holy_event_fired value = yes years = 15 }
 		random_neighbor_country = {
 			limit = {
-				religion = {
-					has_religion_group = root.religion.religion_group
-				}
+				religion.group = root.religion.group
 				NOT = { is_at_war_with = root }
-				relative_power_to_country = {
-					country = root
-					value < -0.3
-				}
+				country_rank_level < root.country_rank_level
 			}
 			save_scope_as = holy_candidate
 		}
@@ -385,20 +369,21 @@ cc.holy.1 = {
 	option = {
 		name = cc.holy.1.a
 		scope:holy_candidate = {
-			change_subject_type = holy_protectorate
+			add_opinion = { target = root modifier = cc_diplomatic_favor }
 		}
-		trigger_event = { id = cc.holy.2 years = 2 }
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
 	}
 
 	option = {
 		name = cc.holy.1.b
-		power_projection = -5
+		add_prestige = prestige_weak_penalty
 	}
 }
 
 # "The Faith Protected"
-# Fires: 2 years after option A in cc.holy.1, if holy_protectorate subject still exists.
-cc.holy.2 = {
+# Fires if holy_protectorate subject exists.
+cc.111 = {
 	type = country_event
 	title = cc.holy.2.title
 	desc = cc.holy.2.desc
@@ -409,20 +394,21 @@ cc.holy.2 = {
 	}
 
 	trigger = {
-		any_subject_country = { is_subject_type = holy_protectorate }
+		any_subject = { is_subject_type = holy_protectorate }
 	}
 
 	option = {
 		name = cc.holy.2.a
 		add_country_modifier = {
-			name = cc_holy_league_modifier
+			modifier = cc_holy_league_modifier
 			years = 20
+			mode = add_and_extend
 		}
-		every_subject_country = {
+		every_subject = {
 			limit = { is_subject_type = holy_protectorate }
-			add_prestige = 50
+			add_prestige = prestige_mild_bonus
 		}
-		add_prestige = 50
+		add_prestige = prestige_mild_bonus
 	}
 
 	option = {
@@ -435,7 +421,7 @@ cc.holy.2 = {
 ###############################################################################
 
 # Fires from ep_noble_elite_enclave on_activate
-cc.noble.enclave.1 = {
+cc.112 = {
 	type = country_event
 	title = cc.noble.enclave.1.title
 	desc = cc.noble.enclave.1.desc
@@ -447,13 +433,13 @@ cc.noble.enclave.1 = {
 
 	option = {
 		name = cc.noble.enclave.1.a
-		nobles_estate_satisfaction = 5
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
 		custom_tooltip = cc.noble.enclave.1.a.tt
 	}
 }
 
 # Fires from ep_burgher_royal_charter on_activate
-cc.burgher.charter.1 = {
+cc.113 = {
 	type = country_event
 	title = cc.burgher.charter.1.title
 	desc = cc.burgher.charter.1.desc
@@ -465,7 +451,483 @@ cc.burgher.charter.1 = {
 
 	option = {
 		name = cc.burgher.charter.1.a
-		burghers_estate_satisfaction = 5
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
 		custom_tooltip = cc.burgher.charter.1.a.tt
+	}
+}
+
+###############################################################################
+# SUBJECT DRAWBACK EVENTS (cc.120–cc.126 + cc.130)
+# Fired from yearly_country_pulse (cc_subject_pulse.txt)
+# Cooldowns managed via set_variable on the subject country scope
+###############################################################################
+
+# provincial_governorate: The Governor's Ambitions
+# MTTH ~4 years, max every 10 years
+cc.120 = {
+	type = country_event
+	title = cc.gov.1.title
+	desc = cc.gov.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = provincial_governorate
+			NOT = { has_variable = cc_gov_ambitions_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				NOT = { has_variable = cc_gov_ambitions_cooldown }
+			}
+			save_scope_as = governor
+		}
+	}
+
+	# Pay off the governor's court
+	option = {
+		name = cc.gov.1.a
+		add_gold = -100
+		scope:governor = {
+			set_variable = { name = cc_gov_ambitions_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Suppress the ambitions — prestige penalty, subject opinion hit
+	option = {
+		name = cc.gov.1.b
+		add_prestige = prestige_mild_penalty
+		scope:governor = {
+			add_opinion_modifier = { modifier = opinion_harshly_treated target = root years = 5 }
+			set_variable = { name = cc_gov_ambitions_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Ignore the reports — autonomy pressure and liberty desire grow
+	option = {
+		name = cc.gov.1.c
+		scope:governor = {
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
+			add_liberty_desire = liberty_desire_mild_increase
+		}
+	}
+}
+
+# provincial_governorate: The Governor Eyes the Neighbors
+# MTTH ~7 years, max every 15 years
+cc.124 = {
+	type = country_event
+	title = cc.gov.2.title
+	desc = cc.gov.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = provincial_governorate
+			NOT = { has_variable = cc_gov_neighbors_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { has_war_with = root }
+				military_strength < prev.military_strength
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				NOT = { has_variable = cc_gov_neighbors_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+					military_strength < prev.military_strength
+				}
+			}
+			save_scope_as = governor
+		}
+		scope:governor = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+					military_strength < prev.military_strength
+				}
+				save_scope_as = target_neighbor
+			}
+		}
+	}
+
+	# Sanction expansion — neighbor opinion hit, subject liberty desire grows
+	option = {
+		name = cc.gov.2.a
+		scope:target_neighbor = {
+			add_opinion_modifier = { modifier = opinion_expansionist_threat target = root years = 10 }
+		}
+		scope:governor = {
+			add_liberty_desire = liberty_desire_mild_increase
+			set_variable = { name = cc_gov_neighbors_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Forbid expansion — nobles displeasure, subject autonomy pressure
+	option = {
+		name = cc.gov.2.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+		scope:governor = {
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
+			set_variable = { name = cc_gov_neighbors_cooldown value = yes years = 15 }
+		}
+	}
+}
+
+# tax_farm: The Tax Farm Revolt
+# MTTH ~5 years, max every 15 years
+cc.121 = {
+	type = country_event
+	title = cc.tax.1.title
+	desc = cc.tax.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = tax_farm
+			NOT = { has_variable = cc_tax_revolt_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = tax_farm
+				NOT = { has_variable = cc_tax_revolt_cooldown }
+			}
+			save_scope_as = tax_lord
+		}
+	}
+
+	# Reduce extraction pressure — cost gold, grant tax relief
+	option = {
+		name = cc.tax.1.a
+		add_gold = -75
+		scope:tax_lord = {
+			add_country_modifier = { modifier = cc_subject_tax_relief years = 5 }
+			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Maintain pressure — prestige gain, subject autonomy pressure and liberty desire
+	option = {
+		name = cc.tax.1.b
+		add_prestige = prestige_mild_bonus
+		scope:tax_lord = {
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
+			add_liberty_desire = liberty_desire_mild_increase
+			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
+		}
+	}
+}
+
+# tax_farm: Tax Collectors and the Neighbors
+# MTTH ~8 years, max every 15 years
+cc.125 = {
+	type = country_event
+	title = cc.tax.2.title
+	desc = cc.tax.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = tax_farm
+			NOT = { has_variable = cc_tax_neighbors_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { has_war_with = root }
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = tax_farm
+				NOT = { has_variable = cc_tax_neighbors_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+				}
+			}
+			save_scope_as = tax_lord
+		}
+		scope:tax_lord = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+				}
+				save_scope_as = angry_neighbor
+			}
+		}
+	}
+
+	# Pay off the neighbors — 100 gold, opinion restored
+	option = {
+		name = cc.tax.2.a
+		add_gold = -100
+		scope:angry_neighbor = {
+			add_opinion_modifier = { modifier = opinion_compensated target = root years = 5 }
+		}
+		scope:tax_lord = {
+			set_variable = { name = cc_tax_neighbors_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Ignore it — neighbor opinion stays negative, subject liberty desire grows
+	option = {
+		name = cc.tax.2.b
+		scope:angry_neighbor = {
+			add_opinion_modifier = { modifier = opinion_tax_collectors target = root years = 8 }
+		}
+		scope:tax_lord = {
+			add_liberty_desire = liberty_desire_mild_increase
+			set_variable = { name = cc_tax_neighbors_cooldown value = yes years = 15 }
+		}
+	}
+}
+
+# military_march: The March Lord's Raid
+# MTTH ~4 years, max every 10 years
+cc.122 = {
+	type = country_event
+	title = cc.march.1.title
+	desc = cc.march.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_march
+			NOT = { has_variable = cc_march_raid_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				NOT = { has_variable = cc_march_raid_cooldown }
+			}
+			save_scope_as = march_lord
+		}
+		scope:march_lord = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+				}
+				save_scope_as = raided_neighbor
+			}
+		}
+	}
+
+	# Sanction the raid — prestige, 50 gold, but neighbor opinion hit
+	option = {
+		name = cc.march.1.a
+		add_prestige = prestige_mild_bonus
+		add_gold = 50
+		scope:raided_neighbor = {
+			add_opinion_modifier = { modifier = opinion_march_raided target = root years = 8 }
+		}
+		scope:march_lord = {
+			set_variable = { name = cc_march_raid_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Restrain the march lord — nobles displeasure
+	option = {
+		name = cc.march.1.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+		scope:march_lord = {
+			set_variable = { name = cc_march_raid_cooldown value = yes years = 10 }
+		}
+	}
+}
+
+# military_march: March Lord Independence Bid
+# MTTH ~5 years, max every 20 years (requires nobles satisfaction low)
+cc.123 = {
+	type = country_event
+	title = cc.march.2.title
+	desc = cc.march.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_march
+			NOT = { has_variable = cc_march_independence_cooldown }
+		}
+		"estate_satisfaction(estate_type:nobles_estate)" < 0.35
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				NOT = { has_variable = cc_march_independence_cooldown }
+			}
+			save_scope_as = march_lord
+		}
+	}
+
+	# Appease with gold and concessions
+	option = {
+		name = cc.march.2.a
+		add_gold = -200
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.10 }
+		scope:march_lord = {
+			set_variable = { name = cc_march_independence_cooldown value = yes years = 20 }
+		}
+	}
+
+	# Convert to protectorate — prestige penalty
+	option = {
+		name = cc.march.2.b
+		add_prestige = prestige_mild_penalty
+		scope:march_lord = {
+			change_subject_type = subject_type:protectorate
+		}
+	}
+}
+
+# military_march: March Lord Threatens the Neighbors
+# MTTH ~5 years, max every 10 years
+cc.126 = {
+	type = country_event
+	title = cc.march.3.title
+	desc = cc.march.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_march
+			NOT = { has_variable = cc_march_threat_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { has_war_with = root }
+				military_strength < prev.military_strength
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				NOT = { has_variable = cc_march_threat_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+					military_strength < prev.military_strength
+				}
+			}
+			save_scope_as = march_lord
+		}
+		scope:march_lord = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { has_war_with = root }
+					military_strength < prev.military_strength
+				}
+				save_scope_as = threatened_neighbor
+			}
+		}
+	}
+
+	# Back the march — join war, antagonism hit from neighbor
+	option = {
+		name = cc.march.3.a
+		join_war = {
+			target = scope:threatened_neighbor
+			subject = scope:march_lord
+		}
+		scope:threatened_neighbor = {
+			add_opinion_modifier = { modifier = opinion_backed_aggressor target = root years = 10 }
+		}
+		scope:march_lord = {
+			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Denounce the march lord — march liberty desire grows, neighbor opinion restored
+	option = {
+		name = cc.march.3.b
+		scope:march_lord = {
+			add_liberty_desire = liberty_desire_mild_increase
+			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+		}
+		scope:threatened_neighbor = {
+			add_opinion_modifier = { modifier = opinion_defended target = root years = 5 }
+		}
+	}
+
+	# Mediate the dispute — 100 gold, moderate outcome for all
+	option = {
+		name = cc.march.3.c
+		add_gold = -100
+		scope:march_lord = {
+			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+		}
+		scope:threatened_neighbor = {
+			add_opinion_modifier = { modifier = opinion_mediated target = root years = 5 }
+		}
+	}
+}
+
+# Fires from ep_nobles_march_charter on_activate
+cc.130 = {
+	type = country_event
+	title = cc.march.charter.1.title
+	desc = cc.march.charter.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = combat
+	}
+
+	option = {
+		name = cc.march.charter.1.a
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.08 }
+		custom_tooltip = cc.march.charter.1.a.tt
 	}
 }

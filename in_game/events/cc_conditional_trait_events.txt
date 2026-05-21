@@ -1,0 +1,1061 @@
+﻿namespace = cc_cond
+
+# ============================================================
+# CABINETS AND CHOICES — CONDITIONAL TRAIT SPAWNING EVENTS
+# These events grant traits based on country-level conditions.
+# Fired from monthly/yearly pulse in cc_cabinet_pulse.txt.
+# ============================================================
+
+
+# ============================================================
+# cc_cond.1 — Capital Development Traits
+# Tier 1: dev > 30 (any age)    → urban_planner / prosperity_herald / merchant_syndic
+# Tier 2: dev > 40 (age 3+)     → grand_architect / arts_patron / learned_courtier / reform_minded_counselor
+# Tier 3: dev > 50 (age 5+)     → master_urbanist / enlightenment_herald / progressive_rationalist / revolutionary_herald
+# ============================================================
+
+cc_cond.1 = {
+	type = country_event
+	title = cc_cond.1.title
+	desc = cc_cond.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:urban_planner
+				has_trait = trait:prosperity_herald
+				has_trait = trait:merchant_syndic
+				has_trait = trait:grand_architect
+				has_trait = trait:arts_patron
+				has_trait = trait:learned_courtier
+				has_trait = trait:reform_minded_counselor
+				has_trait = trait:master_urbanist
+				has_trait = trait:enlightenment_herald
+				has_trait = trait:progressive_rationalist
+				has_trait = trait:revolutionary_herald
+			}
+		}
+		capital.development > 30
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:urban_planner
+					has_trait = trait:prosperity_herald
+					has_trait = trait:merchant_syndic
+					has_trait = trait:grand_architect
+					has_trait = trait:arts_patron
+					has_trait = trait:learned_courtier
+					has_trait = trait:reform_minded_counselor
+					has_trait = trait:master_urbanist
+					has_trait = trait:enlightenment_herald
+					has_trait = trait:progressive_rationalist
+					has_trait = trait:revolutionary_herald
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# --- Tier 3 options (dev > 50, age 5+) ---
+
+	option = {
+		name = cc_cond.1.a
+		trigger = {
+			capital.development > 50
+			OR = {
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+		}
+		scope:minister = { add_trait = trait:master_urbanist }
+	}
+
+	option = {
+		name = cc_cond.1.b
+		trigger = {
+			capital.development > 50
+			OR = {
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+		}
+		scope:minister = { add_trait = trait:enlightenment_herald }
+	}
+
+	option = {
+		name = cc_cond.1.c
+		trigger = {
+			capital.development > 50
+			OR = {
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+		}
+		scope:minister = { add_trait = trait:progressive_rationalist }
+	}
+
+	option = {
+		name = cc_cond.1.d
+		trigger = {
+			capital.development > 50
+			current_age = age_6_revolutions
+		}
+		scope:minister = { add_trait = trait:revolutionary_herald }
+	}
+
+	# --- Tier 2 options (dev > 40, age 3+) ---
+
+	option = {
+		name = cc_cond.1.e
+		trigger = {
+			capital.development > 40
+			OR = {
+				current_age = age_3_discovery
+				current_age = age_4_reformation
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+			NOT = { capital.development > 50 }
+		}
+		scope:minister = { add_trait = trait:grand_architect }
+	}
+
+	option = {
+		name = cc_cond.1.f
+		trigger = {
+			capital.development > 40
+			OR = {
+				current_age = age_3_discovery
+				current_age = age_4_reformation
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+			NOT = { capital.development > 50 }
+		}
+		scope:minister = { add_trait = trait:arts_patron }
+	}
+
+	option = {
+		name = cc_cond.1.g
+		trigger = {
+			capital.development > 40
+			OR = {
+				current_age = age_3_discovery
+				current_age = age_4_reformation
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+			NOT = { capital.development > 50 }
+		}
+		scope:minister = { add_trait = trait:learned_courtier }
+	}
+
+	option = {
+		name = cc_cond.1.h
+		trigger = {
+			capital.development > 40
+			OR = {
+				current_age = age_3_discovery
+				current_age = age_4_reformation
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+			NOT = { capital.development > 50 }
+		}
+		scope:minister = { add_trait = trait:reform_minded_counselor }
+	}
+
+	# --- Tier 1 options (dev > 30, any age, but not higher tiers) ---
+
+	option = {
+		name = cc_cond.1.i
+		trigger = {
+			NOT = { capital.development > 40 }
+		}
+		scope:minister = { add_trait = trait:urban_planner }
+	}
+
+	option = {
+		name = cc_cond.1.j
+		trigger = {
+			NOT = { capital.development > 40 }
+		}
+		scope:minister = { add_trait = trait:prosperity_herald }
+	}
+
+	option = {
+		name = cc_cond.1.k
+		trigger = {
+			NOT = { capital.development > 40 }
+		}
+		scope:minister = { add_trait = trait:merchant_syndic }
+	}
+
+	option = {
+		name = cc_cond.1.dismiss
+	}
+}
+
+
+# ============================================================
+# cc_cond.20–24 — Societal Value Trait Events (5 cluster events)
+# Each event covers 3–4 societal value axes.
+# Options are shown/hidden by the relevant axis being at > 50 or < -50.
+# Variable gating: minister gets trait only once (trigger checks NOR).
+# ============================================================
+
+
+# --- cc_cond.20: INTELLECTUAL / RELIGIOUS CLUSTER ---
+# Axes: traditionalist_vs_innovative, spiritualist_vs_humanist, mysticism_vs_jurisprudence
+
+cc_cond.20 = {
+	type = country_event
+	title = cc_cond.20.title
+	desc = cc_cond.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:innovative_counselor
+				has_trait = trait:traditionalist_guardian
+				has_trait = trait:mystical_patriarch
+				has_trait = trait:humanist_philosopher
+				has_trait = trait:mystical_counselor
+				has_trait = trait:legal_scholar
+			}
+		}
+		OR = {
+			societal_value:traditionalist_vs_innovative > 50
+			societal_value:traditionalist_vs_innovative < -50
+			societal_value:spiritualist_vs_humanist > 50
+			societal_value:spiritualist_vs_humanist < -50
+			societal_value:mysticism_vs_jurisprudence > 50
+			societal_value:mysticism_vs_jurisprudence < -50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:innovative_counselor
+					has_trait = trait:traditionalist_guardian
+					has_trait = trait:mystical_patriarch
+					has_trait = trait:humanist_philosopher
+					has_trait = trait:mystical_counselor
+					has_trait = trait:legal_scholar
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.20.innovative
+		trigger = { societal_value:traditionalist_vs_innovative < -50 }
+		scope:minister = { add_trait = trait:innovative_counselor }
+	}
+	option = {
+		name = cc_cond.20.traditionalist
+		trigger = { societal_value:traditionalist_vs_innovative > 50 }
+		scope:minister = { add_trait = trait:traditionalist_guardian }
+	}
+	option = {
+		name = cc_cond.20.spiritualist
+		trigger = { societal_value:spiritualist_vs_humanist > 50 }
+		scope:minister = { add_trait = trait:mystical_patriarch }
+	}
+	option = {
+		name = cc_cond.20.humanist
+		trigger = { societal_value:spiritualist_vs_humanist < -50 }
+		scope:minister = { add_trait = trait:humanist_philosopher }
+	}
+	option = {
+		name = cc_cond.20.mysticism
+		trigger = { societal_value:mysticism_vs_jurisprudence > 50 }
+		scope:minister = { add_trait = trait:mystical_counselor }
+	}
+	option = {
+		name = cc_cond.20.jurisprudence
+		trigger = { societal_value:mysticism_vs_jurisprudence < -50 }
+		scope:minister = { add_trait = trait:legal_scholar }
+	}
+	option = {
+		name = cc_cond.20.dismiss
+	}
+}
+
+
+# --- cc_cond.21: SOCIAL ORDER CLUSTER ---
+# Axes: absolutism_vs_liberalism, centralization_vs_decentralization, serfdom_vs_free_subjects, individualism_vs_communalism
+
+cc_cond.21 = {
+	type = country_event
+	title = cc_cond.21.title
+	desc = cc_cond.21.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:royal_absolutist
+				has_trait = trait:liberal_reformer
+				has_trait = trait:efficiency_administrator
+				has_trait = trait:regional_magnate
+				has_trait = trait:serf_overseer
+				has_trait = trait:emancipation_minister
+				has_trait = trait:free_spirit_counselor
+				has_trait = trait:community_steward
+			}
+		}
+		OR = {
+			societal_value:absolutism_vs_liberalism > 50
+			societal_value:absolutism_vs_liberalism < -50
+			societal_value:centralization_vs_decentralization > 50
+			societal_value:centralization_vs_decentralization < -50
+			societal_value:serfdom_vs_free_subjects > 50
+			societal_value:serfdom_vs_free_subjects < -50
+			societal_value:individualism_vs_communalism > 50
+			societal_value:individualism_vs_communalism < -50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:royal_absolutist
+					has_trait = trait:liberal_reformer
+					has_trait = trait:efficiency_administrator
+					has_trait = trait:regional_magnate
+					has_trait = trait:serf_overseer
+					has_trait = trait:emancipation_minister
+					has_trait = trait:free_spirit_counselor
+					has_trait = trait:community_steward
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.21.absolutist
+		trigger = { societal_value:absolutism_vs_liberalism > 50 }
+		scope:minister = { add_trait = trait:royal_absolutist }
+	}
+	option = {
+		name = cc_cond.21.liberal
+		trigger = { societal_value:absolutism_vs_liberalism < -50 }
+		scope:minister = { add_trait = trait:liberal_reformer }
+	}
+	option = {
+		name = cc_cond.21.centralized
+		trigger = { societal_value:centralization_vs_decentralization > 50 }
+		scope:minister = { add_trait = trait:efficiency_administrator }
+	}
+	option = {
+		name = cc_cond.21.decentralized
+		trigger = { societal_value:centralization_vs_decentralization < -50 }
+		scope:minister = { add_trait = trait:regional_magnate }
+	}
+	option = {
+		name = cc_cond.21.serfdom
+		trigger = { societal_value:serfdom_vs_free_subjects > 50 }
+		scope:minister = { add_trait = trait:serf_overseer }
+	}
+	option = {
+		name = cc_cond.21.free_subjects
+		trigger = { societal_value:serfdom_vs_free_subjects < -50 }
+		scope:minister = { add_trait = trait:emancipation_minister }
+	}
+	option = {
+		name = cc_cond.21.individualism
+		trigger = { societal_value:individualism_vs_communalism > 50 }
+		scope:minister = { add_trait = trait:free_spirit_counselor }
+	}
+	option = {
+		name = cc_cond.21.communalism
+		trigger = { societal_value:individualism_vs_communalism < -50 }
+		scope:minister = { add_trait = trait:community_steward }
+	}
+	option = {
+		name = cc_cond.21.dismiss
+	}
+}
+
+
+# --- cc_cond.22: MILITARY DOCTRINE CLUSTER ---
+# Axes: quality_vs_quantity, offensive_vs_defensive, land_vs_naval, belligerent_vs_conciliatory
+
+cc_cond.22 = {
+	type = country_event
+	title = cc_cond.22.title
+	desc = cc_cond.22.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:elite_trainer
+				has_trait = trait:mass_levy_commander
+				has_trait = trait:offensive_strategist
+				has_trait = trait:defensive_commander
+				has_trait = trait:continental_marshal
+				has_trait = trait:admiral_counselor
+				has_trait = trait:hawk_minister
+				has_trait = trait:peacemaker_counselor
+			}
+		}
+		OR = {
+			societal_value:quality_vs_quantity > 50
+			societal_value:quality_vs_quantity < -50
+			societal_value:offensive_vs_defensive > 50
+			societal_value:offensive_vs_defensive < -50
+			societal_value:land_vs_naval > 50
+			societal_value:land_vs_naval < -50
+			societal_value:belligerent_vs_conciliatory > 50
+			societal_value:belligerent_vs_conciliatory < -50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:elite_trainer
+					has_trait = trait:mass_levy_commander
+					has_trait = trait:offensive_strategist
+					has_trait = trait:defensive_commander
+					has_trait = trait:continental_marshal
+					has_trait = trait:admiral_counselor
+					has_trait = trait:hawk_minister
+					has_trait = trait:peacemaker_counselor
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.22.quality
+		trigger = { societal_value:quality_vs_quantity > 50 }
+		scope:minister = { add_trait = trait:elite_trainer }
+	}
+	option = {
+		name = cc_cond.22.quantity
+		trigger = { societal_value:quality_vs_quantity < -50 }
+		scope:minister = { add_trait = trait:mass_levy_commander }
+	}
+	option = {
+		name = cc_cond.22.offensive
+		trigger = { societal_value:offensive_vs_defensive > 50 }
+		scope:minister = { add_trait = trait:offensive_strategist }
+	}
+	option = {
+		name = cc_cond.22.defensive
+		trigger = { societal_value:offensive_vs_defensive < -50 }
+		scope:minister = { add_trait = trait:defensive_commander }
+	}
+	option = {
+		name = cc_cond.22.land
+		trigger = { societal_value:land_vs_naval > 50 }
+		scope:minister = { add_trait = trait:continental_marshal }
+	}
+	option = {
+		name = cc_cond.22.naval
+		trigger = { societal_value:land_vs_naval < -50 }
+		scope:minister = { add_trait = trait:admiral_counselor }
+	}
+	option = {
+		name = cc_cond.22.belligerent
+		trigger = { societal_value:belligerent_vs_conciliatory > 50 }
+		scope:minister = { add_trait = trait:hawk_minister }
+	}
+	option = {
+		name = cc_cond.22.conciliatory
+		trigger = { societal_value:belligerent_vs_conciliatory < -50 }
+		scope:minister = { add_trait = trait:peacemaker_counselor }
+	}
+	option = {
+		name = cc_cond.22.dismiss
+	}
+}
+
+
+# --- cc_cond.23: ECONOMIC DOCTRINE CLUSTER ---
+# Axes: aristocracy_vs_plutocracy, mercantilism_vs_free_trade, capital_economy_vs_traditional_economy
+
+cc_cond.23 = {
+	type = country_event
+	title = cc_cond.23.title
+	desc = cc_cond.23.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:noble_champion
+				has_trait = trait:merchant_prince
+				has_trait = trait:mercantilist_official
+				has_trait = trait:free_market_advocate
+				has_trait = trait:capitalist_minister
+				has_trait = trait:estate_guardian
+			}
+		}
+		OR = {
+			societal_value:aristocracy_vs_plutocracy > 50
+			societal_value:aristocracy_vs_plutocracy < -50
+			societal_value:mercantilism_vs_free_trade > 50
+			societal_value:mercantilism_vs_free_trade < -50
+			societal_value:capital_economy_vs_traditional_economy > 50
+			societal_value:capital_economy_vs_traditional_economy < -50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:noble_champion
+					has_trait = trait:merchant_prince
+					has_trait = trait:mercantilist_official
+					has_trait = trait:free_market_advocate
+					has_trait = trait:capitalist_minister
+					has_trait = trait:estate_guardian
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.23.aristocracy
+		trigger = { societal_value:aristocracy_vs_plutocracy > 50 }
+		scope:minister = { add_trait = trait:noble_champion }
+	}
+	option = {
+		name = cc_cond.23.plutocracy
+		trigger = { societal_value:aristocracy_vs_plutocracy < -50 }
+		scope:minister = { add_trait = trait:merchant_prince }
+	}
+	option = {
+		name = cc_cond.23.mercantilism
+		trigger = { societal_value:mercantilism_vs_free_trade > 50 }
+		scope:minister = { add_trait = trait:mercantilist_official }
+	}
+	option = {
+		name = cc_cond.23.free_trade
+		trigger = { societal_value:mercantilism_vs_free_trade < -50 }
+		scope:minister = { add_trait = trait:free_market_advocate }
+	}
+	option = {
+		name = cc_cond.23.capital_economy
+		trigger = { societal_value:capital_economy_vs_traditional_economy > 50 }
+		scope:minister = { add_trait = trait:capitalist_minister }
+	}
+	option = {
+		name = cc_cond.23.traditional_economy
+		trigger = { societal_value:capital_economy_vs_traditional_economy < -50 }
+		scope:minister = { add_trait = trait:estate_guardian }
+	}
+	option = {
+		name = cc_cond.23.dismiss
+	}
+}
+
+
+# --- cc_cond.24: EXPANSION / CULTURAL IDENTITY CLUSTER ---
+# Axes: outward_vs_inward, latinization_vs_hellenization, sinicized_vs_unsinicized
+
+cc_cond.24 = {
+	type = country_event
+	title = cc_cond.24.title
+	desc = cc_cond.24.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:expansionist_advisor
+				has_trait = trait:consolidation_minister
+				has_trait = trait:roman_administrator
+				has_trait = trait:hellenistic_scholar
+				has_trait = trait:confucian_mandarin
+				has_trait = trait:steppe_warlord_advisor
+			}
+		}
+		OR = {
+			societal_value:outward_vs_inward > 50
+			societal_value:outward_vs_inward < -50
+			societal_value:latinization_vs_hellenization > 50
+			societal_value:latinization_vs_hellenization < -50
+			societal_value:sinicized_vs_unsinicized > 50
+			societal_value:sinicized_vs_unsinicized < -50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:expansionist_advisor
+					has_trait = trait:consolidation_minister
+					has_trait = trait:roman_administrator
+					has_trait = trait:hellenistic_scholar
+					has_trait = trait:confucian_mandarin
+					has_trait = trait:steppe_warlord_advisor
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.24.outward
+		trigger = { societal_value:outward_vs_inward > 50 }
+		scope:minister = { add_trait = trait:expansionist_advisor }
+	}
+	option = {
+		name = cc_cond.24.inward
+		trigger = { societal_value:outward_vs_inward < -50 }
+		scope:minister = { add_trait = trait:consolidation_minister }
+	}
+	option = {
+		name = cc_cond.24.latinized
+		trigger = { societal_value:latinization_vs_hellenization > 50 }
+		scope:minister = { add_trait = trait:roman_administrator }
+	}
+	option = {
+		name = cc_cond.24.hellenized
+		trigger = { societal_value:latinization_vs_hellenization < -50 }
+		scope:minister = { add_trait = trait:hellenistic_scholar }
+	}
+	option = {
+		name = cc_cond.24.sinicized
+		trigger = { societal_value:sinicized_vs_unsinicized > 50 }
+		scope:minister = { add_trait = trait:confucian_mandarin }
+	}
+	option = {
+		name = cc_cond.24.unsinicized
+		trigger = { societal_value:sinicized_vs_unsinicized < -50 }
+		scope:minister = { add_trait = trait:steppe_warlord_advisor }
+	}
+	option = {
+		name = cc_cond.24.dismiss
+	}
+}
+
+
+# ============================================================
+# cc_cond.3a — Military Cost Specialists (Age 2–4, mil > 33)
+# ============================================================
+
+cc_cond.3a = {
+	type = country_event
+	title = cc_cond.3a.title
+	desc = cc_cond.3a.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			mil > 33
+			NOR = {
+				has_trait = trait:infantry_drillmaster
+				has_trait = trait:scout_captain
+				has_trait = trait:military_engineer
+				has_trait = trait:commissariat_officer
+				has_trait = trait:cavalry_marshal
+				has_trait = trait:siege_engineer
+				has_trait = trait:supreme_commander
+			}
+		}
+		NOR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				mil > 33
+				NOR = {
+					has_trait = trait:infantry_drillmaster
+					has_trait = trait:scout_captain
+					has_trait = trait:military_engineer
+					has_trait = trait:commissariat_officer
+					has_trait = trait:cavalry_marshal
+					has_trait = trait:siege_engineer
+					has_trait = trait:supreme_commander
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.3a.a
+		scope:minister = { add_trait = trait:infantry_drillmaster }
+	}
+	option = {
+		name = cc_cond.3a.b
+		scope:minister = { add_trait = trait:scout_captain }
+	}
+	option = {
+		name = cc_cond.3a.c
+		scope:minister = { add_trait = trait:military_engineer }
+	}
+	option = {
+		name = cc_cond.3a.dismiss
+	}
+}
+
+
+# ============================================================
+# cc_cond.3b — Military Cost Specialists (Age 5–6, mil > 66)
+# ============================================================
+
+cc_cond.3b = {
+	type = country_event
+	title = cc_cond.3b.title
+	desc = cc_cond.3b.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			mil > 66
+			NOR = {
+				has_trait = trait:commissariat_officer
+				has_trait = trait:cavalry_marshal
+				has_trait = trait:siege_engineer
+				has_trait = trait:supreme_commander
+			}
+		}
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				mil > 66
+				NOR = {
+					has_trait = trait:commissariat_officer
+					has_trait = trait:cavalry_marshal
+					has_trait = trait:siege_engineer
+					has_trait = trait:supreme_commander
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.3b.a
+		scope:minister = { add_trait = trait:commissariat_officer }
+	}
+	option = {
+		name = cc_cond.3b.b
+		scope:minister = { add_trait = trait:cavalry_marshal }
+	}
+	option = {
+		name = cc_cond.3b.c
+		scope:minister = { add_trait = trait:siege_engineer }
+	}
+	option = {
+		name = cc_cond.3b.d
+		trigger = {
+			scope:minister ?= { mil > 80 }
+		}
+		scope:minister = { add_trait = trait:supreme_commander }
+	}
+	option = {
+		name = cc_cond.3b.dismiss
+	}
+}
+
+
+# ============================================================
+# cc_cond.4 — Regional / Cultural / Religious Traits
+# Branches by sub_continent and religion_group like cc_traits.10
+# ============================================================
+
+cc_cond.4 = {
+	type = country_event
+	title = cc_cond.4.title
+	desc = cc_cond.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = trait:christian_diplomat
+				has_trait = trait:caliphate_diplomat
+				has_trait = trait:brahmin_counselor
+				has_trait = trait:dharma_minister
+				has_trait = trait:renaissance_patron
+				has_trait = trait:griot_diplomat
+				has_trait = trait:steppe_strategos
+				has_trait = trait:mughal_administrator
+				has_trait = trait:maritime_champion
+				has_trait = trait:ecumenical_patriarch_advisor
+				has_trait = trait:new_world_pioneer
+			}
+		}
+		OR = {
+			religion.group = religion_group:christian
+			religion.group = religion_group:muslim
+			religion.group = religion_group:dharmic
+			religion.group = religion_group:buddhist
+			capital.sub_continent = sub_continent:western_europe
+			capital.sub_continent = sub_continent:west_africa
+			capital.sub_continent = sub_continent:central_africa
+			capital.sub_continent = sub_continent:east_africa
+			capital.sub_continent = sub_continent:southern_africa
+			capital.sub_continent = sub_continent:central_asia
+			capital.sub_continent = sub_continent:north_asia
+			capital.sub_continent = sub_continent:south_asia
+			capital.sub_continent = sub_continent:north_america
+			capital.sub_continent = sub_continent:south_america
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = trait:christian_diplomat
+					has_trait = trait:caliphate_diplomat
+					has_trait = trait:brahmin_counselor
+					has_trait = trait:dharma_minister
+					has_trait = trait:renaissance_patron
+					has_trait = trait:griot_diplomat
+					has_trait = trait:steppe_strategos
+					has_trait = trait:mughal_administrator
+					has_trait = trait:maritime_champion
+					has_trait = trait:ecumenical_patriarch_advisor
+					has_trait = trait:new_world_pioneer
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.4.christian
+		trigger = {
+			religion.group = religion_group:christian
+			NOT = { religion = religion:orthodox }
+		}
+		scope:minister = { add_trait = trait:christian_diplomat }
+	}
+	option = {
+		name = cc_cond.4.orthodox
+		trigger = { religion = religion:orthodox }
+		scope:minister = { add_trait = trait:ecumenical_patriarch_advisor }
+	}
+	option = {
+		name = cc_cond.4.muslim
+		trigger = { religion.group = religion_group:muslim }
+		scope:minister = { add_trait = trait:caliphate_diplomat }
+	}
+	option = {
+		name = cc_cond.4.dharmic
+		trigger = { religion.group = religion_group:dharmic }
+		scope:minister = { add_trait = trait:brahmin_counselor }
+	}
+	option = {
+		name = cc_cond.4.buddhist
+		trigger = { religion.group = religion_group:buddhist }
+		scope:minister = { add_trait = trait:dharma_minister }
+	}
+	option = {
+		name = cc_cond.4.western_europe
+		trigger = { capital.sub_continent = sub_continent:western_europe }
+		scope:minister = { add_trait = trait:renaissance_patron }
+	}
+	option = {
+		name = cc_cond.4.africa
+		trigger = {
+			OR = {
+				capital.sub_continent = sub_continent:west_africa
+				capital.sub_continent = sub_continent:central_africa
+				capital.sub_continent = sub_continent:east_africa
+				capital.sub_continent = sub_continent:southern_africa
+			}
+		}
+		scope:minister = { add_trait = trait:griot_diplomat }
+	}
+	option = {
+		name = cc_cond.4.central_asia
+		trigger = {
+			OR = {
+				capital.sub_continent = sub_continent:central_asia
+				capital.sub_continent = sub_continent:north_asia
+			}
+		}
+		scope:minister = { add_trait = trait:steppe_strategos }
+	}
+	option = {
+		name = cc_cond.4.south_asia
+		trigger = { capital.sub_continent = sub_continent:south_asia }
+		scope:minister = { add_trait = trait:mughal_administrator }
+	}
+	option = {
+		name = cc_cond.4.new_world
+		trigger = {
+			OR = {
+				capital.sub_continent = sub_continent:north_america
+				capital.sub_continent = sub_continent:south_america
+			}
+		}
+		scope:minister = { add_trait = trait:new_world_pioneer }
+	}
+	option = {
+		name = cc_cond.4.maritime
+		trigger = {
+			"estate_power(estate_type:burghers_estate)" >= 0.30
+		}
+		scope:minister = { add_trait = trait:maritime_champion }
+	}
+	option = {
+		name = cc_cond.4.dismiss
+	}
+}
+
+
+# ============================================================
+# cc_cond.5 — Parliamentary / Diplomatic Specialists
+# dip > 50, age 2+
+# ============================================================
+
+cc_cond.5 = {
+	type = country_event
+	title = cc_cond.5.title
+	desc = cc_cond.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			dip > 50
+			NOR = {
+				has_trait = trait:parliamentary_broker
+				has_trait = trait:diplomatic_attache
+				has_trait = trait:grand_chancellor
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				dip > 50
+				NOR = {
+					has_trait = trait:parliamentary_broker
+					has_trait = trait:diplomatic_attache
+					has_trait = trait:grand_chancellor
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_cond.5.a
+		trigger = {
+			modifier:has_a_parliamentary_system = yes
+		}
+		scope:minister = { add_trait = trait:parliamentary_broker }
+	}
+	option = {
+		name = cc_cond.5.b
+		scope:minister = { add_trait = trait:diplomatic_attache }
+	}
+	option = {
+		name = cc_cond.5.c
+		trigger = {
+			scope:minister ?= { dip > 66 }
+		}
+		scope:minister = { add_trait = trait:grand_chancellor }
+	}
+	option = {
+		name = cc_cond.5.dismiss
+	}
+}

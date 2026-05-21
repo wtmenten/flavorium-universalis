@@ -1,15 +1,15 @@
-
+﻿
 ep_noble_elite_enclave = {
 	estate = nobles_estate
 
 	allow = {
 		has_advance = noble_patronage_advance
-		nobles_estate_power >= 40
+		"estate_power(estate_type:nobles_estate)" >= 0.40
 	}
 
 	can_revoke = {
 		NOT = {
-			any_subject_country = {
+			any_subject = {
 				OR = {
 					is_subject_type = elite_enclave
 					is_subject_type = palatinate
@@ -26,7 +26,7 @@ ep_noble_elite_enclave = {
 	}
 
 	on_activate = {
-		trigger_event = { id = cc.noble.enclave.1 }
+		trigger_event_non_silently = { id = cc.112 }
 	}
 }
 
@@ -50,7 +50,7 @@ ep_noble_shadow_network = {
 
 	allow = {
 		has_advance = shadow_diplomacy_advance
-		nobles_estate_power >= 45
+		"estate_power(estate_type:nobles_estate)" >= 0.45
 	}
 
 	country_modifier = {
@@ -58,5 +58,78 @@ ep_noble_shadow_network = {
 		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
 		power_projection = 5
 		diplomatic_reputation = 1
+	}
+}
+
+ep_nobles_governorate_charter = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = late_governorate_advance
+		"estate_power(estate_type:nobles_estate)" >= 0.30
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject = {
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	country_modifier = {
+		global_nobles_estate_power = 0.25
+		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
+		global_monthly_development = 0.002
+		nobles_estate_agenda_impact = 0.05
+	}
+}
+
+ep_nobles_march_charter = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = military_march_advance
+		"estate_power(estate_type:nobles_estate)" >= 0.35
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject = {
+				is_subject_type = military_march
+			}
+		}
+	}
+
+	country_modifier = {
+		global_nobles_estate_power = 0.33
+		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
+		army_light_cavalry_build_cost_modifier = -0.10
+		army_heavy_cavalry_build_cost_modifier = -0.05
+	}
+
+	on_activate = {
+		trigger_event_non_silently = { id = cc.130 }
+	}
+}
+
+ep_nobles_diplomatic_court = {
+	estate = nobles_estate
+
+	allow = {
+		OR = {
+			has_advance = late_governorate_advance
+			has_advance = palatinate_advance
+		}
+		"estate_power(estate_type:nobles_estate)" >= 0.35
+		religion = religion:sunni
+	}
+
+	country_modifier = {
+		global_nobles_estate_power = 0.25
+		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
+		diplomatic_reputation = 1
+		power_projection = 10
+		antagonism_received_modifier = -0.05
 	}
 }

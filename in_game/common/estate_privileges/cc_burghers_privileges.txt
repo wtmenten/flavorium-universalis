@@ -1,15 +1,15 @@
-
+﻿
 ep_burgher_naval_charter = {
 	estate = burghers_estate
 
 	allow = {
 		has_advance = naval_charter_advance
-		burghers_estate_power >= 30
+		"estate_power(estate_type:burghers_estate)" >= 0.30
 	}
 
 	can_revoke = {
 		NOT = {
-			any_subject_country = {
+			any_subject = {
 				is_subject_type = naval_administration
 			}
 		}
@@ -28,13 +28,13 @@ ep_burgher_royal_charter = {
 
 	allow = {
 		has_advance = chartered_company_advance
-		burghers_estate_power >= 40
-		has_reform = cc_colonial_charter_reform
+		"estate_power(estate_type:burghers_estate)" >= 0.40
+		has_reform = government_reform:cc_colonial_charter_reform
 	}
 
 	can_revoke = {
 		NOT = {
-			any_subject_country = {
+			any_subject = {
 				is_subject_type = chartered_company
 			}
 		}
@@ -48,6 +48,46 @@ ep_burgher_royal_charter = {
 	}
 
 	on_activate = {
-		trigger_event = { id = cc.burgher.charter.1 }
+		trigger_event_non_silently = { id = cc.113 }
+	}
+}
+
+ep_burghers_tax_charter = {
+	estate = burghers_estate
+
+	allow = {
+		has_advance = tax_farming_advance
+		"estate_power(estate_type:burghers_estate)" >= 0.30
+	}
+
+	can_revoke = {
+		NOT = {
+			any_subject = {
+				is_subject_type = tax_farm
+			}
+		}
+	}
+
+	country_modifier = {
+		global_burghers_estate_power = 0.25
+		burghers_estate_target_satisfaction = small_privilege_target_satisfaction
+		remove_bureaucracy_price_cost_modifier = -0.08
+	}
+}
+
+ep_burghers_parliamentary_charter = {
+	estate = burghers_estate
+
+	allow = {
+		has_reform = government_reform:cc_parliamentary_compromise_reform
+		has_parliament = yes
+		"estate_power(estate_type:burghers_estate)" >= 0.35
+	}
+
+	country_modifier = {
+		global_burghers_estate_power = 0.25
+		burghers_estate_target_satisfaction = small_privilege_target_satisfaction
+		parliament_base_support = 0.08
+		burghers_estate_agenda_impact = 0.10
 	}
 }
