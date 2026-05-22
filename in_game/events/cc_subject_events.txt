@@ -82,7 +82,7 @@ cc.103 = {
 	}
 
 	immediate = {
-		set_variable = { name = cc_shadow_bureau_event_fired value = yes years = 10 }
+		set_variable = { name = cc_shadow_bureau_event_fired value = yes }
 		random_subject = {
 			limit = { is_subject_type = shadow_state }
 			save_scope_as = shadow_target
@@ -222,7 +222,7 @@ cc.106 = {
 	option = {
 		name = cc.arts.1.b
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
-		add_cultural_tradition = -20
+		culture = { add_cultural_tradition = -20 }
 	}
 }
 
@@ -245,8 +245,8 @@ cc.107 = {
 	option = {
 		name = cc.arts.2.a
 		add_gold = -50
-		add_cultural_tradition = cultural_tradition_mild_bonus
-		add_cultural_influence = cultural_influence_mild_bonus
+		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
+		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 	}
 
 	option = {
@@ -496,7 +496,7 @@ cc.120 = {
 		name = cc.gov.1.a
 		add_gold = -100
 		scope:governor = {
-			set_variable = { name = cc_gov_ambitions_cooldown value = yes years = 10 }
+			set_variable = { name = cc_gov_ambitions_cooldown value = yes }
 		}
 	}
 
@@ -505,8 +505,8 @@ cc.120 = {
 		name = cc.gov.1.b
 		add_prestige = prestige_mild_penalty
 		scope:governor = {
-			add_opinion_modifier = { modifier = opinion_harshly_treated target = root years = 5 }
-			set_variable = { name = cc_gov_ambitions_cooldown value = yes years = 10 }
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+			set_variable = { name = cc_gov_ambitions_cooldown value = yes }
 		}
 	}
 
@@ -514,8 +514,8 @@ cc.120 = {
 	option = {
 		name = cc.gov.1.c
 		scope:governor = {
-			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
-			add_liberty_desire = liberty_desire_mild_increase
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure }
+			add_liberty_desire = liberty_desire_mild_plus
 		}
 	}
 }
@@ -538,7 +538,7 @@ cc.124 = {
 			NOT = { has_variable = cc_gov_neighbors_cooldown }
 			any_neighbor_country = {
 				NOT = { is_subject_of = root }
-				NOT = { has_war_with = root }
+				NOT = { is_at_war_with = root }
 				military_strength < prev.military_strength
 			}
 		}
@@ -551,7 +551,7 @@ cc.124 = {
 				NOT = { has_variable = cc_gov_neighbors_cooldown }
 				any_neighbor_country = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 					military_strength < prev.military_strength
 				}
 			}
@@ -561,7 +561,7 @@ cc.124 = {
 			random_neighbor_country = {
 				limit = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 					military_strength < prev.military_strength
 				}
 				save_scope_as = target_neighbor
@@ -573,10 +573,10 @@ cc.124 = {
 	option = {
 		name = cc.gov.2.a
 		scope:target_neighbor = {
-			add_opinion_modifier = { modifier = opinion_expansionist_threat target = root years = 10 }
+			add_opinion = { modifier = opinion_expansionist_threat target = root }
 		}
 		scope:governor = {
-			add_liberty_desire = liberty_desire_mild_increase
+			add_liberty_desire = liberty_desire_mild_plus
 			set_variable = { name = cc_gov_neighbors_cooldown value = yes years = 15 }
 		}
 	}
@@ -586,7 +586,7 @@ cc.124 = {
 		name = cc.gov.2.b
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
 		scope:governor = {
-			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure }
 			set_variable = { name = cc_gov_neighbors_cooldown value = yes years = 15 }
 		}
 	}
@@ -626,7 +626,7 @@ cc.121 = {
 		name = cc.tax.1.a
 		add_gold = -75
 		scope:tax_lord = {
-			add_country_modifier = { modifier = cc_subject_tax_relief years = 5 }
+			add_country_modifier = { modifier = cc_subject_tax_relief }
 			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
 		}
 	}
@@ -636,8 +636,8 @@ cc.121 = {
 		name = cc.tax.1.b
 		add_prestige = prestige_mild_bonus
 		scope:tax_lord = {
-			add_country_modifier = { modifier = cc_subject_autonomy_pressure years = 5 }
-			add_liberty_desire = liberty_desire_mild_increase
+			add_country_modifier = { modifier = cc_subject_autonomy_pressure }
+			add_liberty_desire = liberty_desire_mild_plus
 			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
 		}
 	}
@@ -661,7 +661,7 @@ cc.125 = {
 			NOT = { has_variable = cc_tax_neighbors_cooldown }
 			any_neighbor_country = {
 				NOT = { is_subject_of = root }
-				NOT = { has_war_with = root }
+				NOT = { is_at_war_with = root }
 			}
 		}
 	}
@@ -673,7 +673,7 @@ cc.125 = {
 				NOT = { has_variable = cc_tax_neighbors_cooldown }
 				any_neighbor_country = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 				}
 			}
 			save_scope_as = tax_lord
@@ -682,7 +682,7 @@ cc.125 = {
 			random_neighbor_country = {
 				limit = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 				}
 				save_scope_as = angry_neighbor
 			}
@@ -694,7 +694,7 @@ cc.125 = {
 		name = cc.tax.2.a
 		add_gold = -100
 		scope:angry_neighbor = {
-			add_opinion_modifier = { modifier = opinion_compensated target = root years = 5 }
+			add_opinion = { modifier = opinion_compensated target = root }
 		}
 		scope:tax_lord = {
 			set_variable = { name = cc_tax_neighbors_cooldown value = yes years = 15 }
@@ -705,10 +705,10 @@ cc.125 = {
 	option = {
 		name = cc.tax.2.b
 		scope:angry_neighbor = {
-			add_opinion_modifier = { modifier = opinion_tax_collectors target = root years = 8 }
+			add_opinion = { modifier = opinion_tax_collectors target = root }
 		}
 		scope:tax_lord = {
-			add_liberty_desire = liberty_desire_mild_increase
+			add_liberty_desire = liberty_desire_mild_plus
 			set_variable = { name = cc_tax_neighbors_cooldown value = yes years = 15 }
 		}
 	}
@@ -745,7 +745,7 @@ cc.122 = {
 			random_neighbor_country = {
 				limit = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 				}
 				save_scope_as = raided_neighbor
 			}
@@ -758,10 +758,10 @@ cc.122 = {
 		add_prestige = prestige_mild_bonus
 		add_gold = 50
 		scope:raided_neighbor = {
-			add_opinion_modifier = { modifier = opinion_march_raided target = root years = 8 }
+			add_opinion = { modifier = opinion_march_raided target = root }
 		}
 		scope:march_lord = {
-			set_variable = { name = cc_march_raid_cooldown value = yes years = 10 }
+			set_variable = { name = cc_march_raid_cooldown value = yes }
 		}
 	}
 
@@ -770,7 +770,7 @@ cc.122 = {
 		name = cc.march.1.b
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
 		scope:march_lord = {
-			set_variable = { name = cc_march_raid_cooldown value = yes years = 10 }
+			set_variable = { name = cc_march_raid_cooldown value = yes }
 		}
 	}
 }
@@ -843,7 +843,7 @@ cc.126 = {
 			NOT = { has_variable = cc_march_threat_cooldown }
 			any_neighbor_country = {
 				NOT = { is_subject_of = root }
-				NOT = { has_war_with = root }
+				NOT = { is_at_war_with = root }
 				military_strength < prev.military_strength
 			}
 		}
@@ -856,7 +856,7 @@ cc.126 = {
 				NOT = { has_variable = cc_march_threat_cooldown }
 				any_neighbor_country = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 					military_strength < prev.military_strength
 				}
 			}
@@ -866,7 +866,7 @@ cc.126 = {
 			random_neighbor_country = {
 				limit = {
 					NOT = { is_subject_of = root }
-					NOT = { has_war_with = root }
+					NOT = { is_at_war_with = root }
 					military_strength < prev.military_strength
 				}
 				save_scope_as = threatened_neighbor
@@ -874,18 +874,20 @@ cc.126 = {
 		}
 	}
 
-	# Back the march — join war, antagonism hit from neighbor
+	# Back the march — prestige gain, antagonism hit from neighbor
 	option = {
 		name = cc.march.3.a
-		join_war = {
-			target = scope:threatened_neighbor
-			subject = scope:march_lord
-		}
+		add_prestige = prestige_mild_bonus
 		scope:threatened_neighbor = {
-			add_opinion_modifier = { modifier = opinion_backed_aggressor target = root years = 10 }
+			add_opinion = { modifier = opinion_backed_aggressor target = root }
 		}
 		scope:march_lord = {
-			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+			add_liberty_desire = liberty_desire_mild_minus
+			set_variable = { name = cc_march_threat_cooldown value = yes }
+			declare_war_with_cb = {
+				target = threatened_neighbor
+				type = casus_belli:cb_humiliate_rival
+			}
 		}
 	}
 
@@ -893,11 +895,11 @@ cc.126 = {
 	option = {
 		name = cc.march.3.b
 		scope:march_lord = {
-			add_liberty_desire = liberty_desire_mild_increase
-			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+			add_liberty_desire = liberty_desire_mild_plus
+			set_variable = { name = cc_march_threat_cooldown value = yes }
 		}
 		scope:threatened_neighbor = {
-			add_opinion_modifier = { modifier = opinion_defended target = root years = 5 }
+			add_opinion = { modifier = opinion_defended target = root }
 		}
 	}
 
@@ -906,10 +908,10 @@ cc.126 = {
 		name = cc.march.3.c
 		add_gold = -100
 		scope:march_lord = {
-			set_variable = { name = cc_march_threat_cooldown value = yes years = 10 }
+			set_variable = { name = cc_march_threat_cooldown value = yes }
 		}
 		scope:threatened_neighbor = {
-			add_opinion_modifier = { modifier = opinion_mediated target = root years = 5 }
+			add_opinion = { modifier = opinion_mediated target = root }
 		}
 	}
 }

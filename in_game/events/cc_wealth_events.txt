@@ -1,0 +1,543 @@
+namespace = cc_wealth
+
+###############################################################################
+# WEALTH HOARDING EVENTS (cc_wealth.1–6)
+# Fire from biyearly pulse when gold >= 100x monthly income.
+# Represent consequences of excessive passive treasury accumulation.
+###############################################################################
+
+# "Keeping Up Appearances"
+# The court expects lavish display. Spend to maintain prestige — or let
+# legitimacy slip from visible neglect.
+cc_wealth.1 = {
+	type = country_event
+	title = cc_wealth.1.title
+	desc = cc_wealth.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+	}
+
+	option = {
+		name = cc_wealth.1.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -10
+		}
+		"estate(estate_type:nobles_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 3
+				}
+			}
+		}
+		"estate(estate_type:burghers_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 2
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_wealth.1.b
+		add_prestige = prestige_mild_penalty
+		add_legitimacy = legitimacy_mild_penalty
+	}
+}
+
+# "A Lavish Party"
+# A rare opportunity — spend extravagantly and gain prestige as the court
+# marvels at royal generosity.
+cc_wealth.2 = {
+	type = country_event
+	title = cc_wealth.2.title
+	desc = cc_wealth.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+	}
+
+	option = {
+		name = cc_wealth.2.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		"estate(estate_type:nobles_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 4
+				}
+			}
+		}
+		"estate(estate_type:burghers_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 3
+				}
+			}
+		}
+		"estate(estate_type:clergy_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 2
+				}
+			}
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_wealth.2.b
+	}
+}
+
+# "Noble Estate Demands Construction" (cc_wealth.3)
+# The nobility demands that surplus wealth be invested in their buildings.
+# Fund it at inflated cost — or face their resentment.
+cc_wealth.3 = {
+	type = country_event
+	title = cc_wealth.3.title
+	desc = cc_wealth.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		any_estate = { estate_type = estate_type:nobles_estate }
+	}
+
+	option = {
+		name = cc_wealth.3.a
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 25
+			}
+		}
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		"estate(estate_type:nobles_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 25
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_wealth.3.b
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+}
+
+# "Burgher Estate Demands Construction" (cc_wealth.5)
+# The merchants demand investment in their commercial infrastructure.
+# Pay up — or risk their dissatisfaction.
+cc_wealth.5 = {
+	type = country_event
+	title = cc_wealth.5.title
+	desc = cc_wealth.5.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		any_estate = { estate_type = estate_type:burghers_estate }
+	}
+
+	option = {
+		name = cc_wealth.5.a
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 25
+			}
+		}
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		"estate(estate_type:burghers_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 25
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_wealth.5.b
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+}
+
+# "Clergy Estate Demands Construction" (cc_wealth.6)
+# The clergy demand that wealth be directed toward religious works.
+# Comply at cost — or face their displeasure.
+cc_wealth.6 = {
+	type = country_event
+	title = cc_wealth.6.title
+	desc = cc_wealth.6.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		any_estate = { estate_type = estate_type:clergy_estate }
+	}
+
+	option = {
+		name = cc_wealth.6.a
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 25
+			}
+		}
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		"estate(estate_type:clergy_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = root.monthly_income_trade_and_tax
+					multiply = 25
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_wealth.6.b
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+}
+
+# "An Ambitious Arrival"
+# Word of your kingdom's wealth has spread. A talented figure seeks
+# employment at court — but their services come at a price.
+cc_wealth.4 = {
+	type = country_event
+	title = cc_wealth.4.title
+	desc = cc_wealth.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+	}
+
+	option = {
+		name = cc_wealth.4.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		create_character = {
+			create_in_limbo = yes
+		}
+	}
+
+	option = {
+		name = cc_wealth.4.b
+	}
+}
+
+###############################################################################
+# ESTATE DEMOLITION & BURGHER CONSTRUCTION EVENTS (cc_wealth.7–8)
+###############################################################################
+
+# "A Profitable Demolition" (cc_wealth.7)
+# A randomly selected estate offers to demolish one of their own buildings
+# in exchange for a substantial payment — clearing space and freeing land.
+cc_wealth.7 = {
+	type = country_event
+	title = cc_wealth.7.title
+	desc = cc_wealth.7.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		any_estate = {
+			num_buildings_owned_by_estate > 0
+		}
+	}
+
+	immediate = {
+		random_estate = {
+			limit = {
+				num_buildings_owned_by_estate > 0
+			}
+			save_scope_as = demanding_estate
+		}
+	}
+
+	option = {
+		name = cc_wealth.7.a
+		# Country pays 2x "building cost" proxy (10x monthly income) to the estate
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -10
+		}
+		add_gold_to_estate = {
+			estate_type = scope:demanding_estate.estate_type
+			value = {
+				value = monthly_income_trade_and_tax
+				multiply = 10
+			}
+		}
+		# Destroy one building owned by that estate
+		scope:demanding_estate = {
+			ordered_building_owned_by_estate = {
+				max = 1
+				location = { destroy_building = prev }
+			}
+		}
+		add_estate_satisfaction = {
+			type = scope:demanding_estate.estate_type
+			value = estate_satisfaction_weak_bonus
+		}
+	}
+
+	option = {
+		name = cc_wealth.7.b
+		add_estate_satisfaction = {
+			type = scope:demanding_estate.estate_type
+			value = estate_satisfaction_weak_penalty
+		}
+	}
+}
+
+# "Burgher Urban Investment" (cc_wealth.8)
+# The burghers propose to fund urban expansion in a prosperous location —
+# providing free building capacity in exchange for a share of the royal treasury.
+cc_wealth.8 = {
+	type = country_event
+	title = cc_wealth.8.title
+	desc = cc_wealth.8.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		any_estate = { estate_type = estate_type:burghers_estate }
+		any_owned_location = {
+			owner = root
+			NOT = { location_rank = location_rank:rural_settlement }
+		}
+	}
+
+	immediate = {
+		random_owned_location = {
+			limit = {
+				owner = root
+				NOT = { location_rank = location_rank:rural_settlement }
+			}
+			save_scope_as = target_location
+		}
+	}
+
+	option = {
+		name = cc_wealth.8.a
+		# Pay 3 months of the location's development-equivalent wealth to burghers
+		add_gold = {
+			value = scope:target_location.development
+			multiply = -5
+		}
+		"estate(estate_type:burghers_estate)" = {
+			estate_add_gold = {
+				value = {
+					value = scope:target_location.development
+					multiply = 5
+				}
+			}
+		}
+		# Apply free building levels modifier to that urban location
+		scope:target_location = {
+			add_location_modifier = {
+				modifier = cc_wealth_urban_construction
+				years = 10
+			}
+		}
+	}
+
+	option = {
+		name = cc_wealth.8.b
+	}
+}
+
+###############################################################################
+# HIDDEN PASSIVE EFFECTS — Inflation and Corruption from wealth hoarding.
+# These fire silently every biyearly cycle with ~33% chance when the
+# wealth condition is met. Each applies a stacking country modifier
+# (up to 5 stacks) that lasts 4 years before expiring.
+###############################################################################
+
+# "Capital Hoarding — Inflation" (hidden, fires from biyearly events block)
+cc_wealth.5 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	hidden = yes
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		NOT = { has_country_modifier = cc_wealth_inflation_5 }
+	}
+
+	immediate = {
+		random = {
+			chance = 33
+			if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_inflation_1 } }
+				add_country_modifier = { modifier = cc_wealth_inflation_1 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_inflation_2 } }
+				add_country_modifier = { modifier = cc_wealth_inflation_2 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_inflation_3 } }
+				add_country_modifier = { modifier = cc_wealth_inflation_3 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_inflation_4 } }
+				add_country_modifier = { modifier = cc_wealth_inflation_4 years = 4 }
+			}
+			else = {
+				add_country_modifier = { modifier = cc_wealth_inflation_5 years = 4 }
+			}
+		}
+	}
+}
+
+# "Capital Hoarding — Corruption" (hidden, fires from biyearly events block)
+cc_wealth.6 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	hidden = yes
+
+	trigger = {
+		has_game_rule = cc_wealth_events_on
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 100
+		}
+		NOT = { has_country_modifier = cc_wealth_corruption_5 }
+	}
+
+	immediate = {
+		random = {
+			chance = 33
+			if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_corruption_1 } }
+				add_country_modifier = { modifier = cc_wealth_corruption_1 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_corruption_2 } }
+				add_country_modifier = { modifier = cc_wealth_corruption_2 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_corruption_3 } }
+				add_country_modifier = { modifier = cc_wealth_corruption_3 years = 4 }
+			}
+			else_if = {
+				limit = { NOT = { has_country_modifier = cc_wealth_corruption_4 } }
+				add_country_modifier = { modifier = cc_wealth_corruption_4 years = 4 }
+			}
+			else = {
+				add_country_modifier = { modifier = cc_wealth_corruption_5 years = 4 }
+			}
+		}
+	}
+}

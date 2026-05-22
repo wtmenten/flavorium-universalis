@@ -1,0 +1,45 @@
+
+# France Containment — applied once at game start.
+# Gives Lowlands-culture neighbors elevated antagonism toward France for 200 years,
+# and gives France herself an antagonism-amplifying modifier for the same period.
+# Both decay naturally, disappearing around 1650 in a standard 1444 start.
+
+on_game_start = {
+	effect = {
+		if = {
+			limit = {
+				has_game_rule = cc_france_containment_on
+				country_exists = c:FRA
+			}
+
+			# Apply a decaying antagonism from each Lowlands-culture neighbor toward France.
+			# Uses culture filter so it works across any start date where those countries exist.
+			c:FRA = {
+				every_neighbor_country = {
+					limit = {
+						any_owned_location = {
+							OR = {
+								dominant_culture = culture:low_franconian
+								dominant_culture = culture:picard
+								dominant_culture = culture:walloon
+							}
+						}
+					}
+					add_antagonism = {
+						target = c:FRA
+						modifier = cc_fra_hegemony_threat
+					}
+				}
+			}
+
+			# Give France a modifier that makes her expansion generate more antagonism.
+			# This decays over 200 years alongside the neighbor-side antagonism.
+			c:FRA = {
+				add_country_modifier = {
+					modifier = cc_fra_lowlands_ambition
+					years = 200
+				}
+			}
+		}
+	}
+}

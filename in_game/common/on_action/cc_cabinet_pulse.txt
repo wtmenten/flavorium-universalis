@@ -12,8 +12,8 @@ yearly_country_pulse = {
 		cc_cond.22     # Family B: Military Doctrine cluster
 		cc_cond.23     # Family B: Economic Doctrine cluster
 		cc_cond.24     # Family B: Expansion/Cultural cluster
-		cc_cond.3a     # Family D: Military Cost early tier
-		cc_cond.3b     # Family D: Military Cost strong tier
+		cc_cond.3     # Family D: Military Cost early tier
+		cc_cond.6     # Family D: Military Cost strong tier
 		cc_cond.4      # Family C: Regional/Religious
 		cc_cond.5      # Family E: Parliamentary/Diplomatic
 
@@ -64,8 +64,6 @@ monthly_country_pulse = {
 biyearly_country_pulse = {
 	random_events = {
 
-
-
 		# Estate interaction events
 		5  = cc_cabinet.12   # Revolutionary Sentiments (Age of Revolutions)
 		5  = cc_cabinet.13   # Minister's Ambitions (Age of Absolutism)
@@ -82,10 +80,26 @@ biyearly_country_pulse = {
 		5  = cc_cabinet.32   # Confessional Province Work (Age of Reformation)
 		5  = cc_cabinet.33   # Administrative Reform (Age of Absolutism)
 
+		# Wealth hoarding events (self-suppress when gold < 100x monthly income)
+		10 = cc_wealth.1     # Keeping Up Appearances
+		8  = cc_wealth.2     # A Lavish Party
+		6  = cc_wealth.3     # Noble Estate Building Demand
+		6  = cc_wealth.5     # Burgher Estate Building Demand
+		6  = cc_wealth.6     # Clergy Estate Building Demand
+		8  = cc_wealth.4     # An Ambitious Arrival
+		6  = cc_wealth.7     # Estate Demolition
+		8  = cc_wealth.8     # Burgher Urban Investment
+
 		chance_to_happen = 33
-		
+
 		chance_of_no_event = {
 			value = 10
 		}
+	}
+
+	# Hidden passive effects — fire every biyearly cycle with internal chance gate
+	events = {
+		cc_wealth.5     # Inflation stack (33% chance when hoarding)
+		cc_wealth.6     # Corruption stack (33% chance when hoarding)
 	}
 }

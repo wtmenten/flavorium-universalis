@@ -26,14 +26,16 @@ cc_legend.1 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
-				has_trait = trait:enlightenment_herald
-				has_trait = trait:master_urbanist
-				has_trait = trait:progressive_rationalist
+				has_trait = enlightenment_herald
+				has_trait = master_urbanist
+				has_trait = progressive_rationalist
 			}
 		}
-		all_cabinet_character = {
-			in_cabinet = yes
-			has_custom_tag = administrative
+		NOT = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				NOT = { has_custom_tag = administrative }
+			}
 		}
 		NOT = { has_variable = cc_legend_1_fired }
 	}
@@ -47,14 +49,14 @@ cc_legend.1 = {
 		name = cc_legend.1.a
 		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
 		ruler = { add_trait = trait:philosopher_king }
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.1.a.tt
 	}
 
 	# Prestige only
 	option = {
 		name = cc_legend.1.b
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		add_country_modifier = { modifier = cc_synergy_enlightened_court years = 20 }
 	}
 }
@@ -79,13 +81,13 @@ cc_legend.2 = {
 		"estate_power(estate_type:clergy_estate)" >= 0.60
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = trait:mystical_patriarch
+			has_trait = mystical_patriarch
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
-				has_trait = trait:ecumenical_patriarch_advisor
-				has_trait = trait:traditionalist_guardian
+				has_trait = ecumenical_patriarch_advisor
+				has_trait = traditionalist_guardian
 			}
 		}
 		OR = {
@@ -102,16 +104,16 @@ cc_legend.2 = {
 	# Clergy privilege + permanent holy empire modifier
 	option = {
 		name = cc_legend.2.a
-		grant_estate_privilege = estate_privilege:ep_clergy_holy_empire
+		grant_estate_privilege = estate_privilege:clergy_strengthen_faith
 		add_country_modifier = { modifier = cc_legend_holy_empire years = 999 }
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.2.a.tt
 	}
 
 	# Prestige + clergy satisfaction
 	option = {
 		name = cc_legend.2.b
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.15 }
 	}
 }
@@ -132,16 +134,13 @@ cc_legend.3 = {
 		religion.group = religion_group:muslim
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = trait:grand_chancellor
+			has_trait = grand_chancellor
 		}
-		count_subjects = {
-			limit = {
-				OR = {
-					is_subject_type = chartered_company
-					is_subject_type = associated_republic
-				}
+		any_subject = {
+			OR = {
+				is_subject_type = chartered_company
+				is_subject_type = associated_republic
 			}
-			value >= 2
 		}
 		NOT = { has_variable = cc_legend_3_fired }
 	}
@@ -149,7 +148,7 @@ cc_legend.3 = {
 	immediate = {
 		set_variable = { name = cc_legend_3_fired value = yes }
 		random_cabinet_character = {
-			limit = { in_cabinet = yes has_trait = trait:grand_chancellor }
+			limit = { in_cabinet = yes has_trait = grand_chancellor }
 			save_scope_as = minister
 		}
 	}
@@ -159,14 +158,14 @@ cc_legend.3 = {
 		name = cc_legend.3.a
 		set_variable = { name = cc_legend_grand_bazaar_unlocked value = yes }
 		scope:minister = { add_trait = trait:grand_vizier_legendary }
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.3.a.tt
 	}
 
 	# Prestige + diplomatic capacity
 	option = {
 		name = cc_legend.3.b
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		add_country_modifier = { modifier = cc_synergy_diplomatic_network years = 20 }
 	}
 }
@@ -185,28 +184,30 @@ cc_legend.4 = {
 
 	trigger = {
 		any_subject = { is_subject_type = military_march }
-		ruler = { has_trait = trait:iron_disciplinarian }
+		ruler = { has_trait = iron_disciplinarian }
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = trait:supreme_commander
+			has_trait = supreme_commander
 		}
 		"estate_power(estate_type:nobles_estate)" >= 0.45
-		# At least 3 military cost specialists
-		count_cabinet_characters = {
-			limit = {
-				in_cabinet = yes
-				OR = {
-					has_trait = trait:cavalry_marshal
-					has_trait = trait:commissariat_officer
-					has_trait = trait:siege_engineer
-					has_trait = trait:infantry_drillmaster
-					has_trait = trait:scout_captain
-					has_trait = trait:military_engineer
-					has_trait = trait:elite_trainer
-					has_trait = trait:continental_marshal
-				}
+		# At least 2 different military cost specialists
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = cavalry_marshal
+				has_trait = commissariat_officer
+				has_trait = siege_engineer
+				has_trait = infantry_drillmaster
 			}
-			value >= 3
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = scout_captain
+				has_trait = military_engineer
+				has_trait = elite_trainer
+				has_trait = continental_marshal
+			}
 		}
 		NOT = { has_variable = cc_legend_4_fired }
 	}
@@ -219,7 +220,7 @@ cc_legend.4 = {
 	option = {
 		name = cc_legend.4.a
 		set_variable = { name = cc_legend_iron_hegemony_unlocked value = yes }
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.4.a.tt
 	}
 
@@ -249,10 +250,10 @@ cc_legend.5 = {
 			has_parliament = yes
 			government_type = government_type:republic
 		}
-		ruler = { has_trait = trait:progressive_reformist }
+		ruler = { has_trait = progressive_reformist }
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = trait:parliamentary_broker
+			has_trait = parliamentary_broker
 		}
 		"estate_satisfaction(estate_type:nobles_estate)" > 0.50
 		"estate_satisfaction(estate_type:clergy_estate)" > 0.50
@@ -263,7 +264,7 @@ cc_legend.5 = {
 	immediate = {
 		set_variable = { name = cc_legend_5_fired value = yes }
 		random_cabinet_character = {
-			limit = { in_cabinet = yes has_trait = trait:parliamentary_broker }
+			limit = { in_cabinet = yes has_trait = parliamentary_broker }
 			save_scope_as = minister
 		}
 	}
@@ -273,14 +274,14 @@ cc_legend.5 = {
 		name = cc_legend.5.a
 		set_variable = { name = cc_legend_peoples_assembly_unlocked value = yes }
 		scope:minister = { add_trait = trait:tribune_of_the_people }
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.5.a.tt
 	}
 
 	# Prestige + peoples tribune modifier
 	option = {
 		name = cc_legend.5.b
-		add_prestige = prestige_strong_bonus
+		add_prestige = prestige_severe_bonus
 		add_country_modifier = { modifier = cc_synergy_peoples_tribune years = 20 }
 	}
 }
