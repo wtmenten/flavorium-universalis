@@ -13,11 +13,25 @@ look for documentation reference excerpts in the website summarized docs first.
 
 # lookup tools
 
-use this powershell command from the game/in_game/common dir or something similar in grep to search for type values in vanilla files quickly:
-`Get-ChildItem -Recurse -File | Select-String -Pattern "YOUR_TYPE_NAME_HERE:\w+" | ForEach-Object { $_.Matches.Value } | Select-Object -Unique`
-`grep -roh "YOUR_TYPE_NAME_HERE:[a-z_]* [><=!]* *[0-9-]*" "f:/SteamLibrary/steamapps/common/Europa Universalis V/game/in_game/common" 2>/dev/null | sort -u`
-works for types like: societal_value,government_type,religion_group,sub_continent,government_reform,policy,estate_privilege and others.
-DO NOT do this from the root `/game` directory it will take a very long time.
+**Prefer `tools/vanilla_search.py` over raw grep for all vanilla lookups.** It handles path scoping, BOM encoding, and result formatting automatically.
+
+```
+# Check if a modifier name is valid in vanilla (partial name OK):
+python tools/vanilla_search.py modifier <name>
+
+# List all type:value identifiers used in vanilla common files:
+python tools/vanilla_search.py values <type_key>
+# e.g. values religion_group / values government_type / values sub_continent / values estate_type
+
+# Show vanilla usage snippets for any trigger, effect, or key (--events to search events/ instead):
+python tools/vanilla_search.py examples <term>
+python tools/vanilla_search.py examples <term> --events
+
+# List every defined bias/opinion modifier name:
+python tools/vanilla_search.py biases
+```
+
+Use these instead of ad-hoc grep when verifying modifier names, finding valid type values, checking trigger/effect syntax in context, or looking up bias names before calling `add_opinion`. Fall back to raw grep only for patterns the tool doesn't cover.
 
 ## Development Environment
 
@@ -39,6 +53,12 @@ Paradox script files use the `.txt` extension and follow a Clausewitz scripting 
 | Path | Purpose |
 |---|---|
 | `in_game/common/traits/` | Character trait definitions |
+| `in_game/common/biases/` | Opinion and antagonism modifier definitions |
+| `in_game/common/advances/` | Tech advances (unlock subject types, reforms, privileges) |
+| `in_game/common/subject_types/` | Subject type definitions |
+| `in_game/common/on_action/cc_game_start.txt` | All on_game_start effects (keep in one file) |
+| `main_menu/common/game_rules/` | Game rule definitions |
+| `main_menu/common/modifier_type_definitions/` | Custom modifier type registrations (required for bureaucracies) |
 | `main_menu/gfx/interface/icons/traits/` | Trait icon assets |
 | `.metadata/metadata.json` | Mod descriptor (name, version, game compatibility, replace_paths) |
 
@@ -50,34 +70,31 @@ EU V uses Clausewitz script. When writing traits, events, or decisions, follow t
 
 DO not get stuck looking for things in `game\common` directories when you should be looking in `game\in_game\common\` or `game\main_menu\common\` instead.
 
-Localisation strings go in `in_game/localization/<language>/` as `.yml` files (UTF-8 BOM required by the engine).
+Localisation strings go in `in_game/localization/<language>/` as `.yml` files (UTF-8 BOM required by the engine). **All `.txt` script files also need UTF-8 BOM** — the engine loads them with a warning if missing. Run `python tools/fix_bom.py` to fix the whole mod at once; the git pre-commit hook does this automatically.
 
 See [docs/scripting-gotchas.md](docs/scripting-gotchas.md) for verified patterns and a list of things that do NOT exist.
 
 ## Critical Gotchas (short list)
 
-- **Modifier names**: always grep vanilla before using. Many intuitive names don't exist. `navy_tradition` → `monthly_navy_tradition`. `global_estate_satisfaction_equilibrium` → `global_estate_target_satisfaction`. `local_navy_tradition_from_battles` → doesn't exist. `global_trade_power` → `global_trade_center_power`. `fort_maintenance_modifier` → `fort_maintenance_cost`. `missionary_strength` → `global_pop_conversion_speed_modifier`. No global dev cost modifier exists.
+- **Modifier names**: always grep vanilla before using — many intuitive names don't exist. `global_trade_power` → `global_trade_center_power`. `fort_maintenance_modifier` → `fort_maintenance_cost`. `global_institution_spread_modifier` → doesn't exist; use `embrace_institution_cost_modifier`. No global dev cost modifier exists. See [docs/scripting-gotchas.md](docs/scripting-gotchas.md) for the full table.
 - **Building modifiers**: `modifier = {}` is location-only. Country-level effects from buildings require `capital_country_modifier = {}` (only active in capital). No generic non-capital country modifier on buildings.
-- **Location rank syntax differs by context**: in building `.txt` files use `city = yes` / `megalopolis = yes` flags. In events/triggers use `location_rank = location_rank:city`.
-- **Localization BOM**: all `.yml` files need UTF-8 BOM or they're silently ignored. Write via Python `f.write(b'\xef\xbb\xbf')`.
-- **Estate gold**: two effects — `add_gold_to_estate = { estate_type = ... value = ... }` (from country scope) and `estate_add_gold = { value = ... }` (from estate scope). Check `pirate_events.txt:373` for examples.
-- **`on_game_start` scope**: world scope, not country scope. Must use `c:TAG = { }` or `every_country = { }` to reach countries.
-- **`num_naval_governors`**: granted by advances and government reforms (and estate privilege `country_modifier` blocks — verify in-game).
-- **Per-location income**: no scripted value exists. Use `scope:location.development` as a proxy for location wealth.
-- **Estate building cost**: `estate_construct_building` has no gold cost — it's goods-only. Proxy "building cost" with `monthly_income_trade_and_tax * N` or `estate_tax_base * N`.
-- **Stacking modifiers**: use N separately named modifiers (`cc_foo_1` … `cc_foo_5`) to cap stacks, since each modifier name can only stack via `mode = add_and_extend`; checking `NOT { has_country_modifier = cc_foo_5 }` caps the chain.
-- **Event IDs must be pure integers** after the namespace dot. `cc_foo.3a` and `cc_foo.3b` are INVALID — the engine rejects non-integer IDs silently.
-- **Opinion effects**: `add_opinion_modifier` does NOT exist. Use `add_opinion = { target = X modifier = Y }`. No `years` param — duration is set in the opinion modifier definition.
-- **War triggers**: `has_war_with` → `is_at_war_with`. `is_at_war` → `at_war`. Both `at_war_with` and `is_at_war_with` exist.
-- **Sub-continent check**: `is_in_sub_continent` does NOT exist. Use dot-chain: `capital.sub_continent = sub_continent:western_europe` (from country scope).
-- **Area check on capital**: `capital = { is_in_area = area:xxx }` is INVALID. Use `capital.area = area:xxx` (dot-chain from country scope).
-- **Culture group check from country scope**: `has_culture_group = culture_group:sinitic` is valid in country scope directly. For culture scope: `culture = { has_culture_group = X }`.
-- **`add_cultural_tradition` / `add_cultural_influence`** need culture scope — call from country scope as `culture = { add_cultural_tradition = X }`.
-- **`has_estate` is character-scope only** (checks estate affiliation). In country scope use `any_estate = { estate_type = estate_type:nobles_estate }` to check if an estate exists.
-- **No `count_cabinet_characters` or `all_cabinet_character`** triggers. Use multiple `any_cabinet_character` blocks to approximate "at least N with trait X". `every_cabinet_character` exists (effect iteration only).
-- **`count_subjects`** doesn't exist as an iterator. Use `num_subjects >= N` (total count, no type filter) or `any_subject = { ... }` (at least one).
-- **Conditional effects inside option blocks**: use `if = { limit = { ... } effect }`, NOT `trigger = { ... }` (that's a trigger keyword, not an effect).
-- **`subtract` in weight_multiplier modifiers**: use `add = -N` instead.
+- **Localization BOM**: all `.yml` files need UTF-8 BOM or they're silently ignored. `.txt` script files also need it (loads with warning if missing). Run `python tools/fix_bom.py` to fix all at once.
+- **`on_game_start` scope**: world scope, not country scope. Use `c:TAG = { }` or `every_country = { }`. Also: if multiple files each define `on_game_start = { effect = {} }` only the last one wins — keep all game-start effects in one file (`cc_game_start.txt`).
+- **Culture group check**: `has_culture_group` expects culture scope, not country scope. Use `culture = { has_culture_group = culture_group:X }` from country scope. Dynamic comparison (`root.culture.culture_group` as a dot-chain) is parsed as an event target link and fails — use `only_overlord_or_kindred_culture = yes` to enforce the restriction instead.
+- **`has_custom_tag`** does NOT exist as a trigger. Trait `custom_tags = {}` values cannot be queried from character triggers.
+- **Illustration tags**: valid values are `interior`, `exterior`, `military`, `army`, `economy`, `bank`, `burghers`, `characters_discussing`, `fire`, `angry`, `armed`, `happy`, `professional`, `regular`, `ages`, `interior_peasant`. `combat` is NOT valid.
+- **Advance cross-age `requires`**: `requires = other_advance` breaks if the required advance is in a different age. Use `potential = { has_advance = X }` + `allow = { has_advance = X }` instead.
+- **Bureaucracy `_impact_modifier` types**: each custom bureaucracy needs a `{name}_impact_modifier` entry in `main_menu/common/modifier_type_definitions/`. Pattern: `percent=yes  game_data={ category=country }`. See `game/main_menu/common/modifier_type_definitions/01_byz.txt`.
+- **`declare_war_with_cb` target**: must use `target = scope:X` with the `scope:` prefix, not bare `target = X`.
+- **Opinion modifiers**: `add_opinion_modifier` does NOT exist. Use `add_opinion = { target = X modifier = Y }`. The modifier must be defined in `common/biases/` first — "Unknown bias type" means it's missing. No `years` param; duration is set in the bias definition.
+- **Event IDs must be pure integers** after the namespace dot. `cc_foo.3a` is INVALID — use `cc_foo.30`, `cc_foo.31` etc. Duplicate IDs in a file: engine uses the last definition silently.
+- **War triggers**: `has_war_with` → `is_at_war_with`. `is_at_war` → `at_war`.
+- **Sub-continent / area checks**: `is_in_sub_continent` doesn't exist. Use `capital.sub_continent = sub_continent:X` and `capital.area = area:X` (dot-chain from country scope, no block).
+- **`has_estate` is character-scope only**. In country scope use `any_estate = { estate_type = estate_type:nobles_estate }`.
+- **No `count_cabinet_characters` or `all_cabinet_character`** triggers. Use multiple `any_cabinet_character` blocks. `every_cabinet_character` exists (effect iteration only).
+- **`count_subjects`** doesn't exist as an iterator. Use `num_subjects >= N` or `any_subject = { ... }`.
+- **Conditional effects inside option blocks**: use `if = { limit = { ... } effect }`, NOT `trigger = { ... }`.
 - **`any_owned_province`** doesn't exist. Use `any_owned_location`.
-- **Script value names**: `prestige_strong_bonus` → `prestige_severe_bonus`. `liberty_desire_mild_increase` → `liberty_desire_mild_plus`. Pattern: `_plus` / `_minus` suffixes, sizes: weak/mild/severe/extreme/ultimate.
-- **See [docs/scripting-gotchas.md](docs/scripting-gotchas.md)** for the full reference table of valid/invalid names.
+- **Script value names**: sizes are `weak/mild/severe/extreme/ultimate`; suffixes are `_plus/_minus` and `_bonus/_penalty`. E.g. `prestige_severe_bonus`, `liberty_desire_mild_plus`.
+- **Per-location income**: no scripted value. Use `scope:location.development` as a proxy.
+- **See [docs/scripting-gotchas.md](docs/scripting-gotchas.md)** for detailed patterns, estate gold syntax, building rank flags, stacking modifiers, and the full valid/invalid name table.

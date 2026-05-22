@@ -1,0 +1,63 @@
+﻿
+# Cabinets and Choices — Game Start On-Action Effects
+# All one-time game start effects are combined here to avoid the
+# "more than one effect defined" warning from having two separate files.
+
+on_game_start = {
+	effect = {
+		# --- France Containment ---
+		# Gives France's Lowlands-culture neighbors elevated antagonism, decaying over 200 years.
+		if = {
+			limit = {
+				has_game_rule = cc_france_containment_on
+				country_exists = c:FRA
+			}
+
+			c:FRA = {
+				every_neighbor_country = {
+					limit = {
+						any_owned_location = {
+							OR = {
+								dominant_culture = culture:low_franconian
+								dominant_culture = culture:picard
+								dominant_culture = culture:walloon
+							}
+						}
+					}
+					add_antagonism = {
+						target = c:FRA
+						modifier = cc_fra_hegemony_threat
+					}
+				}
+			}
+
+			c:FRA = {
+				add_country_modifier = {
+					modifier = cc_fra_lowlands_ambition
+					years = 200
+				}
+			}
+		}
+
+		# --- Mamluk Start ---
+		# Represents the Mamluks' tenuous hold over a largely foreign population.
+		if = {
+			limit = {
+				has_game_rule = cc_mamluk_start_on
+				country_exists = c:MAM
+			}
+
+			c:MAM = {
+				add_country_modifier = {
+					modifier = cc_mam_foreign_rule
+					days = -1
+				}
+
+				add_country_modifier = {
+					modifier = cc_mam_military_strain
+					years = 200
+				}
+			}
+		}
+	}
+}

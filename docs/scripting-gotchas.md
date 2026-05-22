@@ -122,7 +122,13 @@ add_gold_to_estate = {
 
 - `unlock_estate_privilege = ep_privilege_name` — makes the privilege appear when the advance is taken
 - `unlock_government_reform = cc_reform_name` — makes a reform available after taking the advance
-- `requires = other_advance_name` — gates the advance behind another advance
+- **Cross-age `requires` is broken**: `requires = other_advance` logs an error if the required advance is in a different age. Use `potential` + `allow` with `has_advance` instead:
+  ```
+  potential = { has_advance = naval_charter_advance }
+  allow    = { has_advance = naval_charter_advance }
+  ```
+- `has_advance = advance_key` — country trigger, checks if the advance has been researched
+- `has_advance_available = advance_key` — country trigger, checks researched OR available to research
 
 ---
 
@@ -195,6 +201,11 @@ Names that look obvious but are wrong, with verified replacements:
 | `add_cultural_influence` in country scope | `culture = { add_cultural_influence = X }` | must be in culture scope |
 | `prestige_strong_bonus` | `prestige_severe_bonus` | scripted value; see size table below |
 | `liberty_desire_mild_increase` | `liberty_desire_mild_plus` | scripted value; see table below |
+| `global_institution_spread_modifier` | **does not exist** | use `embrace_institution_cost_modifier` (negative value) or `institution_importance_modifier` |
+| `has_culture_group = X` in country scope | `culture = { has_culture_group = X }` | requires culture scope even from country scope |
+| `has_custom_tag = foo` on characters | **does not exist** | trait `custom_tags = {}` values cannot be queried from triggers |
+| `target = scope_name` in `declare_war_with_cb` | `target = scope:scope_name` | must include `scope:` prefix |
+| `requires = advance_from_other_age` | `potential/allow = { has_advance = X }` | cross-age `requires` logs an error; gate with potential+allow instead |
 
 ### Scripted value naming patterns
 
@@ -227,11 +238,12 @@ capital.sub_continent = sub_continent:western_europe
 # Area — dot-chain, no block
 capital.area = area:brabant_area
 
-# Culture group — direct in country scope
-has_culture_group = culture_group:sinitic
+# Culture group — must be in culture scope even from country scope
+culture = { has_culture_group = culture_group:sinitic }
 
-# Culture group of target (in subject type visible blocks)
-scope:target = { culture = { has_culture_group = root.culture.culture_group } }
+# Dynamic culture group comparison (e.g. "same culture group as root") doesn't work:
+# root.culture.culture_group is parsed as an event target link and fails.
+# Enforce with only_overlord_or_kindred_culture = yes on the subject type instead.
 ```
 
 ### Conditional effects inside options
@@ -253,6 +265,51 @@ scope:minister = {
 
 ---
 
+## Illustration Tags
+
+Valid tags for `illustration_tags = { 10 = TAG }` in events:
+
+`interior`, `exterior`, `military`, `army`, `economy`, `bank`, `burghers`, `characters_discussing`, `fire`, `angry`, `armed`, `happy`, `professional`, `regular`, `ages`, `interior_peasant`
+
+`combat` is **NOT** a valid tag (common mistake — use `military` instead).
+
+---
+
+## Bureaucracies
+
+Each custom bureaucracy named `cc_foo_bureau` needs a corresponding modifier type definition or the game asserts on load:
+
+```
+# main_menu/common/modifier_type_definitions/cc_bureaucracies.txt
+cc_foo_bureau_impact_modifier = {
+    percent=yes
+    game_data={
+        category=country
+    }
+}
+```
+
+Vanilla pattern: `game/main_menu/common/modifier_type_definitions/01_byz.txt`.
+The `_impact_modifier` suffix is auto-expected by the bureaucracy system.
+
+---
+
+## on_action — Multiple `effect` Blocks
+
+If two files each define `on_game_start = { effect = {} }`, the engine warns "more than one 'effect' defined, using most recent" and only runs the last one. **Keep all effects for the same on_action in a single file.** See `in_game/common/on_action/cc_game_start.txt`.
+
+---
+
+## Opinion Modifiers (Biases)
+
+`add_opinion = { target = X modifier = my_modifier }` — the modifier must be defined in `common/biases/` first. "Unknown bias type" in the log means it's missing from that folder.
+
+- Duration is set on the bias definition (`yearly_decay = N`), not in the effect call
+- `add_opinion_modifier` does NOT exist
+- Vanilla bias files to reference: `03_opinion_from_events.txt`, `02_opinion_subject_types.txt`
+
+---
+
 ## Things That Don't Exist (Don't Waste Time Searching)
 
 - Per-location monthly income as a scripted value — use `scope:location.development` as a proxy
@@ -264,3 +321,6 @@ scope:minister = {
 - `current_action` on characters — cannot check what action a character is currently performing
 - `join_war` as a simple event effect — war manipulation requires complex war scope effects
 - Alphanumeric event IDs — `cc_foo.3a` is INVALID; must use pure integers like `cc_foo.3`, `cc_foo.30`
+- `has_custom_tag` trigger — doesn't exist; trait `custom_tags = {}` values can't be queried
+- Dynamic culture-group comparison — `root.culture.culture_group` as a dot-chain accessor is parsed as an event target link and fails; use `only_overlord_or_kindred_culture = yes` on subject types instead
+- `illustration_tags = { 10 = combat }` — `combat` tag doesn't exist; use `military`

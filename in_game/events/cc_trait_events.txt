@@ -1,9 +1,10 @@
-namespace = cc_traits
+﻿namespace = cc_traits
 
 ###############################################################################
 # INTEGRATION TRAIT GRANT
 # Fires yearly when a cabinet member is actively integrating but has no
-# integration trait.
+# integration trait. Variable cc_integration_done prevents re-offering the
+# same minister after they dismiss.
 ###############################################################################
 
 cc_traits.1 = {
@@ -27,6 +28,7 @@ cc_traits.1 = {
 				has_trait = master_integrator
 				has_trait = iron_integrator
 			}
+			NOT = { has_variable = cc_integration_done }
 		}
 	}
 
@@ -45,6 +47,7 @@ cc_traits.1 = {
 					has_trait = master_integrator
 					has_trait = iron_integrator
 				}
+				NOT = { has_variable = cc_integration_done }
 			}
 			save_scope_as = integrating_minister
 		}
@@ -53,6 +56,7 @@ cc_traits.1 = {
 	option = {
 		name = cc_traits.1.a
 		scope:integrating_minister = {
+			set_variable = cc_integration_done
 			if = {
 				limit = { adm > 66  mil > 66  dip > 66 }
 				add_trait = trait:iron_integrator
@@ -72,6 +76,7 @@ cc_traits.1 = {
 	}
 	option = {
 		name = cc_traits.1.b
+		scope:integrating_minister = { set_variable = cc_integration_done }
 	}
 }
 
@@ -80,12 +85,13 @@ cc_traits.1 = {
 # One event per age. Each fires via monthly random_events.
 # Options are gated by capital sub_continent, religion group, government type,
 # active cabinet actions, and minister estate type.
+# Variable cc_age_trait_NN_done prevents re-offering a dismissed minister.
 ###############################################################################
 
 # Age of Renaissance — culturally branched intellectual trait
-# Western/Eastern Europe → renaissance_humanist
-# East/SE Asia          → eastern_pragmatist
-# Muslim world          → sufi_scholar
+# Western/Eastern Europe → renaissance_humanist   (adm > 35)
+# East/SE Asia          → eastern_pragmatist      (adm > 35)
+# Muslim world          → sufi_scholar            (dip > 35)
 cc_traits.10 = {
 	type = country_event
 	title = cc_traits.10.title
@@ -100,6 +106,7 @@ cc_traits.10 = {
 				has_trait = eastern_pragmatist
 				has_trait = sufi_scholar
 			}
+			NOT = { has_variable = cc_age_trait_10_done }
 		}
 		OR = {
 			current_age = age_2_renaissance
@@ -142,12 +149,13 @@ cc_traits.10 = {
 					has_trait = eastern_pragmatist
 					has_trait = sufi_scholar
 				}
+				NOT = { has_variable = cc_age_trait_10_done }
 			}
 			save_scope_as = minister
 		}
 	}
 
-	# Western/Eastern Europe
+	# Western/Eastern Europe — adm > 35 required
 	option = {
 		name = cc_traits.10.a
 		trigger = {
@@ -155,11 +163,15 @@ cc_traits.10 = {
 				capital.sub_continent = sub_continent:western_europe
 				capital.sub_continent = sub_continent:eastern_europe
 			}
+			scope:minister = { adm > 35 }
 		}
-		scope:minister = { add_trait = trait:renaissance_humanist }
+		scope:minister = {
+			set_variable = cc_age_trait_10_done
+			add_trait = trait:renaissance_humanist
+		}
 	}
 
-	# East/SE Asia
+	# East/SE Asia — adm > 35 required
 	option = {
 		name = cc_traits.10.b
 		trigger = {
@@ -167,28 +179,38 @@ cc_traits.10 = {
 				capital.sub_continent = sub_continent:east_asia
 				capital.sub_continent = sub_continent:south_east_asia
 			}
+			scope:minister = { adm > 35 }
 		}
-		scope:minister = { add_trait = trait:eastern_pragmatist }
+		scope:minister = {
+			set_variable = cc_age_trait_10_done
+			add_trait = trait:eastern_pragmatist
+		}
 	}
 
-	# Muslim world
+	# Muslim world — dip > 35 required
 	option = {
 		name = cc_traits.10.c
 		trigger = {
 			religion.group = religion_group:muslim
+			scope:minister = { dip > 35 }
 		}
-		scope:minister = { add_trait = trait:sufi_scholar }
+		scope:minister = {
+			set_variable = cc_age_trait_10_done
+			add_trait = trait:sufi_scholar
+		}
 	}
 
-	# Dismiss
+	# Dismiss — always available; marks minister as offered so they aren't re-selected
 	option = {
 		name = cc_traits.10.d
+		scope:minister = { set_variable = cc_age_trait_10_done }
 	}
 }
 
 # Age of Discovery — pioneer (bold), skeptic (cautious), or cautious_merchant
-# cautious_merchant only available to burgher estate ministers
-# Event weighted higher when a minister is actively running colonial cabinet actions
+# pioneer only available to adm > 30 + mil > 30 ministers
+# cautious_merchant only available to burgher estate ministers with dip > 40
+# skeptic is the always-available fallback
 cc_traits.11 = {
 	type = country_event
 	title = cc_traits.11.title
@@ -209,6 +231,7 @@ cc_traits.11 = {
 				has_trait = age_of_discovery_skeptic
 				has_trait = cautious_merchant
 			}
+			NOT = { has_variable = cc_age_trait_11_done }
 		}
 	}
 
@@ -241,34 +264,52 @@ cc_traits.11 = {
 					has_trait = age_of_discovery_skeptic
 					has_trait = cautious_merchant
 				}
+				NOT = { has_variable = cc_age_trait_11_done }
 			}
 			save_scope_as = minister
 		}
 	}
 
+	# Bold adventurer — adm > 30 and mil > 30
 	option = {
 		name = cc_traits.11.a
-		scope:minister = { add_trait = trait:age_of_discovery_pioneer }
+		trigger = {
+			scope:minister = { adm > 30  mil > 30 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_11_done
+			add_trait = trait:age_of_discovery_pioneer
+		}
 	}
 
+	# Cautious analyst — always available fallback
 	option = {
 		name = cc_traits.11.b
-		scope:minister = { add_trait = trait:age_of_discovery_skeptic }
+		scope:minister = {
+			set_variable = cc_age_trait_11_done
+			add_trait = trait:age_of_discovery_skeptic
+		}
 	}
 
-	# Burgher minister only: trade-focused alternative to colonial adventure
+	# Burgher minister only, dip > 40 — trade-focused alternative to colonial adventure
 	option = {
 		name = cc_traits.11.c
 		trigger = {
-			scope:minister = { has_estate = estate_type:burghers_estate }
+			scope:minister = {
+				has_estate = estate_type:burghers_estate
+				dip > 40
+			}
 		}
-		scope:minister = { add_trait = trait:cautious_merchant }
+		scope:minister = {
+			set_variable = cc_age_trait_11_done
+			add_trait = trait:cautious_merchant
+		}
 	}
 }
 
 # Age of Reformation — split by religion group
-# Christian → preacher (tolerant) or inquisitor (zealous)
-# Non-Christian → reformist_theologian (renewal) or orthodox_defender (tradition)
+# Christian: preacher (dip > 40) or inquisitor (always available fallback)
+# Non-Christian: reformist_theologian (always available) or orthodox_defender (mil > 35)
 # Clergy estate ministers weighted higher for selection
 cc_traits.12 = {
 	type = country_event
@@ -290,6 +331,7 @@ cc_traits.12 = {
 				has_trait = reformist_theologian
 				has_trait = orthodox_defender
 			}
+			NOT = { has_variable = cc_age_trait_12_done }
 		}
 	}
 
@@ -311,6 +353,7 @@ cc_traits.12 = {
 					has_trait = reformist_theologian
 					has_trait = orthodox_defender
 				}
+				NOT = { has_variable = cc_age_trait_12_done }
 			}
 		}
 	}
@@ -328,6 +371,7 @@ cc_traits.12 = {
 						has_trait = reformist_theologian
 						has_trait = orthodox_defender
 					}
+					NOT = { has_variable = cc_age_trait_12_done }
 				}
 			}
 			random_cabinet_character = {
@@ -340,6 +384,7 @@ cc_traits.12 = {
 						has_trait = reformist_theologian
 						has_trait = orthodox_defender
 					}
+					NOT = { has_variable = cc_age_trait_12_done }
 				}
 				save_scope_as = minister
 			}
@@ -354,43 +399,65 @@ cc_traits.12 = {
 						has_trait = reformist_theologian
 						has_trait = orthodox_defender
 					}
+					NOT = { has_variable = cc_age_trait_12_done }
 				}
 				save_scope_as = minister
 			}
 		}
 	}
 
-	# Christian countries
+	# Christian — tolerant preacher (premium: dip > 40)
 	option = {
 		name = cc_traits.12.a
-		trigger = { religion.group = religion_group:christian }
-		scope:minister = { add_trait = trait:reformation_preacher }
+		trigger = {
+			religion.group = religion_group:christian
+			scope:minister = { dip > 40 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_12_done
+			add_trait = trait:reformation_preacher
+		}
 	}
 
+	# Christian — zealous inquisitor (always available fallback for Christians)
 	option = {
 		name = cc_traits.12.b
 		trigger = { religion.group = religion_group:christian }
-		scope:minister = { add_trait = trait:reformation_inquisitor }
+		scope:minister = {
+			set_variable = cc_age_trait_12_done
+			add_trait = trait:reformation_inquisitor
+		}
 	}
 
-	# Non-Christian countries
+	# Non-Christian — reformist theologian (always available fallback)
 	option = {
 		name = cc_traits.12.c
 		trigger = { NOT = { religion.group = religion_group:christian } }
-		scope:minister = { add_trait = trait:reformist_theologian }
+		scope:minister = {
+			set_variable = cc_age_trait_12_done
+			add_trait = trait:reformist_theologian
+		}
 	}
 
+	# Non-Christian — orthodox defender (premium: mil > 35)
 	option = {
 		name = cc_traits.12.d
-		trigger = { NOT = { religion.group = religion_group:christian } }
-		scope:minister = { add_trait = trait:orthodox_defender }
+		trigger = {
+			NOT = { religion.group = religion_group:christian }
+			scope:minister = { mil > 35 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_12_done
+			add_trait = trait:orthodox_defender
+		}
 	}
 }
 
 # Age of Absolutism — one of five governance postures
-# noble_patron gated to monarchies
-# parliamentarian gated to countries with a parliamentary system
-# crown_theologian gated to clergy estate ministers
+# absolute_administrator and privilege_reformer always available (fallbacks)
+# noble_patron: monarchy + dip > 40 + noble_patronage_advance available
+# parliamentarian: parliamentary system + dip > 45
+# crown_theologian: clergy estate + adm > 40
 cc_traits.13 = {
 	type = country_event
 	title = cc_traits.13.title
@@ -411,6 +478,7 @@ cc_traits.13 = {
 				has_trait = privilege_reformer
 				has_trait = crown_theologian
 			}
+			NOT = { has_variable = cc_age_trait_13_done }
 		}
 	}
 
@@ -433,48 +501,78 @@ cc_traits.13 = {
 					has_trait = privilege_reformer
 					has_trait = crown_theologian
 				}
+				NOT = { has_variable = cc_age_trait_13_done }
 			}
 			save_scope_as = minister
 		}
 	}
 
+	# Centralizing administrator — always available
 	option = {
 		name = cc_traits.13.a
-		scope:minister = { add_trait = trait:absolute_administrator }
+		scope:minister = {
+			set_variable = cc_age_trait_13_done
+			add_trait = trait:absolute_administrator
+		}
 	}
 
-	# Monarchies only — noble patronage makes little sense in a republic
+	# Monarchies + dip > 40 + noble patronage advance available
 	option = {
 		name = cc_traits.13.b
-		trigger = { government_type = government_type:monarchy }
-		scope:minister = { add_trait = trait:noble_patron }
+		trigger = {
+			government_type = government_type:monarchy
+			scope:minister = { dip > 40 }
+			has_advance_available = noble_patronage_advance
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_13_done
+			add_trait = trait:noble_patron
+		}
 	}
 
-	# Countries with a parliamentary system only
+	# Parliamentary system + dip > 45
 	option = {
 		name = cc_traits.13.c
-		trigger = { modifier:has_a_parliamentary_system = yes }
-		scope:minister = { add_trait = trait:parliamentarian }
+		trigger = {
+			modifier:has_a_parliamentary_system = yes
+			scope:minister = { dip > 45 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_13_done
+			add_trait = trait:parliamentarian
+		}
 	}
 
+	# Privilege broker — always available
 	option = {
 		name = cc_traits.13.d
-		scope:minister = { add_trait = trait:privilege_reformer }
+		scope:minister = {
+			set_variable = cc_age_trait_13_done
+			add_trait = trait:privilege_reformer
+		}
 	}
 
-	# Clergy estate ministers only
+	# Clergy estate + adm > 40
 	option = {
 		name = cc_traits.13.e
 		trigger = {
-			scope:minister = { has_estate = estate_type:clergy_estate }
+			scope:minister = {
+				has_estate = estate_type:clergy_estate
+				adm > 40
+			}
 		}
-		scope:minister = { add_trait = trait:crown_theologian }
+		scope:minister = {
+			set_variable = cc_age_trait_13_done
+			add_trait = trait:crown_theologian
+		}
 	}
 }
 
 # Age of Revolutions — agitator, counterrevolutionary, or privilege champion
-# Burgher/peasant ministers weighted higher for selection (they feel revolutionary
-# pressures most acutely); all three options remain available to any minister
+# counterrevolutionary always available (fallback)
+# revolutionary_agitator: dip > 30
+# privilege_champion: adm > 30 + dip > 35
+# Burgher/peasant ministers weighted higher for selection
 cc_traits.14 = {
 	type = country_event
 	title = cc_traits.14.title
@@ -490,6 +588,7 @@ cc_traits.14 = {
 				has_trait = counterrevolutionary
 				has_trait = privilege_champion
 			}
+			NOT = { has_variable = cc_age_trait_14_done }
 		}
 	}
 
@@ -509,6 +608,7 @@ cc_traits.14 = {
 					has_trait = counterrevolutionary
 					has_trait = privilege_champion
 				}
+				NOT = { has_variable = cc_age_trait_14_done }
 			}
 		}
 	}
@@ -528,6 +628,7 @@ cc_traits.14 = {
 						has_trait = counterrevolutionary
 						has_trait = privilege_champion
 					}
+					NOT = { has_variable = cc_age_trait_14_done }
 				}
 			}
 			random_cabinet_character = {
@@ -542,6 +643,7 @@ cc_traits.14 = {
 						has_trait = counterrevolutionary
 						has_trait = privilege_champion
 					}
+					NOT = { has_variable = cc_age_trait_14_done }
 				}
 				save_scope_as = minister
 			}
@@ -555,34 +657,55 @@ cc_traits.14 = {
 						has_trait = counterrevolutionary
 						has_trait = privilege_champion
 					}
+					NOT = { has_variable = cc_age_trait_14_done }
 				}
 				save_scope_as = minister
 			}
 		}
 	}
 
+	# Radical agitator — dip > 30
 	option = {
 		name = cc_traits.14.a
-		scope:minister = { add_trait = trait:revolutionary_agitator }
+		trigger = {
+			scope:minister = { dip > 30 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_14_done
+			add_trait = trait:revolutionary_agitator
+		}
 	}
 
+	# Conservative defender — always available fallback
 	option = {
 		name = cc_traits.14.b
-		scope:minister = { add_trait = trait:counterrevolutionary }
+		scope:minister = {
+			set_variable = cc_age_trait_14_done
+			add_trait = trait:counterrevolutionary
+		}
 	}
 
+	# Privilege champion — adm > 30 + dip > 35
 	option = {
 		name = cc_traits.14.c
-		scope:minister = { add_trait = trait:privilege_champion }
+		trigger = {
+			scope:minister = { adm > 30  dip > 35 }
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_14_done
+			add_trait = trait:privilege_champion
+		}
 	}
 }
 
 ###############################################################################
 # TEACHABLE TRAITS
+# Moved to biyearly pulse to reduce frequency.
 ###############################################################################
 
 # Ruler Teaches a Cabinet Member
 # The ruler's expertise shapes the development of a young minister.
+# Variable cc_teach_20_done prevents repeat offers to the same student.
 cc_traits.20 = {
 	type = country_event
 	title = cc_traits.20.title
@@ -607,6 +730,7 @@ cc_traits.20 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			character_age < 40
+			NOT = { has_variable = cc_teach_20_done }
 		}
 	}
 
@@ -616,11 +740,13 @@ cc_traits.20 = {
 			limit = {
 				in_cabinet = yes
 				character_age < 40
+				NOT = { has_variable = cc_teach_20_done }
 			}
 			save_scope_as = student
 		}
 	}
 
+	# Military tradition — ruler has war_hawk/iron_disciplinarian + student mil > 25
 	option = {
 		name = cc_traits.20.a
 		trigger = {
@@ -630,10 +756,15 @@ cc_traits.20 = {
 					has_trait = iron_disciplinarian
 				}
 			}
+			scope:student = { mil > 25 }
 		}
-		scope:student = { add_trait = trait:tactical_advisor }
+		scope:student = {
+			set_variable = cc_teach_20_done
+			add_trait = trait:tactical_advisor
+		}
 	}
 
+	# Scholarly tradition — ruler has ecumenist/progressive_reformist + student adm > 25
 	option = {
 		name = cc_traits.20.b
 		trigger = {
@@ -643,10 +774,15 @@ cc_traits.20 = {
 					has_trait = progressive_reformist
 				}
 			}
+			scope:student = { adm > 25 }
 		}
-		scope:student = { add_trait = trait:learned_counselor }
+		scope:student = {
+			set_variable = cc_teach_20_done
+			add_trait = trait:learned_counselor
+		}
 	}
 
+	# Statecraft tradition — ruler has shadow_counselor/loyal_steward + student dip > 25
 	option = {
 		name = cc_traits.20.c
 		trigger = {
@@ -656,16 +792,24 @@ cc_traits.20 = {
 					has_trait = loyal_steward
 				}
 			}
+			scope:student = { dip > 25 }
 		}
-		scope:student = { add_trait = trait:loyal_steward }
+		scope:student = {
+			set_variable = cc_teach_20_done
+			add_trait = trait:loyal_steward
+		}
 	}
 
+	# Dismiss — marks student so they won't be re-selected
 	option = {
 		name = cc_traits.20.d
+		scope:student = { set_variable = cc_teach_20_done }
 	}
 }
 
 # Peer Learning — an idle young minister develops from observing peers
+# loyal_steward option now gated to dip > 50.
+# Variable cc_teach_21_done prevents re-offering.
 cc_traits.21 = {
 	type = country_event
 	title = cc_traits.21.title
@@ -681,6 +825,7 @@ cc_traits.21 = {
 			dip > 50
 			mil > 50
 			num_of_traits_of_category = { type = cabinet  value < 1 }
+			NOT = { has_variable = cc_teach_21_done }
 		}
 	}
 
@@ -694,26 +839,42 @@ cc_traits.21 = {
 				dip > 50
 				mil > 50
 				num_of_traits_of_category = { type = cabinet  value < 1 }
+				NOT = { has_variable = cc_teach_21_done }
 			}
 			save_scope_as = learner
 		}
 	}
 
+	# Scholarly focus — always available
 	option = {
 		name = cc_traits.21.a
-		scope:learner = { add_trait = trait:learned_counselor }
+		scope:learner = {
+			set_variable = cc_teach_21_done
+			add_trait = trait:learned_counselor
+		}
 	}
 
+	# Military focus — mil > 55
 	option = {
 		name = cc_traits.21.b
 		trigger = {
 			scope:learner ?= { mil > 55 }
 		}
-		scope:learner = { add_trait = trait:tactical_advisor }
+		scope:learner = {
+			set_variable = cc_teach_21_done
+			add_trait = trait:tactical_advisor
+		}
 	}
 
+	# Diplomatic focus — dip > 50 (always met by trigger but confirms intent)
 	option = {
 		name = cc_traits.21.c
-		scope:learner = { add_trait = trait:loyal_steward }
+		trigger = {
+			scope:learner = { dip > 50 }
+		}
+		scope:learner = {
+			set_variable = cc_teach_21_done
+			add_trait = trait:loyal_steward
+		}
 	}
 }
