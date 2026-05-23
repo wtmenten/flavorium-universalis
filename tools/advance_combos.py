@@ -49,12 +49,316 @@ AGE_LABELS = {
     "age_6_revolutions":  "Age of Revolutions",
 }
 
+GAME_COMMON_DIR = GAME_ADVANCES_DIR.parent
+MOD_COMMON_DIR  = MOD_ADVANCES_DIR.parent
+
 # Keys that belong to the advance definition itself, not counted as effects
 SKIP_KEYS = {
     "age", "icon", "requires", "for", "depth", "ai_weight",
     "potential", "allow", "ai_preference_tags", "research_cost",
     "starting_technology_level", "allow_children", "has_cultural_maintenance",
 }
+
+# -- unlock definition parser ------------------------------------------------
+# Block keys that are scripted conditions/events — skip their sub-blocks
+_COND_KEYS: set[str] = {
+    "potential", "allow", "trigger", "limit", "visible", "creation_visible",
+    "join_offensive_wars_always", "join_offensive_wars_can_call",
+    "join_defensive_wars_always", "join_defensive_wars_can_call",
+    "diplo_chance_accept_subject", "diplo_chance_accept_overlord",
+    "ai_wants_to_be_overlord", "ai_wants_to_be_subject",
+    "on_enable", "on_disable", "on_activate", "on_revoke", "can_revoke",
+    "can_pass", "location_potential", "country_potential", "remove_if",
+    "unique_production_methods", "possible_production_methods",
+    "construction_demand", "graphical_tags", "estate_preferences",
+    "enabled_through_diplomacy", "visible_through_diplomacy",
+    "allow_declaring_wars", "ai_will_do", "start_effect", "select_trigger",
+    "hidden", "map", "diplo_chance_accept", "visible_through_nation_designer",
+    "combat", "maintenance_demand",
+}
+
+
+def _parse_dict(tokens: list[str], start: int) -> tuple[dict, int]:
+    """Recursive descent: parse key=value pairs from start until matching '}'."""
+    result: dict = {}
+    i = start
+    n = len(tokens)
+    while i < n:
+        t = tokens[i]
+        if t == "}":
+            return result, i + 1
+        if t == "{":
+            # bare anonymous block — skip
+            i += 1
+            depth = 1
+            while i < n and depth:
+                if tokens[i] == "{":
+                    depth += 1
+                elif tokens[i] == "}":
+                    depth -= 1
+                i += 1
+            continue
+        if i + 1 < n and tokens[i + 1] == "=":
+            key = t
+            i += 2
+            if i < n and tokens[i] == "{":
+                i += 1  # consume '{'
+                if key in _COND_KEYS:
+                    depth = 1
+                    while i < n and depth:
+                        if tokens[i] == "{":
+                            depth += 1
+                        elif tokens[i] == "}":
+                            depth -= 1
+                        i += 1
+                else:
+                    sub, i = _parse_dict(tokens, i)
+                    existing = result.get(key)
+                    if existing is None:
+                        result[key] = sub
+                    elif isinstance(existing, list):
+                        existing.append(sub)
+                    else:
+                        result[key] = [existing, sub]
+            else:
+                val = tokens[i] if i < n else ""
+                i += 1
+                existing = result.get(key)
+                if existing is None:
+                    result[key] = val
+                elif isinstance(existing, list):
+                    existing.append(val)
+                else:
+                    result[key] = [existing, val]
+        else:
+            i += 1
+    return result, i
+
+
+def _parse_defs_from_file(path: Path) -> dict[str, dict]:
+    """Parse named top-level blocks from a Clausewitz file → {name: block_dict}."""
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except Exception:
+        try:
+            text = path.read_text(encoding="cp1252")
+        except Exception:
+            return {}
+    text = re.sub(r"#[^\n]*", "", text)
+    tokens = re.findall(r'"[^"]*"|\{|\}|=|[^\s{}="]+', text)
+    defs: dict[str, dict] = {}
+    i = 0
+    n = len(tokens)
+    while i < n:
+        if i + 2 < n and tokens[i + 1] == "=" and tokens[i + 2] == "{":
+            name = tokens[i]
+            i += 3
+            block, i = _parse_dict(tokens, i)
+            defs[name] = block
+        else:
+            i += 1
+    return defs
+
+
+def _flat_modifier(block) -> list[tuple[str, str]]:
+    """Flatten a modifier dict to [(key, value)] keeping only scalar string values."""
+    if not isinstance(block, dict):
+        return []
+    out = []
+    for k, v in block.items():
+        if isinstance(v, str):
+            out.append((k, v))
+        elif isinstance(v, list) and v and all(isinstance(x, str) for x in v):
+            out.append((k, ", ".join(v)))
+    return out
+
+
+# -- per-type extractors -------------------------------------------------------
+
+def _extract_subject_type(_name: str, block: dict) -> list[dict]:
+    sections = []
+    for key, label in [("overlord_modifier", "Overlord"), ("subject_modifier", "Subject")]:
+        entries = _flat_modifier(block.get(key))
+        if entries:
+            sections.append({"label": label, "entries": entries})
+    STAT_KEYS = {
+        "strength_vs_overlord", "diplomatic_capacity_cost_scale",
+        "annexation_min_opinion", "annexation_min_years_before",
+        "institution_spread_to_overlord", "institution_spread_to_subject",
+        "great_power_score_transfer", "subject_pays",
+    }
+    stats = [(k, v) for k, v in block.items() if k in STAT_KEYS and isinstance(v, str)]
+    if stats:
+        sections.append({"label": "Stats", "entries": stats})
+    return sections
+
+
+def _extract_estate_privilege(_name: str, block: dict) -> list[dict]:
+    sections = []
+    entries = _flat_modifier(block.get("country_modifier"))
+    if entries:
+        sections.append({"label": "Country", "entries": entries})
+    return sections
+
+
+def _extract_government_reform(_name: str, block: dict) -> list[dict]:
+    sections = []
+    entries = _flat_modifier(block.get("country_modifier"))
+    if entries:
+        meta = []
+        if "age" in block:
+            meta.append(("age", block["age"]))
+        if "years" in block:
+            meta.append(("duration", f"{block['years']} years"))
+        if meta:
+            sections.append({"label": "Info", "entries": meta})
+        sections.append({"label": "Modifier", "entries": entries})
+    return sections
+
+
+def _extract_building(_name: str, block: dict) -> list[dict]:
+    sections = []
+    loc = _flat_modifier(block.get("modifier"))
+    if loc:
+        sections.append({"label": "Location", "entries": loc})
+    cap = _flat_modifier(block.get("capital_country_modifier"))
+    if cap:
+        sections.append({"label": "Country (capital)", "entries": cap})
+    INFO_KEYS = {"max_levels", "pop_type", "category", "build_time"}
+    info = [(k, v) for k, v in block.items() if k in INFO_KEYS and isinstance(v, str)]
+    if info:
+        sections.append({"label": "Info", "entries": info})
+    return sections
+
+
+def _extract_law(_name: str, block: dict) -> list[dict]:
+    sections = []
+    INFO_KEYS = {"law_category", "law_gov_group"}
+    info = [(k, v) for k, v in block.items() if k in INFO_KEYS and isinstance(v, str)]
+    if info:
+        sections.append({"label": "Info", "entries": info})
+    # Named variant sub-blocks each containing country_modifier
+    for key, val in block.items():
+        if isinstance(val, dict):
+            entries = _flat_modifier(val.get("country_modifier"))
+            if entries:
+                label = key.replace("_", " ").title()
+                sections.append({"label": label, "entries": entries})
+    return sections
+
+
+def _extract_casus_belli(_name: str, block: dict) -> list[dict]:
+    KEYS = {"war_goal_type", "no_cb", "badboy"}
+    entries = [(k, v) for k, v in block.items() if k in KEYS and isinstance(v, str)]
+    if entries:
+        return [{"label": "CB", "entries": entries}]
+    return []
+
+
+def _extract_unit(_name: str, block: dict) -> list[dict]:
+    KEYS = {"copy_from", "strength_damage_taken", "morale_damage_taken", "buildable"}
+    entries = [(k, v) for k, v in block.items() if k in KEYS and isinstance(v, str)]
+    if entries:
+        return [{"label": "Unit", "entries": entries}]
+    return []
+
+
+def _extract_levy(_name: str, block: dict) -> list[dict]:
+    KEYS = {"unit", "size", "allowed_pop_type"}
+    entries = []
+    for k, v in block.items():
+        if k not in KEYS:
+            continue
+        if isinstance(v, str):
+            entries.append((k, v))
+        elif isinstance(v, list) and all(isinstance(x, str) for x in v):
+            entries.append((k, ", ".join(v)))
+    if entries:
+        return [{"label": "Levy", "entries": entries}]
+    return []
+
+
+def _extract_interaction(_name: str, block: dict) -> list[dict]:
+    KEYS = {"type", "category"}
+    entries = [(k, v) for k, v in block.items() if k in KEYS and isinstance(v, str)]
+    if entries:
+        return [{"label": "Interaction", "entries": entries}]
+    return []
+
+
+def _extract_ability(_name: str, block: dict) -> list[dict]:
+    KEYS = {"toggle", "army_only", "navy_only"}
+    entries = [(k, v) for k, v in block.items() if k in KEYS and isinstance(v, str)]
+    if entries:
+        return [{"label": "Ability", "entries": entries}]
+    return []
+
+
+# Map unlock_type → (directories to search, extractor function)
+_UNLOCK_EXTRACTOR_CONFIG: list[tuple[str, list[Path], object]] = [
+    ("unlock_subject_type",
+     [GAME_COMMON_DIR / "subject_types", MOD_COMMON_DIR / "subject_types"],
+     _extract_subject_type),
+    ("unlock_estate_privilege",
+     [GAME_COMMON_DIR / "estate_privileges", MOD_COMMON_DIR / "estate_privileges"],
+     _extract_estate_privilege),
+    ("unlock_government_reform",
+     [GAME_COMMON_DIR / "government_reforms", MOD_COMMON_DIR / "government_reforms"],
+     _extract_government_reform),
+    ("unlock_building",
+     [GAME_COMMON_DIR / "building_types", MOD_COMMON_DIR / "building_types"],
+     _extract_building),
+    ("unlock_law",
+     [GAME_COMMON_DIR / "laws", MOD_COMMON_DIR / "laws"],
+     _extract_law),
+    ("unlock_casus_belli",
+     [GAME_COMMON_DIR / "casus_belli", MOD_COMMON_DIR / "casus_belli"],
+     _extract_casus_belli),
+    ("unlock_unit",
+     [GAME_COMMON_DIR / "unit_types", MOD_COMMON_DIR / "unit_types"],
+     _extract_unit),
+    ("unlock_levy",
+     [GAME_COMMON_DIR / "levies", MOD_COMMON_DIR / "levies"],
+     _extract_levy),
+    ("unlock_interaction",
+     [GAME_COMMON_DIR / "country_interactions", MOD_COMMON_DIR / "country_interactions"],
+     _extract_interaction),
+    ("unlock_ability",
+     [GAME_COMMON_DIR / "unit_abilities", MOD_COMMON_DIR / "unit_abilities"],
+     _extract_ability),
+]
+
+
+def load_unlock_defs(advances: list[dict]) -> dict:
+    """Parse game/mod files and return tooltip data only for IDs referenced in advances."""
+    # Collect the exact IDs each unlock type needs
+    needed: dict[str, set[str]] = defaultdict(set)
+    for adv in advances:
+        for k, v in adv.get("_effects", []):
+            if k.startswith("unlock_"):
+                needed[k].add(v)
+
+    result: dict[str, dict] = {}
+    for unlock_type, dirs, extractor in _UNLOCK_EXTRACTOR_CONFIG:
+        ids_needed = needed.get(unlock_type)
+        if not ids_needed:
+            continue
+        type_defs: dict[str, dict] = {}
+        for d in dirs:
+            if not d.exists():
+                continue
+            for path in sorted(d.glob("*.txt")):
+                if path.stem.lower() == "readme":
+                    continue
+                for name, block in _parse_defs_from_file(path).items():
+                    if name in ids_needed and name not in type_defs:
+                        sections = extractor(name, block)
+                        if sections:
+                            type_defs[name] = {"sections": sections}
+        if type_defs:
+            result[unlock_type] = type_defs
+    return result
+
 
 # -- parser ------------------------------------------------------------------
 
@@ -360,10 +664,14 @@ def build_data(groups: dict, mod_names: set[str], target_ages: list[str]) -> dic
     }
 
 
-def generate_data_js(groups: dict, mod_names: set[str], target_ages: list[str]) -> str:
-    data      = build_data(groups, mod_names, target_ages)
-    data_json = json.dumps(data, separators=(",", ":"))
-    return f"const D = {data_json};\n"
+def generate_data_js(
+    groups: dict, mod_names: set[str], target_ages: list[str], advances: list[dict]
+) -> str:
+    data         = build_data(groups, mod_names, target_ages)
+    data_json    = json.dumps(data, separators=(",", ":"))
+    unlock_defs  = load_unlock_defs(advances)
+    defs_json    = json.dumps(unlock_defs, separators=(",", ":"))
+    return f"const D = {data_json};\nconst UNLOCK_DEFS = {defs_json};\n"
 
 
 # -- entry point -------------------------------------------------------------
@@ -397,7 +705,11 @@ def main():
 
     if args.json:
         out_path = Path(args.json)
-        out_path.write_text(generate_data_js(groups, mod_names, target_ages), encoding="utf-8")
+        print("  Loading unlock definitions...", file=sys.stderr)
+        out_path.write_text(
+            generate_data_js(groups, mod_names, target_ages, advances),
+            encoding="utf-8",
+        )
         print(f"Written: {out_path.resolve()}", file=sys.stderr)
         print(f"  Open tools/advance_explorer.html in a browser to explore.", file=sys.stderr)
         return

@@ -36,6 +36,7 @@ button{font-family:inherit;cursor:pointer}
 .left{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .right{border-left:1px solid var(--card-border);background:var(--panel-bg);overflow-y:auto;padding:14px}
 .age-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;flex-shrink:0}
+.age-card.adv-hidden .branch-col .adv-block {display: none;}
 .age-title{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--hover-bg);font-weight:600;font-size:12px;border-bottom:1px solid var(--card-border)}
 .univ-tag{font-size:10px;font-weight:400;color:var(--text-dim)}
 .branch-tabs{display:flex;border-bottom:1px solid var(--card-border)}
@@ -81,6 +82,7 @@ details[open] .univ-strip summary::before{content:'-'}
 .tip-row{padding:2px 0;display:flex;gap:5px;align-items:baseline}
 .tip-val{color:var(--text);font-weight:600;flex-shrink:0}
 .tip-src{color:var(--text-mid)}
+.right.by-key .sum-section.sm .sum-group{display: flex;}
 .sum-header{display:flex;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--card-border)}
 .sum-header h2{font-size:13px;font-weight:600}
 .combo-label{font-size:10px;color:var(--text-dim);margin-bottom:12px;line-height:1.8}
@@ -98,6 +100,14 @@ details[open] .univ-strip summary::before{content:'-'}
 .empty{font-size:11px;color:var(--text-dim);font-style:italic;padding:4px 0}
 .loading{display:flex;align-items:center;justify-content:center;height:100vh;font-size:14px;color:var(--text-dim)}
 .loading-err{color:#ff6b6b}
+.def-link{color:var(--unlock);text-decoration:underline dotted;text-decoration-color:rgba(90,191,122,.35);cursor:help}
+.def-tip{min-width:260px;max-width:380px;white-space:normal;word-break:break-word}
+.def-tip-name{font-weight:700;color:var(--text);margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--card-border);font-size:11px}
+.def-section{margin-top:5px}
+.def-sh{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-mid);margin-bottom:2px}
+.def-row{display:flex;justify-content:space-between;gap:8px;padding:1px 0}
+.def-k{color:var(--text-dim);font-size:9px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.def-v{color:var(--text);font-size:9px;font-weight:500;flex-shrink:0;text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -151,13 +161,37 @@ details[open] .univ-strip summary::before{content:'-'}
     return m;
   };
 
+  const getUnlockDef = (unlockKey, value) =>
+    (typeof UNLOCK_DEFS !== 'undefined') && UNLOCK_DEFS?.[unlockKey]?.[value];
+
   // ── components ───────────────────────────────────────────────────────────────
+
+  function UnlockTip({ unlockKey, value }) {
+    const def = getUnlockDef(unlockKey, value);
+    if (!def?.sections?.length) return html`${value}`;
+    return html`
+      <span class="tip-host">
+        <span class="def-link">${value}</span>
+        <div class="tip-box def-tip">
+          <div class="def-tip-name">${value}</div>
+          ${def.sections.map((s, si) => html`
+            <div key=${si} class="def-section">
+              <div class="def-sh">${s.label}</div>
+              ${s.entries.map(([k, v], ei) => html`
+                <div key=${ei} class="def-row">
+                  <span class="def-k">${k}</span>
+                  <span class="def-v">${v}</span>
+                </div>`)}
+            </div>`)}
+        </div>
+      </span>`;
+  }
 
   function Pill({ label, active, onClick }) {
     return html`<button class=${`pill${active?' on':''}`} onClick=${onClick}>${label}</button>`;
   }
 
-  function Header({ grp, show, showUniv, onGrp, onShow, onToggleUniv }) {
+  function Header({ grp, show, showUniv, showAdvances, onGrp, onShow, onToggleUniv, onToggleAdvances}) {
     return html`
       <div class="header">
         <h1>Advance Branch Explorer</h1>
@@ -178,7 +212,8 @@ details[open] .univ-strip summary::before{content:'-'}
           </div>
           <div class="ctl-sep"></div>
           <div class="pill-group">
-            <${Pill} label="Universal" active=${showUniv} onClick=${onToggleUniv} />
+            <${Pill} label="Uni. Adv." active=${showUniv} onClick=${onToggleUniv} />
+            <${Pill} label="Branch Adv." active=${showAdvances} onClick=${onToggleAdvances} />
           </div>
         </div>
       </div>`;
@@ -192,7 +227,9 @@ details[open] .univ-strip summary::before{content:'-'}
           ${adv.isMod && html`<span class="mod-badge">MOD</span>`}
         </div>
         ${adv.effects.map(([k,v]) => html`
-          <div class=${`fx ${isUnlock(k)?'fxu':'fxm'}`}>${k} = ${v}</div>`)}
+          <div class=${`fx ${isUnlock(k)?'fxu':'fxm'}`}>
+            ${k} = ${isUnlock(k) ? html`<${UnlockTip} unlockKey=${k} value=${v} />` : v}
+          </div>`)}
       </div>`;
   }
 
@@ -213,7 +250,7 @@ details[open] .univ-strip summary::before{content:'-'}
           return html`
             <div key=${i} class="col-sum-row">
               <span class="cat-label" style=${chipStyle}>${cat.label}</span>
-              ${e.v}
+              <${UnlockTip} unlockKey=${e.k} value=${e.v} />
               ${e.isMod && html`<span class="mod-badge">MOD</span>`}
             </div>`;
         })}
@@ -241,11 +278,11 @@ details[open] .univ-strip summary::before{content:'-'}
       </div>`;
   }
 
-  function AgeCard({ age, selected, showUniv, onPick }) {
+  function AgeCard({ age, selected, showUniv, showAdvances, onPick }) {
     const B      = D.branches[age];
     const univFx = (B.universal||[]).filter(a => a.effects.length > 0);
     return html`
-      <div class="age-card">
+      <div class="age-card ${showAdvances?'':'adv-hidden'}">
         <div class="age-title">
           ${D.ageLabels[age]}
           ${univFx.length > 0 && html`<span class="univ-tag">(+${univFx.length} universal)</span>`}
@@ -290,7 +327,9 @@ details[open] .univ-strip summary::before{content:'-'}
           <div key=${i} class="sum-item">
             <span class="sum-key">${e.k}</span>
             <span style="color:var(--text-dim)">=</span>
-            <span class="sum-val">${e.v}</span>
+            <span class="sum-val">
+              ${isUnlock(e.k) ? html`<${UnlockTip} unlockKey=${e.k} value=${e.v} />` : e.v}
+            </span>
             <span class="sum-src">— ${e.src}${e.isMod && html`<span class="mod-badge">MOD</span>`}</span>
           </div>`)}
       </div>`;
@@ -320,7 +359,9 @@ details[open] .univ-strip summary::before{content:'-'}
             </span>
           </div>` : items.map((e,i) => html`
           <div key=${i} class="sum-item">
-            <span class="sum-val">${e.v}</span>
+            <span class="sum-val">
+              ${isUnlock(keyName) ? html`<${UnlockTip} unlockKey=${keyName} value=${e.v} />` : e.v}
+            </span>
             <span class="sum-src">— ${e.src}${e.isMod && html`<span class="mod-badge">MOD</span>`} (${e.ageLabel.replace('Age of ','')})</span>
           </div>`)}
       </div>`;
@@ -360,7 +401,7 @@ details[open] .univ-strip summary::before{content:'-'}
     const modifiers = filtered.filter(e=>!isUnlock(e.k));
 
     return html`
-      <div class="right">
+      <div class="right by-${grp}">
         <div class="sum-header"><h2>Summary</h2></div>
         <div class="combo-label">
           ${D.ages.map((age, i) => html`
@@ -382,7 +423,8 @@ details[open] .univ-strip summary::before{content:'-'}
     const [sel,      setSel]      = useState({});
     const [grp,      setGrp]      = useState('age');
     const [show,     setShow]     = useState('all');
-    const [showUniv, setShowUniv] = useState(true);
+    const [showUniv, setShowUniv] = useState(false);
+    const [showAdvances, setShowAdvances] = useState(false);
 
     useEffect(() => {
       const init = {};
@@ -397,13 +439,13 @@ details[open] .univ-strip summary::before{content:'-'}
 
     return html`
       <div class="app">
-        <${Header} grp=${grp} show=${show} showUniv=${showUniv}
-          onGrp=${setGrp} onShow=${setShow} onToggleUniv=${()=>setShowUniv(v=>!v)} />
+        <${Header} grp=${grp} show=${show} showUniv=${showUniv} showAdvances=${showAdvances}
+          onGrp=${setGrp} onShow=${setShow} onToggleUniv=${()=>setShowUniv(v=>!v)} onToggleAdvances=${()=>setShowAdvances(v=>!v)} />
         <div class="body">
           <div class="left">
             ${D.ages.map(age => html`
               <${AgeCard} key=${age} age=${age} selected=${sel[age]}
-                showUniv=${showUniv} onPick=${b=>pick(age,b)} />`)}
+                showUniv=${showUniv} showAdvances=${showAdvances} onPick=${b=>pick(age,b)} />`)}
           </div>
           <${SummaryPanel} sel=${sel} grp=${grp} show=${show} showUniv=${showUniv} />
         </div>
