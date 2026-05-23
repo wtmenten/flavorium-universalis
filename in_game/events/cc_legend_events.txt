@@ -279,3 +279,73 @@ cc_legend.5 = {
 		add_country_modifier = { modifier = cc_synergy_peoples_tribune years = 20 }
 	}
 }
+
+# Quest 8: "The Age of Exploration"
+# Requires: age 3+, exploration-trait minister, chartered_company subject, maritime_champion minister
+# Grants: legendary_navigator to the exploring minister + permanent explorer modifier + explorer guild reform unlock
+cc_legend.8 = {
+	type = country_event
+	title = cc_legend.8.title
+	desc = cc_legend.8.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = new_world_pioneer
+				has_trait = expansionist_advisor
+				has_trait = age_of_discovery_pioneer
+			}
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = maritime_champion
+		}
+		any_subject = { is_subject_type = chartered_company }
+		NOT = { has_variable = cc_legend_8_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_legend_8_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = new_world_pioneer
+					has_trait = expansionist_advisor
+					has_trait = age_of_discovery_pioneer
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Age of Exploration legend — legendary_navigator + permanent modifier + reform unlock
+	option = {
+		name = cc_legend.8.a
+		set_variable = { name = cc_legend_exploration_unlocked value = yes }
+		scope:minister = { add_trait = trait:legendary_navigator }
+		add_country_modifier = { modifier = cc_legend_age_of_exploration years = -1 }
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_legend.8.a.tt
+	}
+
+	# Fallback — prestige + colonial syndicate modifier
+	option = {
+		name = cc_legend.8.b
+		add_prestige = prestige_severe_bonus
+		add_country_modifier = { modifier = cc_synergy_colonial_syndicate years = 20 }
+	}
+}

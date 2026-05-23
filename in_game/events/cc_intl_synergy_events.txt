@@ -1,0 +1,1056 @@
+﻿namespace = cc_intl
+
+###############################################################################
+# CROSS-COUNTRY SYNERGY EVENTS (cc_intl namespace)
+# Fire from yearly_country_pulse when your minister/ruler trait combination
+# matches a condition on a neighboring country — ruler, cabinet, religion, or
+# government type. Effects cross the border: modifiers, CBs, opinion shifts,
+# migration flavor, estate satisfaction, gold.
+# Cooldowns prevent rapid re-fires; set on root or on the partner country.
+###############################################################################
+
+###############################################################################
+# GROUP A — INTELLECTUAL & SCHOLARLY
+###############################################################################
+
+# cc_intl.1 — "The Philosopher's Exchange"
+# Your enlightened minister + an innovative neighboring court.
+# Flavor: Renaissance correspondence between scholars of rival courts.
+cc_intl.1 = {
+	type = country_event
+	title = cc_intl.1.title
+	desc = cc_intl.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = enlightenment_herald
+				has_trait = progressive_rationalist
+			}
+		}
+		any_neighbor_country = {
+			NOT = { has_variable = cc_intl_1_fired }
+			societal_value:traditionalist_vs_innovative < -20
+		}
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = {
+				NOT = { has_variable = cc_intl_1_fired }
+				societal_value:traditionalist_vs_innovative < -20
+			}
+			save_scope_as = scholar_nation
+			set_variable = { name = cc_intl_1_fired value = yes years = 12 }
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = enlightenment_herald
+					has_trait = progressive_rationalist
+				}
+			}
+			save_scope_as = scholar_minister
+		}
+		scope:scholar_nation = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Formal scholarly exchange — both courts benefit
+	option = {
+		name = cc_intl.1.a
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
+		scope:scholar_nation = {
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_opinion = { target = scope:scholar_nation modifier = cc_intl_scholarly_bond }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Invite their scholars exclusively — a one-way migration of talent
+	option = {
+		name = cc_intl.1.b
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:scholar_nation.culture
+			religion = scope:scholar_nation.religion
+			type = pop_type:burghers
+			months = 24
+			amount = 0.025
+		}
+		scope:scholar_nation = {
+			add_prestige = prestige_mild_bonus
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+	}
+
+	# Decline — the court maintains its own intellectual independence
+	option = {
+		name = cc_intl.1.c
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+# cc_intl.2 — "Scholars in Exile"
+# Your learned minister attracts scholars fleeing a neighbor's war.
+# Flavor: Flight of talent from warring states — historical in every era.
+cc_intl.2 = {
+	type = country_event
+	title = cc_intl.2.title
+	desc = cc_intl.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_2_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = learned_courtier
+				has_trait = master_urbanist
+				has_trait = grand_architect
+			}
+		}
+		any_neighbor_country = { at_war = yes }
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_2_cooldown value = yes years = 12 }
+		random_neighbor_country = {
+			limit = { at_war = yes }
+			save_scope_as = war_nation
+		}
+		scope:war_nation = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Open the court — scholars arrive and enrich the capital
+	option = {
+		name = cc_intl.2.a
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:war_nation.culture
+			religion = scope:war_nation.religion
+			type = pop_type:burghers
+			months = 36
+			amount = 0.025
+		}
+		scope:war_nation = {
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Recruit selectively — fund targeted outreach for the best minds
+	option = {
+		name = cc_intl.2.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:war_nation.culture
+			religion = scope:war_nation.religion
+			type = pop_type:burghers
+			months = 24
+			amount = 0.025
+		}
+	}
+
+	# Remain neutral — do not invite refugees, maintain diplomatic stability
+	option = {
+		name = cc_intl.2.c
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+# cc_intl.3 — "The Rival Philosopher"
+# Your ruler has philosopher_king trait (or enlightened cabinet) + innovative neighbor.
+# Flavor: Two enlightened courts competing for cultural supremacy.
+cc_intl.3 = {
+	type = country_event
+	title = cc_intl.3.title
+	desc = cc_intl.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_3_cooldown }
+		OR = {
+			ruler = { has_trait = philosopher_king }
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = progressive_rationalist
+					has_trait = enlightenment_herald
+				}
+			}
+		}
+		any_neighbor_country = {
+			societal_value:traditionalist_vs_innovative < -30
+			NOT = { this = root }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_3_cooldown value = yes years = 15 }
+		random_neighbor_country = {
+			limit = {
+				societal_value:traditionalist_vs_innovative < -30
+				NOT = { this = root }
+			}
+			save_scope_as = rival_court
+		}
+	}
+
+	# Let the rivalry sharpen both courts — competitive innovation
+	option = {
+		name = cc_intl.3.a
+		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10 }
+		scope:rival_court = {
+			add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10 }
+			add_opinion = { modifier = cc_intl_rival_court target = root }
+		}
+		add_opinion = { target = scope:rival_court modifier = cc_intl_rival_court }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Assert cultural preeminence — challenge their standing openly
+	option = {
+		name = cc_intl.3.b
+		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 12 }
+		culture = { add_cultural_influence = cultural_influence_mild_bonus }
+		scope:rival_court = {
+			add_opinion = { modifier = cc_intl_rival_court target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Propose a joint philosophical academy — costs gold, benefits both
+	option = {
+		name = cc_intl.3.c
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		scope:rival_court = {
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_opinion = { target = scope:rival_court modifier = cc_intl_scholarly_bond }
+		add_prestige = prestige_severe_bonus
+	}
+}
+
+
+###############################################################################
+# GROUP B — MILITARY COOPERATION
+###############################################################################
+
+# cc_intl.4 — "The Marshal's Doctrine"
+# Your supreme_commander or cavalry_marshal + any neighbor with notable military.
+# Flavor: Premodern courts routinely exchanged military doctrine and advisors.
+cc_intl.4 = {
+	type = country_event
+	title = cc_intl.4.title
+	desc = cc_intl.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_4_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = supreme_commander
+				has_trait = cavalry_marshal
+				has_trait = siege_engineer
+			}
+		}
+		any_neighbor_country = {
+			NOT = { has_variable = cc_intl_4_partnered }
+			at_war = yes
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_4_cooldown value = yes years = 10 }
+		random_neighbor_country = {
+			limit = {
+				NOT = { has_variable = cc_intl_4_partnered }
+				at_war = yes
+			}
+			save_scope_as = military_ally
+			set_variable = { name = cc_intl_4_partnered value = yes years = 10 }
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = supreme_commander
+					has_trait = cavalry_marshal
+					has_trait = siege_engineer
+				}
+			}
+			save_scope_as = military_minister
+		}
+		scope:military_ally = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Share our doctrine — they improve, we gain prestige and noble goodwill
+	option = {
+		name = cc_intl.4.a
+		scope:military_ally = {
+			add_country_modifier = { modifier = cc_intl_military_exchange years = 10 }
+			add_opinion = { modifier = cc_intl_military_bond target = root }
+		}
+		add_opinion = { target = scope:military_ally modifier = cc_intl_military_bond }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Request their veterans in exchange — migration of experienced soldiers to our service
+	option = {
+		name = cc_intl.4.b
+		add_country_modifier = { modifier = cc_intl_military_exchange years = 10 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:military_ally.culture
+			religion = scope:military_ally.religion
+			type = pop_type:nobles
+			months = 12
+			amount = 0.005
+		}
+		scope:military_ally = {
+			add_gold = {
+				value = monthly_income_trade_and_tax
+				multiply = 8
+			}
+		}
+	}
+
+	# Sell our expertise — profit, no reciprocity
+	option = {
+		name = cc_intl.4.c
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = 8
+		}
+		scope:military_ally = {
+			add_country_modifier = { modifier = cc_intl_military_exchange years = 8 }
+		}
+	}
+}
+
+
+# cc_intl.5 — "Nomadic Migration"
+# Your steppe_warlord_advisor or steppe_strategos + tribal/horde neighbor.
+# Flavor: The steppe frontier was defined by alliances with nomadic peoples.
+cc_intl.5 = {
+	type = country_event
+	title = cc_intl.5.title
+	desc = cc_intl.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_5_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = steppe_warlord_advisor
+				has_trait = steppe_strategos
+			}
+		}
+		any_neighbor_country = {
+			OR = {
+				government_type = government_type:tribe
+				government_type = government_type:steppe_horde
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_5_cooldown value = yes years = 15 }
+		random_neighbor_country = {
+			limit = {
+				OR = {
+					government_type = government_type:tribe
+					government_type = government_type:steppe_horde
+				}
+			}
+			save_scope_as = steppe_neighbor
+		}
+		scope:steppe_neighbor = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Forge an alliance — nomadic cavalry enter your service; migration flourishes
+	option = {
+		name = cc_intl.5.a
+		add_country_modifier = { modifier = cc_intl_steppe_alliance years = 10 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:steppe_neighbor.culture
+			religion = scope:steppe_neighbor.religion
+			type = pop_type:laborers
+			months = 36
+			amount = 0.050
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		scope:steppe_neighbor = {
+			add_opinion = { modifier = cc_intl_military_bond target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Demand tribute from the steppe lords
+	option = {
+		name = cc_intl.5.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = 15
+		}
+		add_prestige = prestige_mild_bonus
+		scope:steppe_neighbor = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Hire their cavalry outright — gold out, cavalry advantage in
+	option = {
+		name = cc_intl.5.c
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_country_modifier = {
+			modifier = cc_intl_steppe_alliance
+			years = 5
+		}
+	}
+}
+
+
+###############################################################################
+# GROUP C — RELIGIOUS & FAITH NETWORKS
+###############################################################################
+
+# cc_intl.6 — "The Caliphate Solidarity"
+# Your caliphate_diplomat + Muslim neighbor.
+# Flavor: Pan-Islamic diplomatic networks spanning the dar al-Islam.
+cc_intl.6 = {
+	type = country_event
+	title = cc_intl.6.title
+	desc = cc_intl.6.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_6_cooldown }
+		religion.group = religion_group:muslim
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = caliphate_diplomat
+		}
+		any_neighbor_country = {
+			religion.group = religion_group:muslim
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_6_cooldown value = yes years = 15 }
+		random_neighbor_country = {
+			limit = { religion.group = religion_group:muslim }
+			save_scope_as = muslim_partner
+		}
+	}
+
+	# Islamic solidarity — mutual antagonism reduction, diplomatic network strengthened
+	option = {
+		name = cc_intl.6.a
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+		scope:muslim_partner = {
+			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+		}
+		add_opinion = { target = scope:muslim_partner modifier = cc_intl_religious_kinship }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Trade network compact — the Islamic world's commercial links deepen
+	option = {
+		name = cc_intl.6.b
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+		scope:muslim_partner = {
+			add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+			add_opinion = { modifier = cc_intl_trade_partner target = root }
+		}
+		add_opinion = { target = scope:muslim_partner modifier = cc_intl_trade_partner }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+
+	# Theological summit — clergy satisfaction on both sides, conversion reinforced
+	option = {
+		name = cc_intl.6.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		scope:muslim_partner = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+		}
+		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+
+# cc_intl.7 — "Protestant Solidarity"
+# Your reformist_theologian (rf) + Age 4 + non-Catholic Christian neighbor.
+# Flavor: The Schmalkaldic League and similar confessional alliances.
+cc_intl.7 = {
+	type = country_event
+	title = cc_intl.7.title
+	desc = cc_intl.7.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_7_cooldown }
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		religion.group = religion_group:christian
+		NOT = { religion = religion:catholic }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = reformist_theologian
+		}
+		any_neighbor_country = {
+			religion.group = religion_group:christian
+			NOT = { religion = religion:catholic }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_7_cooldown value = yes years = 12 }
+		random_neighbor_country = {
+			limit = {
+				religion.group = religion_group:christian
+				NOT = { religion = religion:catholic }
+			}
+			save_scope_as = protestant_partner
+		}
+	}
+
+	# Religious brotherhood — war enthusiasm against Catholic powers, confessional solidarity
+	option = {
+		name = cc_intl.7.a
+		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+		scope:protestant_partner = {
+			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+		}
+		add_opinion = { target = scope:protestant_partner modifier = cc_intl_religious_kinship }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Scholarly exchange — the Reformation produced extraordinary theological scholarship
+	option = {
+		name = cc_intl.7.b
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 8 }
+		scope:protestant_partner = {
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 8 }
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_opinion = { target = scope:protestant_partner modifier = cc_intl_scholarly_bond }
+	}
+
+	# Maintain careful distance — the politics of confession are dangerous
+	option = {
+		name = cc_intl.7.c
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.03 }
+	}
+}
+
+
+# cc_intl.8 — "The Sacred Pilgrimage"
+# Your brahmin_counselor or dharma_minister (both rf) + neighbor of same religion group.
+# Flavor: Hindu/Buddhist pilgrimage networks connecting courts and populations.
+cc_intl.8 = {
+	type = country_event
+	title = cc_intl.8.title
+	desc = cc_intl.8.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_8_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = brahmin_counselor
+				has_trait = dharma_minister
+			}
+		}
+		any_neighbor_country = {
+			religion.group = root.religion.group
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_8_cooldown value = yes years = 12 }
+		random_neighbor_country = {
+			limit = { religion.group = root.religion.group }
+			save_scope_as = pilgrimage_partner
+		}
+		scope:pilgrimage_partner = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Host the great pilgrimage — pilgrims bring wealth, faith, and migrants
+	option = {
+		name = cc_intl.8.a
+		add_country_modifier = { modifier = cc_intl_pilgrimage_network years = 10 }
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:pilgrimage_partner.culture
+			religion = scope:pilgrimage_partner.religion
+			type = pop_type:clergy
+			months = 12
+			amount = 0.005
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		scope:pilgrimage_partner = {
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Send spiritual emissaries to their court — cultural influence, goodwill
+	option = {
+		name = cc_intl.8.b
+		culture = { add_cultural_influence = cultural_influence_weak_bonus }
+		scope:pilgrimage_partner = {
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+		}
+		add_opinion = { target = scope:pilgrimage_partner modifier = cc_intl_religious_kinship }
+	}
+
+	# Spiritual arbitration — neutral religious mediation between our courts
+	option = {
+		name = cc_intl.8.c
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+		scope:pilgrimage_partner = {
+			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+		}
+		add_opinion = { target = scope:pilgrimage_partner modifier = cc_intl_religious_kinship }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+	}
+}
+
+
+###############################################################################
+# GROUP D — TRADE & DIPLOMATIC
+###############################################################################
+
+# cc_intl.9 — "The Merchant's Compact"
+# Your merchant_syndic or maritime_champion + high-burgher-power neighbor.
+# Flavor: Hanseatic League, Italian trading city compacts, VOC-era partnerships.
+cc_intl.9 = {
+	type = country_event
+	title = cc_intl.9.title
+	desc = cc_intl.9.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = merchant_syndic
+				has_trait = maritime_champion
+			}
+		}
+		any_neighbor_country = {
+			NOT = { has_variable = cc_intl_9_fired }
+			OR = {
+				"estate_power(estate_type:burghers_estate)" >= 0.35
+				any_subject = { is_subject_type = chartered_company }
+			}
+		}
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = {
+				NOT = { has_variable = cc_intl_9_fired }
+				OR = {
+					"estate_power(estate_type:burghers_estate)" >= 0.35
+					any_subject = { is_subject_type = chartered_company }
+				}
+			}
+			save_scope_as = trade_partner
+			set_variable = { name = cc_intl_9_fired value = yes years = 12 }
+		}
+	}
+
+	# Joint trade venture — mutual trade power, burgher satisfaction, prosperity
+	option = {
+		name = cc_intl.9.a
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+		scope:trade_partner = {
+			add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+			add_opinion = { modifier = cc_intl_trade_partner target = root }
+		}
+		add_opinion = { target = scope:trade_partner modifier = cc_intl_trade_partner }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Negotiate exclusive rights — you gain more, third parties resent it
+	option = {
+		name = cc_intl.9.b
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 12 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+		scope:trade_partner = {
+			add_opinion = { modifier = cc_intl_trade_partner target = root }
+		}
+		every_neighbor_country = {
+			limit = {
+				NOT = { this = scope:trade_partner }
+				"estate_power(estate_type:burghers_estate)" >= 0.30
+			}
+			add_opinion = { modifier = cc_intl_rival_court target = root }
+		}
+	}
+
+	# Study their practices — modest intelligence and research value
+	option = {
+		name = cc_intl.9.c
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 6 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+# cc_intl.10 — "The Grand Chancellor's Leverage"
+# Your grand_chancellor + smaller-ranked neighbor.
+# Flavor: Great powers using diplomatic weight to extract concessions.
+cc_intl.10 = {
+	type = country_event
+	title = cc_intl.10.title
+	desc = cc_intl.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_10_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = grand_chancellor
+		}
+		any_neighbor_country = {
+			country_rank_level < root.country_rank_level
+			NOT = { is_at_war_with = root }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_10_cooldown value = yes years = 15 }
+		random_neighbor_country = {
+			limit = {
+				country_rank_level < root.country_rank_level
+				NOT = { is_at_war_with = root }
+			}
+			save_scope_as = junior_state
+		}
+	}
+
+	# Extend diplomatic patronage — they enter our orbit willingly
+	option = {
+		name = cc_intl.10.a
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+		scope:junior_state = {
+			add_prestige = prestige_mild_bonus
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_opinion = { target = scope:junior_state modifier = cc_diplomatic_favor }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Extract a tributary arrangement — gold and prestige at their expense
+	option = {
+		name = cc_intl.10.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = 15
+		}
+		add_prestige = prestige_mild_bonus
+		scope:junior_state = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Make a show of strength — CB against them if they resist
+	option = {
+		name = cc_intl.10.c
+		add_casus_belli = {
+			target = scope:junior_state
+			type = casus_belli:cb_border_war
+		}
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+		scope:junior_state = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+
+###############################################################################
+# GROUP E — ESPIONAGE & SHADOW PLAY
+###############################################################################
+
+# cc_intl.11 — "The Shadow Court Reaches Out"
+# Your shadow_counselor + neighbor with unfavorable opinion of you.
+# Flavor: Intelligence operations, forged documents, noble recruitment across borders.
+cc_intl.11 = {
+	type = country_event
+	title = cc_intl.11.title
+	desc = cc_intl.11.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_intl_11_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = shadow_counselor
+		}
+		any_neighbor_country = {
+			NOT = { is_at_war_with = root }
+			opinion = { target = root value < 0 }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_intl_11_cooldown value = yes years = 15 }
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_at_war_with = root }
+				opinion = { target = root value < 0 }
+			}
+			save_scope_as = shadow_target
+		}
+		scope:shadow_target = { capital = { save_scope_as = cc_intl_origin } }
+		capital = { save_scope_as = cc_intl_dest }
+	}
+
+	# Intelligence operation — build a spy network, reduce their hostility
+	option = {
+		name = cc_intl.11.a
+		add_country_modifier = { modifier = cc_intl_shadow_operations years = 8 }
+		scope:shadow_target = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Recruit their discontented nobles — migration of elite talent, weaken their base
+	option = {
+		name = cc_intl.11.b
+		add_migration = {
+			from_location = scope:cc_intl_origin
+			to_location = scope:cc_intl_dest
+			culture = scope:shadow_target.culture
+			religion = scope:shadow_target.religion
+			type = pop_type:nobles
+			months = 12
+			amount = 0.005
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = 8
+		}
+		scope:shadow_target = {
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.08 }
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+		}
+	}
+
+	# Forge a diplomatic incident — manufacture a CB against them
+	option = {
+		name = cc_intl.11.c
+		add_casus_belli = {
+			target = scope:shadow_target
+			type = casus_belli:cb_insulted_us
+		}
+		add_prestige = prestige_mild_bonus
+		scope:shadow_target = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+		}
+	}
+}
+
+
+###############################################################################
+# GROUP F — RULER-TO-RULER
+###############################################################################
+
+# cc_intl.12 — "The Confucian Mission"
+# Your confucian_mandarin + capital in East/SE Asia + smaller East Asian neighbor.
+# Flavor: The Sinocentric tributary system of the East Asian world order.
+cc_intl.12 = {
+	type = country_event
+	title = cc_intl.12.title
+	desc = cc_intl.12.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = confucian_mandarin
+		}
+		OR = {
+			capital.sub_continent = sub_continent:east_asia
+			capital.sub_continent = sub_continent:south_east_asia
+		}
+		any_neighbor_country = {
+			NOT = { has_variable = cc_intl_12_fired }
+			country_rank_level < root.country_rank_level
+			OR = {
+				capital.sub_continent = sub_continent:east_asia
+				capital.sub_continent = sub_continent:south_east_asia
+				capital.sub_continent = sub_continent:south_asia
+			}
+		}
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = {
+				NOT = { has_variable = cc_intl_12_fired }
+				country_rank_level < root.country_rank_level
+				OR = {
+					capital.sub_continent = sub_continent:east_asia
+					capital.sub_continent = sub_continent:south_east_asia
+					capital.sub_continent = sub_continent:south_asia
+				}
+			}
+			save_scope_as = tributary_state
+			set_variable = { name = cc_intl_12_fired value = yes years = 15 }
+		}
+	}
+
+	# Offer tributary relations — the celestial hierarchy is recognized
+	option = {
+		name = cc_intl.12.a
+		add_prestige = prestige_severe_bonus
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 10 }
+		scope:tributary_state = {
+			add_prestige = prestige_mild_bonus
+			add_opinion = { modifier = cc_intl_religious_kinship target = root }
+		}
+		add_opinion = { target = scope:tributary_state modifier = cc_diplomatic_favor }
+	}
+
+	# Send a cultural mission — spread Confucian literacy and administrative practice
+	option = {
+		name = cc_intl.12.b
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 10 }
+		culture = { add_cultural_influence = cultural_influence_mild_bonus }
+		scope:tributary_state = {
+			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Assert celestial supremacy — prestige + CB for if they resist
+	option = {
+		name = cc_intl.12.c
+		add_prestige = prestige_severe_bonus
+		culture = { add_cultural_influence = cultural_influence_mild_bonus }
+		add_casus_belli = {
+			target = scope:tributary_state
+			type = casus_belli:cb_conquer_province
+		}
+		scope:tributary_state = {
+			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
+		}
+	}
+}

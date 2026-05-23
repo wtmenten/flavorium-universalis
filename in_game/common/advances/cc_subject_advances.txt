@@ -6,7 +6,7 @@ royal_union_network_advance = {
 	age = age_2_renaissance
 	icon = diplomatic_influence
 	for = dip
-	requires = marcher_lords
+	requires = crown_power_advance_renaissance
 
 	unlock_subject_type = junior_partner
 	unlock_subject_type = lesser_partner
@@ -16,7 +16,7 @@ shadow_diplomacy_advance = {
 	age = age_2_renaissance
 	icon = expansionism
 	for = dip
-	requires = claim_fabrication
+	requires = spy_construction_renaissance
 
 	unlock_subject_type = shadow_state
 	unlock_estate_privilege = ep_noble_shadow_network
@@ -35,8 +35,8 @@ artistic_patronage_advance = {
 noble_patronage_advance = {
 	age = age_2_renaissance
 	icon = diplomatic_influence
-	for = dip
-	requires = integrated_elites
+	for = mil
+	requires = late_feudal_relations
 
 	unlock_subject_type = elite_enclave
 	unlock_estate_privilege = ep_noble_elite_enclave
@@ -46,7 +46,7 @@ republican_patronage_advance = {
 	age = age_2_renaissance
 	icon = diplomatic_range_age_1
 	for = dip
-	requires = claim_fabrication
+	requires = renaissance_thought
 
 	unlock_subject_type = associated_republic
 }
@@ -55,7 +55,7 @@ dynastic_governance_advance = {
 	age = age_2_renaissance
 	icon = diplomatic_range_age_1
 	for = adm
-	requires = royal_union_network_advance
+	requires = power_projection_advance_2
 
 	unlock_subject_type = crown_dependency
 }
@@ -67,7 +67,8 @@ dynastic_governance_advance = {
 client_state_advance = {
 	age = age_3_discovery
 	icon = expansionism
-	for = dip
+	for = adm
+	requires = crown_power_advance_discovery
 
 	unlock_subject_type = client_state
 }
@@ -76,6 +77,7 @@ naval_charter_advance = {
 	age = age_3_discovery
 	icon = merchant_power_from_maritime_reformation_advance
 	for = dip
+	requires = open_sea_exploration
 
 	unlock_subject_type = naval_administration
 	unlock_estate_privilege = ep_burgher_naval_charter
@@ -84,7 +86,8 @@ naval_charter_advance = {
 protectorate_rights_advance = {
 	age = age_3_discovery
 	icon = diplomatic_range_age_1
-	for = dip
+	for = mil
+	requires = power_projection_advance_4
 
 	unlock_subject_type = protectorate
 }
@@ -97,7 +100,7 @@ scholarly_orders_advance = {
 	age = age_4_reformation
 	icon = diplomatic_range_age_1
 	for = adm
-	requires = trade_companies_advance
+	requires = scientific_experimentation
 
 	unlock_subject_type = scientific_college
 	unlock_estate_privilege = ep_clergy_scholarly_college
@@ -107,7 +110,7 @@ palatinate_advance = {
 	age = age_4_reformation
 	icon = diplomatic_influence
 	for = dip
-	requires = scholarly_orders_advance
+	requires = power_projection_advance_3
 
 	unlock_subject_type = palatinate
 }
@@ -116,6 +119,7 @@ holy_patronage_advance = {
 	age = age_4_reformation
 	icon = diplomatic_range_age_1
 	for = dip
+	requires = diplomatic_range_age_3
 
 	unlock_subject_type = holy_protectorate
 }
@@ -128,9 +132,10 @@ naval_administration_advance = {
 	age = age_5_absolutism
 	icon = merchant_power_from_maritime_reformation_advance
 	for = dip
+	requires = naval_professionalism
 
 	potential = {
-		has_advance = naval_charter_advance
+		has_advance_available = naval_charter_advance
 	}
 	allow = {
 		has_advance = naval_charter_advance
@@ -142,7 +147,21 @@ naval_administration_advance = {
 puppet_state_advance = {
 	age = age_5_absolutism
 	icon = expansionism
+	requires = diplomatic_range_age_5
 	for = dip
+	
+	potential = {
+		OR = {
+			has_advance_available = shadow_diplomacy_advance
+			has_advance_available = client_state_advance
+		}
+	}
+	allow = {
+		OR = {
+			has_advance_available = shadow_diplomacy_advance
+			has_advance_available = client_state_advance
+		}
+	}
 
 	unlock_subject_type = puppet_state
 }
@@ -151,6 +170,7 @@ chartered_company_advance = {
 	age = age_5_absolutism
 	icon = merchant_power_from_maritime_reformation_advance
 	for = dip
+	requires = naval_morale_advance_5
 
 	unlock_subject_type = chartered_company
 	unlock_estate_privilege = ep_burgher_royal_charter
@@ -160,6 +180,8 @@ chartered_company_advance = {
 late_governorate_advance = {
 	age = age_5_absolutism
 	icon = diplomatic_range_age_1
+	requires = subject_loyalty_absolutism
+	for = adm
 
 	unlock_subject_type = provincial_governorate
 	unlock_estate_privilege = ep_nobles_governorate_charter
@@ -169,6 +191,8 @@ late_governorate_advance = {
 tax_farming_advance = {
 	age = age_5_absolutism
 	icon = merchant_power_from_maritime_reformation_advance
+	requires = subject_loyalty_absolutism
+	for = mil
 
 	unlock_subject_type = tax_farm
 	unlock_estate_privilege = ep_burghers_tax_charter
@@ -178,12 +202,14 @@ tax_farming_advance = {
 military_march_advance = {
 	age = age_5_absolutism
 	icon = expansionism
-
+	requires = subject_loyalty_absolutism
+	for = mil
+	
 	potential = {
-		has_advance = noble_patronage_advance
+		has_advance_available = marcher_lords
 	}
 	allow = {
-		has_advance = noble_patronage_advance
+		has_advance = marcher_lords
 	}
 
 	unlock_subject_type = military_march

@@ -1,0 +1,522 @@
+﻿namespace = cc_feudal
+
+###############################################################################
+# FEUDAL COURT EVENTS (Age 1 only)
+# cc_feudal.1  — Feudal Trait Grant (biyearly, Age 1)
+# cc_feudal.10 — The Old Court Gives Way (fires once at Age 2 start)
+# cc_feudal.2  — Feast or Fast (nobles demand celebration)
+# cc_feudal.3  — The King's Confessor (chaplain advises on war)
+# cc_feudal.4  — The Tax Survey (master of coin survey)
+# cc_feudal.5  — Tournament of the Court
+# cc_feudal.6  — A Learned Foreigner (mini-synergy seed event)
+# cc_feudal.7  — The Call to Holy War (faith-gated, one-time)
+###############################################################################
+
+# "A Servant of the Court Finds Their Calling"
+# Grants one of the 6 feudal court traits to a random cabinet minister.
+# court_chaplain / court_astrologer are religious_figure; others are cabinet.
+cc_feudal.1 = {
+	type = country_event
+	title = cc_feudal.1.title
+	desc = cc_feudal.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = seneschal
+				has_trait = court_chaplain
+				has_trait = marshal_of_the_court
+				has_trait = master_of_coin
+				has_trait = herald_of_arms
+				has_trait = court_astrologer
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = seneschal
+					has_trait = court_chaplain
+					has_trait = marshal_of_the_court
+					has_trait = master_of_coin
+					has_trait = herald_of_arms
+					has_trait = court_astrologer
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Administrative minister — Seneschal
+	option = {
+		name = cc_feudal.1.a
+		scope:minister = { add_trait = trait:seneschal }
+	}
+
+	# Clergy minister — Court Chaplain (religious_figure, always active)
+	option = {
+		name = cc_feudal.1.b
+		scope:minister = { add_trait = trait:court_chaplain }
+	}
+
+	# Military minister — Marshal of the Court
+	option = {
+		name = cc_feudal.1.c
+		scope:minister = { add_trait = trait:marshal_of_the_court }
+	}
+
+	# Economic minister — Master of Coin
+	option = {
+		name = cc_feudal.1.d
+		scope:minister = { add_trait = trait:master_of_coin }
+	}
+
+	# Diplomatic minister — Herald of Arms
+	option = {
+		name = cc_feudal.1.e
+		scope:minister = { add_trait = trait:herald_of_arms }
+	}
+
+	# Scholar minister — Court Astrologer (religious_figure, always active)
+	option = {
+		name = cc_feudal.1.f
+		scope:minister = { add_trait = trait:court_astrologer }
+	}
+}
+
+
+# "The Old Court Gives Way"
+# Fires once when Age 2 begins. Feudal ministers must adapt or stagnate.
+cc_feudal.10 = {
+	type = country_event
+	title = cc_feudal.10.title
+	desc = cc_feudal.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	trigger = {
+		current_age = age_2_renaissance
+		NOT = { has_variable = cc_feudal_transition_fired }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = seneschal
+				has_trait = marshal_of_the_court
+				has_trait = master_of_coin
+				has_trait = herald_of_arms
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_transition_fired value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = seneschal
+					has_trait = marshal_of_the_court
+					has_trait = master_of_coin
+					has_trait = herald_of_arms
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Minister embraces the new age — swap feudal trait for Renaissance equivalent
+	option = {
+		name = cc_feudal.10.a
+		scope:minister = {
+			if = { limit = { has_trait = seneschal } remove_trait = trait:seneschal add_trait = trait:prosperity_herald }
+			else_if = { limit = { has_trait = marshal_of_the_court } remove_trait = trait:marshal_of_the_court add_trait = trait:infantry_drillmaster }
+			else_if = { limit = { has_trait = master_of_coin } remove_trait = trait:master_of_coin add_trait = trait:merchant_syndic }
+			else_if = { limit = { has_trait = herald_of_arms } remove_trait = trait:herald_of_arms add_trait = trait:diplomatic_attache }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Minister resists change — feudal trait stays but stagnant_counselor risk
+	option = {
+		name = cc_feudal.10.b
+		scope:minister = { add_trait = trait:stagnant_counselor }
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+# "Feast or Fast"
+# Treasury > 15x monthly income. Nobles demand celebration.
+cc_feudal.2 = {
+	type = country_event
+	title = cc_feudal.2.title
+	desc = cc_feudal.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 15
+		}
+		NOT = { has_variable = cc_feudal_feast_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_feast_fired value = yes }
+	}
+
+	option = {
+		name = cc_feudal.2.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.08 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_feudal.2.b
+		add_prestige = prestige_weak_penalty
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 5 }
+	}
+}
+
+
+# "The King's Confessor"
+# Court chaplain (or court_astrologer) advises on war.
+cc_feudal.3 = {
+	type = country_event
+	title = cc_feudal.3.title
+	desc = cc_feudal.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = court_chaplain
+				has_trait = court_astrologer
+			}
+		}
+		NOT = { has_variable = cc_feudal_confessor_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_confessor_fired value = yes }
+	}
+
+	option = {
+		name = cc_feudal.3.a
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		add_country_modifier = { modifier = cc_cabinet_pop_conversion years = 5 }
+	}
+
+	option = {
+		name = cc_feudal.3.b
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.05 }
+		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 3 }
+	}
+}
+
+
+# "The Tax Survey"
+# Master of coin wants to survey province taxation.
+cc_feudal.4 = {
+	type = country_event
+	title = cc_feudal.4.title
+	desc = cc_feudal.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = master_of_coin
+		}
+		NOT = { has_variable = cc_feudal_survey_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_survey_fired value = yes }
+	}
+
+	option = {
+		name = cc_feudal.4.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		capital = { change_development = development_weak_bonus }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+
+	option = {
+		name = cc_feudal.4.b
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 4 }
+	}
+}
+
+
+# "Tournament of the Court"
+# Marshal of the Court organizes a tournament.
+cc_feudal.5 = {
+	type = country_event
+	title = cc_feudal.5.title
+	desc = cc_feudal.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = marshal_of_the_court
+		}
+		NOT = { has_variable = cc_feudal_tournament_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_tournament_fired value = yes }
+	}
+
+	option = {
+		name = cc_feudal.5.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.08 }
+	}
+
+	option = {
+		name = cc_feudal.5.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = 5
+		}
+		add_prestige = prestige_weak_penalty
+		add_country_modifier = { modifier = cc_synergy_iron_army years = 3 }
+	}
+}
+
+
+# "A Learned Foreigner Seeks Service"
+# Scholar from distant lands. Mini-synergy seed: if court_chaplain exists, unlock
+# a court_of_learning modifier early (precursor to Renaissance version).
+cc_feudal.6 = {
+	type = country_event
+	title = cc_feudal.6.title
+	desc = cc_feudal.6.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_1_traditions
+		NOT = { has_variable = cc_feudal_foreigner_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_feudal_foreigner_fired value = yes }
+	}
+
+	# Appoint the foreigner — gain a cabinet trait appropriate to their skills
+	option = {
+		name = cc_feudal.6.a
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = learned_courtier
+					has_trait = urban_planner
+					has_trait = seneschal
+				}
+			}
+			add_trait = trait:learned_courtier
+		}
+	}
+
+	# If court_chaplain exists — scholarly debate unlocks early learning modifier
+	option = {
+		name = cc_feudal.6.b
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = court_chaplain
+					has_trait = court_astrologer
+				}
+			}
+		}
+		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 5 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Decline — prestige for keeping the court pure
+	option = {
+		name = cc_feudal.6.c
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.03 }
+	}
+}
+
+
+# "The Call to Holy War"
+# One-time event. Fires when NOT at war and faith conditions met.
+cc_feudal.7 = {
+	type = country_event
+	title = cc_feudal.7.title
+	desc = cc_feudal.7.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		NOT = { at_war = yes }
+		NOT = { has_variable = cc_holy_war_called }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = court_chaplain
+				has_trait = court_astrologer
+				has_trait = sufi_scholar
+				has_trait = brahmin_counselor
+				has_trait = dharma_minister
+				has_trait = ecumenical_patriarch_advisor
+			}
+		}
+		OR = {
+			# Catholic crusade path
+			AND = {
+				religion = religion:catholic
+				papacy_active = yes
+				current_papal_authority >= { value = 50 }
+				any_neighbor_country = {
+					NOT = { religion.group = religion_group:christian }
+				}
+			}
+			# Muslim path
+			AND = {
+				religion.group = religion_group:muslim
+				any_neighbor_country = {
+					NOT = { religion.group = religion_group:muslim }
+				}
+			}
+			# Generic faithful path
+			AND = {
+				NOT = { religion = religion:catholic }
+				NOT = { religion.group = religion_group:muslim }
+				any_neighbor_country = {
+					NOT = { religion.group = PREV.religion.group }
+				}
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_holy_war_called value = yes }
+		# Save a target: the nearest non-coreligionist neighbor
+		if = {
+			limit = { religion = religion:catholic }
+			random_neighbor_country = {
+				limit = { NOT = { religion.group = religion_group:christian } }
+				save_scope_as = holy_war_target
+			}
+		}
+		else_if = {
+			limit = { religion.group = religion_group:muslim }
+			random_neighbor_country = {
+				limit = { NOT = { religion.group = religion_group:muslim } }
+				save_scope_as = holy_war_target
+			}
+		}
+		else = {
+			random_neighbor_country = {
+				limit = { NOT = { religion.group = PREV.religion.group } }
+				save_scope_as = holy_war_target
+			}
+		}
+	}
+
+	# Catholics: call the actual crusade (single-nation crusade IO)
+	option = {
+		name = cc_feudal.7.a
+		trigger = { religion = religion:catholic }
+		crusade_effect = { target = scope:holy_war_target }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.10 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Muslims: preparation modifier (cb_jihad is hardcoded, not player-triggerable)
+	option = {
+		name = cc_feudal.7.a
+		trigger = { religion.group = religion_group:muslim }
+		add_country_modifier = { modifier = cc_jihad_preparation years = 5 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.10 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# All faiths: generic spiritual mandate preparation
+	option = {
+		name = cc_feudal.7.a
+		trigger = {
+			NOT = { religion = religion:catholic }
+			NOT = { religion.group = religion_group:muslim }
+		}
+		add_country_modifier = { modifier = cc_spiritual_mandate years = 8 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Secular realpolitik — decline the call
+	option = {
+		name = cc_feudal.7.b
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 3 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.08 }
+		remove_variable = cc_holy_war_called
+	}
+}

@@ -2,8 +2,13 @@
 # Cabinets and Choices — Game Start On-Action Effects
 # All one-time game start effects are combined here to avoid the
 # "more than one effect defined" warning from having two separate files.
-
 on_game_start = {
+    on_actions = {
+        cc_on_game_start
+    }
+}
+
+cc_on_game_start = {
 	effect = {
 		# --- France Containment ---
 		# Gives France's Lowlands-culture neighbors elevated antagonism, decaying over 200 years.
@@ -57,6 +62,23 @@ on_game_start = {
 					modifier = cc_mam_military_strain
 					years = 200
 				}
+			}
+		}
+
+		# --- Ottoman Start ---
+		# prevent the ottomans specifically from colonizing.
+		if = {
+			limit = {
+				has_game_rule = cc_tur_start_on
+				country_exists = c:TUR
+			}
+
+			c:TUR = {
+				add_country_modifier = {
+					modifier = cc_tur_no_colonization
+					days = -1
+				}
+
 			}
 		}
 	}

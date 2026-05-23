@@ -1,0 +1,235 @@
+﻿namespace = cc_legacy
+
+###############################################################################
+# CABINET LEGACY EVENTS
+# cc_legacy.1  — Protege Inheritance (notable minister dies)
+# cc_legacy.2  — Legendary Minister's Death (permanent modifier + consecrate)
+# Fired from cc_legacy_pulse.txt on_cabinet_death hook.
+# scope:cc_legacy_minister = the deceased minister.
+###############################################################################
+
+# "A Mentor's Last Gift"
+# Fires when a minister with a notable cc trait dies.
+# Offers to grant one of the deceased's traits to a young courtier.
+cc_legacy.1 = {
+	type = country_event
+	title = cc_legacy.1.title
+	desc = cc_legacy.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	immediate = {
+		# Find a young eligible courtier as protege candidate
+		random_character = {
+			limit = {
+				character_age < 35
+				NOT = { in_cabinet = yes }
+				is_ruler = no
+				is_alive = yes
+			}
+			save_scope_as = cc_legacy_protege
+		}
+	}
+
+	# Inherit the cabinet trait
+	option = {
+		name = cc_legacy.1.a
+		trigger = {
+			exists = scope:cc_legacy_protege
+		}
+		# Grant whichever notable cabinet trait the deceased had (first match)
+		scope:cc_legacy_protege = {
+			if = {
+				limit = { NOT = { has_trait = grand_chancellor } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = grand_chancellor } } add_trait = trait:grand_chancellor }
+			}
+			if = {
+				limit = { NOT = { has_trait = cavalry_marshal } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = cavalry_marshal } } add_trait = trait:cavalry_marshal }
+			}
+			if = {
+				limit = { NOT = { has_trait = supreme_commander } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = supreme_commander } } add_trait = trait:supreme_commander }
+			}
+			if = {
+				limit = { NOT = { has_trait = learned_courtier } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = learned_courtier } } add_trait = trait:learned_courtier }
+			}
+			if = {
+				limit = { NOT = { has_trait = enlightenment_herald } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = enlightenment_herald } } add_trait = trait:enlightenment_herald }
+			}
+			if = {
+				limit = { NOT = { has_trait = master_urbanist } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = master_urbanist } } add_trait = trait:master_urbanist }
+			}
+			if = {
+				limit = { NOT = { has_trait = progressive_rationalist } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = progressive_rationalist } } add_trait = trait:progressive_rationalist }
+			}
+			if = {
+				limit = { NOT = { has_trait = confucian_mandarin } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = confucian_mandarin } } add_trait = trait:confucian_mandarin }
+			}
+			if = {
+				limit = { NOT = { has_trait = caliphate_diplomat } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = caliphate_diplomat } } add_trait = trait:caliphate_diplomat }
+			}
+			if = {
+				limit = { NOT = { has_trait = seneschal } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = seneschal } } add_trait = trait:seneschal }
+			}
+			if = {
+				limit = { NOT = { has_trait = marshal_of_the_court } }
+				if = { limit = { scope:cc_legacy_minister = { has_trait = marshal_of_the_court } } add_trait = trait:marshal_of_the_court }
+			}
+		}
+		add_prestige = prestige_mild_bonus
+		custom_tooltip = cc_legacy.1.a.tt
+	}
+
+	# Inherit the religious_figure trait instead (only shown if deceased had a rf trait)
+	option = {
+		name = cc_legacy.1.b
+		trigger = {
+			exists = scope:cc_legacy_protege
+			scope:cc_legacy_minister = {
+				OR = {
+					has_trait = sufi_scholar
+					has_trait = mystical_patriarch
+					has_trait = ecumenical_patriarch_advisor
+					has_trait = brahmin_counselor
+					has_trait = reformist_theologian
+					has_trait = crown_theologian
+				}
+			}
+		}
+		scope:cc_legacy_protege = {
+			if = { limit = { scope:cc_legacy_minister = { has_trait = sufi_scholar } } add_trait = trait:sufi_scholar }
+			else_if = { limit = { scope:cc_legacy_minister = { has_trait = mystical_patriarch } } add_trait = trait:mystical_patriarch }
+			else_if = { limit = { scope:cc_legacy_minister = { has_trait = ecumenical_patriarch_advisor } } add_trait = trait:ecumenical_patriarch_advisor }
+			else_if = { limit = { scope:cc_legacy_minister = { has_trait = brahmin_counselor } } add_trait = trait:brahmin_counselor }
+			else_if = { limit = { scope:cc_legacy_minister = { has_trait = reformist_theologian } } add_trait = trait:reformist_theologian }
+			else_if = { limit = { scope:cc_legacy_minister = { has_trait = crown_theologian } } add_trait = trait:crown_theologian }
+		}
+		add_prestige = prestige_mild_bonus
+		custom_tooltip = cc_legacy.1.b.tt
+	}
+
+	# Decline the legacy
+	option = {
+		name = cc_legacy.1.c
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = {
+				scope:cc_legacy_minister = {
+					OR = {
+						has_trait = cavalry_marshal
+						has_trait = supreme_commander
+						has_trait = marshal_of_the_court
+						has_trait = commissariat_officer
+					}
+				}
+			}
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+		}
+		else_if = {
+			limit = {
+				scope:cc_legacy_minister = {
+					OR = {
+						has_trait = learned_courtier
+						has_trait = master_urbanist
+						has_trait = grand_chancellor
+						has_trait = seneschal
+					}
+				}
+			}
+			add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.05 }
+		}
+	}
+}
+
+
+# "A Legend Departs"
+# Fires when a minister with a legendary trait dies.
+# Options: accept a permanent legacy modifier OR pay to consecrate a stronger version.
+cc_legacy.2 = {
+	type = country_event
+	title = cc_legacy.2.title
+	desc = cc_legacy.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	# Accept legacy — apply base permanent modifier
+	option = {
+		name = cc_legacy.2.a
+		if = {
+			limit = { scope:cc_legacy_minister = { has_trait = grand_vizier_legendary } }
+			add_country_modifier = { modifier = cc_legacy_grand_vizier years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = tribune_of_the_people } }
+			add_country_modifier = { modifier = cc_legacy_tribune years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = legendary_navigator } }
+			add_country_modifier = { modifier = cc_legacy_navigator years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = philosopher_king } }
+			add_country_modifier = { modifier = cc_legacy_philosopher years = -1 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_legacy_counselor years = -1 }
+		}
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_legacy.2.a.tt
+	}
+
+	# Consecrate — pay 25x monthly income for the upgraded modifier
+	option = {
+		name = cc_legacy.2.b
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 25
+			}
+		}
+		if = {
+			limit = { scope:cc_legacy_minister = { has_trait = grand_vizier_legendary } }
+			add_country_modifier = { modifier = cc_legacy_grand_vizier_consecrated years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = tribune_of_the_people } }
+			add_country_modifier = { modifier = cc_legacy_tribune_consecrated years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = legendary_navigator } }
+			add_country_modifier = { modifier = cc_legacy_navigator_consecrated years = -1 }
+		}
+		else_if = {
+			limit = { scope:cc_legacy_minister = { has_trait = philosopher_king } }
+			add_country_modifier = { modifier = cc_legacy_philosopher_consecrated years = -1 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_legacy_counselor_consecrated years = -1 }
+		}
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_legacy.2.b.tt
+	}
+}

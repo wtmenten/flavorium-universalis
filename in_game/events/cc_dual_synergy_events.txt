@@ -1,0 +1,522 @@
+﻿namespace = cc_dual
+
+###############################################################################
+# DUAL-LAYER SYNERGY EVENTS (Cabinet × Religious_Figure on SAME minister)
+# Fire from yearly pulse when a specific (cabinet, religious_figure) pair is
+# present on the SAME minister simultaneously.
+# Each is one-time per minister (gated by character variable).
+# Uses cc_dual.1–10 range.
+###############################################################################
+
+# cc_dual.1 — "The Warrior Mystic"
+# cavalry_marshal + sufi_scholar: martial skill and Sufi devotion united.
+cc_dual.1 = {
+	type = country_event
+	title = cc_dual.1.title
+	desc = cc_dual.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = cavalry_marshal
+			has_trait = sufi_scholar
+			NOT = { has_variable = cc_dual_1_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = cavalry_marshal
+				has_trait = sufi_scholar
+				NOT = { has_variable = cc_dual_1_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_1_done value = yes }
+		}
+	}
+
+	# Warrior mystic modifier — war enthusiasm + conversion in conquered land
+	option = {
+		name = cc_dual.1.a
+		add_country_modifier = { modifier = cc_dual_warrior_mystic years = 15 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Prestige + conversion speed boost
+	option = {
+		name = cc_dual.1.b
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_cabinet_pop_conversion years = 8 }
+	}
+}
+
+
+# cc_dual.2 — "The Sacred Diplomat"
+# grand_chancellor + ecumenical_patriarch_advisor: Byzantine-style sacred statecraft.
+cc_dual.2 = {
+	type = country_event
+	title = cc_dual.2.title
+	desc = cc_dual.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = grand_chancellor
+			has_trait = ecumenical_patriarch_advisor
+			NOT = { has_variable = cc_dual_2_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = grand_chancellor
+				has_trait = ecumenical_patriarch_advisor
+				NOT = { has_variable = cc_dual_2_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_2_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.2.a
+		add_country_modifier = { modifier = cc_dual_sacred_diplomat years = 15 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_dual.2.b
+		add_country_modifier = { modifier = cc_cabinet_diplomatic_influence years = 10 }
+		add_country_modifier = { modifier = cc_cabinet_pop_conversion years = 8 }
+	}
+}
+
+
+# cc_dual.3 — "The Rational Theologian"
+# enlightenment_herald + unorthodox (vanilla rf): reason meets faith.
+cc_dual.3 = {
+	type = country_event
+	title = cc_dual.3.title
+	desc = cc_dual.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = enlightenment_herald
+			has_trait = unorthodox
+			NOT = { has_variable = cc_dual_3_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = enlightenment_herald
+				has_trait = unorthodox
+				NOT = { has_variable = cc_dual_3_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_3_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.3.a
+		add_country_modifier = { modifier = cc_dual_rational_theologian years = 15 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Path toward Philosopher's Court legend if not yet unlocked
+	option = {
+		name = cc_dual.3.b
+		trigger = { NOT = { has_variable = cc_legend_philosophers_court_unlocked } }
+		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_dual.3.b.tt
+	}
+}
+
+
+# cc_dual.4 — "The Protestant Parliament"
+# parliamentary_broker + reformist_theologian: Reformation-era legislative Christianity.
+cc_dual.4 = {
+	type = country_event
+	title = cc_dual.4.title
+	desc = cc_dual.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = parliamentary_broker
+			has_trait = reformist_theologian
+			NOT = { has_variable = cc_dual_4_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = parliamentary_broker
+				has_trait = reformist_theologian
+				NOT = { has_variable = cc_dual_4_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_4_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.4.a
+		add_country_modifier = { modifier = cc_dual_protestant_parliament years = 12 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_dual.4.b
+		add_country_modifier = { modifier = cc_cabinet_parliamentary_guidance years = 8 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+	}
+}
+
+
+# cc_dual.5 — "Heaven's Mandate"
+# confucian_mandarin + mystic_seer (vanilla rf): Confucian scholar with prophetic gifts.
+cc_dual.5 = {
+	type = country_event
+	title = cc_dual.5.title
+	desc = cc_dual.5.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = confucian_mandarin
+			has_trait = mystic_seer
+			NOT = { has_variable = cc_dual_5_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = confucian_mandarin
+				has_trait = mystic_seer
+				NOT = { has_variable = cc_dual_5_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_5_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.5.a
+		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 20 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Path toward Middle Kingdom legend
+	option = {
+		name = cc_dual.5.b
+		trigger = {
+			NOT = { has_variable = cc_legend_7_unlocked }
+			capital.sub_continent = sub_continent:east_asia
+		}
+		set_variable = { name = cc_legend_7_unlocked value = yes }
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_dual.5.b.tt
+	}
+}
+
+
+# cc_dual.6 — "The Law and the Letter"
+# efficiency_administrator + literalist (vanilla rf): legal-rational meets scriptural.
+cc_dual.6 = {
+	type = country_event
+	title = cc_dual.6.title
+	desc = cc_dual.6.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = efficiency_administrator
+			has_trait = literalist
+			NOT = { has_variable = cc_dual_6_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = efficiency_administrator
+				has_trait = literalist
+				NOT = { has_variable = cc_dual_6_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_6_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.6.a
+		add_country_modifier = { modifier = cc_dual_law_and_letter years = 12 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_dual.6.b
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 8 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+	}
+}
+
+
+# cc_dual.7 — "The Reluctant Sword"
+# defensive_commander + hermit (vanilla rf): a general who seeks peace.
+cc_dual.7 = {
+	type = country_event
+	title = cc_dual.7.title
+	desc = cc_dual.7.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = defensive_commander
+			has_trait = hermit
+			NOT = { has_variable = cc_dual_7_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = defensive_commander
+				has_trait = hermit
+				NOT = { has_variable = cc_dual_7_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_7_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.7.a
+		add_country_modifier = { modifier = cc_dual_reluctant_sword years = 12 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_dual.7.b
+		add_prestige = prestige_mild_bonus
+		# War exhaustion cleared by the minister's peace-seeking
+		add_country_modifier = { modifier = cc_cabinet_diplomatic_influence years = 8 }
+	}
+}
+
+
+# cc_dual.8 — "The Pious Treasurer"
+# defterdar + ascetic (vanilla rf): Ottoman finance minister with Sufi restraint.
+cc_dual.8 = {
+	type = country_event
+	title = cc_dual.8.title
+	desc = cc_dual.8.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			# has_trait = defterdar # TODO re-enable with ottoman cultural expansion
+			has_trait = ascetic
+			NOT = { has_variable = cc_dual_8_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				# has_trait = defterdar # TODO re-enable with ottoman cultural expansion
+				has_trait = ascetic
+				NOT = { has_variable = cc_dual_8_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_8_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.8.a
+		add_country_modifier = { modifier = cc_dual_pious_treasurer years = 15 }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_dual.8.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 8 }
+	}
+}
+
+
+# cc_dual.9 — "The Knight of God"
+# noble_champion + court_chaplain: chivalric martial-spiritual ideal.
+cc_dual.9 = {
+	type = country_event
+	title = cc_dual.9.title
+	desc = cc_dual.9.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = noble_champion
+			has_trait = court_chaplain
+			NOT = { has_variable = cc_dual_9_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = noble_champion
+				has_trait = court_chaplain
+				NOT = { has_variable = cc_dual_9_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_9_done value = yes }
+		}
+	}
+
+	option = {
+		name = cc_dual.9.a
+		add_country_modifier = { modifier = cc_dual_knight_of_god years = 12 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+	}
+
+	option = {
+		name = cc_dual.9.b
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+		add_country_modifier = { modifier = cc_cabinet_pop_conversion years = 6 }
+	}
+}
+
+
+# cc_dual.10 — "A Crisis of Faith"
+# reformation_inquisitor + reformist_theologian: irreconcilable convictions.
+# TENSION event — these two traits on the same minister create internal conflict.
+# Outcome: suppress doubt (zealous_fanatic risk) OR emerge transformed (both removed, crown_theologian added)
+cc_dual.10 = {
+	type = country_event
+	title = cc_dual.10.title
+	desc = cc_dual.10.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = reformation_inquisitor
+			has_trait = reformist_theologian
+			NOT = { has_variable = cc_dual_10_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = reformation_inquisitor
+				has_trait = reformist_theologian
+				NOT = { has_variable = cc_dual_10_done }
+			}
+			save_scope_as = minister
+			set_variable = { name = cc_dual_10_done value = yes }
+		}
+	}
+
+	# Suppress the doubt — minister doubles down; zealous_fanatic risk
+	option = {
+		name = cc_dual.10.a
+		scope:minister = { add_trait = trait:zealous_fanatic }
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
+	}
+
+	# Emerge transformed — both removed, replaced by crown_theologian (rf synthesis)
+	option = {
+		name = cc_dual.10.b
+		scope:minister = {
+			remove_trait = trait:reformation_inquisitor
+			remove_trait = trait:reformist_theologian
+			add_trait = trait:crown_theologian
+		}
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_dual.10.b.tt
+	}
+
+	# Dismiss the minister before the crisis deepens
+	option = {
+		name = cc_dual.10.c
+		remove_from_cabinet = scope:minister
+		add_prestige = prestige_weak_penalty
+	}
+}

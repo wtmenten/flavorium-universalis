@@ -1,0 +1,60 @@
+﻿
+# Hooks into on_cabinet_death to fire legacy events.
+# root = country, scope:target = dying minister character.
+on_cabinet_death = {
+    on_actions = {
+        cc_on_cabinet_death
+    }
+}
+
+cc_on_cabinet_death = {
+	effect = {
+		scope:target = { save_scope_as = cc_legacy_minister }
+
+		# Track B: Legendary minister death → permanent modifier event
+		if = {
+			limit = {
+				scope:cc_legacy_minister = {
+					OR = {
+						has_trait = grand_vizier_legendary
+						has_trait = tribune_of_the_people
+						has_trait = legendary_navigator
+						has_trait = philosopher_king
+					}
+				}
+				NOT = { has_variable = cc_legacy_legendary_fired }
+			}
+			set_variable = { name = cc_legacy_legendary_fired value = yes }
+			trigger_event_silently = cc_legacy.2
+		}
+
+		# Track A: Minister with notable traits → protege inheritance event
+		else_if = {
+			limit = {
+				scope:cc_legacy_minister = {
+					OR = {
+						has_trait = grand_chancellor
+						has_trait = cavalry_marshal
+						has_trait = supreme_commander
+						has_trait = learned_courtier
+						has_trait = enlightenment_herald
+						has_trait = master_urbanist
+						has_trait = progressive_rationalist
+						has_trait = confucian_mandarin
+						has_trait = caliphate_diplomat
+						has_trait = seneschal
+						has_trait = marshal_of_the_court
+					}
+				}
+				# Limit to one protege event per game year
+				NOT = { has_variable = cc_legacy_protege_this_year }
+			}
+			set_variable = {
+				name = cc_legacy_protege_this_year
+				value = yes
+				days = 365
+			}
+			trigger_event_silently = cc_legacy.1
+		}
+	}
+}

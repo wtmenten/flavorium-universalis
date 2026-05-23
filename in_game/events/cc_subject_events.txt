@@ -933,3 +933,251 @@ cc.130 = {
 		custom_tooltip = cc.march.charter.1.a.tt
 	}
 }
+
+###############################################################################
+# SUBJECT LOBBYING EVENTS (cc.201–cc.203)
+# Fired from yearly_country_pulse when subject types are present.
+# Subjects petition the overlord directly — zero-sum choices with diplomatic weight.
+###############################################################################
+
+# "The Chartered Company's Petition"
+# A chartered_company subject lobbies for expanded trade route protections.
+# Cooldown: 15 years per subject.
+cc.201 = {
+	type = country_event
+	title = cc.company.lobby.1.title
+	desc = cc.company.lobby.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = chartered_company
+			NOT = { has_variable = cc_company_lobby_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = chartered_company
+				NOT = { has_variable = cc_company_lobby_cooldown }
+			}
+			save_scope_as = company
+		}
+		scope:company = {
+			set_variable = { name = cc_company_lobby_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Grant a trade privilege — company satisfaction up, other subjects jealous
+	option = {
+		name = cc.company.lobby.1.a
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+		scope:company = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_opinion = { modifier = cc_diplomatic_favor target = root }
+		}
+		every_subject = {
+			limit = {
+				NOT = { this = scope:company }
+				OR = {
+					is_subject_type = chartered_company
+					is_subject_type = tax_farm
+				}
+			}
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+
+	# Fund their expansion — gold cost, trade power gain
+	option = {
+		name = cc.company.lobby.1.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		scope:company = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_country_modifier = {
+			modifier = cc_thriving_port_modifier
+			years = 10
+			mode = add_and_extend
+		}
+	}
+
+	# Ignore the petition — company loyalty drops
+	option = {
+		name = cc.company.lobby.1.c
+		scope:company = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+	}
+}
+
+# "The March Lord's Demands"
+# A military_march subject demands the right to expand against a neighbor.
+# Cooldown: 15 years per subject.
+cc.202 = {
+	type = country_event
+	title = cc.march.lobby.1.title
+	desc = cc.march.lobby.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_march
+			NOT = { has_variable = cc_march_lobby_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { is_at_war_with = root }
+			}
+		}
+		NOT = { at_war = yes }
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				NOT = { has_variable = cc_march_lobby_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+			}
+			save_scope_as = march_lord
+		}
+		scope:march_lord = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+				save_scope_as = expansion_target
+			}
+			set_variable = { name = cc_march_lobby_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Allow expansion — march lords pleased, may drag the overlord into war
+	option = {
+		name = cc.march.lobby.1.a
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		scope:march_lord = {
+			add_liberty_desire = liberty_desire_mild_minus
+			declare_war_with_cb = {
+				target = scope:expansion_target
+				type = casus_belli:cb_conquer_province
+			}
+		}
+	}
+
+	# Subsidize border strengthening instead — gold cost, march loyalty up, no war
+	option = {
+		name = cc.march.lobby.1.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		scope:march_lord = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.03 }
+	}
+
+	# Deny the demand — march liberty desire penalty, nobles displeasure
+	option = {
+		name = cc.march.lobby.1.c
+		scope:march_lord = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+	}
+}
+
+# "A Rivalry Among Subjects"
+# Two subjects of different types come into conflict over resources or influence.
+# Cooldown: 20 years (on overlord scope).
+cc.203 = {
+	type = country_event
+	title = cc.subject.rivalry.1.title
+	desc = cc.subject.rivalry.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_subject_rivalry_cooldown }
+		any_subject = { is_subject_type = chartered_company }
+		any_subject = { is_subject_type = military_march }
+	}
+
+	immediate = {
+		set_variable = { name = cc_subject_rivalry_cooldown value = yes years = 20 }
+		random_subject = {
+			limit = { is_subject_type = chartered_company }
+			save_scope_as = company_rival
+		}
+		random_subject = {
+			limit = { is_subject_type = military_march }
+			save_scope_as = march_rival
+		}
+	}
+
+	# Side with the chartered company — company pleased, march resentful
+	option = {
+		name = cc.subject.rivalry.1.a
+		scope:company_rival = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_opinion = { modifier = cc_diplomatic_favor target = root }
+		}
+		scope:march_rival = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+
+	# Side with the military march — march pleased, company resentful
+	option = {
+		name = cc.subject.rivalry.1.b
+		scope:march_rival = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_opinion = { modifier = cc_diplomatic_favor target = root }
+		}
+		scope:company_rival = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+	}
+
+	# Mediate — pay gold to appease both; neither fully satisfied but no resentment
+	option = {
+		name = cc.subject.rivalry.1.c
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -25
+		}
+		scope:company_rival = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+		scope:march_rival = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+}

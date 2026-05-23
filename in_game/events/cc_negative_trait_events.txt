@@ -1,0 +1,982 @@
+﻿namespace = cc_neg
+
+###############################################################################
+# NEGATIVE TRAIT EVENTS
+# Grant events: cc_neg.1–9 (one per negative trait)
+# Rehabilitation events: cc_neg.11–19 (one per negative trait)
+# Fired from yearly pulse in cc_cabinet_pulse.txt (low weight, ~10%).
+# Design rules:
+#   - Always warn player before granting ("seems troubled")
+#   - Never apply more than 1 negative trait per minister (check NOR in trigger)
+#   - All are removable via paired rehabilitation events
+###############################################################################
+
+# ============================================================
+# GRANT EVENTS
+# ============================================================
+
+# cc_neg.1 — Stagnant Counselor
+# Minister in cabinet 20+ years; no capital dev growth
+cc_neg.1 = {
+	type = country_event
+	title = cc_neg.1.title
+	desc = cc_neg.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			character_age > 50
+			# No current negative traits
+			NOR = {
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = outdated_general
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+			# Long-serving: no cc_neg1 variable set (fired before)
+			NOT = { has_variable = cc_neg1_warned }
+		}
+		capital.development < 25
+		NOT = { has_variable = cc_neg1_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				character_age > 50
+				NOR = {
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = corrupted_official
+					has_trait = outdated_general
+					has_trait = cynical_courtier
+					has_trait = reckless_expander
+				}
+				NOT = { has_variable = cc_neg1_warned }
+			}
+			save_scope_as = troubled_minister
+			set_variable = { name = cc_neg1_warned value = yes }
+		}
+	}
+
+	# Act now — invest in the capital to re-invigorate the minister
+	option = {
+		name = cc_neg.1.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		add_country_modifier = { modifier = cc_cabinet_provincial_flourishing years = 5 }
+		set_variable = { name = cc_neg1_fired value = yes }
+	}
+
+	# Dismiss the minister before they stagnate
+	option = {
+		name = cc_neg.1.b
+		remove_from_cabinet = scope:troubled_minister
+		add_prestige = prestige_weak_bonus
+		set_variable = { name = cc_neg1_fired value = yes }
+	}
+
+	# Ignore the warning — minister gains stagnant_counselor
+	option = {
+		name = cc_neg.1.c
+		scope:troubled_minister = { add_trait = trait:stagnant_counselor }
+		set_variable = { name = cc_neg1_fired value = yes }
+	}
+}
+
+
+# cc_neg.2 — War Profiteer
+# Military minister active during 2+ wars with high treasury
+cc_neg.2 = {
+	type = country_event
+	title = cc_neg.2.title
+	desc = cc_neg.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		gold >= {
+			value = monthly_income_trade_and_tax
+			multiply = 50
+		}
+		NOT = { at_war = yes }
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = cavalry_marshal
+				has_trait = commissariat_officer
+				has_trait = siege_engineer
+				has_trait = supreme_commander
+				has_trait = marshal_of_the_court
+			}
+			NOR = {
+				has_trait = war_profiteer
+				has_trait = stagnant_counselor
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = outdated_general
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+		}
+		NOT = { has_variable = cc_neg2_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = cavalry_marshal
+					has_trait = commissariat_officer
+					has_trait = siege_engineer
+					has_trait = supreme_commander
+					has_trait = marshal_of_the_court
+				}
+				NOR = {
+					has_trait = war_profiteer
+					has_trait = stagnant_counselor
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = corrupted_official
+					has_trait = outdated_general
+					has_trait = cynical_courtier
+					has_trait = reckless_expander
+				}
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg2_fired value = yes }
+	}
+
+	option = {
+		name = cc_neg.2.a
+		# Pay them off — they stop profiteering
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+	}
+
+	option = {
+		name = cc_neg.2.b
+		scope:troubled_minister = { add_trait = trait:war_profiteer }
+	}
+}
+
+
+# cc_neg.3 — Court Schemer
+# Minister of opposing societal value axis has been undermined via tension event
+cc_neg.3 = {
+	type = country_event
+	title = cc_neg.3.title
+	desc = cc_neg.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_variable = cc_tension_schemer_risk
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = court_schemer
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = outdated_general
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+			has_variable = cc_schemer_risk_target
+		}
+		NOT = { has_variable = cc_neg3_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_schemer_risk_target
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg3_fired value = yes }
+		remove_variable = cc_tension_schemer_risk
+	}
+
+	option = {
+		name = cc_neg.3.a
+		# Reassign them to a demanding task to channel their ambitions
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 3 }
+		scope:troubled_minister = { remove_variable = cc_schemer_risk_target }
+	}
+
+	option = {
+		name = cc_neg.3.b
+		scope:troubled_minister = {
+			add_trait = trait:court_schemer
+			remove_variable = cc_schemer_risk_target
+		}
+	}
+}
+
+
+# cc_neg.4 — Inefficient Bureaucrat
+# Low-skill minister still in cabinet at age 4+ start
+cc_neg.4 = {
+	type = country_event
+	title = cc_neg.4.title
+	desc = cc_neg.4.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = inefficient_bureaucrat
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = corrupted_official
+				has_trait = outdated_general
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+			# Low-skill proxy: no notable cc traits at all
+			NOR = {
+				has_trait = grand_chancellor
+				has_trait = cavalry_marshal
+				has_trait = learned_courtier
+				has_trait = enlightenment_herald
+				has_trait = master_urbanist
+				has_trait = seneschal
+				has_trait = parliamentary_broker
+				has_trait = supreme_commander
+			}
+			NOT = { has_variable = cc_neg4_warned }
+		}
+		NOT = { has_variable = cc_neg4_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = inefficient_bureaucrat
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = corrupted_official
+					has_trait = outdated_general
+					has_trait = cynical_courtier
+					has_trait = reckless_expander
+					has_trait = grand_chancellor
+					has_trait = cavalry_marshal
+					has_trait = learned_courtier
+					has_trait = enlightenment_herald
+					has_trait = master_urbanist
+					has_trait = seneschal
+					has_trait = parliamentary_broker
+					has_trait = supreme_commander
+				}
+				NOT = { has_variable = cc_neg4_warned }
+			}
+			save_scope_as = troubled_minister
+			set_variable = { name = cc_neg4_warned value = yes }
+		}
+		set_variable = { name = cc_neg4_fired value = yes }
+	}
+
+	option = {
+		name = cc_neg.4.a
+		remove_from_cabinet = scope:troubled_minister
+		add_country_modifier = { modifier = cc_cabinet_parliamentary_guidance years = 3 }
+	}
+
+	option = {
+		name = cc_neg.4.b
+		scope:troubled_minister = { add_trait = trait:inefficient_bureaucrat }
+	}
+}
+
+
+# cc_neg.5 — Corrupted Official
+# Wealth hoarding (3+ stacks) while specific minister in cabinet
+cc_neg.5 = {
+	type = country_event
+	title = cc_neg.5.title
+	desc = cc_neg.5.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = bank
+	}
+
+	trigger = {
+		has_variable = cc_neg5_corruption_ready
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = master_of_coin
+				has_trait = merchant_syndic
+				has_trait = free_market_advocate
+			}
+			NOR = {
+				has_trait = corrupted_official
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = outdated_general
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+		}
+		NOT = { has_variable = cc_neg5_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = master_of_coin
+					has_trait = merchant_syndic
+					has_trait = free_market_advocate
+				}
+				NOR = {
+					has_trait = corrupted_official
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = outdated_general
+					has_trait = cynical_courtier
+					has_trait = reckless_expander
+				}
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg5_fired value = yes }
+		remove_variable = cc_neg5_corruption_ready
+	}
+
+	option = {
+		name = cc_neg.5.a
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+
+	option = {
+		name = cc_neg.5.b
+		scope:troubled_minister = { add_trait = trait:corrupted_official }
+	}
+}
+
+
+# cc_neg.6 — Outdated General
+# Military minister still present in age 5+ with only early-age military traits
+cc_neg.6 = {
+	type = country_event
+	title = cc_neg.6.title
+	desc = cc_neg.6.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = infantry_drillmaster
+				has_trait = scout_captain
+				has_trait = military_engineer
+				has_trait = marshal_of_the_court
+			}
+			NOR = {
+				has_trait = commissariat_officer
+				has_trait = cavalry_marshal
+				has_trait = siege_engineer
+				has_trait = supreme_commander
+				has_trait = outdated_general
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = cynical_courtier
+				has_trait = reckless_expander
+			}
+		}
+		NOT = { has_variable = cc_neg6_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = infantry_drillmaster
+					has_trait = scout_captain
+					has_trait = military_engineer
+					has_trait = marshal_of_the_court
+				}
+				NOR = {
+					has_trait = commissariat_officer
+					has_trait = cavalry_marshal
+					has_trait = siege_engineer
+					has_trait = supreme_commander
+					has_trait = outdated_general
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = corrupted_official
+					has_trait = cynical_courtier
+					has_trait = reckless_expander
+				}
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg6_fired value = yes }
+	}
+
+	option = {
+		name = cc_neg.6.a
+		remove_from_cabinet = scope:troubled_minister
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_neg.6.b
+		scope:troubled_minister = { add_trait = trait:outdated_general }
+	}
+}
+
+
+# cc_neg.7 — Cynical Courtier
+# Player has declined the "good" synergy option multiple times
+cc_neg.7 = {
+	type = country_event
+	title = cc_neg.7.title
+	desc = cc_neg.7.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_variable = cc_synergy_consolation_count
+		var:cc_synergy_consolation_count >= 3
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOR = {
+				has_trait = cynical_courtier
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = outdated_general
+				has_trait = reckless_expander
+			}
+		}
+		NOT = { has_variable = cc_neg7_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOR = {
+					has_trait = cynical_courtier
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = corrupted_official
+					has_trait = outdated_general
+					has_trait = reckless_expander
+				}
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg7_fired value = yes }
+	}
+
+	option = {
+		name = cc_neg.7.a
+		scope:troubled_minister = { add_trait = trait:cynical_courtier }
+		remove_variable = cc_synergy_consolation_count
+	}
+
+	option = {
+		name = cc_neg.7.b
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		add_prestige = prestige_mild_bonus
+		remove_variable = cc_synergy_consolation_count
+	}
+}
+
+
+# cc_neg.8 — Reckless Expander
+# Expansionist minister active during failed wars
+cc_neg.8 = {
+	type = country_event
+	title = cc_neg.8.title
+	desc = cc_neg.8.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		has_variable = cc_neg8_failed_war
+		any_cabinet_character = {
+			in_cabinet = yes
+			OR = {
+				has_trait = expansionist_advisor
+				has_trait = new_world_pioneer
+			}
+			NOR = {
+				has_trait = reckless_expander
+				has_trait = cynical_courtier
+				has_trait = stagnant_counselor
+				has_trait = war_profiteer
+				has_trait = court_schemer
+				has_trait = inefficient_bureaucrat
+				has_trait = corrupted_official
+				has_trait = outdated_general
+			}
+		}
+		NOT = { has_variable = cc_neg8_fired }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = expansionist_advisor
+					has_trait = new_world_pioneer
+				}
+				NOR = {
+					has_trait = reckless_expander
+					has_trait = cynical_courtier
+					has_trait = stagnant_counselor
+					has_trait = war_profiteer
+					has_trait = court_schemer
+					has_trait = inefficient_bureaucrat
+					has_trait = corrupted_official
+					has_trait = outdated_general
+				}
+			}
+			save_scope_as = troubled_minister
+		}
+		set_variable = { name = cc_neg8_fired value = yes }
+		remove_variable = cc_neg8_failed_war
+	}
+
+	option = {
+		name = cc_neg.8.a
+		scope:troubled_minister = { add_trait = trait:reckless_expander }
+	}
+
+	option = {
+		name = cc_neg.8.b
+		remove_from_cabinet = scope:troubled_minister
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+# ============================================================
+# REHABILITATION EVENTS — fire when conditions clear
+# ============================================================
+
+# cc_neg.11 — Stagnant Counselor Rehabilitated (capital dev grew)
+cc_neg.11 = {
+	type = country_event
+	title = cc_neg.11.title
+	desc = cc_neg.11.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		capital.development > 35
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = stagnant_counselor
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = stagnant_counselor }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.11.a
+		scope:rehabilitated_minister = { remove_trait = trait:stagnant_counselor }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_neg.12 — War Profiteer Rehabilitated (5 years of peace)
+cc_neg.12 = {
+	type = country_event
+	title = cc_neg.12.title
+	desc = cc_neg.12.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { at_war = yes }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = war_profiteer
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = war_profiteer }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.12.a
+		scope:rehabilitated_minister = { remove_trait = trait:war_profiteer }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_neg.13 — Court Schemer Rehabilitated (assigned cabinet action)
+cc_neg.13 = {
+	type = country_event
+	title = cc_neg.13.title
+	desc = cc_neg.13.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		# Cabinet efficiency restored — proxy for minister being kept busy
+		stability >= 1
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = court_schemer
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = court_schemer }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.13.a
+		scope:rehabilitated_minister = { remove_trait = trait:court_schemer }
+		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 5 }
+	}
+}
+
+# cc_neg.14 — Inefficient Bureaucrat Rehabilitated (cabinet efficiency improved)
+cc_neg.14 = {
+	type = country_event
+	title = cc_neg.14.title
+	desc = cc_neg.14.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		stability >= 1
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = inefficient_bureaucrat
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = inefficient_bureaucrat }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.14.a
+		scope:rehabilitated_minister = { remove_trait = trait:inefficient_bureaucrat }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+	}
+}
+
+# cc_neg.15 — Corrupted Official Rehabilitated (wealth hoarding cleared)
+cc_neg.15 = {
+	type = country_event
+	title = cc_neg.15.title
+	desc = cc_neg.15.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = bank
+	}
+
+	trigger = {
+		gold < {
+			value = monthly_income_trade_and_tax
+			multiply = 30
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = corrupted_official
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = corrupted_official }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.15.a
+		scope:rehabilitated_minister = { remove_trait = trait:corrupted_official }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_neg.16 — Zealous Fanatic Rehabilitated (tolerance heretic improved)
+cc_neg.16 = {
+	type = country_event
+	title = cc_neg.16.title
+	desc = cc_neg.16.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		stability >= 1
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = zealous_fanatic
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = zealous_fanatic }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.16.a
+		scope:rehabilitated_minister = { remove_trait = trait:zealous_fanatic }
+		add_prestige = prestige_mild_bonus
+	}
+
+	option = {
+		name = cc_neg.16.b
+		# Pay for private theological counsel to accelerate reform
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 8
+			}
+		}
+		scope:rehabilitated_minister = { remove_trait = trait:zealous_fanatic }
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -8
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.05 }
+	}
+}
+
+# cc_neg.17 — Outdated General Rehabilitated (age advances)
+cc_neg.17 = {
+	type = country_event
+	title = cc_neg.17.title
+	desc = cc_neg.17.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		current_age = age_6_revolutions
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = outdated_general
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = outdated_general }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.17.a
+		scope:rehabilitated_minister = { remove_trait = trait:outdated_general }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_neg.18 — Cynical Courtier Rehabilitated (Legend quest completed)
+cc_neg.18 = {
+	type = country_event
+	title = cc_neg.18.title
+	desc = cc_neg.18.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_legend_philosophers_court_unlocked
+			has_variable = cc_legend_holy_empire
+			has_variable = cc_legend_grand_bazaar_unlocked
+			has_variable = cc_legend_iron_hegemony_unlocked
+			has_variable = cc_legend_peoples_assembly_unlocked
+			has_variable = cc_legend_8_fired
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = cynical_courtier
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = cynical_courtier }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.18.a
+		scope:rehabilitated_minister = { remove_trait = trait:cynical_courtier }
+		add_prestige = prestige_severe_bonus
+	}
+}
+
+# cc_neg.19 — Reckless Expander Rehabilitated (5 years of peace, low antagonism)
+# Also the path to gaining provocateur trait
+cc_neg.19 = {
+	type = country_event
+	title = cc_neg.19.title
+	desc = cc_neg.19.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		NOT = { at_war = yes }
+		has_countries_with_near_coalition_grade_antagonism = yes
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = reckless_expander
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = reckless_expander }
+			save_scope_as = rehabilitated_minister
+		}
+	}
+
+	option = {
+		name = cc_neg.19.a
+		scope:rehabilitated_minister = {
+			remove_trait = trait:reckless_expander
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Channel the energy outward: reckless → provocateur
+	option = {
+		name = cc_neg.19.b
+		scope:rehabilitated_minister = {
+			remove_trait = trait:reckless_expander
+			add_trait = trait:provocateur
+		}
+		add_prestige = prestige_weak_bonus
+	}
+}
