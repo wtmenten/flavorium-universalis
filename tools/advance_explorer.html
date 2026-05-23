@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EU5 Advance Branch Explorer</title>
+<style>
+:root {
+  --bg:        #16181f; --panel-bg:  #1e2029; --card-bg:   #252830;
+  --card-border:#32363f;--hover-bg:  #2d3040;
+  --adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;--mod-gold:#d4a843;
+  --text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --unlock:#5abf7a;--modifier:#5baee8;--radius:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.45}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
+.app{display:grid;grid-template-rows:48px 1fr;height:100vh}
+.header{display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--panel-bg);border-bottom:1px solid var(--card-border);z-index:10}
+.header h1{font-size:15px;font-weight:600;white-space:nowrap}
+.sub{font-size:11px;color:var(--text-dim);white-space:nowrap}
+.spacer{flex:1}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctl-label{font-size:11px;color:var(--text-dim)}
+.ctl-sep{width:1px;background:var(--card-border);align-self:stretch;margin:8px 0}
+.pill-group{display:flex;border:1px solid var(--card-border);border-radius:5px;overflow:hidden}
+.pill{padding:5px 11px;background:transparent;border:none;color:var(--text-dim);font-size:11px;font-weight:500;transition:background .12s,color .12s}
+.pill:hover{background:var(--hover-bg);color:var(--text)}
+.pill.on{background:var(--card-border);color:var(--text)}
+.body{display:grid;grid-template-columns:1fr 520px;overflow:hidden}
+.left{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.right{border-left:1px solid var(--card-border);background:var(--panel-bg);overflow-y:auto;padding:14px}
+.age-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;flex-shrink:0}
+.age-title{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--hover-bg);font-weight:600;font-size:12px;border-bottom:1px solid var(--card-border)}
+.univ-tag{font-size:10px;font-weight:400;color:var(--text-dim)}
+.branch-tabs{display:flex;border-bottom:1px solid var(--card-border)}
+.branch-tab{flex:1;padding:7px 6px 6px;background:transparent;border:none;border-bottom:2px solid transparent;font-size:11px;font-weight:600;color:var(--text-dim);transition:color .12s,border-color .12s,background .12s;text-align:center;line-height:1.3}
+.branch-tab:hover:not([disabled]){background:var(--hover-bg);color:var(--text)}
+.branch-tab.sel-adm{color:var(--adm);border-bottom-color:var(--adm);background:rgba(91,174,232,.07)}
+.branch-tab.sel-dip{color:var(--dip);border-bottom-color:var(--dip);background:rgba(90,191,122,.07)}
+.branch-tab.sel-mil{color:var(--mil);border-bottom-color:var(--mil);background:rgba(224,123,84,.07)}
+.branch-tab[disabled]{opacity:.28;cursor:default}
+.cnt{font-size:9px;font-weight:400;opacity:.8}
+.cnt-u{color:var(--unlock)}
+.cnt-m{color:var(--modifier)}
+.branch-detail{display:grid;grid-template-columns:1fr 1fr 1fr}
+.branch-col{padding:8px 10px;border-right:1px solid var(--card-border);min-height:60px;transition:background .12s}
+.branch-col:last-child{border-right:none}
+.branch-col.selected-adm{background:rgba(91,174,232,.05)}
+.branch-col.selected-dip{background:rgba(90,191,122,.05)}
+.branch-col.selected-mil{background:rgba(224,123,84,.05)}
+.branch-col.unselected{opacity:.82}
+.col-summary{background:rgba(255,255,255,.03);border:1px solid var(--card-border);border-radius:4px;padding:5px 7px;margin-bottom:8px;font-size:10px}
+.col-sum-row{color:var(--text-dim);line-height:1.6;word-break:break-word;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.col-sum-key{color:var(--text-mid)}
+.sum-divider{border-top:1px solid var(--card-border);margin:4px 0}
+.cat-label{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0;letter-spacing:.02em}
+.adv-block{margin-bottom:6px}
+.adv-name{font-size:11px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.mod-badge{display:inline-block;font-size:9px;padding:1px 4px;border-radius:3px;background:var(--mod-gold);color:#0d1017;font-weight:700;flex-shrink:0}
+.fx{font-size:10px;padding-left:8px;padding-top:1px}
+.fx.fxu{color:var(--unlock)}
+.fx.fxm{color:var(--modifier)}
+.no-adv{font-size:10px;color:var(--text-dim);font-style:italic;padding:2px 0}
+.univ-strip{padding:6px 10px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--card-border);font-size:10px;color:var(--text-dim)}
+.univ-strip.univ-hidden{display:none}
+.univ-strip summary{cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:5px}
+.univ-strip summary::before{content:'+';font-size:11px;font-weight:700}
+details[open] .univ-strip summary::before{content:'-'}
+.univ-adv{margin-top:4px}
+.univ-adv .adv-name{color:var(--text-mid)}
+.tip-host{position:relative;display:inline-flex;align-items:baseline;gap:3px;cursor:help}
+.tip-host:hover .tip-box{display:block}
+.tip-box{display:none;position:absolute;z-index:200;bottom:calc(100% + 5px);left:0;background:#1c1f28;border:1px solid var(--card-border);border-radius:5px;padding:7px 9px;white-space:nowrap;font-size:10px;color:var(--text);box-shadow:0 6px 18px rgba(0,0,0,.55);min-width:200px;pointer-events:none}
+.tip-box::after{content:'';position:absolute;top:100%;left:12px;border:5px solid transparent;border-top-color:#1c1f28}
+.tip-row{padding:2px 0;display:flex;gap:5px;align-items:baseline}
+.tip-val{color:var(--text);font-weight:600;flex-shrink:0}
+.tip-src{color:var(--text-mid)}
+.sum-header{display:flex;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--card-border)}
+.sum-header h2{font-size:13px;font-weight:600}
+.combo-label{font-size:10px;color:var(--text-dim);margin-bottom:12px;line-height:1.8}
+.sum-section{margin-bottom:14px}
+.sum-sh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding-bottom:4px;margin-bottom:6px;border-bottom:1px solid var(--card-border)}
+.sum-section.su .sum-sh{color:var(--unlock)}
+.sum-section.sm .sum-sh{color:var(--modifier)}
+.sum-group{margin-bottom:8px}
+.sum-gl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.sum-item{font-size:11px;padding:1px 0 1px 8px;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.sum-key{color:var(--text-dim)}
+.sum-val{font-weight:500}
+.sum-src{font-size:10px;color:var(--text-dim)}
+.sum-hint{font-size:9px;color:var(--text-dim);text-decoration:underline dotted}
+.empty{font-size:11px;color:var(--text-dim);font-style:italic;padding:4px 0}
+.loading{display:flex;align-items:center;justify-content:center;height:100vh;font-size:14px;color:var(--text-dim)}
+.loading-err{color:#ff6b6b}
+</style>
+</head>
+<body>
+<div id="root"><div class="loading">Loading advance_data.js...</div></div>
+<script>!function(n,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((n||self).preact={})}(this,function(n){var t,i,e,r,o,f,u,c,s,a,h,l,p,y,v,d,w="http://www.w3.org/2000/svg",_="http://www.w3.org/1999/xhtml",g=null,m=void 0,b={},k=[],x=/acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i,M=Array.isArray;function S(n,t){for(var i in t)n[i]=t[i];return n}function T(n){n&&n.parentNode&&n.parentNode.removeChild(n)}function $(n,i,e){var r,o,f,u={};for(f in i)"key"==f?r=i[f]:"ref"==f?o=i[f]:u[f]=i[f];if(arguments.length>2&&(u.children=arguments.length>3?t.call(arguments,2):e),"function"==typeof n&&n.defaultProps!=g)for(f in n.defaultProps)u[f]===m&&(u[f]=n.defaultProps[f]);return C(n,u,r,o,g)}function C(n,t,r,o,f){var u={type:n,props:t,key:r,ref:o,__k:g,__:g,__b:0,__e:g,__c:g,constructor:m,__v:f==g?++e:f,__i:-1,__u:0};return f==g&&i.vnode!=g&&i.vnode(u),u}function I(n){return n.children}function P(n,t){this.props=n,this.context=t}function j(n,t){if(t==g)return n.__?j(n.__,n.__i+1):g;for(var i;t<n.__k.length;t++)if((i=n.__k[t])!=g&&i.__e!=g)return i.__e;return"function"==typeof n.type?j(n):g}function A(n){if(n.__P&&n.__d){var t=n.__v,e=t.__e,r=[],o=[],f=S({},t);f.__v=t.__v+1,i.vnode&&i.vnode(f),E(n.__P,f,t,n.__n,n.__P.namespaceURI,32&t.__u?[e]:g,r,e==g?j(t):e,!!(32&t.__u),o),f.__v=t.__v,f.__.__k[f.__i]=f,J(r,f,o),t.__e=t.__=null,f.__e!=e&&H(f)}}function H(n){if((n=n.__)!=g&&n.__c!=g)return n.__e=n.__c.base=g,n.__k.some(function(t){if(t!=g&&t.__e!=g)return n.__e=n.__c.base=t.__e}),H(n)}function L(n){(!n.__d&&(n.__d=!0)&&o.push(n)&&!F.__r++||f!=i.debounceRendering)&&((f=i.debounceRendering)||u)(F)}function F(){try{for(var n,t=1;o.length;)o.length>t&&o.sort(c),n=o.shift(),t=o.length,A(n)}finally{o.length=F.__r=0}}function O(n,t,i,e,r,o,f,u,c,s,a){var h,l,p,y,v,d,w,_=e&&e.__k||k,x=t.length;for(c=z(i,t,_,c,x),h=0;h<x;h++)(p=i.__k[h])!=g&&(l=-1!=p.__i&&_[p.__i]||b,p.__i=h,d=E(n,p,l,r,o,f,u,c,s,a),y=p.__e,p.ref&&l.ref!=p.ref&&(l.ref&&R(l.ref,g,p),a.push(p.ref,p.__c||y,p)),v==g&&y!=g&&(v=y),(w=!!(4&p.__u))||l.__k===p.__k?(c=N(p,c,n,w),w&&l.__e&&(l.__e=g)):"function"==typeof p.type&&d!==m?c=d:y&&(c=y.nextSibling),p.__u&=-7);return i.__e=v,c}function z(n,t,i,e,r){var o,f,u,c,s,a=i.length,h=a,l=0;for(n.__k=new Array(r),o=0;o<r;o++)(f=t[o])!=g&&"boolean"!=typeof f&&"function"!=typeof f?("string"==typeof f||"number"==typeof f||"bigint"==typeof f||f.constructor==String?f=n.__k[o]=C(g,f,g,g,g):M(f)?f=n.__k[o]=C(I,{children:f},g,g,g):f.constructor===m&&f.__b>0?f=n.__k[o]=C(f.type,f.props,f.key,f.ref?f.ref:g,f.__v):n.__k[o]=f,c=o+l,f.__=n,f.__b=n.__b+1,s=f.__i=V(f,i,c,h),u=g,-1!=s&&(h--,(u=i[s])&&(u.__u|=2)),u==g||u.__v==g?(-1==s&&(r>a?l--:r<a&&l++),"function"!=typeof f.type&&(f.__u|=4)):s!=c&&(s==c-1?l--:s==c+1?l++:(s>c?l--:l++,f.__u|=4))):n.__k[o]=g;if(h)for(o=0;o<a;o++)(u=i[o])!=g&&0==(2&u.__u)&&(u.__e==e&&(e=j(u)),U(u,u));return e}function N(n,t,i,e){var r,o;if("function"==typeof n.type){for(r=n.__k,o=0;r&&o<r.length;o++)r[o]&&(r[o].__=n,t=N(r[o],t,i,e));return t}n.__e!=t&&(e&&(t&&n.type&&!t.parentNode&&(t=j(n)),i.insertBefore(n.__e,t||g)),t=n.__e);do{t=t&&t.nextSibling}while(t!=g&&8==t.nodeType);return t}function V(n,t,i,e){var r,o,f,u=n.key,c=n.type,s=t[i],a=s!=g&&0==(2&s.__u);if(s===g&&null==u||a&&u==s.key&&c==s.type)return i;if(e>(a?1:0))for(r=i-1,o=i+1;r>=0||o<t.length;)if((s=t[f=r>=0?r--:o++])!=g&&0==(2&s.__u)&&u==s.key&&c==s.type)return f;return-1}function q(n,t,i){"-"==t[0]?n.setProperty(t,i==g?"":i):n[t]=i==g?"":"number"!=typeof i||x.test(t)?i:i+"px"}function B(n,t,i,e,r){var o,f;n:if("style"==t)if("string"==typeof i)n.style.cssText=i;else{if("string"==typeof e&&(n.style.cssText=e=""),e)for(t in e)i&&t in i||q(n.style,t,"");if(i)for(t in i)e&&i[t]==e[t]||q(n.style,t,i[t])}else if("o"==t[0]&&"n"==t[1])o=t!=(t=t.replace(l,"$1")),f=t.toLowerCase(),t=f in n||"onFocusOut"==t||"onFocusIn"==t?f.slice(2):t.slice(2),n.l||(n.l={}),n.l[t+o]=i,i?e?i[h]=e[h]:(i[h]=p,n.addEventListener(t,o?v:y,o)):n.removeEventListener(t,o?v:y,o);else{if(r==w)t=t.replace(/xlink(H|:h)/,"h").replace(/sName$/,"s");else if("width"!=t&&"height"!=t&&"href"!=t&&"list"!=t&&"form"!=t&&"tabIndex"!=t&&"download"!=t&&"rowSpan"!=t&&"colSpan"!=t&&"role"!=t&&"popover"!=t&&t in n)try{n[t]=i==g?"":i;break n}catch(n){}"function"==typeof i||(i==g||!1===i&&"-"!=t[4]?n.removeAttribute(t):n.setAttribute(t,"popover"==t&&1==i?"":i))}}function D(n){return function(t){if(this.l){var e=this.l[t.type+n];if(t[a]==g)t[a]=p++;else if(t[a]<e[h])return;return e(i.event?i.event(t):t)}}}function E(n,t,e,r,o,f,u,c,s,a){var h,l,p,y,v,d,w,_,b,x,$,C,j,A,H,L=t.type;if(t.constructor!==m)return g;128&e.__u&&(s=!!(32&e.__u),f=[c=t.__e=e.__e]),(h=i.__b)&&h(t);n:if("function"==typeof L)try{if(_=t.props,b=L.prototype&&L.prototype.render,x=(h=L.contextType)&&r[h.__c],$=h?x?x.props.value:h.__:r,e.__c?w=(l=t.__c=e.__c).__=l.__E:(b?t.__c=l=new L(_,$):(t.__c=l=new P(_,$),l.constructor=L,l.render=W),x&&x.sub(l),l.state||(l.state={}),l.__n=r,p=l.__d=!0,l.__h=[],l._sb=[]),b&&l.__s==g&&(l.__s=l.state),b&&L.getDerivedStateFromProps!=g&&(l.__s==l.state&&(l.__s=S({},l.__s)),S(l.__s,L.getDerivedStateFromProps(_,l.__s))),y=l.props,v=l.state,l.__v=t,p)b&&L.getDerivedStateFromProps==g&&l.componentWillMount!=g&&l.componentWillMount(),b&&l.componentDidMount!=g&&l.__h.push(l.componentDidMount);else{if(b&&L.getDerivedStateFromProps==g&&_!==y&&l.componentWillReceiveProps!=g&&l.componentWillReceiveProps(_,$),t.__v==e.__v||!l.__e&&l.shouldComponentUpdate!=g&&!1===l.shouldComponentUpdate(_,l.__s,$)){t.__v!=e.__v&&(l.props=_,l.state=l.__s,l.__d=!1),t.__e=e.__e,t.__k=e.__k,t.__k.some(function(n){n&&(n.__=t)}),k.push.apply(l.__h,l._sb),l._sb=[],l.__h.length&&u.push(l);break n}l.componentWillUpdate!=g&&l.componentWillUpdate(_,l.__s,$),b&&l.componentDidUpdate!=g&&l.__h.push(function(){l.componentDidUpdate(y,v,d)})}if(l.context=$,l.props=_,l.__P=n,l.__e=!1,C=i.__r,j=0,b)l.state=l.__s,l.__d=!1,C&&C(t),h=l.render(l.props,l.state,l.context),k.push.apply(l.__h,l._sb),l._sb=[];else do{l.__d=!1,C&&C(t),h=l.render(l.props,l.state,l.context),l.state=l.__s}while(l.__d&&++j<25);l.state=l.__s,l.getChildContext!=g&&(r=S(S({},r),l.getChildContext())),b&&!p&&l.getSnapshotBeforeUpdate!=g&&(d=l.getSnapshotBeforeUpdate(y,v)),A=h!=g&&h.type===I&&h.key==g?K(h.props.children):h,c=O(n,M(A)?A:[A],t,e,r,o,f,u,c,s,a),l.base=t.__e,t.__u&=-161,l.__h.length&&u.push(l),w&&(l.__E=l.__=g)}catch(n){if(t.__v=g,s||f!=g)if(n.then){for(t.__u|=s?160:128;c&&8==c.nodeType&&c.nextSibling;)c=c.nextSibling;f[f.indexOf(c)]=g,t.__e=c}else{for(H=f.length;H--;)T(f[H]);G(t)}else t.__e=e.__e,t.__k=e.__k,n.then||G(t);i.__e(n,t,e)}else f==g&&t.__v==e.__v?(t.__k=e.__k,t.__e=e.__e):c=t.__e=Q(e.__e,t,e,r,o,f,u,s,a);return(h=i.diffed)&&h(t),128&t.__u?void 0:c}function G(n){n&&(n.__c&&(n.__c.__e=!0),n.__k&&n.__k.some(G))}function J(n,t,e){for(var r=0;r<e.length;r++)R(e[r],e[++r],e[++r]);i.__c&&i.__c(t,n),n.some(function(t){try{n=t.__h,t.__h=[],n.some(function(n){n.call(t)})}catch(n){i.__e(n,t.__v)}})}function K(n){return"object"!=typeof n||n==g||n.__b>0?n:M(n)?n.map(K):n.constructor!==m?null:S({},n)}function Q(n,e,r,o,f,u,c,s,a){var h,l,p,y,v,d,k,x=r.props||b,S=e.props,$=e.type;if("svg"==$?f=w:"math"==$?f="http://www.w3.org/1998/Math/MathML":f||(f=_),u!=g)for(h=0;h<u.length;h++)if((v=u[h])&&"setAttribute"in v==!!$&&($?v.localName==$:3==v.nodeType)){n=v,u[h]=g;break}if(n==g){if($==g)return document.createTextNode(S);n=document.createElementNS(f,$,S.is&&S),s&&(i.__m&&i.__m(e,u),s=!1),u=g}if($==g)x===S||s&&n.data==S||(n.data=S);else{if(u="textarea"==$&&S.defaultValue!=g?g:u&&t.call(n.childNodes),!s&&u!=g)for(x={},h=0;h<n.attributes.length;h++)x[(v=n.attributes[h]).name]=v.value;for(h in x)v=x[h],"dangerouslySetInnerHTML"==h?p=v:"children"==h||h in S||"value"==h&&"defaultValue"in S||"checked"==h&&"defaultChecked"in S||B(n,h,g,v,f);for(h in S)v=S[h],"children"==h?y=v:"dangerouslySetInnerHTML"==h?l=v:"value"==h?d=v:"checked"==h?k=v:s&&"function"!=typeof v||x[h]===v||B(n,h,v,x[h],f);if(l)s||p&&(l.__html==p.__html||l.__html==n.innerHTML)||(n.innerHTML=l.__html),e.__k=[];else if(p&&(n.innerHTML=""),O("template"==e.type?n.content:n,M(y)?y:[y],e,r,o,"foreignObject"==$?_:f,u,c,u?u[0]:r.__k&&j(r,0),s,a),u!=g)for(h=u.length;h--;)T(u[h]);s&&"textarea"!=$||(h="value","progress"==$&&d==g?n.removeAttribute("value"):d!=m&&(d!==n[h]||"progress"==$&&!d||"option"==$&&d!=x[h])&&B(n,h,d,x[h],f),h="checked",k!=m&&k!=n[h]&&B(n,h,k,x[h],f))}return n}function R(n,t,e){try{if("function"==typeof n){var r="function"==typeof n.__u;r&&n.__u(),r&&t==g||(n.__u=n(t))}else n.current=t}catch(n){i.__e(n,e)}}function U(n,t,e){var r,o;if(i.unmount&&i.unmount(n),(r=n.ref)&&(r.current&&r.current!=n.__e||R(r,g,t)),(r=n.__c)!=g){if(r.componentWillUnmount)try{r.componentWillUnmount()}catch(n){i.__e(n,t)}r.base=r.__P=g}if(r=n.__k)for(o=0;o<r.length;o++)r[o]&&U(r[o],t,e||"function"!=typeof n.type);e||T(n.__e),n.__c=n.__=n.__e=m}function W(n,t,i){return this.constructor(n,i)}function X(n,e,r){var o,f,u,c;e==document&&(e=document.documentElement),i.__&&i.__(n,e),f=(o="function"==typeof r)?g:r&&r.__k||e.__k,u=[],c=[],E(e,n=(!o&&r||e).__k=$(I,g,[n]),f||b,b,e.namespaceURI,!o&&r?[r]:f?g:e.firstChild?t.call(e.childNodes):g,u,!o&&r?r:f?f.__e:e.firstChild,o,c),J(u,n,c)}t=k.slice,i={__e:function(n,t,i,e){for(var r,o,f;t=t.__;)if((r=t.__c)&&!r.__)try{if((o=r.constructor)&&o.getDerivedStateFromError!=g&&(r.setState(o.getDerivedStateFromError(n)),f=r.__d),r.componentDidCatch!=g&&(r.componentDidCatch(n,e||{}),f=r.__d),f)return r.__E=r}catch(t){n=t}throw n}},e=0,r=function(n){return n!=g&&n.constructor===m},P.prototype.setState=function(n,t){var i;i=this.__s!=g&&this.__s!=this.state?this.__s:this.__s=S({},this.state),"function"==typeof n&&(n=n(S({},i),this.props)),n&&S(i,n),n!=g&&this.__v&&(t&&this._sb.push(t),L(this))},P.prototype.forceUpdate=function(n){this.__v&&(this.__e=!0,n&&this.__h.push(n),L(this))},P.prototype.render=I,o=[],u="function"==typeof Promise?Promise.prototype.then.bind(Promise.resolve()):setTimeout,c=function(n,t){return n.__v.__b-t.__v.__b},F.__r=0,s=Math.random().toString(8),a="__d"+s,h="__a"+s,l=/(PointerCapture)$|Capture$/i,p=0,y=D(!1),v=D(!0),d=0,n.Component=P,n.Fragment=I,n.cloneElement=function(n,i,e){var r,o,f,u,c=S({},n.props);for(f in n.type&&n.type.defaultProps&&(u=n.type.defaultProps),i)"key"==f?r=i[f]:"ref"==f?o=i[f]:c[f]=i[f]===m&&u!=m?u[f]:i[f];return arguments.length>2&&(c.children=arguments.length>3?t.call(arguments,2):e),C(n.type,c,r||n.key,o||n.ref,g)},n.createContext=function(n){function t(n){var i,e;return this.getChildContext||(i=new Set,(e={})[t.__c]=this,this.getChildContext=function(){return e},this.componentWillUnmount=function(){i=g},this.shouldComponentUpdate=function(n){this.props.value!=n.value&&i.forEach(function(n){n.__e=!0,L(n)})},this.sub=function(n){i.add(n);var t=n.componentWillUnmount;n.componentWillUnmount=function(){i&&i.delete(n),t&&t.call(n)}}),n.children}return t.__c="__cC"+d++,t.__=n,t.Provider=t.__l=(t.Consumer=function(n,t){return n.children(t)}).contextType=t,t},n.createElement=$,n.createRef=function(){return{current:g}},n.h=$,n.hydrate=function n(t,i){X(t,i,n)},n.isValidElement=r,n.options=i,n.render=X,n.toChildArray=function n(t,i){return i=i||[],t==g||"boolean"==typeof t||(M(t)?t.some(function(t){n(t,i)}):i.push(t)),i}});</script>
+<script>!function(n,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("preact")):"function"==typeof define&&define.amd?define(["exports","preact"],t):t((n||self).preactHooks={},n.preact)}(this,function(n,t){var u,r,i,o,f=0,c=[],e=t.options,a=e.__b,v=e.__r,l=e.diffed,d=e.__c,s=e.unmount,p=e.__;function y(n,t){e.__h&&e.__h(r,n,f||t),f=0;var u=r.__H||(r.__H={__:[],__h:[]});return n>=u.__.length&&u.__.push({}),u.__[n]}function h(n){return f=1,m(j,n)}function m(n,t,i){var o=y(u++,2);if(o.t=n,!o.__c&&(o.__=[i?i(t):j(void 0,t),function(n){var t=o.__N?o.__N[0]:o.__[0],u=o.t(t,n);t!==u&&(o.__N=[u,o.__[1]],o.__c.setState({}))}],o.__c=r,!r.__f)){var f=function(n,t,u){if(!o.__c.__H)return!0;var r=o.__c.__H.__.filter(function(n){return n.__c});if(r.every(function(n){return!n.__N}))return!c||c.call(this,n,t,u);var i=o.__c.props!==n;return r.some(function(n){if(n.__N){var t=n.__[0];n.__=n.__N,n.__N=void 0,t!==n.__[0]&&(i=!0)}}),c&&c.call(this,n,t,u)||i};r.__f=!0;var c=r.shouldComponentUpdate,e=r.componentWillUpdate;r.componentWillUpdate=function(n,t,u){if(this.__e){var r=c;c=void 0,f(n,t,u),c=r}e&&e.call(this,n,t,u)},r.shouldComponentUpdate=f}return o.__N||o.__}function T(n,t){var i=y(u++,4);!e.__s&&g(i.__H,t)&&(i.__=n,i.u=t,r.__h.push(i))}function _(n,t){var r=y(u++,7);return g(r.__H,t)&&(r.__=n(),r.__H=t,r.__h=n),r.__}function b(){for(var n;n=c.shift();){var t=n.__H;if(n.__P&&t)try{t.__h.some(A),t.__h.some(F),t.__h=[]}catch(u){t.__h=[],e.__e(u,n.__v)}}}e.__b=function(n){r=null,a&&a(n)},e.__=function(n,t){n&&t.__k&&t.__k.__m&&(n.__m=t.__k.__m),p&&p(n,t)},e.__r=function(n){v&&v(n),u=0;var t=(r=n.__c).__H;t&&(i===r?(t.__h=[],r.__h=[],t.__.some(function(n){n.__N&&(n.__=n.__N),n.u=n.__N=void 0})):(t.__h.some(A),t.__h.some(F),t.__h=[],u=0)),i=r},e.diffed=function(n){l&&l(n);var t=n.__c;t&&t.__H&&(t.__H.__h.length&&(1!==c.push(t)&&o===e.requestAnimationFrame||((o=e.requestAnimationFrame)||x)(b)),t.__H.__.some(function(n){n.u&&(n.__H=n.u),n.u=void 0})),i=r=null},e.__c=function(n,t){t.some(function(n){try{n.__h.some(A),n.__h=n.__h.filter(function(n){return!n.__||F(n)})}catch(u){t.some(function(n){n.__h&&(n.__h=[])}),t=[],e.__e(u,n.__v)}}),d&&d(n,t)},e.unmount=function(n){s&&s(n);var t,u=n.__c;u&&u.__H&&(u.__H.__.some(function(n){try{A(n)}catch(n){t=n}}),u.__H=void 0,t&&e.__e(t,u.__v))};var q="function"==typeof requestAnimationFrame;function x(n){var t,u=function(){clearTimeout(r),q&&cancelAnimationFrame(t),setTimeout(n)},r=setTimeout(u,35);q&&(t=requestAnimationFrame(u))}function A(n){var t=r,u=n.__c;"function"==typeof u&&(n.__c=void 0,u()),r=t}function F(n){var t=r;n.__c=n.__(),r=t}function g(n,t){return!n||n.length!==t.length||t.some(function(t,u){return t!==n[u]})}function j(n,t){return"function"==typeof t?t(n):t}n.useCallback=function(n,t){return f=8,_(function(){return n},t)},n.useContext=function(n){var t=r.context[n.__c],i=y(u++,9);return i.c=n,t?(null==i.__&&(i.__=!0,t.sub(r)),t.props.value):n.__},n.useDebugValue=function(n,t){e.useDebugValue&&e.useDebugValue(t?t(n):n)},n.useEffect=function(n,t){var i=y(u++,3);!e.__s&&g(i.__H,t)&&(i.__=n,i.u=t,r.__H.__h.push(i))},n.useErrorBoundary=function(n){var t=y(u++,10),i=h();return t.__=n,r.componentDidCatch||(r.componentDidCatch=function(n,u){t.__&&t.__(n,u),i[1](n)}),[i[0],function(){i[1](void 0)}]},n.useId=function(){var n=y(u++,11);if(!n.__){for(var t=r.__v;null!==t&&!t.__m&&null!==t.__;)t=t.__;var i=t.__m||(t.__m=[0,0]);n.__="P"+i[0]+"-"+i[1]++}return n.__},n.useImperativeHandle=function(n,t,u){f=6,T(function(){if("function"==typeof n){var u=n(t());return function(){n(null),u&&"function"==typeof u&&u()}}if(n)return n.current=t(),function(){return n.current=null}},null==u?u:u.concat(n))},n.useLayoutEffect=T,n.useMemo=_,n.useReducer=m,n.useRef=function(n){return f=5,_(function(){return{current:n}},[])},n.useState=h});</script>
+<script>!function(n,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):n.htm=e()}(this,function(){var n=function(e,t,u,s){var r;t[0]=0;for(var p=1;p<t.length;p++){var h=t[p++],o=t[p]?(t[0]|=h?1:2,u[t[p++]]):t[++p];3===h?s[0]=o:4===h?s[1]=Object.assign(s[1]||{},o):5===h?(s[1]=s[1]||{})[t[++p]]=o:6===h?s[1][t[++p]]+=o+"":h?(r=e.apply(o,n(e,o,u,["",null])),s.push(r),o[0]?t[0]|=2:(t[p-2]=0,t[p]=r)):s.push(o)}return s},e=new Map;return function(t){var u=e.get(this);return u||(u=new Map,e.set(this,u)),(u=n(this,u.get(t)||(u.set(t,u=function(n){for(var e,t,u=1,s="",r="",p=[0],h=function(n){1===u&&(n||(s=s.replace(/^\s*\n\s*|\s*\n\s*$/g,"")))?p.push(0,n,s):3===u&&(n||s)?(p.push(3,n,s),u=2):2===u&&"..."===s&&n?p.push(4,n,0):2===u&&s&&!n?p.push(5,0,!0,s):u>=5&&((s||!n&&5===u)&&(p.push(u,0,s,t),u=6),n&&(p.push(u,n,0,t),u=6)),s=""},o=0;o<n.length;o++){o&&(1===u&&h(),h(o));for(var f=0;f<n[o].length;f++)e=n[o][f],1===u?"<"===e?(h(),p=[p],u=3):s+=e:4===u?"--"===s&&">"===e?(u=1,s=""):s=e+s[0]:r?e===r?r="":s+=e:'"'===e||"'"===e?r=e:">"===e?(h(),u=1):u&&("="===e?(u=5,t=s,s=""):"/"===e&&(u<5||">"===n[o][f+1])?(h(),3===u&&(p=p[0]),u=p,(p=p[0]).push(2,0,u),u=0):" "===e||"\t"===e||"\n"===e||"\r"===e?(h(),u=2):s+=e),3===u&&"!--"===s&&(u=4,p=p[0])}return h(),p}(t)),u),arguments,[])).length>1?u:u[0]}});</script>
+<!-- advance_data.js is generated by: python tools/advance_combos.py --json [tools/advance_data.js] -->
+<script src="advance_data.js"></script>
+<script>
+(function () {
+  if (typeof D === 'undefined') {
+    document.getElementById('root').innerHTML =
+      '<div class="loading"><span class="loading-err">advance_data.js not found.</span>' +
+      '&nbsp;Run: <code>python tools/advance_combos.py --json tools/advance_data.js</code></div>';
+    return;
+  }
+
+  const { h, render, Fragment } = preact;
+  const { useState, useMemo, useCallback, useEffect } = preactHooks;
+  const html = htm.bind(h);
+
+  // ── constants ────────────────────────────────────────────────────────────────
+  const BRANCHES = ['adm','dip','mil'];
+  const UNLOCK_CATS = {
+    unlock_subject_type:      {label:'Subject',   color:'#c98fff'},
+    unlock_estate_privilege:  {label:'Privilege', color:'#ffb84d'},
+    unlock_government_reform: {label:'Reform',    color:'#ff8c69'},
+    unlock_casus_belli:       {label:'CB',        color:'#ff6b6b'},
+    unlock_building:          {label:'Building',  color:'#9ec8ff'},
+    unlock_unit:              {label:'Unit',      color:'#7dd6a8'},
+    unlock_levy:              {label:'Levy',      color:'#6bbf9e'},
+    unlock_interaction:       {label:'Interact',  color:'#ffd166'},
+    unlock_law:               {label:'Law',       color:'#a8dadc'},
+    unlock_cabinet_action:    {label:'Cabinet',   color:'#d4a843'},
+    unlock_production_method: {label:'Method',    color:'#b5b5ff'},
+    unlock_ability:           {label:'Ability',   color:'#ff9ece'},
+  };
+
+  // ── helpers ──────────────────────────────────────────────────────────────────
+  const isUnlock = k => k.startsWith('unlock_');
+  const unlockCat = k => UNLOCK_CATS[k] || {label: k.replace('unlock_',''), color:'#9099b0'};
+  const fmtNum = n => {
+    if (n === 0) return '0';
+    const s = parseFloat(n.toFixed(4)).toString();
+    return n > 0 ? '+' + s : s;
+  };
+  const groupBy = (arr, fn) => {
+    const m = new Map();
+    for (const x of arr) { const k = fn(x); m.has(k) ? m.get(k).push(x) : m.set(k, [x]); }
+    return m;
+  };
+
+  // ── components ───────────────────────────────────────────────────────────────
+
+  function Pill({ label, active, onClick }) {
+    return html`<button class=${`pill${active?' on':''}`} onClick=${onClick}>${label}</button>`;
+  }
+
+  function Header({ grp, show, showUniv, onGrp, onShow, onToggleUniv }) {
+    return html`
+      <div class="header">
+        <h1>Advance Branch Explorer</h1>
+        <span class="sub">Cabinets & Choices — EU5</span>
+        <div class="spacer"></div>
+        <div class="controls">
+          <span class="ctl-label">Summary:</span>
+          <div class="pill-group">
+            <${Pill} label="By Age" active=${grp==='age'} onClick=${()=>onGrp('age')} />
+            <${Pill} label="By Key" active=${grp==='key'} onClick=${()=>onGrp('key')} />
+          </div>
+          <div class="ctl-sep"></div>
+          <span class="ctl-label">Show:</span>
+          <div class="pill-group">
+            <${Pill} label="All"       active=${show==='all'}       onClick=${()=>onShow('all')} />
+            <${Pill} label="Unlocks"   active=${show==='unlocks'}   onClick=${()=>onShow('unlocks')} />
+            <${Pill} label="Modifiers" active=${show==='modifiers'} onClick=${()=>onShow('modifiers')} />
+          </div>
+          <div class="ctl-sep"></div>
+          <div class="pill-group">
+            <${Pill} label="Universal" active=${showUniv} onClick=${onToggleUniv} />
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function AdvBlock({ adv }) {
+    return html`
+      <div class="adv-block">
+        <div class="adv-name">
+          ${adv.name}
+          ${adv.isMod && html`<span class="mod-badge">MOD</span>`}
+        </div>
+        ${adv.effects.map(([k,v]) => html`
+          <div class=${`fx ${isUnlock(k)?'fxu':'fxm'}`}>${k} = ${v}</div>`)}
+      </div>`;
+  }
+
+  function ColSummary({ advs }) {
+    const unlockFx = [], modFx = [];
+    for (const a of advs)
+      for (const [k,v] of a.effects)
+        (isUnlock(k) ? unlockFx : modFx).push({k, v, isMod: a.isMod});
+    if (!unlockFx.length && !modFx.length) return null;
+
+    const modByKey = [...groupBy(modFx, e=>e.k).entries()];
+
+    return html`
+      <div class="col-summary">
+        ${unlockFx.map((e,i) => {
+          const cat = unlockCat(e.k);
+          const chipStyle = {background:`${cat.color}22`, color:cat.color, border:`1px solid ${cat.color}55`};
+          return html`
+            <div key=${i} class="col-sum-row">
+              <span class="cat-label" style=${chipStyle}>${cat.label}</span>
+              ${e.v}
+              ${e.isMod && html`<span class="mod-badge">MOD</span>`}
+            </div>`;
+        })}
+        ${unlockFx.length && modFx.length ? html`<div class="sum-divider"></div>` : null}
+        ${modByKey.map(([k, items]) => {
+          const nums = items.map(e=>parseFloat(e.v)).filter(n=>!isNaN(n));
+          const val  = nums.length === items.length ? fmtNum(nums.reduce((a,b)=>a+b,0)) : items.map(e=>e.v).join(', ');
+          return html`
+            <div key=${k} class="col-sum-row">
+              <span class="col-sum-key">${k}</span>: ${val}
+              ${items.some(e=>e.isMod) && html`<span class="mod-badge">MOD</span>`}
+            </div>`;
+        })}
+      </div>`;
+  }
+
+  function BranchCol({ age, branch, selected }) {
+    const advs = D.branches[age][branch] || [];
+    const cls  = `branch-col col-${branch}` + (selected ? ` selected-${branch}` : ' unselected');
+    if (!advs.length) return html`<div class=${cls}><div class="no-adv">no branch advances</div></div>`;
+    return html`
+      <div class=${cls}>
+        <${ColSummary} advs=${advs} />
+        ${advs.map(a => html`<${AdvBlock} key=${a.name} adv=${a} />`)}
+      </div>`;
+  }
+
+  function AgeCard({ age, selected, showUniv, onPick }) {
+    const B      = D.branches[age];
+    const univFx = (B.universal||[]).filter(a => a.effects.length > 0);
+    return html`
+      <div class="age-card">
+        <div class="age-title">
+          ${D.ageLabels[age]}
+          ${univFx.length > 0 && html`<span class="univ-tag">(+${univFx.length} universal)</span>`}
+        </div>
+        ${univFx.length > 0 && html`
+          <div class=${`univ-strip${showUniv?'':' univ-hidden'}`}>
+            <details>
+              <summary>${univFx.length} universal advances (always active)</summary>
+              <div class="univ-adv">${univFx.map(a => html`<${AdvBlock} key=${a.name} adv=${a} />`)}</div>
+            </details>
+          </div>`}
+        <div class="branch-tabs">
+          ${BRANCHES.map(b => {
+            const advs = B[b] || [];
+            const uCnt = advs.reduce((s,a) => s + a.effects.filter(([k])=>isUnlock(k)).length, 0);
+            const mCnt = advs.reduce((s,a) => s + a.effects.filter(([k])=>!isUnlock(k)).length, 0);
+            return html`
+              <button key=${b} class=${`branch-tab${selected===b?` sel-${b}`:''}`}
+                disabled=${advs.length===0} onClick=${()=>onPick(b)}>
+                ${b.toUpperCase()}<br/>
+                <span class="cnt">
+                  ${advs.length} adv.${' '}
+                  ${uCnt>0 && html`<span class="cnt-u">${uCnt}u</span>`}
+                  ${uCnt>0 && mCnt>0 && html`<span style="color:var(--text-dim)"> · </span>`}
+                  ${mCnt>0 && html`<span class="cnt-m">${mCnt}m</span>`}
+                </span>
+              </button>`;
+          })}
+        </div>
+        <div class="branch-detail">
+          ${BRANCHES.map(b => html`
+            <${BranchCol} key=${b} age=${age} branch=${b} selected=${selected===b} />`)}
+        </div>
+      </div>`;
+  }
+
+  function SumGroupAge({ lbl, items }) {
+    return html`
+      <div class="sum-group">
+        <div class="sum-gl">${lbl}</div>
+        ${items.map((e,i) => html`
+          <div key=${i} class="sum-item">
+            <span class="sum-key">${e.k}</span>
+            <span style="color:var(--text-dim)">=</span>
+            <span class="sum-val">${e.v}</span>
+            <span class="sum-src">— ${e.src}${e.isMod && html`<span class="mod-badge">MOD</span>`}</span>
+          </div>`)}
+      </div>`;
+  }
+
+  function SumGroupKey({ keyName, items }) {
+    const nums       = items.map(e=>parseFloat(e.v)).filter(n=>!isNaN(n));
+    const allNumeric = nums.length===items.length && items.length>0 && !isUnlock(keyName);
+    return html`
+      <div class="sum-group">
+        <div class="sum-gl">${keyName}</div>
+        ${allNumeric ? html`
+          <div class="sum-item">
+            <span class="tip-host">
+              <span class="sum-val">${fmtNum(nums.reduce((a,b)=>a+b,0))}</span>
+              <span class="sum-hint">${items.length} source${items.length>1?'s':''}</span>
+              <div class="tip-box">
+                ${items.map((e,i) => html`
+                  <div key=${i} class="tip-row">
+                    <span class="tip-val">${e.v}</span>
+                    <span class="tip-src">
+                      ${e.src}${e.isMod && html`<span class="mod-badge">MOD</span>`}
+                      ${' '}(${e.ageLabel.replace('Age of ','')})
+                    </span>
+                  </div>`)}
+              </div>
+            </span>
+          </div>` : items.map((e,i) => html`
+          <div key=${i} class="sum-item">
+            <span class="sum-val">${e.v}</span>
+            <span class="sum-src">— ${e.src}${e.isMod && html`<span class="mod-badge">MOD</span>`} (${e.ageLabel.replace('Age of ','')})</span>
+          </div>`)}
+      </div>`;
+  }
+
+  function SummarySection({ title, effects, secCls, grp }) {
+    const groups = useMemo(() => grp === 'age'
+      ? [...groupBy(effects, e=>e.ageLabel).entries()]
+      : [...groupBy(effects, e=>e.k).entries()].sort((a,b)=>a[0].localeCompare(b[0])),
+      [effects, grp]);
+    return html`
+      <div class=${`sum-section ${secCls}`}>
+        <div class="sum-sh">${title} (${effects.length})</div>
+        ${grp==='age'
+          ? groups.map(([lbl,items]) => html`<${SumGroupAge} key=${lbl} lbl=${lbl} items=${items} />`)
+          : groups.map(([k,items])   => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
+      </div>`;
+  }
+
+  function SummaryPanel({ sel, grp, show, showUniv }) {
+    const effects = useMemo(() => {
+      const out = [];
+      for (const age of D.ages) {
+        const B     = D.branches[age];
+        const univs = showUniv ? (B.universal||[]) : [];
+        for (const a of [...univs, ...(B[sel[age]]||[])])
+          for (const [k,v] of a.effects)
+            out.push({k, v, src:a.name, isMod:a.isMod, age, ageLabel:D.ageLabels[age]});
+      }
+      return out;
+    }, [sel, showUniv]);
+
+    const filtered  = show==='unlocks'   ? effects.filter(e=> isUnlock(e.k))
+                    : show==='modifiers' ? effects.filter(e=>!isUnlock(e.k))
+                    : effects;
+    const unlocks   = filtered.filter(e=> isUnlock(e.k));
+    const modifiers = filtered.filter(e=>!isUnlock(e.k));
+
+    return html`
+      <div class="right">
+        <div class="sum-header"><h2>Summary</h2></div>
+        <div class="combo-label">
+          ${D.ages.map((age, i) => html`
+            <span key=${age} style=${{color:`var(--${sel[age]||'text-dim'})`}}>
+              ${D.ageLabels[age].replace('Age of ','')}: ${(sel[age]||'?').toUpperCase()}
+            </span>${i<D.ages.length-1 ? ' > ' : ''}`)}
+        </div>
+        ${!filtered.length
+          ? html`<div class="empty">Select a branch for each age.</div>`
+          : html`
+              ${show!=='modifiers' && unlocks.length>0 && html`
+                <${SummarySection} title="Unlocks" effects=${unlocks} secCls="su" grp=${grp} />`}
+              ${show!=='unlocks' && modifiers.length>0 && html`
+                <${SummarySection} title="Modifiers" effects=${modifiers} secCls="sm" grp=${grp} />`}`}
+      </div>`;
+  }
+
+  function App() {
+    const [sel,      setSel]      = useState({});
+    const [grp,      setGrp]      = useState('age');
+    const [show,     setShow]     = useState('all');
+    const [showUniv, setShowUniv] = useState(true);
+
+    useEffect(() => {
+      const init = {};
+      for (const age of D.ages) {
+        const first = BRANCHES.find(b => (D.branches[age][b]||[]).length > 0);
+        if (first) init[age] = first;
+      }
+      setSel(init);
+    }, []);
+
+    const pick = useCallback((age, b) => setSel(s => ({...s, [age]: b})), []);
+
+    return html`
+      <div class="app">
+        <${Header} grp=${grp} show=${show} showUniv=${showUniv}
+          onGrp=${setGrp} onShow=${setShow} onToggleUniv=${()=>setShowUniv(v=>!v)} />
+        <div class="body">
+          <div class="left">
+            ${D.ages.map(age => html`
+              <${AgeCard} key=${age} age=${age} selected=${sel[age]}
+                showUniv=${showUniv} onPick=${b=>pick(age,b)} />`)}
+          </div>
+          <${SummaryPanel} sel=${sel} grp=${grp} show=${show} showUniv=${showUniv} />
+        </div>
+      </div>`;
+  }
+
+  render(html`<${App} />`, document.getElementById('root'));
+})();
+</script>
+</body>
+</html>
