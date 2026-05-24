@@ -90,14 +90,16 @@ details[open] .univ-strip summary::before{content:'-'}
 .sum-sh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding-bottom:4px;margin-bottom:6px;border-bottom:1px solid var(--card-border)}
 .sum-section.su .sum-sh{color:var(--unlock)}
 .sum-section.sm .sum-sh{color:var(--modifier)}
-.sum-group{margin-bottom:8px}
-.sum-gl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.sum-item{font-size:11px;padding:1px 0 1px 8px;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.sum-group{margin-bottom:0px}
+.sum-gl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:0px}
+.sum-item{font-size:11px;padding:0 0 0 8px;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
 .sum-key{color:var(--text-dim)}
 .sum-val{font-weight:500}
 .sum-src{font-size:10px;color:var(--text-dim)}
 .sum-hint{font-size:9px;color:var(--text-dim);text-decoration:underline dotted}
 .empty{font-size:11px;color:var(--text-dim);font-style:italic;padding:4px 0}
+.sum-cat-header{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 3px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sum-cat-group:first-child .sum-cat-header{margin-top:0}
 .loading{display:flex;align-items:center;justify-content:center;height:100vh;font-size:14px;color:var(--text-dim)}
 .loading-err{color:#ff6b6b}
 .def-link{color:var(--unlock);text-decoration:underline dotted;text-decoration-color:rgba(90,191,122,.35);cursor:help}
@@ -145,6 +147,16 @@ details[open] .univ-strip summary::before{content:'-'}
     unlock_cabinet_action:    {label:'Cabinet',   color:'#d4a843'},
     unlock_production_method: {label:'Method',    color:'#b5b5ff'},
     unlock_ability:           {label:'Ability',   color:'#ff9ece'},
+  };
+
+  const MODIFIER_CAT_RULES = [
+    [/^(army_|naval_|navy_|land_morale|land_unit|discipline|siege_|combat_speed|regiment_|levy_|global_garrison|global_manpower|global_hostile|global_supply|global_levy|global_defensive|monthly_army|monthly_navy|prestige_from_land|wrong_culture_levy|train_admiral|train_general|food_consumption|ship_repair)/, 'mil'],
+    [/^(diplomatic_|subject_|spy_|colonial_|trade_|exploration_|blockade_|merchant_|selling_|export_|import_|global_sailors|global_war_score|global_trade|antagonism_|improve_relation|road_cost_|sea_cost_|counter_espionage|anti_piracy|port_cost_|ship_build|navy_repair|navy_init|navy_maintenance|morale_recovery_in_friendly|can_hire_privateers|max_diplomats|monthly_diplomats)/, 'dip'],
+    [/^(government|legislative_|stability_|tolerance_|minting_|court_|global_pop_|global_estate_|global_integration|global_monthly_control|global_monthly_develop|global_build_|global_road_|global_bureaucracy_|global_urban_|global_distance_|global_separatism|global_production_|global_max_literacy|global_merchant|cultural_|cultures_capacity|tax_income|country_cabinet|monthly_prestige|monthly_war_exhaustion|fort_|bank_interest|mercenary_maintenance|hire_mercenary|expand_rgo|global_copper|global_iron)/, 'adm'],
+  ];
+  const modifierCat = key => {
+    for (const [re, cat] of MODIFIER_CAT_RULES) if (re.test(key)) return cat;
+    return 'other';
   };
 
   // ── helpers ──────────────────────────────────────────────────────────────────
@@ -372,12 +384,30 @@ details[open] .univ-strip summary::before{content:'-'}
       ? [...groupBy(effects, e=>e.ageLabel).entries()]
       : [...groupBy(effects, e=>e.k).entries()].sort((a,b)=>a[0].localeCompare(b[0])),
       [effects, grp]);
+
+    const catGroups = useMemo(() => {
+      if (grp !== 'key' || secCls !== 'sm') return null;
+      const cats = { adm: [], dip: [], mil: [], other: [] };
+      for (const [k, items] of groups) cats[modifierCat(k)].push([k, items]);
+      return cats;
+    }, [groups, grp, secCls]);
+
+    const CAT_LABELS = { adm: 'ADM', dip: 'DIP', mil: 'MIL', other: 'Other' };
+
     return html`
       <div class=${`sum-section ${secCls}`}>
         <div class="sum-sh">${title} (${effects.length})</div>
         ${grp==='age'
           ? groups.map(([lbl,items]) => html`<${SumGroupAge} key=${lbl} lbl=${lbl} items=${items} />`)
-          : groups.map(([k,items])   => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
+          : catGroups
+            ? ['adm','dip','mil','other'].map(cat => catGroups[cat].length ? html`
+                <div key=${cat} class="sum-cat-group">
+                  <div class="sum-cat-header" style=${{color: cat==='other' ? 'var(--text-dim)' : `var(--${cat})`}}>
+                    ${CAT_LABELS[cat]}
+                  </div>
+                  ${catGroups[cat].map(([k,items]) => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
+                </div>` : null)
+            : groups.map(([k,items]) => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
       </div>`;
   }
 

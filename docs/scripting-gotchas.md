@@ -229,6 +229,9 @@ culture = { add_cultural_influence = cultural_influence_mild_bonus }
 ```
 any_estate = { estate_type = estate_type:nobles_estate }
 ```
+```
+country_has_estate =  estate_type:nobles_estate 
+```
 
 ### Sub-continent / area checks (country scope)
 ```

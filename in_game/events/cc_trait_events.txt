@@ -19,14 +19,38 @@ cc_traits.1 = {
 			in_cabinet = yes
 			has_cabinet_action = yes
 			OR = {
+				country.has_advance = state_efficiency
+				country.has_advance = tolerance_idea
+				country.has_advance = experienced_diplomats
+			}
+			OR = {
 				cabinet_action = cabinet_action:integrate_area
 				cabinet_action = cabinet_action:integrate_province
 			}
-			NOR = {
-				has_trait = fumbling_integrator
-				has_trait = able_integrator
-				has_trait = master_integrator
-				has_trait = iron_integrator
+			OR = {
+				AND = {
+					NOT = { has_trait = fumbling_integrator }
+					adm < 33
+					dip < 33
+					mil < 33
+				}
+				AND = {
+					NOT = { has_trait = able_integrator }
+					adm > 33
+					dip > 33
+					mil > 33
+				}
+				AND = {
+					NOT = { has_trait = master_integrator }
+					adm > 66
+					dip > 66
+				}
+				AND = {
+					NOT = { has_trait = iron_integrator }
+					adm > 66
+					dip > 66
+					mil > 66
+				}
 			}
 			NOT = { has_variable = cc_integration_done }
 		}
@@ -41,11 +65,30 @@ cc_traits.1 = {
 					cabinet_action = cabinet_action:integrate_area
 					cabinet_action = cabinet_action:integrate_province
 				}
-				NOR = {
-					has_trait = fumbling_integrator
-					has_trait = able_integrator
-					has_trait = master_integrator
-					has_trait = iron_integrator
+				OR = {
+					AND = {
+						NOT = { has_trait = fumbling_integrator }
+						adm < 33
+						dip < 33
+						mil < 33
+					}
+					AND = {
+						NOT = { has_trait = able_integrator }
+						adm > 33
+						dip > 33
+						mil > 33
+					}
+					AND = {
+						NOT = { has_trait = master_integrator }
+						adm > 66
+						dip > 66
+					}
+					AND = {
+						NOT = { has_trait = iron_integrator }
+						adm > 66
+						dip > 66
+						mil > 66
+					}
 				}
 				NOT = { has_variable = cc_integration_done }
 			}
@@ -100,13 +143,34 @@ cc_traits.10 = {
 
 	trigger = {
 		any_cabinet_character = {
-			in_cabinet = yes
-			NOR = {
-				has_trait = renaissance_humanist
-				has_trait = eastern_pragmatist
-				has_trait = sufi_scholar
-			}
 			NOT = { has_variable = cc_age_trait_10_done }
+			in_cabinet = yes
+			
+			# Fire only when at least one cultural option would be visible
+			OR = {
+				AND = {
+					OR = {
+						country.capital.sub_continent = sub_continent:western_europe
+						country.capital.sub_continent = sub_continent:eastern_europe
+					}
+					country.has_advance = renaissance_thought
+					NOT = { has_trait = renaissance_humanist }
+					adm > 50
+				}
+				AND = {
+					OR = {
+						country.capital.sub_continent = sub_continent:east_asia
+						country.capital.sub_continent = sub_continent:south_east_asia
+					}
+					NOT = { has_trait = eastern_pragmatist }
+					adm > 50
+				}
+				AND = {
+					religion.group = religion_group:muslim
+					NOT = { has_trait = sufi_scholar }
+					dip > 50
+				}
+			}
 		}
 		OR = {
 			current_age = age_2_renaissance
@@ -114,14 +178,6 @@ cc_traits.10 = {
 			current_age = age_4_reformation
 			current_age = age_5_absolutism
 			current_age = age_6_revolutions
-		}
-		# Fire only when at least one cultural option would be visible
-		OR = {
-			capital.sub_continent = sub_continent:western_europe
-			capital.sub_continent = sub_continent:eastern_europe
-			capital.sub_continent = sub_continent:east_asia
-			capital.sub_continent = sub_continent:south_east_asia
-			religion.group = religion_group:muslim
 		}
 	}
 
@@ -143,19 +199,40 @@ cc_traits.10 = {
 	immediate = {
 		random_cabinet_character = {
 			limit = {
-				in_cabinet = yes
-				NOR = {
-					has_trait = renaissance_humanist
-					has_trait = eastern_pragmatist
-					has_trait = sufi_scholar
-				}
 				NOT = { has_variable = cc_age_trait_10_done }
+				in_cabinet = yes
+				
+				# Fire only when at least one cultural option would be visible
+				OR = {
+					AND = {
+						OR = {
+							country.capital.sub_continent = sub_continent:western_europe
+							country.capital.sub_continent = sub_continent:eastern_europe
+						}
+						country.has_advance = renaissance_thought
+						NOT = { has_trait = renaissance_humanist }
+						adm > 50
+					}
+					AND = {
+						OR = {
+							country.capital.sub_continent = sub_continent:east_asia
+							country.capital.sub_continent = sub_continent:south_east_asia
+						}
+						NOT = { has_trait = eastern_pragmatist }
+						adm > 50
+					}
+					AND = {
+						religion.group = religion_group:muslim
+						NOT = { has_trait = sufi_scholar }
+						dip > 50
+					}
+				}
 			}
 			save_scope_as = minister
 		}
 	}
 
-	# Western/Eastern Europe — adm > 35 required
+	# Western/Eastern Europe — adm > 50 required
 	option = {
 		name = cc_traits.10.a
 		trigger = {
@@ -163,7 +240,8 @@ cc_traits.10 = {
 				capital.sub_continent = sub_continent:western_europe
 				capital.sub_continent = sub_continent:eastern_europe
 			}
-			scope:minister = { adm > 35 }
+			scope:minister = { adm > 50 }
+			has_advance = renaissance_thought
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_10_done
@@ -171,7 +249,7 @@ cc_traits.10 = {
 		}
 	}
 
-	# East/SE Asia — adm > 35 required
+	# East/SE Asia — adm > 50 required
 	option = {
 		name = cc_traits.10.b
 		trigger = {
@@ -179,7 +257,7 @@ cc_traits.10 = {
 				capital.sub_continent = sub_continent:east_asia
 				capital.sub_continent = sub_continent:south_east_asia
 			}
-			scope:minister = { adm > 35 }
+			scope:minister = { adm > 50 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_10_done
@@ -187,12 +265,12 @@ cc_traits.10 = {
 		}
 	}
 
-	# Muslim world — dip > 35 required
+	# Muslim world — dip > 50 required
 	option = {
 		name = cc_traits.10.c
 		trigger = {
 			religion.group = religion_group:muslim
-			scope:minister = { dip > 35 }
+			scope:minister = { dip > 50 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_10_done
@@ -225,13 +303,25 @@ cc_traits.11 = {
 			current_age = age_6_revolutions
 		}
 		any_cabinet_character = {
-			in_cabinet = yes
-			NOR = {
-				has_trait = age_of_discovery_pioneer
-				has_trait = age_of_discovery_skeptic
-				has_trait = cautious_merchant
-			}
 			NOT = { has_variable = cc_age_trait_11_done }
+			in_cabinet = yes
+			OR = {
+				AND = {
+					NOT = { has_trait = age_of_discovery_pioneer }
+					country.has_advance = explorer_commisions_advance
+					adm > 50
+					dip > 33
+					mil > 33
+				}
+				AND = {
+					NOT = { has_trait = age_of_discovery_skeptic }
+				}
+				AND = {
+					NOT = { has_trait = cautious_merchant }
+					has_estate = estate_type:burghers_estate
+					dip > 40
+				}
+			}
 		}
 	}
 
@@ -258,23 +348,36 @@ cc_traits.11 = {
 	immediate = {
 		random_cabinet_character = {
 			limit = {
-				in_cabinet = yes
-				NOR = {
-					has_trait = age_of_discovery_pioneer
-					has_trait = age_of_discovery_skeptic
-					has_trait = cautious_merchant
-				}
 				NOT = { has_variable = cc_age_trait_11_done }
+				in_cabinet = yes
+				OR = {
+					AND = {
+						NOT = { has_trait = age_of_discovery_pioneer }
+						country.has_advance = explorer_commisions_advance
+						adm > 50
+						dip > 33
+						mil > 33
+					}
+					AND = {
+						NOT = { has_trait = age_of_discovery_skeptic }
+					}
+					AND = {
+						NOT = { has_trait = cautious_merchant }
+						has_estate = estate_type:burghers_estate
+						dip > 40
+					}
+				}
 			}
 			save_scope_as = minister
 		}
 	}
 
-	# Bold adventurer — adm > 30 and mil > 30
+	# Bold adventurer — explorer_commisions_advance adm > 50 dip > 33 mil > 33
 	option = {
 		name = cc_traits.11.a
 		trigger = {
-			scope:minister = { adm > 30  mil > 30 }
+			has_advance = explorer_commisions_advance
+			scope:minister = { adm > 50 dip > 33  mil > 33 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_11_done
@@ -308,8 +411,8 @@ cc_traits.11 = {
 }
 
 # Age of Reformation — split by religion group
-# Christian: preacher (dip > 40) or inquisitor (always available fallback)
-# Non-Christian: reformist_theologian (always available) or orthodox_defender (mil > 35)
+# Christian: preacher (dip > 60) or inquisitor (Catholic fallback)
+# Non-Christian: reformist_theologian (always available) or orthodox_defender (mil > 66)
 # Clergy estate ministers weighted higher for selection
 cc_traits.12 = {
 	type = country_event
@@ -324,14 +427,36 @@ cc_traits.12 = {
 			current_age = age_6_revolutions
 		}
 		any_cabinet_character = {
-			in_cabinet = yes
-			NOR = {
-				has_trait = reformation_preacher
-				has_trait = reformation_inquisitor
-				has_trait = reformist_theologian
-				has_trait = orthodox_defender
-			}
 			NOT = { has_variable = cc_age_trait_12_done }
+			in_cabinet = yes
+			OR = {
+				AND = {
+					NOT = { has_trait = reformation_preacher }
+					religion.group = religion_group:christian
+					has_estate = estate_type:clergy_estate
+					OR = {
+						dip > 60
+						AND = {
+							NOT = { religion = religion:catholic }
+							dip > 33
+						} 
+					}
+				}
+				AND = {
+					NOT = { has_trait = reformation_inquisitor }
+					religion = religion:catholic
+				}
+				AND = {
+					NOT = { has_trait = reformist_theologian }
+					NOT = { religion.group = religion_group:christian } 
+					has_estate = estate_type:clergy_estate
+				}
+				AND = {
+					NOT = { has_trait = orthodox_defender }
+					NOT = { religion.group = religion_group:christian }
+					mil > 66
+				}
+			}
 		}
 	}
 
@@ -363,28 +488,72 @@ cc_traits.12 = {
 		if = {
 			limit = {
 				any_cabinet_character = {
+					NOT = { has_variable = cc_age_trait_12_done }
 					in_cabinet = yes
 					has_estate = estate_type:clergy_estate
-					NOR = {
-						has_trait = reformation_preacher
-						has_trait = reformation_inquisitor
-						has_trait = reformist_theologian
-						has_trait = orthodox_defender
+					OR = {
+						AND = {
+							NOT = { has_trait = reformation_preacher }
+							religion.group = religion_group:christian
+							has_estate = estate_type:clergy_estate
+							OR = {
+								dip > 60
+								AND = {
+									NOT = { religion = religion:catholic }
+									dip > 33
+								} 
+							}
+						}
+						AND = {
+							NOT = { has_trait = reformation_inquisitor }
+							religion = religion:catholic
+						}
+						AND = {
+							NOT = { has_trait = reformist_theologian }
+							NOT = { religion.group = religion_group:christian } 
+							has_estate = estate_type:clergy_estate
+						}
+						AND = {
+							NOT = { has_trait = orthodox_defender }
+							NOT = { religion.group = religion_group:christian }
+							mil > 66
+						}
 					}
-					NOT = { has_variable = cc_age_trait_12_done }
 				}
 			}
 			random_cabinet_character = {
 				limit = {
+					NOT = { has_variable = cc_age_trait_12_done }
 					in_cabinet = yes
 					has_estate = estate_type:clergy_estate
-					NOR = {
-						has_trait = reformation_preacher
-						has_trait = reformation_inquisitor
-						has_trait = reformist_theologian
-						has_trait = orthodox_defender
+					OR = {
+						AND = {
+							NOT = { has_trait = reformation_preacher }
+							religion.group = religion_group:christian
+							has_estate = estate_type:clergy_estate
+							OR = {
+								dip > 60
+								AND = {
+									NOT = { religion = religion:catholic }
+									dip > 33
+								} 
+							}
+						}
+						AND = {
+							NOT = { has_trait = reformation_inquisitor }
+							religion = religion:catholic
+						}
+						AND = {
+							NOT = { has_trait = reformist_theologian }
+							NOT = { religion.group = religion_group:christian } 
+							has_estate = estate_type:clergy_estate
+						}
+						AND = {
+							NOT = { has_trait = orthodox_defender }
+							NOT = { religion.group = religion_group:christian }
+							mil > 66
+						}
 					}
-					NOT = { has_variable = cc_age_trait_12_done }
 				}
 				save_scope_as = minister
 			}
@@ -392,14 +561,36 @@ cc_traits.12 = {
 		else = {
 			random_cabinet_character = {
 				limit = {
-					in_cabinet = yes
-					NOR = {
-						has_trait = reformation_preacher
-						has_trait = reformation_inquisitor
-						has_trait = reformist_theologian
-						has_trait = orthodox_defender
-					}
 					NOT = { has_variable = cc_age_trait_12_done }
+					in_cabinet = yes
+					OR = {
+						AND = {
+							NOT = { has_trait = reformation_preacher }
+							religion.group = religion_group:christian
+							has_estate = estate_type:clergy_estate
+							OR = {
+								dip > 60
+								AND = {
+									NOT = { religion = religion:catholic }
+									dip > 33
+								} 
+							}
+						}
+						AND = {
+							NOT = { has_trait = reformation_inquisitor }
+							religion = religion:catholic
+						}
+						AND = {
+							NOT = { has_trait = reformist_theologian }
+							NOT = { religion.group = religion_group:christian } 
+							has_estate = estate_type:clergy_estate
+						}
+						AND = {
+							NOT = { has_trait = orthodox_defender }
+							NOT = { religion.group = religion_group:christian }
+							mil > 66
+						}
+					}
 				}
 				save_scope_as = minister
 			}
@@ -411,7 +602,16 @@ cc_traits.12 = {
 		name = cc_traits.12.a
 		trigger = {
 			religion.group = religion_group:christian
-			scope:minister = { dip > 40 }
+			scope:minister = { 
+				has_estate = estate_type:clergy_estate
+				OR = {
+					dip > 60
+					AND = {
+						NOT = { religion = religion:catholic }
+						dip > 33
+					} 
+				}
+			}
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_12_done
@@ -419,32 +619,37 @@ cc_traits.12 = {
 		}
 	}
 
-	# Christian — zealous inquisitor (always available fallback for Christians)
+	# Catholic — zealous inquisitor (always available fallback for Catholics)
 	option = {
 		name = cc_traits.12.b
-		trigger = { religion.group = religion_group:christian }
+		trigger = { religion = religion:catholic }
 		scope:minister = {
 			set_variable = cc_age_trait_12_done
 			add_trait = trait:reformation_inquisitor
 		}
 	}
 
-	# Non-Christian — reformist theologian (always available fallback)
+	# Non-Christian — reformist theologian (clergy estate)
 	option = {
 		name = cc_traits.12.c
-		trigger = { NOT = { religion.group = religion_group:christian } }
+		trigger = { 
+			NOT = { religion.group = religion_group:christian } 
+			scope:minister = {
+				has_estate = estate_type:clergy_estate
+			}
+		}
 		scope:minister = {
 			set_variable = cc_age_trait_12_done
 			add_trait = trait:reformist_theologian
 		}
 	}
 
-	# Non-Christian — orthodox defender (premium: mil > 35)
+	# Non-Christian — orthodox defender (premium: mil > 66)
 	option = {
 		name = cc_traits.12.d
 		trigger = {
 			NOT = { religion.group = religion_group:christian }
-			scope:minister = { mil > 35 }
+			scope:minister = { mil > 66 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_12_done
@@ -455,9 +660,9 @@ cc_traits.12 = {
 
 # Age of Absolutism — one of five governance postures
 # absolute_administrator and privilege_reformer always available (fallbacks)
-# noble_patron: monarchy + dip > 40 + noble_patronage_advance available
-# parliamentarian: parliamentary system + dip > 45
-# crown_theologian: clergy estate + adm > 40
+# noble_patron: monarchy + dip > 66 + noble_patronage_advance available
+# parliamentarian: parliamentary system + dip > 66
+# crown_theologian: clergy estate + adm > 66
 cc_traits.13 = {
 	type = country_event
 	title = cc_traits.13.title
@@ -470,15 +675,32 @@ cc_traits.13 = {
 			current_age = age_6_revolutions
 		}
 		any_cabinet_character = {
-			in_cabinet = yes
-			NOR = {
-				has_trait = absolute_administrator
-				has_trait = noble_patron
-				has_trait = parliamentarian
-				has_trait = privilege_reformer
-				has_trait = crown_theologian
-			}
 			NOT = { has_variable = cc_age_trait_13_done }
+			in_cabinet = yes
+			OR = {
+				AND = {
+					NOT = { has_trait = absolute_administrator }
+				}
+				AND = {
+					NOT = { has_trait = noble_patron }
+					dip > 66
+					country.government_type = government_type:monarchy
+					country.has_advance = noble_patronage_advance
+				}
+				AND = {
+					NOT = { has_trait = parliamentarian }
+					country.modifier:has_a_parliamentary_system = yes
+					dip > 66
+				}
+				AND = {
+					NOT = { has_trait = privilege_reformer }
+				}
+				AND = {
+					NOT = { has_trait = crown_theologian }
+					has_estate = estate_type:clergy_estate
+					adm > 66
+				}
+			}
 		}
 	}
 
@@ -493,15 +715,32 @@ cc_traits.13 = {
 	immediate = {
 		random_cabinet_character = {
 			limit = {
-				in_cabinet = yes
-				NOR = {
-					has_trait = absolute_administrator
-					has_trait = noble_patron
-					has_trait = parliamentarian
-					has_trait = privilege_reformer
-					has_trait = crown_theologian
-				}
 				NOT = { has_variable = cc_age_trait_13_done }
+				in_cabinet = yes
+				OR = {
+					AND = {
+						NOT = { has_trait = absolute_administrator }
+					}
+					AND = {
+						NOT = { has_trait = noble_patron }
+						dip > 66
+						country.government_type = government_type:monarchy
+						country.has_advance = noble_patronage_advance
+					}
+					AND = {
+						NOT = { has_trait = parliamentarian }
+						country.modifier:has_a_parliamentary_system = yes
+						dip > 66
+					}
+					AND = {
+						NOT = { has_trait = privilege_reformer }
+					}
+					AND = {
+						NOT = { has_trait = crown_theologian }
+						has_estate = estate_type:clergy_estate
+						adm > 66
+					}
+				}
 			}
 			save_scope_as = minister
 		}
@@ -516,13 +755,13 @@ cc_traits.13 = {
 		}
 	}
 
-	# Monarchies + dip > 40 + noble patronage advance available
+	# Monarchies + dip > 66 + noble patronage advance available
 	option = {
 		name = cc_traits.13.b
 		trigger = {
 			government_type = government_type:monarchy
-			scope:minister = { dip > 40 }
-			has_advance_available = noble_patronage_advance
+			scope:minister = { dip > 66 }
+			has_advance = noble_patronage_advance
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_13_done
@@ -530,12 +769,12 @@ cc_traits.13 = {
 		}
 	}
 
-	# Parliamentary system + dip > 45
+	# Parliamentary system + dip > 66
 	option = {
 		name = cc_traits.13.c
 		trigger = {
 			modifier:has_a_parliamentary_system = yes
-			scope:minister = { dip > 45 }
+			scope:minister = { dip > 66 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_13_done
@@ -552,13 +791,13 @@ cc_traits.13 = {
 		}
 	}
 
-	# Clergy estate + adm > 40
+	# Clergy estate + adm > 66
 	option = {
 		name = cc_traits.13.e
 		trigger = {
 			scope:minister = {
 				has_estate = estate_type:clergy_estate
-				adm > 40
+				adm > 66
 			}
 		}
 		scope:minister = {
@@ -570,8 +809,8 @@ cc_traits.13 = {
 
 # Age of Revolutions — agitator, counterrevolutionary, or privilege champion
 # counterrevolutionary always available (fallback)
-# revolutionary_agitator: dip > 30
-# privilege_champion: adm > 30 + dip > 35
+# revolutionary_agitator: dip > 50
+# privilege_champion: adm > 66 + dip > 66
 # Burgher/peasant ministers weighted higher for selection
 cc_traits.14 = {
 	type = country_event
@@ -582,13 +821,22 @@ cc_traits.14 = {
 	trigger = {
 		current_age = age_6_revolutions
 		any_cabinet_character = {
-			in_cabinet = yes
-			NOR = {
-				has_trait = revolutionary_agitator
-				has_trait = counterrevolutionary
-				has_trait = privilege_champion
-			}
 			NOT = { has_variable = cc_age_trait_14_done }
+			in_cabinet = yes
+			OR = {
+				AND = {
+					NOT = { has_trait = revolutionary_agitator }
+					dip > 50
+				}
+				AND = {
+					NOT = { has_trait = counterrevolutionary }
+				}
+				AND = {
+					NOT = { has_trait = privilege_champion }
+					adm > 66
+					dip > 66
+				}
+			}
 		}
 	}
 
@@ -598,17 +846,27 @@ cc_traits.14 = {
 		modifier = {
 			add = 2
 			any_cabinet_character = {
+				NOT = { has_variable = cc_age_trait_14_done }
 				in_cabinet = yes
 				OR = {
 					has_estate = estate_type:burghers_estate
 					has_estate = estate_type:peasants_estate
 				}
-				NOR = {
-					has_trait = revolutionary_agitator
-					has_trait = counterrevolutionary
-					has_trait = privilege_champion
+				has_cabinet_action = no
+				OR = {
+					AND = {
+						NOT = { has_trait = revolutionary_agitator }
+						dip > 50
+					}
+					AND = {
+						NOT = { has_trait = counterrevolutionary }
+					}
+					AND = {
+						NOT = { has_trait = privilege_champion }
+						adm > 66
+						dip > 66
+					}
 				}
-				NOT = { has_variable = cc_age_trait_14_done }
 			}
 		}
 	}
@@ -618,32 +876,50 @@ cc_traits.14 = {
 		if = {
 			limit = {
 				any_cabinet_character = {
+					NOT = { has_variable = cc_age_trait_14_done }
 					in_cabinet = yes
 					OR = {
 						has_estate = estate_type:burghers_estate
 						has_estate = estate_type:peasants_estate
 					}
-					NOR = {
-						has_trait = revolutionary_agitator
-						has_trait = counterrevolutionary
-						has_trait = privilege_champion
+					OR = {
+						AND = {
+							NOT = { has_trait = revolutionary_agitator }
+							dip > 50
+						}
+						AND = {
+							NOT = { has_trait = counterrevolutionary }
+						}
+						AND = {
+							NOT = { has_trait = privilege_champion }
+							adm > 66
+							dip > 66
+						}
 					}
-					NOT = { has_variable = cc_age_trait_14_done }
 				}
 			}
 			random_cabinet_character = {
 				limit = {
+					NOT = { has_variable = cc_age_trait_14_done }
 					in_cabinet = yes
 					OR = {
 						has_estate = estate_type:burghers_estate
 						has_estate = estate_type:peasants_estate
 					}
-					NOR = {
-						has_trait = revolutionary_agitator
-						has_trait = counterrevolutionary
-						has_trait = privilege_champion
+					OR = {
+						AND = {
+							NOT = { has_trait = revolutionary_agitator }
+							dip > 50
+						}
+						AND = {
+							NOT = { has_trait = counterrevolutionary }
+						}
+						AND = {
+							NOT = { has_trait = privilege_champion }
+							adm > 66
+							dip > 66
+						}
 					}
-					NOT = { has_variable = cc_age_trait_14_done }
 				}
 				save_scope_as = minister
 			}
@@ -651,24 +927,33 @@ cc_traits.14 = {
 		else = {
 			random_cabinet_character = {
 				limit = {
-					in_cabinet = yes
-					NOR = {
-						has_trait = revolutionary_agitator
-						has_trait = counterrevolutionary
-						has_trait = privilege_champion
-					}
 					NOT = { has_variable = cc_age_trait_14_done }
+					in_cabinet = yes
+					OR = {
+						AND = {
+							NOT = { has_trait = revolutionary_agitator }
+							dip > 50
+						}
+						AND = {
+							NOT = { has_trait = counterrevolutionary }
+						}
+						AND = {
+							NOT = { has_trait = privilege_champion }
+							adm > 66
+							dip > 66
+						}
+					}
 				}
 				save_scope_as = minister
 			}
 		}
 	}
 
-	# Radical agitator — dip > 30
+	# Radical agitator — dip > 50
 	option = {
 		name = cc_traits.14.a
 		trigger = {
-			scope:minister = { dip > 30 }
+			scope:minister = { dip > 50 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_14_done
@@ -685,11 +970,11 @@ cc_traits.14 = {
 		}
 	}
 
-	# Privilege champion — adm > 30 + dip > 35
+	# Privilege champion — adm > 66 + dip > 66
 	option = {
 		name = cc_traits.14.c
 		trigger = {
-			scope:minister = { adm > 30  dip > 35 }
+			scope:minister = { adm > 66  dip > 66 }
 		}
 		scope:minister = {
 			set_variable = cc_age_trait_14_done
@@ -740,13 +1025,18 @@ cc_traits.20 = {
 			limit = {
 				in_cabinet = yes
 				character_age < 40
+				OR = {
+					adm > 50
+					dip > 50
+					mil > 50
+				}
 				NOT = { has_variable = cc_teach_20_done }
 			}
 			save_scope_as = student
 		}
 	}
 
-	# Military tradition — ruler has war_hawk/iron_disciplinarian + student mil > 25
+	# Military tradition — ruler has war_hawk/iron_disciplinarian + student mil > 50
 	option = {
 		name = cc_traits.20.a
 		trigger = {
@@ -756,7 +1046,7 @@ cc_traits.20 = {
 					has_trait = iron_disciplinarian
 				}
 			}
-			scope:student = { mil > 25 }
+			scope:student = { mil > 50 }
 		}
 		scope:student = {
 			set_variable = cc_teach_20_done
@@ -764,7 +1054,7 @@ cc_traits.20 = {
 		}
 	}
 
-	# Scholarly tradition — ruler has ecumenist/progressive_reformist + student adm > 25
+	# Scholarly tradition — ruler has ecumenist/progressive_reformist + student adm > 50
 	option = {
 		name = cc_traits.20.b
 		trigger = {
@@ -774,7 +1064,7 @@ cc_traits.20 = {
 					has_trait = progressive_reformist
 				}
 			}
-			scope:student = { adm > 25 }
+			scope:student = { adm > 50 }
 		}
 		scope:student = {
 			set_variable = cc_teach_20_done
@@ -782,7 +1072,7 @@ cc_traits.20 = {
 		}
 	}
 
-	# Statecraft tradition — ruler has shadow_counselor/loyal_steward + student dip > 25
+	# Statecraft tradition — ruler has shadow_counselor/loyal_steward + student dip > 50
 	option = {
 		name = cc_traits.20.c
 		trigger = {
@@ -792,7 +1082,7 @@ cc_traits.20 = {
 					has_trait = loyal_steward
 				}
 			}
-			scope:student = { dip > 25 }
+			scope:student = { dip > 50 }
 		}
 		scope:student = {
 			set_variable = cc_teach_20_done
@@ -808,7 +1098,7 @@ cc_traits.20 = {
 }
 
 # Peer Learning — an idle young minister develops from observing peers
-# loyal_steward option now gated to dip > 50.
+# loyal_steward option now gated to dip > 66.
 # Variable cc_teach_21_done prevents re-offering.
 cc_traits.21 = {
 	type = country_event
@@ -821,9 +1111,11 @@ cc_traits.21 = {
 			in_cabinet = yes
 			has_cabinet_action = no
 			character_age < 35
-			adm > 50
-			dip > 50
-			mil > 50
+			OR = {
+				adm > 66
+				dip > 66
+				mil > 66
+			}
 			num_of_traits_of_category = { type = cabinet  value < 1 }
 			NOT = { has_variable = cc_teach_21_done }
 		}
@@ -835,9 +1127,11 @@ cc_traits.21 = {
 				in_cabinet = yes
 				has_cabinet_action = no
 				character_age < 35
-				adm > 50
-				dip > 50
-				mil > 50
+				OR = {
+					adm > 66
+					dip > 66
+					mil > 66
+				}
 				num_of_traits_of_category = { type = cabinet  value < 1 }
 				NOT = { has_variable = cc_teach_21_done }
 			}
@@ -858,7 +1152,7 @@ cc_traits.21 = {
 	option = {
 		name = cc_traits.21.b
 		trigger = {
-			scope:learner ?= { mil > 55 }
+			scope:learner ?= { mil > 66 }
 		}
 		scope:learner = {
 			set_variable = cc_teach_21_done
@@ -870,7 +1164,7 @@ cc_traits.21 = {
 	option = {
 		name = cc_traits.21.c
 		trigger = {
-			scope:learner = { dip > 50 }
+			scope:learner = { dip > 66 }
 		}
 		scope:learner = {
 			set_variable = cc_teach_21_done
