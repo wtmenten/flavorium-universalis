@@ -272,7 +272,7 @@ scope:minister = {
 
 Valid tags for `illustration_tags = { 10 = TAG }` in events:
 
-`interior`, `exterior`, `military`, `army`, `economy`, `bank`, `burghers`, `characters_discussing`, `fire`, `angry`, `armed`, `happy`, `professional`, `regular`, `ages`, `interior_peasant`
+`interior`, `exterior`, `military`, `army`, `economy`, `bank`, `burghers`, `discussing`, `fire`, `angry`, `armed`, `happy`, `professional`, `regular`, `ages`, `interior_peasant`
 
 `combat` is **NOT** a valid tag (common mistake — use `military` instead).
 

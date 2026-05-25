@@ -708,3 +708,86 @@ cc_tur_no_colonization = {
 	can_colonize = no
 	colonial_migration_size_modifier = -1.0
 }
+
+########################
+# Hundred Years War Flavor
+########################
+
+# FRA starting modifier — 100 years.
+# Noble-dominated levies and internal political instability during the long war.
+cc_fra_hyw_feudal_strain = {
+	game_data = { category = country decaying = yes }
+	peasants_estate_levy_size = -0.15
+	nobles_estate_levy_size = 0.10
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+}
+
+# FRA stacking defeat modifier — 40 years, stackable.
+# Added each time France loses a western European war.
+cc_fra_hyw_war_defeat = {
+	game_data = { category = country decaying = yes }
+	peasants_estate_levy_size = -0.05
+	nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+	global_manpower_modifier = -0.05
+	monthly_war_exhaustion = 0.02
+	subject_loyalty = -5
+}
+
+# FRA stacking victory modifier — 40 years, stackable.
+# Added each time France wins a western European war. Partially offsets defeat stacks.
+cc_fra_hyw_war_victory = {
+	game_data = { category = country decaying = yes }
+	peasants_estate_levy_size = 0.05
+	nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction
+	land_morale = 0.03
+	subject_loyalty = 5
+}
+
+# ENG starting modifier — 100 years.
+# English longbow tradition and noble military culture at the start of the HYW.
+cc_eng_hyw_martial_tradition = {
+	game_data = { category = country decaying = yes }
+	nobles_estate_levy_size = 0.08
+	land_morale = 0.05
+}
+
+# ENG stacking victory modifier — 40 years, stackable.
+# Added each time England wins a western European war.
+cc_eng_hyw_ascendancy = {
+	game_data = { category = country decaying = yes }
+	land_morale = 0.05
+	nobles_estate_levy_size = 0.05
+	global_manpower_modifier = 0.05
+}
+
+# ENG stacking defeat modifier — 40 years, stackable.
+# Added each time England loses a western European war.
+cc_eng_hyw_setback = {
+	game_data = { category = country decaying = yes }
+	land_morale = -0.05
+	global_manpower_modifier = -0.05
+	nobles_estate_target_satisfaction = tiny_permanent_target_satisfaction_penalty
+}
+
+# Applied to a purged FRA appanage — 20 years.
+# The nobles of the replaced house are resentful of Paris's interference.
+cc_fra_appanage_purge_resentment = {
+	game_data = { category = country decaying = yes }
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+	nobles_estate_levy_size = -0.10
+}
+
+# Applied to France itself after replacing an appanage ruler — 15 years.
+# Noble unease spreads from the show of royal force.
+cc_fra_purge_noble_unease = {
+	game_data = { category = country decaying = yes }
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+}
+
+# Applied when FRA demands noble sacrifice after a defeat (cc_hyw.11 option B) — 15 years.
+# Nobles provide extra levies at the cost of their satisfaction equilibrium.
+cc_fra_hyw_noble_sacrifice = {
+	game_data = { category = country decaying = yes }
+	nobles_estate_levy_size = 0.10
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+}

@@ -111,12 +111,15 @@ cc_cabinet.2 = {
 }
 
 # "The Minister Puts the Funds to Work" (silent follow-up to cc_cabinet.2 option A)
-# Resolves randomly — no player choice needed.
+# Resolves randomly.
 cc_cabinet.3 = {
+	title = cc_cabinet.3.title
+	desc = cc_cabinet.3.desc
 	type = country_event
-	hidden = yes
+	outcome = neutral
 
-	immediate = {
+	option = {
+		name = cc_cabinet.3.a
 		random_list = {
 			60 = {
 				add_prestige = prestige_mild_bonus
@@ -966,8 +969,11 @@ cc_cabinet.50 = {
 
 	immediate = {
 		if = {
-			limit = { has_variable = cc_snubbed_estate_burghers }
-			clear_variable = cc_snubbed_estate_burghers
+			limit = { 
+				has_variable = cc_snubbed_estate_burghers 
+				var:cc_snubbed_estate_burghers = yes 
+			}
+			set_variable = { name = cc_snubbed_estate_burghers value = no }
 			add_estate_satisfaction = {
 				type = estate_type:burghers_estate
 				value = estate_satisfaction_weak_penalty
@@ -979,8 +985,11 @@ cc_cabinet.50 = {
 			}
 		}
 		if = {
-			limit = { has_variable = cc_snubbed_estate_nobles }
-			clear_variable = cc_snubbed_estate_nobles
+			limit = { 
+				has_variable = cc_snubbed_estate_nobles 
+				var:cc_snubbed_estate_nobles = yes 
+			}
+			set_variable = { name = cc_snubbed_estate_nobles value = no }
 			add_prestige = prestige_weak_penalty
 			add_country_modifier = {
 				modifier = cc_noble_resentment
@@ -995,11 +1004,15 @@ cc_cabinet.50 = {
 		name = cc_cabinet.50.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
 		if = {
-			limit = { has_country_modifier = cc_burgher_resentment }
+			limit = { 
+				has_country_modifier = cc_burgher_resentment 
+			}
 			remove_country_modifier = cc_burgher_resentment
 		}
 		if = {
-			limit = { has_country_modifier = cc_noble_resentment }
+			limit = { 
+				has_country_modifier = cc_noble_resentment 
+			}
 			remove_country_modifier = cc_noble_resentment
 		}
 	}
@@ -1012,12 +1025,14 @@ cc_cabinet.50 = {
 
 # "The Minister's Idle Influence"
 # Silently triggered by cc_cabinet.10 option D (do nothing).
-# Hidden event — effects resolve automatically with no player notification.
 cc_cabinet.52 = {
 	type = country_event
-	hidden = yes
+	title = cc_cabinet.52.title
+	desc = cc_cabinet.52.desc
+	outcome = neutral
 
-	immediate = {
+	option = {
+		name = cc_cabinet.52.a
 		random_list = {
 			40 = {
 				add_gold = { value = monthly_income_trade_and_tax multiply = 2 }

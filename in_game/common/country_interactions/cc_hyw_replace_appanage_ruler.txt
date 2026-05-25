@@ -1,0 +1,102 @@
+﻿
+# Cabinets and Choices — HYW Flavor
+# "Replace the Appanage Ruler"
+# France can assert royal control by forcibly replacing a disloyal appanage ruler.
+# This reduces the target appanage's liberty desire significantly but increases
+# noble unease across France and spreads mild liberty desire to other appanages.
+
+cc_hyw_replace_appanage_ruler = {
+	type = subject
+	category = CATEGORY_SUBJECT_ACTIONS
+
+	potential = {
+		has_game_rule = cc_hyw_flavor_on
+		scope:actor = { tag = FRA }
+		situation:hundred_years_war = { situation_has_ended = no }
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_country_modifier = cc_fra_purge_noble_unease }
+		}
+	}
+
+	cooldown = {
+		type = cc_hyw_replace_appanage_ruler
+		years = 25
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		interaction_source_list = {
+			scope:actor = {
+				every_subject = {
+					add_to_list = source
+				}
+			}
+		}
+		target_flag = recipient
+		name = "choose_country"
+		column = {
+			data = name
+		}
+		visible = {
+			is_subject_type = appanage
+			is_subject_of = scope:actor
+		}
+		enabled = {
+			is_subject_type = appanage
+			is_subject_of = scope:actor
+			liberty_desire > 20
+			NOT = { has_country_modifier = cc_fra_appanage_purge_resentment }
+		}
+	}
+
+	effect = {
+		# Large liberty desire reduction for the target appanage
+		scope:recipient = {
+			add_liberty_desire = liberty_desire_extreme_minus
+			add_country_modifier = {
+				modifier = cc_fra_appanage_purge_resentment
+				years = 20
+			}
+		}
+		# France bears the political cost: noble unease
+		scope:actor = {
+			add_country_modifier = {
+				modifier = cc_fra_purge_noble_unease
+				years = 15
+			}
+			# All other appanages grow restless at the king's show of force
+			every_subject = {
+				limit = {
+					is_subject_type = appanage
+					NOT = { this = scope:recipient }
+					OR = {
+						NOT = { # opinion of actor less than value
+							opinion = {
+								target = scope:actor
+								value = 150
+							}
+						}
+						liberty_desire > 20
+					}
+				}
+				add_liberty_desire = liberty_desire_mild_plus
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = -5
+		add = {
+			value = 20
+			desc = "appanage_very_disloyal"
+			if = {
+				limit = {
+					scope:recipient = { liberty_desire > 65 }
+				}
+			}
+		}
+	}
+}

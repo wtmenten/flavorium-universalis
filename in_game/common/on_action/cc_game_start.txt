@@ -44,6 +44,32 @@ cc_on_game_start = {
 			}
 		}
 
+		# --- Hundred Years War Flavor Start ---
+		# Applies starting levy/estate modifiers to FRA and ENG, decaying over 100 years.
+		if = {
+			limit = {
+				has_game_rule = cc_hyw_flavor_on
+				country_exists = c:FRA
+			}
+
+			c:FRA = {
+				add_country_modifier = {
+					modifier = cc_fra_hyw_feudal_strain
+					years = 100
+				}
+			}
+
+			if = {
+				limit = { country_exists = c:ENG }
+				c:ENG = {
+					add_country_modifier = {
+						modifier = cc_eng_hyw_martial_tradition
+						years = 100
+					}
+				}
+			}
+		}
+
 		# --- Mamluk Start ---
 		# Represents the Mamluks' tenuous hold over a largely foreign population.
 		if = {

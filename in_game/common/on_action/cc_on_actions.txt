@@ -1,0 +1,301 @@
+﻿
+# Cabinets and Choices — HYW Flavor On-Actions
+# Hooks into on_war_declared and on_winning_war for Hundred Years War flavor events.
+# All effects are gated on the cc_hyw_flavor_on game rule.
+
+on_war_declared = {
+	on_actions = { cc_on_war_declared }
+}
+
+on_winning_war = {
+	on_actions = { cc_on_winning_war }
+}
+
+# ---------------------------------------------------------------------------
+# on_war_declared: trigger observer events when FRA or ENG declares/receives war
+# in western Europe.
+# Scopes: scope:actor = declarer, scope:recipient = target, scope:war = war
+# ---------------------------------------------------------------------------
+cc_on_war_declared = {
+	effect = {
+		if = {
+			limit = {
+				has_game_rule = cc_hyw_flavor_on
+				scope:actor = { exists = capital capital.sub_continent = sub_continent:western_europe }
+				scope:recipient = { exists = capital capital.sub_continent = sub_continent:western_europe }
+				OR = {
+					scope:actor = c:FRA
+					scope:actor = c:ENG
+					scope:recipient = c:FRA
+					scope:recipient = c:ENG
+				}
+				is_situation_active = situation:hundred_years_war
+			}
+			# Burgundy: always gets the observer event (pivotal Lowlands power)
+			if = {
+				limit = {
+					country_exists = c:BUR
+					c:BUR = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+				}
+				c:BUR = { trigger_event_non_silently = cc_hyw.12 }
+			}
+			# Castile: 50% chance
+			if = {
+				limit = {
+					country_exists = c:CAS
+					c:CAS = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+				}
+				random = {
+					chance = 50
+					c:CAS = { trigger_event_non_silently = cc_hyw.12 }
+				}
+			}
+			# Aragon: 50% chance
+			if = {
+				limit = {
+					country_exists = c:ARA
+					c:ARA = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+				}
+				random = {
+					chance = 50
+					c:ARA = { trigger_event_non_silently = cc_hyw.12 }
+				}
+			}
+			# Naples: 40% chance
+			if = {
+				limit = {
+					country_exists = c:NAP
+					c:NAP = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+				}
+				random = {
+					chance = 40
+					c:NAP = { trigger_event_non_silently = cc_hyw.12 }
+				}
+			}
+			# Bohemia: 40% chance
+			if = {
+				limit = {
+					country_exists = c:BOH
+					c:BOH = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+				}
+				random = {
+					chance = 40
+					c:BOH = { trigger_event_non_silently = cc_hyw.12 }
+				}
+			}
+			# Scotland: always supports FRA — gets a special version of the event
+			if = {
+				limit = {
+					country_exists = c:SCO
+					c:SCO = {
+						NOT = { this = scope:actor }
+						NOT = { this = scope:recipient }
+						NOT = { is_at_war_with = scope:actor }
+					}
+					OR = { scope:actor = c:FRA scope:recipient = c:FRA }
+				}
+				c:SCO = { trigger_event_non_silently = cc_hyw.12 }
+			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
+# on_winning_war: apply stacking modifiers and fire flavor events when a
+# western European war involving FRA or ENG ends.
+# Scopes: scope:winner, scope:loser, scope:war
+# ---------------------------------------------------------------------------
+cc_on_winning_war = {
+	effect = {
+		if = {
+			limit = {
+				has_game_rule = cc_hyw_flavor_on
+				scope:winner = { exists = capital capital.sub_continent = sub_continent:western_europe }
+				scope:loser = { exists = capital capital.sub_continent = sub_continent:western_europe }
+				OR = {
+					scope:winner = c:FRA
+					scope:winner = c:ENG
+					scope:loser = c:FRA
+					scope:loser = c:ENG
+				}
+				root = c:FRA # only fire once per war
+				is_situation_active = situation:hundred_years_war
+			}
+			# --- FRA wins vs ENG ---
+			if = {
+				limit = {
+					scope:winner = c:FRA
+					scope:loser = c:ENG
+				}
+				c:FRA = {
+					add_country_modifier = {
+						modifier = cc_fra_hyw_war_victory
+						years = 40
+						mode = set_to_largest_and_extend
+					}
+					trigger_event_non_silently = cc_hyw.10
+				}
+			}
+			# --- FRA wins vs other western EU power (not ENG) ---
+			else_if = {
+				limit = { scope:winner = c:FRA }
+				c:FRA = {
+					add_country_modifier = {
+						modifier = cc_fra_hyw_war_victory
+						years = 40
+						mode = set_to_largest_and_extend
+					}
+					trigger_event_non_silently = cc_hyw.13
+				}
+			}
+			# --- FRA loses ---
+			if = {
+				limit = { scope:loser = c:FRA }
+				c:FRA = {
+					add_country_modifier = {
+						modifier = cc_fra_hyw_war_defeat
+						years = 40
+						mode = set_to_largest_and_extend
+					}
+					trigger_event_non_silently = cc_hyw.11
+				}
+				# Fire vassal wavering for BUR, BRI, or any very disloyal FRA subject
+				every_country = {
+					limit = {
+						is_subject_of = c:FRA
+						OR = {
+							tag = BUR
+							tag = BRI
+							subject_loyalty < 25
+						}
+					}
+					trigger_event_non_silently = cc_hyw.20
+				}
+			}
+			# --- ENG wins ---
+			if = {
+				limit = { scope:winner = c:ENG }
+				c:ENG = {
+					add_country_modifier = {
+						modifier = cc_eng_hyw_ascendancy
+						years = 40
+						mode = set_to_largest_and_extend
+					}
+				}
+			}
+			# --- ENG loses ---
+			if = {
+				limit = { scope:loser = c:ENG }
+				c:ENG = {
+					add_country_modifier = {
+						modifier = cc_eng_hyw_setback
+						years = 40
+						mode = set_to_largest_and_extend
+					}
+				}
+				# Fire vassal wavering for disloyal ENG subjects in western Europe
+				every_country = {
+					limit = {
+						is_subject_of = c:ENG
+						subject_loyalty < 40
+						exists = capital
+						capital.sub_continent = sub_continent:western_europe
+					}
+					trigger_event_non_silently = cc_hyw.22
+				}
+			}
+		}
+		# --- FRA wins and holds lowlands (deduped: root = c:FRA) ---
+		if = {
+			limit = {
+				has_game_rule = cc_hyw_flavor_on
+				scope:winner = c:FRA
+				root = c:FRA
+				c:FRA = {
+					any_owned_location = {
+						is_in_scripted_geography = scripted_geography:netherlands_geography
+					}
+				}
+			}
+			c:FRA = {
+				if = {
+					limit = {
+						any_subject = {
+							any_owned_location = {
+								is_capital = yes
+								is_in_scripted_geography = scripted_geography:netherlands_geography
+							}
+						}
+					}
+					random_subject = {
+						limit = {
+							any_owned_location = {
+								is_capital = yes
+								is_in_scripted_geography = scripted_geography:netherlands_geography
+							}
+						}
+						save_scope_as = lowlands_subject
+					}
+					trigger_event_non_silently = cc_hyw.30
+				}
+				else = { trigger_event_non_silently = cc_hyw.31 }
+			}
+		}
+		# --- ENG wins and holds lowlands (deduped: root = c:ENG) ---
+		if = {
+			limit = {
+				has_game_rule = cc_hyw_flavor_on
+				scope:winner = c:ENG
+				root = c:ENG
+				c:ENG = {
+					any_owned_location = {
+						is_in_scripted_geography = scripted_geography:netherlands_geography
+					}
+				}
+			}
+			c:ENG = {
+				if = {
+					limit = {
+						any_subject = {
+							any_owned_location = {
+								is_capital = yes
+								is_in_scripted_geography = scripted_geography:netherlands_geography
+							}
+						}
+					}
+					random_subject = {
+						limit = {
+							any_owned_location = {
+								is_capital = yes
+								is_in_scripted_geography = scripted_geography:netherlands_geography
+							}
+						}
+						save_scope_as = lowlands_subject
+					}
+					trigger_event_non_silently = cc_hyw.30
+				}
+				else = { trigger_event_non_silently = cc_hyw.31 }
+			}
+		}
+	}
+}

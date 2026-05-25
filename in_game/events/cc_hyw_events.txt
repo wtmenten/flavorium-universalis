@@ -1,0 +1,886 @@
+﻿
+namespace = cc_hyw
+
+######################################
+# cc_hyw.1 — "The Auld Alliance"
+# France considers formally guaranteeing Scotland's independence at the
+# opening of the Hundred Years War, binding England's northern flank.
+# Fires for FRA after the HYW situation activates, before David II exile chain.
+######################################
+
+cc_hyw.1 = {
+	type = country_event
+	title = cc_hyw.1.title
+	desc = cc_hyw.1.desc
+	outcome = neutral
+
+	fire_only_once = yes
+
+	dynamic_historical_event = {
+		tag = FRA
+		from = 1337.5.1
+		to = 1339.6.1
+		monthly_chance = 20
+	}
+
+	trigger = {
+		has_game_rule = cc_hyw_flavor_on
+		situation:hundred_years_war = { situation_has_ended = no }
+		country_exists = c:SCO
+		country_exists = c:ENG
+		NOT = { is_at_war_with = c:ENG }
+	}
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+		c:SCO = { ruler ?= { save_scope_as = sco_ruler } }
+		c:ENG = { ruler_or_regent ?= { save_scope_as = eng_ruler } }
+	}
+
+	# Option A: Offer a formal guarantee of independence
+	option = {
+		name = cc_hyw.1.a
+		historical_option = yes
+		ai_chance = { base = 50 }
+
+		create_relation = {
+			first = c:FRA
+			second = c:SCO
+			type = relation_type:guarantee
+		}
+		add_opinion = { target = c:SCO modifier = cc_hyw_auld_alliance_renewed }
+		reverse_add_opinion = { target = c:SCO modifier = cc_hyw_auld_alliance_renewed }
+		c:ENG = {
+			add_opinion = { target = c:FRA modifier = cc_hyw_fra_backs_scotland }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Option B: Promise informal support — less binding, more cautious
+	option = {
+		name = cc_hyw.1.b
+		ai_chance = { base = 35 }
+
+		add_opinion = { target = c:SCO modifier = cc_hyw_fra_informal_promise }
+		reverse_add_opinion = { target = c:SCO modifier = cc_hyw_fra_informal_promise }
+	}
+
+	# Option C: France fights its own war — Scotland is a distraction
+	option = {
+		name = cc_hyw.1.c
+		ai_chance = { base = 15 }
+
+		add_prestige = prestige_weak_penalty
+		c:SCO = {
+			add_opinion = { target = c:FRA modifier = cc_hyw_fra_abandons_scots }
+		}
+	}
+}
+
+
+######################################
+# cc_hyw.10 — "Victory Over England"
+# FRA wins a direct war vs ENG.
+# Adds victory stack. Scotland relationship branch.
+######################################
+
+cc_hyw.10 = {
+	type = country_event
+	title = cc_hyw.10.title
+	desc = cc_hyw.10.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+		10 = military
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:military }
+	}
+
+	# Option A: The Kingdom Endures — historical, strengthen SCO alliance
+	option = {
+		name = cc_hyw.10.a
+		historical_option = yes
+		ai_chance = { base = 60 }
+
+		add_prestige = prestige_mild_bonus
+		if = {
+			limit = { country_exists = c:SCO }
+			add_opinion = { target = c:SCO modifier = cc_hyw_auld_alliance_renewed }
+			reverse_add_opinion = { target = c:SCO modifier = cc_hyw_auld_alliance_renewed }
+		}
+	}
+
+	# Option B: Press England's Subjects — fire vassal wavering in any ENG subjects in France region
+	option = {
+		name = cc_hyw.10.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_bonus
+		every_country = {
+			limit = {
+				is_subject_of = c:ENG
+				exists = capital
+				capital.sub_continent = sub_continent:western_europe
+			}
+			trigger_event_non_silently = cc_hyw.22
+		}
+	}
+}
+
+
+######################################
+# cc_hyw.11 — "Defeat Darkens the Kingdom"
+# FRA loses a western European war.
+# Defeat modifier already applied by on_action. This is the flavor/choice event.
+######################################
+
+cc_hyw.11 = {
+	type = country_event
+	title = cc_hyw.11.title
+	desc = cc_hyw.11.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = military
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:military }
+	}
+
+	# Option A: Regroup and endure — accept the setback
+	option = {
+		name = cc_hyw.11.a
+		historical_option = yes
+		ai_chance = { base = 60 }
+
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Option B: Demand sacrifice from the nobility
+	# Noble levy boost for the price of noble satisfaction
+	option = {
+		name = cc_hyw.11.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_penalty
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+		add_country_modifier = {
+			modifier = cc_fra_hyw_noble_sacrifice
+			years = 15
+		}
+	}
+}
+
+
+######################################
+# cc_hyw.12 — "War Breaks Out in the West"
+# Observer event for western European powers when FRA or ENG declares war.
+# Root = observer country. scope:actor = declarer. scope:recipient = target.
+######################################
+
+cc_hyw.12 = {
+	type = country_event
+	title = cc_hyw.12.title
+	desc = cc_hyw.12.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+	}
+
+	# Option A: Offer to mediate — modest opinion bonus from both sides
+	option = {
+		name = cc_hyw.12.a
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = 20
+				is_allied_with = { target = scope:actor }
+				is_allied_with = { target = scope:recipient }
+			}
+		}
+
+		add_opinion = { target = scope:actor modifier = cc_hyw_offer_to_mediate }
+		add_opinion = { target = scope:recipient modifier = cc_hyw_offer_to_mediate }
+	}
+
+	# Option B: Side with the aggressor
+	option = {
+		name = cc_hyw.12.b
+		trigger = {
+			NOT = {
+				AND = {
+					is_allied_with = { target = scope:actor }
+					is_allied_with = { target = scope:recipient }
+				}
+			}
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				add = 30
+				is_allied_with = { target = scope:actor }
+			}
+			modifier = {
+				add = 20
+				scope:actor = c:ENG
+				capital.region = region:british_isles_region
+			}
+			modifier = {
+				# Scotland always sides with FRA when FRA is the actor
+				add = 50
+				tag = SCO
+				scope:actor = c:FRA
+			}
+		}
+
+		add_opinion = { target = scope:actor modifier = cc_hyw_diplomatic_solidarity }
+		add_antagonism = {
+			target = scope:recipient
+			modifier = cc_hyw_aggressor_concern
+		}
+	}
+
+	# Option C: Side with the defender
+	option = {
+		name = cc_hyw.12.c
+		trigger = {
+			NOT = {
+				AND = {
+					is_allied_with = { target = scope:actor }
+					is_allied_with = { target = scope:recipient }
+				}
+			}
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				add = 30
+				is_allied_with = { target = scope:recipient }
+			}
+			modifier = {
+				# Lowlands powers side with ENG when ENG is the defender vs FRA aggression
+				add = 20
+				scope:actor = c:FRA
+				scope:recipient = c:ENG
+				capital.region = region:low_countries_region
+			}
+			modifier = {
+				# Scotland always sides with FRA when FRA is the defender
+				add = 50
+				tag = SCO
+				scope:recipient = c:FRA
+			}
+		}
+
+		add_opinion = { target = scope:recipient modifier = cc_hyw_diplomatic_solidarity }
+		add_antagonism = {
+			target = scope:actor
+			modifier = cc_hyw_aggressor_concern
+		}
+	}
+
+	# Option D: Stay out of it
+	option = {
+		name = cc_hyw.12.d
+		ai_chance = {
+			base = 60
+			modifier = {
+				add = -20
+				OR = {
+					is_allied_with = { target = scope:actor }
+					is_allied_with = { target = scope:recipient }
+				}
+			}
+		}
+	}
+}
+
+
+######################################
+# cc_hyw.13 — "Victory in the West"
+# FRA wins a western European war NOT against ENG.
+# Simpler than cc_hyw.10 — no Scotland branch.
+######################################
+
+cc_hyw.13 = {
+	type = country_event
+	title = cc_hyw.13.title
+	desc = cc_hyw.13.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+		10 = military
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:military }
+	}
+
+	# Option A: The Nobles Celebrate
+	option = {
+		name = cc_hyw.13.a
+		ai_chance = { base = 60 }
+
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Option B: Press the Advantage — grant a casus belli on the loser
+	option = {
+		name = cc_hyw.13.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+######################################
+# cc_hyw.20 — "Our Suzerain Falters"
+# A French vassal (BUR, BRI, or any disloyal FRA subject) wavers after a defeat.
+# Root = the subject country. overlord = France.
+######################################
+
+cc_hyw.20 = {
+	type = country_event
+	title = cc_hyw.20.title
+	desc = cc_hyw.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+		10 = interior
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+		root = { save_scope_as = wavering_subject }
+		overlord = { save_scope_as = fra_overlord }
+	}
+
+	# Option A: Seek English support
+	option = {
+		name = cc_hyw.20.a
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = 20
+				subject_loyalty < 30
+			}
+			modifier = {
+				add = 10
+				country_exists = c:ENG
+				c:ENG = { at_war = no }
+			}
+		}
+
+		# Subject reaches out to England
+		if = {
+			limit = { country_exists = c:ENG }
+			add_opinion = { target = c:ENG modifier = cc_hyw_subject_reaches_out }
+			reverse_add_opinion = { target = c:ENG modifier = cc_hyw_subject_reaches_out }
+		}
+		# France gets an opinion penalty from this subject
+		add_opinion = {
+			target = scope:fra_overlord
+			modifier = cc_fra_vassal_defection
+		}
+		# Trigger France's reaction event
+		scope:fra_overlord = {
+			trigger_event_non_silently = cc_hyw.21
+		}
+	}
+
+	# Option B: Demand more autonomy
+	option = {
+		name = cc_hyw.20.b
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 10
+				subject_loyalty < 40
+			}
+		}
+
+		add_liberty_desire = liberty_desire_mild_plus
+		# France gets the vassal unrest event
+		scope:fra_overlord = {
+			trigger_event_non_silently = cc_hyw.21
+		}
+	}
+
+	# Option C: Remain loyal despite everything
+	option = {
+		name = cc_hyw.20.c
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				subject_loyalty > 35
+			}
+		}
+
+		add_liberty_desire = liberty_desire_mild_minus
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+######################################
+# cc_hyw.21 — "A Vassal Reaches Toward England"
+# France's reaction after a vassal wavers (cc_hyw.20 option A or B).
+# Root = France. scope:wavering_subject = the subject.
+######################################
+
+cc_hyw.21 = {
+	type = country_event
+	title = cc_hyw.21.title
+	desc = cc_hyw.21.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+	}
+
+	# Option A: Punish the disloyalty — sever the English link at a cost
+	option = {
+		name = cc_hyw.21.a
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				scope:wavering_subject = { subject_loyalty > 20 }
+			}
+		}
+
+		add_government_power = government_power_mild_penalty
+		scope:wavering_subject = {
+			add_liberty_desire = liberty_desire_severe_plus
+		}
+		# Force the subject away from England
+		if = {
+			limit = { country_exists = c:ENG }
+			c:ENG = {
+				add_opinion = { target = root modifier = cc_hyw_fra_suppresses_subject }
+			}
+		}
+	}
+
+	# Option B: Appease with gold — expensive, effective
+	option = {
+		name = cc_hyw.21.b
+		trigger = { gold > 200 }
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				gold > 400
+			}
+		}
+
+		add_gold = -200
+		scope:wavering_subject = {
+			add_liberty_desire = liberty_desire_extreme_minus
+			add_opinion = { target = root modifier = cc_hyw_overlord_grants_gold }
+			reverse_add_opinion = { target = root modifier = cc_hyw_overlord_grants_gold }
+		}
+	}
+
+	# Option C: Release as independent — only when very disloyal
+	option = {
+		name = cc_hyw.21.c
+		trigger = {
+			scope:wavering_subject = { subject_loyalty < 20 }
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				add = 10
+				at_war = yes
+			}
+		}
+
+		cancel_subject = scope:wavering_subject
+		add_prestige = prestige_severe_penalty
+	}
+}
+
+
+######################################
+# cc_hyw.22 — "Our Suzerain England Falters"
+# An English vassal wavers after England loses a western European war.
+# Mirror of cc_hyw.20. Root = the ENG subject country.
+######################################
+
+cc_hyw.22 = {
+	type = country_event
+	title = cc_hyw.22.title
+	desc = cc_hyw.22.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+		10 = interior
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+		root = { save_scope_as = eng_wavering_subject }
+		overlord = { save_scope_as = eng_overlord }
+	}
+
+	# Option A: Seek French protection
+	option = {
+		name = cc_hyw.22.a
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = 20
+				subject_loyalty < 30
+			}
+			modifier = {
+				add = 10
+				country_exists = c:FRA
+				c:FRA = { at_war = no }
+			}
+		}
+
+		if = {
+			limit = { country_exists = c:FRA }
+			add_opinion = { target = c:FRA modifier = cc_hyw_subject_reaches_out }
+			reverse_add_opinion = { target = c:FRA modifier = cc_hyw_subject_reaches_out }
+		}
+		add_opinion = {
+			target = scope:eng_overlord
+			modifier = cc_fra_vassal_defection
+		}
+		scope:eng_overlord = {
+			trigger_event_non_silently = cc_hyw.23
+		}
+	}
+
+	# Option B: Demand more autonomy from England
+	option = {
+		name = cc_hyw.22.b
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 10
+				subject_loyalty < 40
+			}
+		}
+
+		add_liberty_desire = liberty_desire_mild_plus
+		scope:eng_overlord = {
+			trigger_event_non_silently = cc_hyw.23
+		}
+	}
+
+	# Option C: Remain steadfast
+	option = {
+		name = cc_hyw.22.c
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				subject_loyalty > 35
+			}
+		}
+
+		add_liberty_desire = liberty_desire_mild_minus
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+######################################
+# cc_hyw.30 — "The Lowlands Question"
+# FRA or ENG wins a war while holding lowlands provinces AND has a subject
+# with its capital in the netherlands_geography. The subject demands the land.
+# Root = winner. scope:lowlands_subject = the demanding subject.
+######################################
+
+cc_hyw.30 = {
+	type = country_event
+	title = cc_hyw.30.title
+	desc = cc_hyw.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = discussing
+		10 = interior
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+		root = { save_scope_as = lowlands_winner }
+	}
+
+	# Option A: Grant the lowlands provinces to the subject
+	option = {
+		name = cc_hyw.30.a
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				scope:lowlands_subject = { subject_loyalty > 40 }
+			}
+		}
+
+		every_owned_location = {
+			limit = { is_in_scripted_geography = scripted_geography:netherlands_geography }
+			province = { change_province_owner = scope:lowlands_subject }
+		}
+		add_prestige = prestige_mild_penalty
+		scope:lowlands_subject = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Option B: Refuse — subject switches overlord to the rival (FRA ↔ ENG)
+	option = {
+		name = cc_hyw.30.b
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = -10
+				scope:lowlands_subject = { subject_loyalty > 50 }
+			}
+		}
+
+		scope:lowlands_subject = {
+			if = {
+				limit = { overlord = c:FRA }
+				make_subject_of = { target = c:ENG type = subject_type:vassal }
+			}
+			else_if = {
+				limit = { overlord = c:ENG }
+				make_subject_of = { target = c:FRA type = subject_type:vassal }
+			}
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		add_prestige = prestige_severe_penalty
+		if = {
+			limit = { exists = international_organization:hre }
+			international_organization:hre = {
+				leader_country = {
+					add_opinion = { target = root modifier = cc_hyw_lowlands_hre_displeasure }
+				}
+			}
+		}
+	}
+
+	# Option C: Hold firm — bypass the switch (only when subject is very loyal)
+	# Requires liberty_desire < 10 AND subject_loyalty > 90 AND opinion of overlord > 160
+	option = {
+		name = cc_hyw.30.c
+		trigger = {
+			scope:lowlands_subject = {
+				liberty_desire < 10
+				subject_loyalty > 90
+				this_opinion_of_prev > 160
+			}
+		}
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				scope:lowlands_subject = { subject_loyalty > 70 }
+			}
+		}
+
+		scope:lowlands_subject = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { target = root modifier = cc_hyw_lowlands_land_refused }
+		}
+		if = {
+			limit = { exists = international_organization:hre }
+			international_organization:hre = {
+				leader_country = {
+					add_opinion = { target = root modifier = cc_hyw_lowlands_hre_displeasure }
+				}
+			}
+		}
+	}
+}
+
+
+######################################
+# cc_hyw.31 — "A Duchy Without a Lord"
+# FRA or ENG wins a war while holding lowlands provinces AND has no subject
+# with a capital in the netherlands_geography.
+# Root = winner.
+######################################
+
+cc_hyw.31 = {
+	type = country_event
+	title = cc_hyw.31.title
+	desc = cc_hyw.31.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = discussing
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:military }
+		root = { save_scope_as = lowlands_winner }
+	}
+
+	# Option A: Establish a Dutch vassal duchy
+	option = {
+		name = cc_hyw.31.a
+		historical_option = yes
+		ai_chance = { base = 60 }
+
+		random_owned_location = {
+			limit = { is_in_scripted_geography = scripted_geography:netherlands_geography }
+			province = {
+				create_location_country_from_province = {
+					make_subject_of = { target = scope:lowlands_winner type = subject_type:vassal }
+					save_scope_as = new_dutch_vassal
+				}
+			}
+		}
+		every_owned_location = {
+			limit = { is_in_scripted_geography = scripted_geography:netherlands_geography }
+			province = { change_province_owner = scope:new_dutch_vassal }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Option B: Keep the lowlands under direct rule — suffer unrest and diplomatic anger
+	option = {
+		name = cc_hyw.31.b
+		ai_chance = { base = 40 }
+
+		every_owned_location = {
+			limit = {
+				is_in_scripted_geography = scripted_geography:netherlands_geography
+				OR = {
+					dominant_culture = culture:low_franconian
+					dominant_culture = culture:picard
+					dominant_culture = culture:walloon
+				}
+			}
+			add_location_modifier = { modifier = add_unrest_5_modifier years = 10 mode = add_and_extend }
+		}
+		if = {
+			limit = { exists = international_organization:hre }
+			international_organization:hre = {
+				leader_country = {
+					add_opinion = { target = root modifier = cc_hyw_lowlands_hre_displeasure }
+				}
+			}
+		}
+		every_country = {
+			limit = {
+				culture = { has_culture_group = culture_group:netherlandish_group }
+			}
+			add_opinion = { target = root modifier = cc_hyw_dutch_nations_anger }
+		}
+		add_prestige = prestige_mild_penalty
+	}
+}
+
+
+######################################
+# cc_hyw.23 — "An English Vassal Demands Concessions"
+# England's reaction when a western subject wavers.
+# Mirror of cc_hyw.21. Root = England. scope:eng_wavering_subject = the subject.
+######################################
+
+cc_hyw.23 = {
+	type = country_event
+	title = cc_hyw.23.title
+	desc = cc_hyw.23.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+	}
+
+	immediate = {
+		event_illustration_estate_effect = { foreground = estate_type:nobles_estate background = estate_type:nobles_estate }
+	}
+
+	# Option A: Assert English authority
+	option = {
+		name = cc_hyw.23.a
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				scope:eng_wavering_subject = { subject_loyalty > 20 }
+			}
+		}
+
+		add_government_power = government_power_mild_penalty
+		scope:eng_wavering_subject = {
+			add_liberty_desire = liberty_desire_severe_plus
+		}
+		if = {
+			limit = { country_exists = c:FRA }
+			c:FRA = {
+				add_opinion = { target = root modifier = cc_hyw_fra_suppresses_subject }
+			}
+		}
+	}
+
+	# Option B: Appease the vassal with gold
+	option = {
+		name = cc_hyw.23.b
+		trigger = { gold > 200 }
+		ai_chance = {
+			base = 40
+			modifier = {
+				add = 20
+				gold > 400
+			}
+		}
+
+		add_gold = -200
+		scope:eng_wavering_subject = {
+			add_liberty_desire = liberty_desire_extreme_minus
+			add_opinion = { target = root modifier = cc_hyw_overlord_grants_gold }
+			reverse_add_opinion = { target = root modifier = cc_hyw_overlord_grants_gold }
+		}
+	}
+
+	# Option C: Release as independent
+	option = {
+		name = cc_hyw.23.c
+		trigger = {
+			scope:eng_wavering_subject = { subject_loyalty < 20 }
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				add = 10
+				at_war = yes
+			}
+		}
+
+		cancel_subject = scope:eng_wavering_subject
+		add_prestige = prestige_severe_penalty
+	}
+}
