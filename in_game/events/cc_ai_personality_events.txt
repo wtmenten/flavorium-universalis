@@ -23,7 +23,8 @@ namespace = cc_personality
 
 # cc_personality.1 — The Winds of War
 # Fires when an AI country is at war and unguarded.
-# Sharpens strategy toward aggression or survival instinct.
+# Sustained war (cc_p_at_war >= 24) tilts strongly toward aggression.
+# Sustained exhaustion (cc_p_high_exhaustion >= 12) shifts toward defense.
 cc_personality.1 = {
 	type = country_event
 	title = cc_personality.1.title
@@ -39,18 +40,28 @@ cc_personality.1 = {
 		name = cc_personality.1.a
 		set_personality = ai_personality:ai_aggressive
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 60 }
+		ai_chance = {
+			base = 60
+			modifier = { add = 15 var:cc_p_at_war >= 24 }
+			modifier = { add = -10 var:cc_p_high_exhaustion >= 24 }
+		}
 	}
 	option = {
 		name = cc_personality.1.b
 		set_personality = ai_personality:ai_defensive
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 40 }
+		ai_chance = {
+			base = 40
+			modifier = { add = 15 var:cc_p_high_exhaustion >= 12 }
+			modifier = { add = -10 var:cc_p_at_war >= 36 }
+		}
 	}
 }
 
 # cc_personality.2 — Imperial Ambitions
 # Fires when a great power is at peace and unguarded.
+# Sustained great-power status (cc_p_great_power >= 24) favors bold expansion.
+# Sustained treasury wealth (cc_p_treasury_rich >= 12) favors patient opportunism.
 cc_personality.2 = {
 	type = country_event
 	title = cc_personality.2.title
@@ -65,18 +76,28 @@ cc_personality.2 = {
 		name = cc_personality.2.a
 		set_personality = ai_personality:ai_expansionist
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 50 }
+		ai_chance = {
+			base = 50
+			modifier = { add = 15 var:cc_p_great_power >= 24 }
+			modifier = { add = -10 var:cc_p_treasury_rich >= 12 }
+		}
 	}
 	option = {
 		name = cc_personality.2.b
 		set_personality = ai_personality:ai_opportunistic
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 50 }
+		ai_chance = {
+			base = 50
+			modifier = { add = 15 var:cc_p_treasury_rich >= 12 }
+			modifier = { add = -10 var:cc_p_great_power >= 36 }
+		}
 	}
 }
 
 # cc_personality.3 — A Time for Caution
 # Fires when a country has low prestige and is unguarded.
+# Sustained coalition pressure tilts toward fortress defense.
+# Chronic low prestige (cc_p_low_prestige >= 12) favors careful diplomacy.
 cc_personality.3 = {
 	type = country_event
 	title = cc_personality.3.title
@@ -91,18 +112,28 @@ cc_personality.3 = {
 		name = cc_personality.3.a
 		set_personality = ai_personality:ai_defensive
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 40 }
+		ai_chance = {
+			base = 40
+			modifier = { add = 20 var:cc_p_coalition_threat >= 12 }
+			modifier = { add = -10 var:cc_p_low_prestige < 6 }
+		}
 	}
 	option = {
 		name = cc_personality.3.b
 		set_personality = ai_personality:ai_cautious
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 60 }
+		ai_chance = {
+			base = 60
+			modifier = { add = 10 var:cc_p_low_prestige >= 12 }
+			modifier = { add = -10 var:cc_p_coalition_threat >= 24 }
+		}
 	}
 }
 
 # cc_personality.4 — Trade and Diplomacy
 # Fires for wealthy minor powers at peace.
+# Consistently wealthy (cc_p_treasury_rich >= 24) → invest in goodwill.
+# Subject instability (cc_p_disloyal_subject >= 6) → stay nimble and opportunistic.
 cc_personality.4 = {
 	type = country_event
 	title = cc_personality.4.title
@@ -118,19 +149,27 @@ cc_personality.4 = {
 		name = cc_personality.4.a
 		set_personality = ai_personality:ai_friendly
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 40 }
+		ai_chance = {
+			base = 40
+			modifier = { add = 20 var:cc_p_treasury_rich >= 24 }
+			modifier = { add = -15 var:cc_p_disloyal_subject >= 6 }
+		}
 	}
 	option = {
 		name = cc_personality.4.b
 		set_personality = ai_personality:ai_opportunistic
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
-		ai_chance = { base = 60 }
+		ai_chance = {
+			base = 60
+			modifier = { add = 10 var:cc_p_disloyal_subject >= 6 }
+			modifier = { add = -10 var:cc_p_treasury_rich >= 36 }
+		}
 	}
 }
 
 # cc_personality.5 — A Question of Strategy
-# Broad catch-all drift event. Fires at 20% annual chance for any unguarded AI country.
-# Uses weighted random_list covering all 7 personalities, adjusted by game state.
+# Four-yearly fallback event and catch-all for the yearly pulse.
+# Counter variables heavily influence option weights alongside current state checks.
 cc_personality.5 = {
 	type = country_event
 	title = cc_personality.5.title
@@ -141,9 +180,6 @@ cc_personality.5 = {
 		10 = interior
 	}
 
-	# For player-controlled countries: choose a strategic direction.
-	# AI resolves via ai_chance weights on each option.
-
 	option = {
 		name = cc_personality.5.aggressive
 		set_personality = ai_personality:ai_aggressive
@@ -152,6 +188,7 @@ cc_personality.5 = {
 			base = 15
 			modifier = { add = 10 at_war = yes }
 			modifier = { add = 5 is_great_power = yes }
+			modifier = { add = 10 var:cc_p_at_war >= 24 }
 		}
 	}
 	option = {
@@ -162,6 +199,7 @@ cc_personality.5 = {
 			base = 15
 			modifier = { add = 10 is_great_power = yes }
 			modifier = { add = 5 num_subjects < 3 }
+			modifier = { add = 10 var:cc_p_great_power >= 24 }
 		}
 	}
 	option = {
@@ -172,6 +210,8 @@ cc_personality.5 = {
 			base = 15
 			modifier = { add = 10 prestige < 30 }
 			modifier = { add = 5 at_war = yes }
+			modifier = { add = 15 var:cc_p_coalition_threat >= 12 }
+			modifier = { add = 10 var:cc_p_high_exhaustion >= 12 }
 		}
 	}
 	option = {
@@ -181,6 +221,7 @@ cc_personality.5 = {
 		ai_chance = {
 			base = 15
 			modifier = { add = 5 prestige < 50 }
+			modifier = { add = 10 var:cc_p_low_prestige >= 12 }
 		}
 	}
 	option = {
@@ -190,6 +231,7 @@ cc_personality.5 = {
 		ai_chance = {
 			base = 10
 			modifier = { add = 10 gold > 100 }
+			modifier = { add = 10 var:cc_p_treasury_rich >= 12 }
 		}
 	}
 	option = {
@@ -208,6 +250,7 @@ cc_personality.5 = {
 					}
 				}
 			}
+			modifier = { add = 10 var:cc_p_disloyal_subject >= 24 }
 		}
 	}
 	option = {
@@ -217,6 +260,8 @@ cc_personality.5 = {
 		ai_chance = {
 			base = 10
 			modifier = { add = 5 at_war = no }
+			modifier = { add = 10 var:cc_p_treasury_rich >= 24 }
+			modifier = { add = 5 var:cc_p_coalition_threat < 6 }
 		}
 	}
 }
@@ -433,5 +478,190 @@ cc_personality.50 = {
 		set_personality = ai_personality:ai_cautious
 		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
 		ai_chance = { base = 30 }
+	}
+}
+
+########################
+# Four-Yearly Deep Analysis Events (60-65)
+# Fired by cc_on_four_yearly_pulse_personalities based on accumulated counter variables.
+# Counter thresholds: >= 36 = sustained (~75% of 4 years), >= 24 = moderate (~50%),
+# >= 12 = occasional (~25%).
+########################
+
+# cc_personality.60 — The Exhausted Kingdom
+# Triggered when: cc_p_at_war >= 24 AND cc_p_high_exhaustion >= 24
+# Sustained war WITH sustained high exhaustion — the realm is ground down.
+cc_personality.60 = {
+	type = country_event
+	title = cc_personality.60.title
+	desc = cc_personality.60.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.60.a
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.60.b
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+# cc_personality.61 — Victor's Ambition
+# Triggered when: cc_p_at_war >= 24 AND cc_p_high_exhaustion < 12
+# Sustained war with low exhaustion — a battle-hardened, confident state.
+cc_personality.61 = {
+	type = country_event
+	title = cc_personality.61.title
+	desc = cc_personality.61.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	option = {
+		name = cc_personality.61.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 60 }
+	}
+	option = {
+		name = cc_personality.61.b
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 40 }
+	}
+}
+
+# cc_personality.62 — Surrounded on All Sides
+# Triggered when: cc_p_coalition_threat >= 24
+# Chronic near-coalition or coalition-grade antagonism from neighbours.
+cc_personality.62 = {
+	type = country_event
+	title = cc_personality.62.title
+	desc = cc_personality.62.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.62.a
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 50 }
+	}
+	option = {
+		name = cc_personality.62.b
+		set_personality = ai_personality:ai_isolationist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = cc_personality.62.c
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 20 }
+	}
+}
+
+# cc_personality.63 — A Kingdom in Turmoil
+# Triggered when: cc_p_disloyal_subject >= 12 AND cc_p_low_prestige >= 12
+# Recurring disloyal subjects combined with weak prestige — internal fracture.
+cc_personality.63 = {
+	type = country_event
+	title = cc_personality.63.title
+	desc = cc_personality.63.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	option = {
+		name = cc_personality.63.a
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 60 }
+	}
+	option = {
+		name = cc_personality.63.b
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 40 }
+	}
+}
+
+# cc_personality.64 — The Imperial Opportunity
+# Triggered when: cc_p_great_power >= 36 AND cc_p_treasury_rich >= 24 AND cc_p_at_war < 12
+# A reliably dominant great power, wealthy, and mostly at peace — ripe for ambition.
+cc_personality.64 = {
+	type = country_event
+	title = cc_personality.64.title
+	desc = cc_personality.64.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_personality.64.a
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 50 }
+	}
+	option = {
+		name = cc_personality.64.b
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = cc_personality.64.c
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 20 }
+	}
+}
+
+# cc_personality.65 — The Merchant's Way
+# Triggered when: cc_p_treasury_rich >= 24 AND cc_p_at_war < 12 AND NOT great power
+# A wealthy minor power that has mostly avoided war — trade and diplomacy beckon.
+cc_personality.65 = {
+	type = country_event
+	title = cc_personality.65.title
+	desc = cc_personality.65.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = bank
+	}
+
+	option = {
+		name = cc_personality.65.a
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 50 }
+	}
+	option = {
+		name = cc_personality.65.b
+		set_personality = ai_personality:ai_friendly
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 50 }
 	}
 }

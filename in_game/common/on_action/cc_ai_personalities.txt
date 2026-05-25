@@ -9,13 +9,16 @@ on_new_age = {
 	on_actions = { cc_on_new_age_personalities }
 }
 on_game_start = {
-    on_actions = { cc_on_new_age_personalities }
+	on_actions = { cc_on_new_age_personalities }
+}
+
+monthly_country_pulse = {
+	on_actions = { cc_on_monthly_personality_monitor }
 }
 
 yearly_country_pulse = {
 	on_actions = { cc_on_yearly_pulse_personalities }
 }
-
 
 four_yearly_country_pulse = {
 	on_actions = { cc_on_four_yearly_pulse_personalities }
@@ -938,69 +941,201 @@ cc_on_new_age_personalities = {
 }
 
 # ---------------------------------------------------------------------------
+# cc_on_monthly_personality_monitor
+# Scope: country (fires once per month per country).
+# Tracks 8 situational counter variables (0–48), each incrementing when its
+# condition is true and decrementing when false. This creates a "pressure
+# score" that reflects sustained patterns rather than instant game state:
+#   ≥ 36 = reliably true (~75% of the last 4 years)
+#   ≥ 24 = moderately true (~50%)
+#   ≥ 12 = occasionally true (~25%)
+# Gate: cc_ai_personalities_random_drift only (not needed for historical-only mode).
+# ---------------------------------------------------------------------------
+
+cc_on_monthly_personality_monitor = {
+	effect = {
+		if = {
+			limit = { 
+				OR = {
+					has_game_rule = cc_ai_personalities_dynamic 
+					has_game_rule = cc_ai_personalities_full 
+				} 
+			}
+
+			# cc_p_at_war — months at war vs months at peace
+			if = {
+				limit = { at_war = yes }
+				change_variable = { name = cc_p_at_war add = 1 }
+			}
+			else = { change_variable = { name = cc_p_at_war add = -1 } }
+			clamp_variable = { name = cc_p_at_war max = 48 min = 0 }
+
+			# cc_p_high_exhaustion — months above mild war exhaustion threshold
+			if = {
+				limit = { war_exhaustion >= war_exhaustion_mild_penalty }
+				change_variable = { name = cc_p_high_exhaustion add = 1 }
+			}
+			else = { change_variable = { name = cc_p_high_exhaustion add = -1 } }
+			clamp_variable = { name = cc_p_high_exhaustion max = 48 min = 0 }
+
+			# cc_p_treasury_low — months with gold below 6 months of total income
+			if = {
+				limit = { gold < { value = monthly_income_total multiply = 6 } }
+				change_variable = { name = cc_p_treasury_low add = 1 }
+			}
+			else = { change_variable = { name = cc_p_treasury_low add = -1 } }
+			clamp_variable = { name = cc_p_treasury_low max = 48 min = 0 }
+
+			# cc_p_treasury_rich — months with gold above 24 months of total income
+			if = {
+				limit = { gold >= { value = monthly_income_total multiply = 24 } }
+				change_variable = { name = cc_p_treasury_rich add = 1 }
+			}
+			else = { change_variable = { name = cc_p_treasury_rich add = -1 } }
+			clamp_variable = { name = cc_p_treasury_rich max = 48 min = 0 }
+
+			# cc_p_disloyal_subject — months with any subject below loyalty 25
+			if = {
+				limit = { any_subject = { subject_loyalty < 25 } }
+				change_variable = { name = cc_p_disloyal_subject add = 1 }
+			}
+			else = { change_variable = { name = cc_p_disloyal_subject add = -1 } }
+			clamp_variable = { name = cc_p_disloyal_subject max = 48 min = 0 }
+
+			# cc_p_coalition_threat — months with near-coalition or coalition-grade antagonism
+			if = {
+				limit = {
+					OR = {
+						has_countries_with_near_coalition_grade_antagonism = yes
+						has_countries_with_coalition_grade_antagonism = yes
+					}
+				}
+				change_variable = { name = cc_p_coalition_threat add = 1 }
+			}
+			else = { change_variable = { name = cc_p_coalition_threat add = -1 } }
+			clamp_variable = { name = cc_p_coalition_threat max = 48 min = 0 }
+
+			# cc_p_low_prestige — months with prestige below 30
+			if = {
+				limit = { prestige < 30 }
+				change_variable = { name = cc_p_low_prestige add = 1 }
+			}
+			else = { change_variable = { name = cc_p_low_prestige add = -1 } }
+			clamp_variable = { name = cc_p_low_prestige max = 48 min = 0 }
+
+			# cc_p_great_power — months as a great power
+			if = {
+				limit = { is_great_power = yes }
+				change_variable = { name = cc_p_great_power add = 1 }
+			}
+			else = { change_variable = { name = cc_p_great_power add = -1 } }
+			clamp_variable = { name = cc_p_great_power max = 48 min = 0 }
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
 # cc_on_yearly_pulse_personalities
 # Scope: country (fires once per year per country).
-# Fires context-sensitive drift events for unguarded AI countries when the
-# cc_ai_personalities_full flag is active.
-# Events fire in priority order; each has its own chance check.
-# cc_personality.5 is a broad catch-all that fires at 20% regardless of state.
+# Quick reactive drift check — fires contextual events for unguarded AI countries.
+# Priority: war > great-power-peace > low-prestige > wealthy-minor.
+# Each branch offers a boosted firing chance if the matching counter variable
+# confirms the condition has been sustained. No catch-all here — that lives in
+# the four-yearly deep analysis (cc_on_four_yearly_pulse_personalities).
 # ---------------------------------------------------------------------------
 
 cc_on_yearly_pulse_personalities = {
 	effect = {
 		if = {
 			limit = {
-				has_game_rule = cc_ai_personalities_full
+				OR = {
+					has_game_rule = cc_ai_personalities_dynamic 
+					has_game_rule = cc_ai_personalities_full 
+				}
 				is_ai = yes
 				NOT = { has_country_modifier = cc_ai_personality_guard }
 			}
 
-			# "The Winds of War" — at war
+			# "The Winds of War"
+			# Boosted to 25% if cc_p_at_war >= 9 (been at war for most of the year)
 			if = {
 				limit = { at_war = yes }
-				random = {
-					chance = 15
-					trigger_event_non_silently = cc_personality.1
+				if = {
+					limit = { var:cc_p_at_war >= 9 }
+					random = {
+						chance = 25
+						trigger_event_non_silently = cc_personality.1
+					}
+				}
+				else = {
+					random = {
+						chance = 15
+						trigger_event_non_silently = cc_personality.1
+					}
 				}
 			}
 
-			# "Imperial Ambitions" — great power, at peace
+			# "Imperial Ambitions"
+			# Boosted to 20% if cc_p_great_power >= 9 (reliably great power this year)
 			else_if = {
 				limit = {
 					is_great_power = yes
 					at_war = no
 				}
-				random = {
-					chance = 10
-					trigger_event_non_silently = cc_personality.2
+				if = {
+					limit = { var:cc_p_great_power >= 9 }
+					random = {
+						chance = 20
+						trigger_event_non_silently = cc_personality.2
+					}
+				}
+				else = {
+					random = {
+						chance = 10
+						trigger_event_non_silently = cc_personality.2
+					}
 				}
 			}
 
-			# "A Time for Caution" — low prestige
+			# "A Time for Caution"
+			# Boosted to 20% if cc_p_low_prestige >= 9 (chronically low prestige)
 			else_if = {
 				limit = { prestige < 30 }
-				random = {
-					chance = 10
-					trigger_event_non_silently = cc_personality.3
+				if = {
+					limit = { var:cc_p_low_prestige >= 9 }
+					random = {
+						chance = 20
+						trigger_event_non_silently = cc_personality.3
+					}
+				}
+				else = {
+					random = {
+						chance = 10
+						trigger_event_non_silently = cc_personality.3
+					}
 				}
 			}
 
-			# "Trade and Diplomacy" — wealthy minor
+			# "Trade and Diplomacy"
+			# Boosted to 20% if cc_p_treasury_rich >= 9 (consistently wealthy this year)
 			else_if = {
 				limit = {
 					gold > 200
 					NOT = { is_great_power = yes }
 				}
-				random = {
-					chance = 10
-					trigger_event_non_silently = cc_personality.4
+				if = {
+					limit = { var:cc_p_treasury_rich >= 9 }
+					random = {
+						chance = 20
+						trigger_event_non_silently = cc_personality.4
+					}
 				}
-			}
-
-			# "A Question of Strategy" — broad catch-all
-			random = {
-				chance = 20
-				trigger_event_non_silently = cc_personality.5
+				else = {
+					random = {
+						chance = 10
+						trigger_event_non_silently = cc_personality.4
+					}
+				}
 			}
 		}
 	}
@@ -1008,22 +1143,92 @@ cc_on_yearly_pulse_personalities = {
 
 # ---------------------------------------------------------------------------
 # cc_on_four_yearly_pulse_personalities
-# Scope: country (fires once every four year per country).
-# cc_personality.5 is a broad catch-all that fires at 20% regardless of state.
+# Scope: country (fires once every four years per country).
+# Deep analysis using accumulated counter variables (0–48 pressure scores).
+# Fires only for unguarded AI countries under the random_drift rule.
+# Uses an else_if priority chain so only the most pressing strategic
+# situation fires — prevents multiple conflicting events in one cycle.
+# Fallback: cc_personality.5 (A Question of Strategy) at 20%.
 # ---------------------------------------------------------------------------
+
 cc_on_four_yearly_pulse_personalities = {
-effect = {
+	effect = {
 		if = {
 			limit = {
-				has_game_rule = cc_ai_personalities_full
+				OR = {
+					has_game_rule = cc_ai_personalities_dynamic 
+					has_game_rule = cc_ai_personalities_full 
+				}
 				is_ai = yes
 				NOT = { has_country_modifier = cc_ai_personality_guard }
 			}
 
-			# "A Question of Strategy" — broad catch-all
-			random = {
-				chance = 20
-				trigger_event_non_silently = cc_personality.5
+			# Priority 1 — "The Exhausted Kingdom"
+			# Sustained war + sustained high exhaustion → the realm is ground down
+			if = {
+				limit = {
+					var:cc_p_at_war >= 24
+					var:cc_p_high_exhaustion >= 24
+				}
+				trigger_event_non_silently = cc_personality.60
+			}
+
+			# Priority 2 — "Victor's Ambition"
+			# Sustained war but exhaustion is low → confident, battle-hardened state
+			else_if = {
+				limit = {
+					var:cc_p_at_war >= 24
+					var:cc_p_high_exhaustion < 12
+				}
+				trigger_event_non_silently = cc_personality.61
+			}
+
+			# Priority 3 — "Surrounded on All Sides"
+			# Chronic coalition-grade antagonism from neighbours
+			else_if = {
+				limit = { var:cc_p_coalition_threat >= 24 }
+				trigger_event_non_silently = cc_personality.62
+			}
+
+			# Priority 4 — "A Kingdom in Turmoil"
+			# Recurring disloyal subjects and weak prestige → internal fracture
+			else_if = {
+				limit = {
+					var:cc_p_disloyal_subject >= 12
+					var:cc_p_low_prestige >= 12
+				}
+				trigger_event_non_silently = cc_personality.63
+			}
+
+			# Priority 5 — "The Imperial Opportunity"
+			# Reliably a great power, wealthy, mostly at peace
+			else_if = {
+				limit = {
+					var:cc_p_great_power >= 36
+					var:cc_p_treasury_rich >= 24
+					var:cc_p_at_war < 12
+				}
+				trigger_event_non_silently = cc_personality.64
+			}
+
+			# Priority 6 — "The Merchant's Way"
+			# Wealthy minor, rarely at war
+			else_if = {
+				limit = {
+					var:cc_p_treasury_rich >= 24
+					var:cc_p_at_war < 12
+					NOT = { is_great_power = yes }
+				}
+				trigger_event_non_silently = cc_personality.65
+			}
+
+			# Fallback — "A Question of Strategy"
+			# Fires if no priority condition matched. 20% chance.
+			else = {
+				random = {
+					chance = 20
+					trigger_event_non_silently = cc_personality.5
+				}
 			}
 		}
 	}
