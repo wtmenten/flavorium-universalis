@@ -1,0 +1,437 @@
+﻿
+# Cabinets and Choices — Dynamic AI Personality Events
+# Namespace: cc_personality
+#
+# IDs 1-5:   Periodic drift events (context-sensitive + broad catch-all)
+# IDs 10-19: Ottoman (TUR) inflection events
+# IDs 20-29: France (FRA) / England (ENG) inflection events
+# IDs 30-39: Muscovy (MOS) inflection events
+# IDs 40-49: Castile (CAS) inflection events
+# IDs 50-59: Sweden (SWE) inflection events
+#
+# All events fire in country scope.
+# AI option weights favor the historically-grounded choice (~70%) with a
+# meaningful alternative (~30%) to preserve some game-to-game variation.
+# Each option applies cc_ai_personality_guard to prevent drift overriding
+# a freshly-set personality.
+
+namespace = cc_personality
+
+########################
+# Drift Events (1-5)
+########################
+
+# cc_personality.1 — The Winds of War
+# Fires when an AI country is at war and unguarded.
+# Sharpens strategy toward aggression or survival instinct.
+cc_personality.1 = {
+	type = country_event
+	title = cc_personality.1.title
+	desc = cc_personality.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	option = {
+		name = cc_personality.1.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 60 }
+	}
+	option = {
+		name = cc_personality.1.b
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 40 }
+	}
+}
+
+# cc_personality.2 — Imperial Ambitions
+# Fires when a great power is at peace and unguarded.
+cc_personality.2 = {
+	type = country_event
+	title = cc_personality.2.title
+	desc = cc_personality.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.2.a
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 50 }
+	}
+	option = {
+		name = cc_personality.2.b
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 50 }
+	}
+}
+
+# cc_personality.3 — A Time for Caution
+# Fires when a country has low prestige and is unguarded.
+cc_personality.3 = {
+	type = country_event
+	title = cc_personality.3.title
+	desc = cc_personality.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.3.a
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 40 }
+	}
+	option = {
+		name = cc_personality.3.b
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 60 }
+	}
+}
+
+# cc_personality.4 — Trade and Diplomacy
+# Fires for wealthy minor powers at peace.
+cc_personality.4 = {
+	type = country_event
+	title = cc_personality.4.title
+	desc = cc_personality.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = bank
+	}
+
+	option = {
+		name = cc_personality.4.a
+		set_personality = ai_personality:ai_friendly
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 40 }
+	}
+	option = {
+		name = cc_personality.4.b
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = { base = 60 }
+	}
+}
+
+# cc_personality.5 — A Question of Strategy
+# Broad catch-all drift event. Fires at 20% annual chance for any unguarded AI country.
+# Uses weighted random_list covering all 7 personalities, adjusted by game state.
+cc_personality.5 = {
+	type = country_event
+	title = cc_personality.5.title
+	desc = cc_personality.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	# For player-controlled countries: choose a strategic direction.
+	# AI resolves via ai_chance weights on each option.
+
+	option = {
+		name = cc_personality.5.aggressive
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 15
+			modifier = { add = 10 at_war = yes }
+			modifier = { add = 5 is_great_power = yes }
+		}
+	}
+	option = {
+		name = cc_personality.5.expansionist
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 15
+			modifier = { add = 10 is_great_power = yes }
+			modifier = { add = 5 num_subjects < 3 }
+		}
+	}
+	option = {
+		name = cc_personality.5.defensive
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 15
+			modifier = { add = 10 prestige < 30 }
+			modifier = { add = 5 at_war = yes }
+		}
+	}
+	option = {
+		name = cc_personality.5.cautious
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 15
+			modifier = { add = 5 prestige < 50 }
+		}
+	}
+	option = {
+		name = cc_personality.5.opportunistic
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 10
+			modifier = { add = 10 gold > 100 }
+		}
+	}
+	option = {
+		name = cc_personality.5.isolationist
+		set_personality = ai_personality:ai_isolationist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 10
+			modifier = { add = 10 num_subjects < 2 }
+			modifier = {
+				add = 5
+				capital = {
+					OR = {
+						sub_continent = sub_continent:east_asia
+						sub_continent = sub_continent:south_east_asia
+					}
+				}
+			}
+		}
+	}
+	option = {
+		name = cc_personality.5.friendly
+		set_personality = ai_personality:ai_friendly
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 15 }
+		ai_chance = {
+			base = 10
+			modifier = { add = 5 at_war = no }
+		}
+	}
+}
+
+########################
+# Ottoman Inflection Events (10-19)
+########################
+
+# cc_personality.10 — The Conquering Sultan
+# Fires for TUR at Age 3 (Discovery). Peak of Ottoman power — Selim I / Suleiman the Magnificent.
+# Historical: maintain aggressive drive. Alternative: pivot to imperial consolidation.
+cc_personality.10 = {
+	type = country_event
+	title = cc_personality.10.title
+	desc = cc_personality.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	option = {
+		name = cc_personality.10.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.10.b
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+# cc_personality.11 — The Long Stagnation
+# Fires for TUR at Age 4 (Reformation). Ottoman decline begins; frontiers stabilize.
+# Historical: shift to defensive posture. Alternative: cautious realpolitik.
+cc_personality.11 = {
+	type = country_event
+	title = cc_personality.11.title
+	desc = cc_personality.11.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.11.a
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.11.b
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+########################
+# France / England Inflection Events (20-29)
+########################
+
+# cc_personality.20 — The Sun King Rises
+# Fires for FRA at Age 5 (Absolutism). Louis XIV and French hegemonic ambition.
+# Historical: aggressive wars of expansion. Alternative: cautious balance of power play.
+cc_personality.20 = {
+	type = country_event
+	title = cc_personality.20.title
+	desc = cc_personality.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_personality.20.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.20.b
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+# cc_personality.21 — Britannia's Maritime Empire
+# Fires for ENG at Age 5 (Absolutism). British maritime and colonial ascendancy.
+# Historical: aggressive imperial expansion. Alternative: opportunistic trade empire.
+cc_personality.21 = {
+	type = country_event
+	title = cc_personality.21.title
+	desc = cc_personality.21.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_personality.21.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.21.b
+		set_personality = ai_personality:ai_opportunistic
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+########################
+# Muscovy Inflection Event (30-39)
+########################
+
+# cc_personality.30 — The Terrible Tsar
+# Fires for MOS at Age 3 (Discovery). Ivan IV's brutal centralization and expansion.
+# Historical: aggressive conquest. Alternative: expansionist but more measured.
+cc_personality.30 = {
+	type = country_event
+	title = cc_personality.30.title
+	desc = cc_personality.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	option = {
+		name = cc_personality.30.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.30.b
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+########################
+# Castile Inflection Event (40-49)
+########################
+
+# cc_personality.40 — The New World Empire
+# Fires for CAS at Age 3 (Discovery). Spain's colonial empire and Counter-Reformation crusade.
+# Historical: aggressive (crusading imperial power). Alternative: expansionist consolidation.
+cc_personality.40 = {
+	type = country_event
+	title = cc_personality.40.title
+	desc = cc_personality.40.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_personality.40.a
+		set_personality = ai_personality:ai_aggressive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.40.b
+		set_personality = ai_personality:ai_expansionist
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
+
+########################
+# Sweden Inflection Event (50-59)
+########################
+
+# cc_personality.50 — The Great Northern Reckoning
+# Fires for SWE at Age 5 (Absolutism). After Carolus Rex and the Great Northern War,
+# Sweden's empire is broken; it must rebuild or retrench.
+# Historical: defensive posture. Alternative: cautious reorientation.
+cc_personality.50 = {
+	type = country_event
+	title = cc_personality.50.title
+	desc = cc_personality.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_personality.50.a
+		set_personality = ai_personality:ai_defensive
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 70 }
+	}
+	option = {
+		name = cc_personality.50.b
+		set_personality = ai_personality:ai_cautious
+		add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
+		ai_chance = { base = 30 }
+	}
+}
