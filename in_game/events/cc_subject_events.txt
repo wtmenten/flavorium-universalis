@@ -29,7 +29,7 @@ cc.101 = {
 	option = {
 		name = cc.shadow.1.a
 		grant_estate_privilege = estate_privilege:ep_noble_shadow_network
-		trigger_event_non_silently = { id = cc.102 months = 12 }
+		trigger_event_silently = { id = cc.102 months = 24 }
 	}
 
 	option = {
@@ -48,6 +48,10 @@ cc.102 = {
 
 	illustration_tags = {
 		10 = interior
+	}
+
+	trigger = {
+		has_estate_privilege = estate_privilege:ep_noble_shadow_network
 	}
 
 	option = {
@@ -244,7 +248,7 @@ cc.107 = {
 
 	option = {
 		name = cc.arts.2.a
-		add_gold = -50
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
 		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
 		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 	}
@@ -314,7 +318,7 @@ cc.109 = {
 
 	option = {
 		name = cc.naval.2.a
-		add_gold = -30
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
 		add_country_modifier = {
 			modifier = cc_thriving_port_modifier
 			years = 15
@@ -494,7 +498,7 @@ cc.120 = {
 	# Pay off the governor's court
 	option = {
 		name = cc.gov.1.a
-		add_gold = -100
+		add_gold = { value = monthly_income_trade_and_tax multiply = -8 }
 		scope:governor = {
 			set_variable = { name = cc_gov_ambitions_cooldown value = yes }
 		}
@@ -624,7 +628,7 @@ cc.121 = {
 	# Reduce extraction pressure — cost gold, grant tax relief
 	option = {
 		name = cc.tax.1.a
-		add_gold = -75
+		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
 		scope:tax_lord = {
 			add_country_modifier = { modifier = cc_subject_tax_relief }
 			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
@@ -689,10 +693,10 @@ cc.125 = {
 		}
 	}
 
-	# Pay off the neighbors — 100 gold, opinion restored
+	# Pay off the neighbors — gold proportional to income, opinion restored
 	option = {
 		name = cc.tax.2.a
-		add_gold = -100
+		add_gold = { value = monthly_income_trade_and_tax multiply = -8 }
 		scope:angry_neighbor = {
 			add_opinion = { modifier = opinion_compensated target = root }
 		}
@@ -752,11 +756,11 @@ cc.122 = {
 		}
 	}
 
-	# Sanction the raid — prestige, 50 gold, but neighbor opinion hit
+	# Sanction the raid — prestige, gold, but neighbor opinion hit
 	option = {
 		name = cc.march.1.a
 		add_prestige = prestige_mild_bonus
-		add_gold = 50
+		add_gold = { value = monthly_income_trade_and_tax multiply = 4 }
 		scope:raided_neighbor = {
 			add_opinion = { modifier = opinion_march_raided target = root }
 		}
@@ -808,7 +812,7 @@ cc.123 = {
 	# Appease with gold and concessions
 	option = {
 		name = cc.march.2.a
-		add_gold = -200
+		add_gold = { value = monthly_income_trade_and_tax multiply = -20 }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.10 }
 		scope:march_lord = {
 			set_variable = { name = cc_march_independence_cooldown value = yes years = 20 }
@@ -903,10 +907,10 @@ cc.126 = {
 		}
 	}
 
-	# Mediate the dispute — 100 gold, moderate outcome for all
+	# Mediate the dispute — gold proportional to income, moderate outcome for all
 	option = {
 		name = cc.march.3.c
-		add_gold = -100
+		add_gold = { value = monthly_income_trade_and_tax multiply = -8 }
 		scope:march_lord = {
 			set_variable = { name = cc_march_threat_cooldown value = yes }
 		}
@@ -1179,5 +1183,799 @@ cc.203 = {
 		scope:march_rival = {
 			add_liberty_desire = liberty_desire_weak_minus
 		}
+	}
+}
+
+###############################################################################
+# SHADOW NETWORK OPERATIONS (cc.140–143)
+# Ongoing events for shadow_state subjects and the shadow court bureau.
+# Fired from yearly_country_pulse when conditions are met.
+###############################################################################
+
+# "Intelligence from the Shadows"
+# A shadow state delivers actionable intelligence on a neighboring power.
+# Cooldown: 8 years.
+cc.140 = {
+	type = country_event
+	title = cc.shadow.intel.1.title
+	desc = cc.shadow.intel.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_bureaucracy_of_type = bureaucracy_type:cc_shadow_court_bureau
+		any_subject = { is_subject_type = shadow_state }
+		any_neighbor_country = {
+			NOT = { is_subject_of = root }
+			NOT = { is_at_war_with = root }
+		}
+		NOT = { has_variable = cc_shadow_intel_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_intel_cooldown value = yes years = 8 }
+		random_subject = {
+			limit = { is_subject_type = shadow_state }
+			save_scope_as = shadow_agent
+		}
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_subject_of = root }
+				NOT = { is_at_war_with = root }
+			}
+			save_scope_as = intel_target
+		}
+	}
+
+	# Leverage the intelligence diplomatically
+	option = {
+		name = cc.shadow.intel.1.a
+		add_opinion = {
+			target = scope:intel_target
+			modifier = cc_diplomatic_favor
+		}
+		add_prestige = prestige_weak_bonus
+		scope:shadow_agent = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+
+	# Share the intelligence with an ally
+	option = {
+		name = cc.shadow.intel.1.b
+		trigger = {
+			any_country = {
+				is_allied_with = { target = root }
+			}
+		}
+		random_country = {
+			limit = { is_allied_with = { target = root } }
+			add_opinion = {
+				target = root
+				modifier = cc_diplomatic_favor
+			}
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Reward the network and discard the intel
+	option = {
+		name = cc.shadow.intel.1.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 }
+		add_prestige = prestige_weak_bonus
+		scope:shadow_agent = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+}
+
+# "Shadow States in Conflict"
+# Two shadow states come into competition over the same region or contact.
+# Cooldown: 12 years.
+cc.141 = {
+	type = country_event
+	title = cc.shadow.conflict.1.title
+	desc = cc.shadow.conflict.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_shadow_conflict_cooldown }
+		any_subject = { is_subject_type = shadow_state }
+		count_subjects = {
+			target = { is_subject_type = shadow_state }
+			value >= 2
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_conflict_cooldown value = yes years = 12 }
+		random_subject = {
+			limit = { is_subject_type = shadow_state }
+			save_scope_as = shadow_a
+		}
+		random_subject = {
+			limit = {
+				is_subject_type = shadow_state
+				NOT = { this = scope:shadow_a }
+			}
+			save_scope_as = shadow_b
+		}
+	}
+
+	# Arbitrate — both networks stand down, at cost
+	option = {
+		name = cc.shadow.conflict.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		scope:shadow_a = { add_liberty_desire = liberty_desire_weak_minus }
+		scope:shadow_b = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+
+	# Let one dominate — one network expands, the other chafes
+	option = {
+		name = cc.shadow.conflict.1.b
+		scope:shadow_a = { add_liberty_desire = liberty_desire_mild_minus }
+		scope:shadow_b = { add_liberty_desire = liberty_desire_mild_plus }
+	}
+
+	# Ignore the conflict — both grow restless
+	option = {
+		name = cc.shadow.conflict.1.c
+		scope:shadow_a = { add_liberty_desire = liberty_desire_weak_plus }
+		scope:shadow_b = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+# "A Shadow State Seeks Legitimacy"
+# A shadow state, emboldened by its covert role, lobbies for formal recognition.
+# Cooldown: 15 years.
+cc.142 = {
+	type = country_event
+	title = cc.shadow.legit.1.title
+	desc = cc.shadow.legit.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = { is_subject_type = shadow_state }
+		NOT = { has_variable = cc_shadow_legit_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_legit_cooldown value = yes years = 15 }
+		random_subject = {
+			limit = { is_subject_type = shadow_state }
+			save_scope_as = petitioner
+		}
+	}
+
+	# Upgrade to puppet — formal recognition, reduced secrecy
+	option = {
+		name = cc.shadow.legit.1.a
+		trigger = { has_advance = puppet_state_advance }
+		scope:petitioner = {
+			change_subject_type = subject_type:puppet_state
+		}
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Reward loyalty without promotion — a generous gift buys silence
+	option = {
+		name = cc.shadow.legit.1.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
+		scope:petitioner = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Rebuff the petition — they must remain hidden
+	option = {
+		name = cc.shadow.legit.1.c
+		scope:petitioner = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+	}
+}
+
+# "The Network Goes Silent"
+# The shadow court bureau loses contact with one of its shadow states.
+# Cooldown: 10 years.
+cc.143 = {
+	type = country_event
+	title = cc.shadow.dark.1.title
+	desc = cc.shadow.dark.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_bureaucracy_of_type = bureaucracy_type:cc_shadow_court_bureau
+		any_subject = { is_subject_type = shadow_state }
+		NOT = { has_variable = cc_shadow_dark_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_shadow_dark_cooldown value = yes years = 10 }
+		random_subject = {
+			limit = { is_subject_type = shadow_state }
+			save_scope_as = dark_agent
+		}
+	}
+
+	# Send agents to re-establish contact
+	option = {
+		name = cc.shadow.dark.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Wait and hope the network resurfaces
+	option = {
+		name = cc.shadow.dark.1.b
+		add_country_modifier = {
+			modifier = cc_intl_shadow_operations
+			years = -3
+			mode = add_and_extend
+		}
+		scope:dark_agent = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+###############################################################################
+# CLIENT STATE / PUPPET STATE EVENTS (cc.150–cc.152)
+###############################################################################
+
+# "The Client State Flexes Its Autonomy"
+# A client state begins acting independently in a neighboring dispute.
+# Cooldown: 10 years per subject.
+cc.150 = {
+	type = country_event
+	title = cc.client.1.title
+	desc = cc.client.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = client_state
+			NOT = { has_variable = cc_client_autonomy_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { is_at_war_with = root }
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = client_state
+				NOT = { has_variable = cc_client_autonomy_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+			}
+			save_scope_as = client
+		}
+		scope:client = {
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+				save_scope_as = dispute_neighbor
+			}
+		}
+	}
+
+	# Rein them in — the client loses face, but respects the leash
+	option = {
+		name = cc.client.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		scope:client = {
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+			add_liberty_desire = liberty_desire_weak_plus
+			set_variable = { name = cc_client_autonomy_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Let them act — the client is pleased, but the neighbor is not
+	option = {
+		name = cc.client.1.b
+		scope:dispute_neighbor = {
+			add_opinion = { modifier = opinion_expansionist_threat target = root }
+		}
+		scope:client = {
+			add_liberty_desire = liberty_desire_mild_minus
+			set_variable = { name = cc_client_autonomy_cooldown value = yes years = 10 }
+		}
+	}
+}
+
+# "The Puppet's Strings"
+# A puppet state demands formal recognition at court.
+# Cooldown: 12 years per subject.
+cc.151 = {
+	type = country_event
+	title = cc.puppet.1.title
+	desc = cc.puppet.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = puppet_state
+			NOT = { has_variable = cc_puppet_recognition_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				NOT = { has_variable = cc_puppet_recognition_cooldown }
+			}
+			save_scope_as = puppet
+		}
+		scope:puppet = {
+			set_variable = { name = cc_puppet_recognition_cooldown value = yes years = 12 }
+		}
+	}
+
+	# Grant symbolic recognition — they are content, and quieter
+	option = {
+		name = cc.puppet.1.a
+		add_prestige = prestige_weak_penalty
+		scope:puppet = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_opinion = { modifier = cc_diplomatic_favor target = root }
+		}
+	}
+
+	# Deny recognition firmly — they will remember
+	option = {
+		name = cc.puppet.1.b
+		scope:puppet = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Buy their silence — gold makes the strings invisible
+	option = {
+		name = cc.puppet.1.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -5 }
+		scope:puppet = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+}
+
+# "Client State and Puppet at Odds"
+# A client state attempts to negotiate directly with a puppet, bypassing the overlord.
+# Cooldown: 15 years (on overlord scope).
+cc.152 = {
+	type = country_event
+	title = cc.client.puppet.1.title
+	desc = cc.client.puppet.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_client_puppet_rivalry_cooldown }
+		any_subject = { is_subject_type = client_state }
+		any_subject = { is_subject_type = puppet_state }
+	}
+
+	immediate = {
+		set_variable = { name = cc_client_puppet_rivalry_cooldown value = yes years = 15 }
+		random_subject = {
+			limit = { is_subject_type = client_state }
+			save_scope_as = the_client
+		}
+		random_subject = {
+			limit = { is_subject_type = puppet_state }
+			save_scope_as = the_puppet
+		}
+	}
+
+	# Forbid direct contact — the overlord's authority is clear
+	option = {
+		name = cc.client.puppet.1.a
+		scope:the_client = { add_liberty_desire = liberty_desire_weak_plus }
+		scope:the_puppet = { add_liberty_desire = liberty_desire_weak_plus }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Allow the contact — both subjects grow more independent
+	option = {
+		name = cc.client.puppet.1.b
+		scope:the_client = { add_liberty_desire = liberty_desire_mild_minus }
+		scope:the_puppet = { add_liberty_desire = liberty_desire_mild_minus }
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Mediate the contact formally
+	option = {
+		name = cc.client.puppet.1.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		scope:the_client = { add_liberty_desire = liberty_desire_weak_minus }
+		scope:the_puppet = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+}
+
+###############################################################################
+# ELITE ENCLAVE / PALATINATE EVENTS (cc.160–cc.161)
+###############################################################################
+
+# "The Enclave Lord's Cultural Patronage"
+# An elite enclave subject is producing remarkable cultural output.
+# Cooldown: 10 years per subject.
+cc.160 = {
+	type = country_event
+	title = cc.enclave.1.title
+	desc = cc.enclave.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = elite_enclave
+			NOT = { has_variable = cc_enclave_culture_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = elite_enclave
+				NOT = { has_variable = cc_enclave_culture_cooldown }
+			}
+			save_scope_as = enclave
+		}
+		scope:enclave = {
+			set_variable = { name = cc_enclave_culture_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Fund the cultural project — tradition grows, enclave is grateful
+	option = {
+		name = cc.enclave.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
+		scope:enclave = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Absorb the talent into the capital — prestige, enclave chafes
+	option = {
+		name = cc.enclave.1.b
+		add_prestige = prestige_mild_bonus
+		scope:enclave = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+# "The Palatinate Demands Recognition"
+# A palatinate subject wants expanded noble privileges formally granted.
+# Cooldown: 12 years per subject.
+cc.161 = {
+	type = country_event
+	title = cc.palatinate.1.title
+	desc = cc.palatinate.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_recognition_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_recognition_cooldown }
+			}
+			save_scope_as = palatinate_lord
+		}
+		scope:palatinate_lord = {
+			set_variable = { name = cc_palatinate_recognition_cooldown value = yes years = 12 }
+		}
+	}
+
+	# Grant expanded noble privileges — nobles satisfied, palatinate loyal
+	option = {
+		name = cc.palatinate.1.a
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+		scope:palatinate_lord = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Refuse — the palatinate grows restless
+	option = {
+		name = cc.palatinate.1.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
+		scope:palatinate_lord = { add_liberty_desire = liberty_desire_mild_plus }
+	}
+
+	# Negotiate a middle path — cost gold, partial satisfaction
+	option = {
+		name = cc.palatinate.1.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		scope:palatinate_lord = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+}
+
+###############################################################################
+# ASSOCIATED REPUBLIC EVENTS (cc.170–cc.171)
+###############################################################################
+
+# "The Republic's Scholarly Exchange"
+# An associated republic's scholars wish to establish a formal exchange program.
+# Cooldown: 12 years per subject.
+cc.170 = {
+	type = country_event
+	title = cc.republic.1.title
+	desc = cc.republic.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = associated_republic
+			NOT = { has_variable = cc_republic_exchange_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = associated_republic
+				NOT = { has_variable = cc_republic_exchange_cooldown }
+			}
+			save_scope_as = republic
+		}
+		scope:republic = {
+			set_variable = { name = cc_republic_exchange_cooldown value = yes years = 12 }
+		}
+	}
+
+	# Fund the program — research benefits the realm
+	option = {
+		name = cc.republic.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -5 }
+		add_country_modifier = {
+			modifier = cc_scholarly_exchange_modifier
+			years = 10
+			mode = add_and_extend
+		}
+		scope:republic = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Absorb a scholar into the cabinet — a cabinet member gains a trait
+	option = {
+		name = cc.republic.1.b
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				NOT = { has_trait_category = cabinet }
+			}
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait_category = cabinet }
+			}
+			add_trait = trait:learned_counselor
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Decline the proposal
+	option = {
+		name = cc.republic.1.c
+		scope:republic = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+# "Republican Dissent"
+# The republic's burgher class is uncomfortable with the overlord's policies.
+# Cooldown: 10 years per subject.
+cc.171 = {
+	type = country_event
+	title = cc.republic.2.title
+	desc = cc.republic.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = associated_republic
+			NOT = { has_variable = cc_republic_dissent_cooldown }
+		}
+		"estate_satisfaction(estate_type:burghers_estate)" < 0.40
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = associated_republic
+				NOT = { has_variable = cc_republic_dissent_cooldown }
+			}
+			save_scope_as = republic
+		}
+		scope:republic = {
+			set_variable = { name = cc_republic_dissent_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Make concessions — calm the burghers, cost gold
+	option = {
+		name = cc.republic.2.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		scope:republic = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+
+	# Ignore the dissent — the republic grows restless
+	option = {
+		name = cc.republic.2.b
+		scope:republic = { add_liberty_desire = liberty_desire_mild_plus }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty }
+	}
+}
+
+###############################################################################
+# CROWN DEPENDENCY / PROTECTORATE EVENTS (cc.180–cc.181)
+###############################################################################
+
+# "The Crown Dependency Seeks Favor"
+# A crown dependency invokes the royal marriage connection to request aid.
+# Cooldown: 10 years per subject.
+cc.180 = {
+	type = country_event
+	title = cc.crowndep.1.title
+	desc = cc.crowndep.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = crown_dependency
+			NOT = { has_variable = cc_crowndep_favor_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				NOT = { has_variable = cc_crowndep_favor_cooldown }
+			}
+			save_scope_as = dependency
+		}
+		scope:dependency = {
+			set_variable = { name = cc_crowndep_favor_cooldown value = yes years = 10 }
+		}
+	}
+
+	# Support their request — prestige investment, diplomatic favor
+	option = {
+		name = cc.crowndep.1.a
+		add_prestige = prestige_weak_penalty
+		scope:dependency = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_opinion = { modifier = cc_diplomatic_favor target = root }
+		}
+	}
+
+	# Send gold — practical aid over sentiment
+	option = {
+		name = cc.crowndep.1.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		scope:dependency = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Decline — the bond of blood is not a blank check
+	option = {
+		name = cc.crowndep.1.c
+		scope:dependency = {
+			add_liberty_desire = liberty_desire_weak_plus
+			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+	}
+}
+
+# "Protectorate Growing Pains"
+# A protectorate subject is struggling and requests support from the overlord.
+# Cooldown: 8 years per subject.
+cc.181 = {
+	type = country_event
+	title = cc.protectorate.1.title
+	desc = cc.protectorate.1.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = protectorate
+			NOT = { has_variable = cc_protectorate_pains_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = protectorate
+				NOT = { has_variable = cc_protectorate_pains_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_protectorate_pains_cooldown value = yes years = 8 }
+		}
+	}
+
+	# Provide military aid — a modifier that stabilizes the ward
+	option = {
+		name = cc.protectorate.1.a
+		scope:ward = {
+			add_country_modifier = { modifier = cc_subject_tax_relief }
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Send gold — let them handle it themselves
+	option = {
+		name = cc.protectorate.1.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+
+	# Convert to client_state if conditions allow
+	option = {
+		name = cc.protectorate.1.c
+		trigger = { has_advance = client_state_advance }
+		scope:ward = {
+			change_subject_type = subject_type:client_state
+		}
+		add_prestige = prestige_weak_bonus
 	}
 }

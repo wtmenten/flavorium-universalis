@@ -763,6 +763,7 @@ roman_administrator = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		societal_value:latinization_vs_hellenization < -30
 	}
 
 	modifier = {
@@ -780,6 +781,7 @@ hellenistic_scholar = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		societal_value:latinization_vs_hellenization > 30
 	}
 
 	modifier = {
@@ -799,6 +801,7 @@ confucian_mandarin = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		societal_value:sinicized_vs_unsinicized < -30
 	}
 
 	modifier = {
@@ -816,6 +819,7 @@ steppe_warlord_advisor = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		societal_value:sinicized_vs_unsinicized > 30
 	}
 
 	modifier = {
@@ -841,6 +845,8 @@ christian_diplomat = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		religion.group = religion_group:christian
+		NOT = { religion = religion:orthodox }
 	}
 
 	modifier = {
@@ -858,6 +864,7 @@ caliphate_diplomat = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		religion.group = religion_group:muslim
 	}
 
 	modifier = {
@@ -875,6 +882,7 @@ brahmin_counselor = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		religion.group = religion_group:dharmic
 	}
 
 	modifier = {
@@ -892,6 +900,7 @@ dharma_minister = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		religion.group = religion_group:buddhist
 	}
 
 	modifier = {
@@ -911,6 +920,7 @@ renaissance_patron = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		capital.sub_continent = sub_continent:western_europe
 	}
 
 	modifier = {
@@ -928,6 +938,12 @@ griot_diplomat = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			capital.sub_continent = sub_continent:west_africa
+			capital.sub_continent = sub_continent:central_africa
+			capital.sub_continent = sub_continent:east_africa
+			capital.sub_continent = sub_continent:southern_africa
+		}
 	}
 
 	modifier = {
@@ -945,6 +961,10 @@ steppe_strategos = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			capital.sub_continent = sub_continent:central_asia
+			capital.sub_continent = sub_continent:north_asia
+		}
 	}
 
 	modifier = {
@@ -962,6 +982,7 @@ mughal_administrator = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		capital.sub_continent = sub_continent:south_asia
 	}
 
 	modifier = {
@@ -979,6 +1000,7 @@ maritime_champion = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		num_of_ports >= 3
 	}
 
 	modifier = {
@@ -996,6 +1018,7 @@ ecumenical_patriarch_advisor = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		religion = religion:orthodox
 	}
 
 	modifier = {
@@ -1013,6 +1036,10 @@ new_world_pioneer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			capital.sub_continent = sub_continent:north_america
+			capital.sub_continent = sub_continent:south_america
+		}
 	}
 
 	modifier = {
@@ -1039,6 +1066,7 @@ infantry_drillmaster = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 33
 	}
 
 	modifier = {
@@ -1055,6 +1083,7 @@ scout_captain = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 33
 	}
 
 	modifier = {
@@ -1071,6 +1100,7 @@ military_engineer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 33
 	}
 
 	modifier = {
@@ -1089,6 +1119,7 @@ commissariat_officer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 50
 	}
 
 	modifier = {
@@ -1106,6 +1137,7 @@ cavalry_marshal = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 50
 	}
 
 	modifier = {
@@ -1123,6 +1155,7 @@ siege_engineer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 50
 	}
 
 	modifier = {
@@ -1140,6 +1173,7 @@ supreme_commander = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		mil > 66
 	}
 
 	modifier = {
@@ -1166,6 +1200,8 @@ parliamentary_broker = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		dip > 50
+		modifier:has_a_parliamentary_system = yes
 	}
 
 	modifier = {
@@ -1182,6 +1218,7 @@ diplomatic_attache = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		dip > 50
 	}
 
 	modifier = {
@@ -1199,6 +1236,7 @@ grand_chancellor = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		dip > 66
 	}
 
 	modifier = {
@@ -1207,6 +1245,102 @@ grand_chancellor = {
 		diplomatic_reputation = 1
 		diplomatic_annexation_cost = -0.15
 		parliament_base_support = 0.06
+	}
+}
+
+
+# ============================================================
+# FAMILY F — ACTION-FORGED TRAITS
+# Granted via cc_cond.30-34 when a minister performs specific cabinet actions.
+# ============================================================
+
+# cc_cond.30 — Integration Specialist (integrate_area or integrate_province)
+seasoned_integrator = {
+	category = cabinet
+	custom_tags = { administrative diplomatic }
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		global_integration_speed_modifier = 0.10
+		diplomatic_annexation_cost = -0.08
+	}
+}
+
+# cc_cond.31 — Colonial Strategist (colonization actions)
+frontier_administrator = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		colonial_migration_size_modifier = 0.08
+		exploration_mission_speed = 0.06
+	}
+}
+
+# cc_cond.32 — Development Commissioner (develop_province action)
+development_patron = {
+	category = cabinet
+	custom_tags = { administrative economical }
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		global_monthly_development = 0.004
+		global_build_buildings_cost = -0.05
+	}
+}
+
+# cc_cond.33 — Shadow Handler (counter_espionage_action)
+espionage_director = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		spy_network_construction = 0.15
+		diplomatic_reputation = 1
+	}
+}
+
+# cc_cond.34 — Treasury Inspector (reform_taxation_system or reduce_inflation action)
+treasury_enforcer = {
+	category = cabinet
+	custom_tags = { administrative economical }
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		court_spending_cost_modifier = -0.06
+		country_cabinet_efficiency = 0.05
+	}
+}
+
+
+# ============================================================
+# RETIRED LEGEND — allow = { always = no }
+# Granted by cc_legacy.1 option A when a senior minister passes
+# their notable cabinet trait to a protege. Tracks legacy modifier
+# via cc_retired_legend_type character variable.
+# ============================================================
+
+retired_legend = {
+	category = cabinet
+	flavor = personality
+
+	allow = { always = no }
+
+	modifier = {
+		replace_cabinet_member_cost_modifier = 0.15
+		country_cabinet_efficiency = 0.03
 	}
 }
 

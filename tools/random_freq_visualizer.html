@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Event Frequency Visualizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <header class="border-b border-slate-700 pb-4">
+            <h1 class="text-3xl font-extrabold text-indigo-400">Random Event Frequency Visualizer</h1>
+            <p class="text-slate-400 text-sm mt-1">Model, tune, and visualize single vs. multi-trigger (re-triggerable) random processes normalized by years.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl space-y-6 h-fit">
+                <h2 class="text-xl font-bold text-slate-200">Parameters</h2>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-300">
+                        Check-in Interval (<span class="italic">Every X Months</span>)
+                    </label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setFreq(1)" id="btn-1" class="freq-btn py-2 text-center bg-slate-700 hover:bg-indigo-600 rounded-lg font-semibold transition text-sm">1</button>
+                        <button onclick="setFreq(6)" id="btn-6" class="freq-btn py-2 text-center bg-slate-700 hover:bg-indigo-600 rounded-lg font-semibold transition text-sm">6</button>
+                        <button onclick="setFreq(12)" id="btn-12" class="freq-btn py-2 text-center bg-indigo-600 rounded-lg font-semibold transition text-sm">12</button>
+                        <button onclick="setFreq(48)" id="btn-48" class="freq-btn py-2 text-center bg-slate-700 hover:bg-indigo-600 rounded-lg font-semibold transition text-sm">48</button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm font-medium text-slate-300">
+                        <span>Trigger Chance per Check-in</span>
+                        <span id="chance-val" class="text-indigo-400 font-bold">25%</span>
+                    </div>
+                    <input type="range" id="param-chance" min="1" max="100" value="25" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm font-medium text-slate-300">
+                        <span>Timeline Horizon</span>
+                        <span id="horizon-val" class="text-indigo-400 font-bold">10 Years</span>
+                    </div>
+                    <input type="range" id="param-horizon" min="1" max="50" value="10" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>1 Year</span>
+                        <span>50 Years</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/40 p-4 rounded-lg border border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label for="param-retrigger" class="block font-semibold text-slate-200 text-sm cursor-pointer">Allow Re-triggering</label>
+                            <p class="text-xs text-slate-400 mt-0.5">Can the event happen multiple times?</p>
+                        </div>
+                        <input type="checkbox" id="param-retrigger" checked
+                               class="w-5 h-5 rounded text-indigo-600 bg-slate-700 border-slate-600 focus:ring-indigo-500 cursor-pointer accent-indigo-500">
+                    </div>
+                </div>
+
+                <hr class="border-slate-700">
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold tracking-wider uppercase text-slate-400">First-Occurrence Metrics</h3>
+                    
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                        <div class="text-xs text-slate-400">Avg. Time to First Trigger</div>
+                        <div id="stat-avg" class="text-2xl font-bold text-emerald-400">4.0 <span class="text-xs font-normal text-slate-400">years</span></div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                        <div class="text-xs text-slate-400">Standard Deviation (&sigma;)</div>
+                        <div id="stat-std" class="text-2xl font-bold text-amber-400">3.5 <span class="text-xs font-normal text-slate-400">years</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="chart-primary-title" class="text-xl font-bold text-slate-200">Probability Distribution per Year</h2>
+                        <span id="chart-badge" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-400">Independent Check-ins</span>
+                    </div>
+                    <div class="relative h-60 w-full">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-slate-200">Expected Total Event Accumulation</h2>
+                        <span class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-400">Growth Over Time</span>
+                    </div>
+                    <div class="relative h-60 w-full">
+                        <canvas id="accumulationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentFreq = 12;
+        let currentChance = 0.25;
+        let horizonYears = 10;
+        let allowRetrigger = true;
+        
+        let distChartInstance = null;
+        let accumChartInstance = null;
+
+        const chanceSlider = document.getElementById('param-chance');
+        const chanceValDisplay = document.getElementById('chance-val');
+        const horizonSlider = document.getElementById('param-horizon');
+        const horizonValDisplay = document.getElementById('horizon-val');
+        const retriggerCheckbox = document.getElementById('param-retrigger');
+        const statAvgDisplay = document.getElementById('stat-avg');
+        const statStdDisplay = document.getElementById('stat-std');
+        const primaryTitle = document.getElementById('chart-primary-title');
+        const chartBadge = document.getElementById('chart-badge');
+
+        // Setup Event Listeners
+        chanceSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            chanceValDisplay.innerText = `${val}%`;
+            currentChance = val / 100;
+            updateDashboard();
+        });
+
+        horizonSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            horizonValDisplay.innerText = `${val} ${val === 1 ? 'Year' : 'Years'}`;
+            horizonYears = val;
+            updateDashboard();
+        });
+
+        retriggerCheckbox.addEventListener('change', (e) => {
+            allowRetrigger = e.target.checked;
+            updateDashboard();
+        });
+
+        function setFreq(months) {
+            currentFreq = months;
+            document.querySelectorAll('.freq-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-slate-700');
+            });
+            document.getElementById(`btn-${months}`).classList.remove('bg-slate-700');
+            document.getElementById(`btn-${months}`).classList.add('bg-indigo-600');
+            
+            updateDashboard();
+        }
+
+        function calculateGeometricStats(p, freqMonths) {
+            const meanTrials = 1 / p;
+            const avgMonths = meanTrials * freqMonths;
+            const avgYears = avgMonths / 12;
+
+            const varianceTrials = (1 - p) / Math.pow(p, 2);
+            const stdDevMonths = Math.sqrt(varianceTrials) * freqMonths;
+            const stdDevYears = stdDevMonths / 12;
+
+            return {
+                avg: avgYears.toFixed(2),
+                std: stdDevYears.toFixed(2)
+            };
+        }
+
+        function updateDashboard() {
+            // 1. Calculate Summary Stats (in Years)
+            const baseStats = calculateGeometricStats(currentChance, currentFreq);
+            statAvgDisplay.innerHTML = `${baseStats.avg} <span class="text-xs font-normal text-slate-400">years</span>`;
+            statStdDisplay.innerHTML = `${baseStats.std} <span class="text-xs font-normal text-slate-400">years</span>`;
+
+            const labels = [];
+            const primaryDataPoints = [];
+            const accumulationDataPoints = [];
+            
+            let remainingProbability = 1.0; 
+            let expectedAccumulation = 0;
+
+            // Update Header Elements Contextually
+            if (allowRetrigger) {
+                primaryTitle.innerText = "Trigger Probability Distribution per Year";
+                chartBadge.innerText = "Independent Check-ins";
+            } else {
+                primaryTitle.innerText = "Probability Distribution (First Trigger Only)";
+                chartBadge.innerText = "Single-Occurrence Timeline";
+            }
+
+            // Convert frequency to fractional year steps
+            const stepInYears = currentFreq / 12;
+            const totalMonthsHorizon = horizonYears * 12;
+
+            // Loop step-by-step month by month to guarantee analytical step checks
+            for (let m = 1; m <= totalMonthsHorizon; m++) {
+                const currentYearLocation = m / 12;
+
+                if (m % currentFreq === 0) {
+                    // It's a check-in point! Create entry point data
+                    labels.push(`Yr ${currentYearLocation.toFixed(2).replace('.00', '')}`);
+                    
+                    if (allowRetrigger) {
+                        primaryDataPoints.push(currentChance * 100);
+                        expectedAccumulation += currentChance;
+                    } else {
+                        const stepProb = remainingProbability * currentChance;
+                        primaryDataPoints.push(stepProb * 100);
+                        remainingProbability *= (1 - currentChance);
+                        expectedAccumulation = (1 - remainingProbability);
+                    }
+                    accumulationDataPoints.push(expectedAccumulation);
+                } else if (currentFreq >= 12 && m % 12 === 0) {
+                    // For frequencies larger than or equal to a year, ensure calendar year ticks exist on charts
+                    labels.push(`Yr ${m / 12}`);
+                    primaryDataPoints.push(0);
+                    accumulationDataPoints.push(expectedAccumulation);
+                } else if (currentFreq < 12 && m % 12 === 0) {
+                    // For 1 & 6-month high resolution, merge calculations without adding duplicate text slots
+                    labels.push(`Yr ${m / 12}`);
+                    primaryDataPoints.push(0);
+                    accumulationDataPoints.push(expectedAccumulation);
+                }
+            }
+
+            // Fallback generation layout if resolution bounds require cleaner year arrays
+            const cleanLabels = [];
+            const cleanPrimary = [];
+            const cleanAccum = [];
+            
+            for (let m = 1; m <= totalMonthsHorizon; m++) {
+                const isCheckIn = (m % currentFreq === 0);
+                const isYearBound = (m % 12 === 0);
+                
+                if (isCheckIn || isYearBound) {
+                    const yrStr = (m / 12).toFixed(2).replace('.00', '');
+                    cleanLabels.push(`Yr ${yrStr}`);
+                    
+                    if (isCheckIn) {
+                        if (allowRetrigger) {
+                            cleanPrimary.push(currentChance * 100);
+                        } else {
+                            // Recover historical math sequence inline
+                            let remProb = 1.0;
+                            for (let step = currentFreq; step <= m; step += currentFreq) {
+                                if (step === m) {
+                                    cleanPrimary.push(remProb * currentChance * 100);
+                                }
+                                remProb *= (1 - currentChance);
+                            }
+                        }
+                    } else {
+                        cleanPrimary.push(0);
+                    }
+                    
+                    // Construct accurate non-decay alignment index arrays
+                    let runningAccum = 0;
+                    let remProbAccum = 1.0;
+                    for(let step = currentFreq; step <= m; step += currentFreq) {
+                        if (allowRetrigger) {
+                            runningAccum += currentChance;
+                        } else {
+                            remProbAccum *= (1 - currentChance);
+                            runningAccum = (1 - remProbAccum);
+                        }
+                    }
+                    cleanAccum.push(runningAccum);
+                }
+            }
+
+            // 3. Render Distribution Chart
+            const ctxDist = document.getElementById('distributionChart').getContext('2d');
+            if (distChartInstance) distChartInstance.destroy();
+
+            distChartInstance = new Chart(ctxDist, {
+                type: 'bar',
+                data: {
+                    labels: cleanLabels,
+                    datasets: [{
+                        label: 'Chance Event Occurs This Period (%)',
+                        data: cleanPrimary,
+                        backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        borderWidth: 1,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` Probability: ${c.raw.toFixed(2)}%` } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 20 } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
+                    }
+                }
+            });
+
+            // 4. Render Accumulation Chart
+            const ctxAccum = document.getElementById('accumulationChart').getContext('2d');
+            if (accumChartInstance) accumChartInstance.destroy();
+
+            accumChartInstance = new Chart(ctxAccum, {
+                type: 'line',
+                data: {
+                    labels: cleanLabels,
+                    datasets: [{
+                        label: 'Expected Total Count',
+                        data: cleanAccum,
+                        borderColor: '#34d399',
+                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                        fill: true,
+                        borderWidth: 2,
+                        pointRadius: currentFreq >= 6 ? 3 : 1,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` Expected Events: ${c.raw.toFixed(2)}` } } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 20 } },
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#334155' }, 
+                            ticks: { color: '#94a3b8' },
+                            max: allowRetrigger ? undefined : 1.05
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize display configuration state values
+        updateDashboard();
+    </script>
+</body>
+</html>

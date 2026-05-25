@@ -15,6 +15,7 @@ renaissance_humanist = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		NOT = { current_age = age_1_feudal }
 	}
 
 	modifier = {
@@ -31,6 +32,11 @@ eastern_pragmatist = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		NOT = { current_age = age_1_feudal }
+		NOR = {
+			religion.group = religion_group:christian
+			religion.group = religion_group:muslim
+		}
 	}
 
 	modifier = {
@@ -47,6 +53,8 @@ sufi_scholar = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		NOT = { current_age = age_1_feudal }
+		religion.group = religion_group:muslim
 	}
 
 	modifier = {
@@ -68,6 +76,12 @@ cautious_merchant = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -84,6 +98,12 @@ age_of_discovery_pioneer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -100,6 +120,12 @@ age_of_discovery_skeptic = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -119,6 +145,11 @@ reformist_theologian = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -134,6 +165,11 @@ orthodox_defender = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -150,6 +186,11 @@ reformation_preacher = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -166,6 +207,11 @@ reformation_inquisitor = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -186,6 +232,10 @@ crown_theologian = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -202,6 +252,10 @@ absolute_administrator = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -218,6 +272,10 @@ noble_patron = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -234,6 +292,10 @@ parliamentarian = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -250,6 +312,10 @@ privilege_reformer = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
 	}
 
 	modifier = {
@@ -270,6 +336,7 @@ revolutionary_agitator = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_6_revolutions
 	}
 
 	modifier = {
@@ -285,6 +352,7 @@ counterrevolutionary = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_6_revolutions
 	}
 
 	modifier = {
@@ -301,6 +369,7 @@ privilege_champion = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_6_revolutions
 	}
 
 	modifier = {
@@ -309,6 +378,247 @@ privilege_champion = {
 	}
 }
 
+
+########################
+# Intolerant fallback — cc_traits.12.e (Age of Reformation)
+########################
+
+dogmatic_zealot = {
+	category = religious_figure
+	custom_tags = { negative religious }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = religious_figure }
+		in_cabinet = yes
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		tolerance_heretic = -1
+		tolerance_heathen = -1
+		clergy_estate_agenda_impact = 0.1
+	}
+}
+
+########################
+# New Age Traits — cc_traits.30-39
+########################
+
+# cc_traits.30 — The Empiricist's Method (Age 2+, adm > 55 + renaissance_thought)
+empiricist_counselor = {
+	category = cabinet
+	custom_tags = { social administrative }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		adm > 55
+		NOT = { current_age = age_1_feudal }
+	}
+
+	modifier = {
+		research_speed = 0.06
+		global_monthly_literacy = 0.03
+	}
+}
+
+# cc_traits.31 — The Urban Reformer (Age 2+, burgher adm > 50 + capital dev > 30)
+civic_chancellor = {
+	category = cabinet
+	custom_tags = { administrative economical }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		adm > 50
+		NOT = { current_age = age_1_feudal }
+	}
+
+	modifier = {
+		global_build_buildings_cost = -0.06
+		country_cabinet_efficiency = 0.05
+	}
+}
+
+# cc_traits.32 — The Cartographer's Commission (Age 3+, dip > 55 + colonize action)
+chief_cartographer = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		dip > 55
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		exploration_mission_speed = 0.10
+		colonial_migration_size_modifier = 0.06
+	}
+}
+
+# cc_traits.33 — The Merchant's Grand Tour (Age 3+, burgher dip > 55 + num_subjects >= 1)
+trade_consortium_minister = {
+	category = cabinet
+	custom_tags = { economical diplomatic }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		dip > 55
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		global_trade_center_power = 0.06
+		diplomatic_capacity = 1
+	}
+}
+
+# cc_traits.34 — The Peacemaker's Gambit (Age 4+, dip > 55 + not at war + tolerance_idea)
+peace_commissioner = {
+	category = cabinet
+	custom_tags = { diplomatic }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		dip > 55
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		tolerance_heretic = 1
+		antagonism_received_modifier = -0.07
+	}
+}
+
+# cc_traits.35 — The Theological Statesman (Age 4+, clergy adm > 55)
+theological_statesman = {
+	category = religious_figure
+	custom_tags = { religious administrative }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = religious_figure }
+		in_cabinet = yes
+		adm > 55
+		current_age = age_4_reformation
+	}
+
+	modifier = {
+		parliament_base_support = 0.08
+		clergy_estate_agenda_impact = 0.10
+	}
+}
+
+# cc_traits.36 — The Standing Army Advocate (Age 5+, mil > 60 + monarchy + military_revolution_advance)
+standing_army_advocate = {
+	category = cabinet
+	custom_tags = { military administrative }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		mil > 60
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		discipline = 0.02
+		fort_maintenance_cost = -0.06
+		nobles_estate_agenda_impact = 0.08
+	}
+}
+
+# cc_traits.37 — The Tax Inspector (Age 5+, adm > 60 + integrate_area_advance)
+tax_inspector_general = {
+	category = cabinet
+	custom_tags = { administrative economical }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		adm > 60
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+	}
+
+	modifier = {
+		court_spending_cost_modifier = -0.08
+		country_cabinet_efficiency = 0.06
+	}
+}
+
+# cc_traits.38 — The National Minister (Age 6, adm > 60 + parliamentary system)
+national_reformer = {
+	category = cabinet
+	custom_tags = { administrative }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		adm > 60
+		current_age = age_6_revolutions
+	}
+
+	modifier = {
+		parliament_base_support = 0.08
+		remove_government_reform_cost_modifier = -0.12
+	}
+}
+
+# cc_traits.39 — The Industrial Visionary (Age 6, burgher adm > 55 + dev > 40)
+industrial_visionary = {
+	category = cabinet
+	custom_tags = { economical administrative }
+	flavor = personality
+
+	allow = {
+		NOT = { has_trait_category = cabinet }
+		in_cabinet = yes
+		adm > 55
+		current_age = age_6_revolutions
+	}
+
+	modifier = {
+		global_build_buildings_cost = -0.10
+		research_speed = 0.06
+	}
+}
 
 ########################
 # Age of Feudalism (age_1_feudal)
@@ -325,6 +635,7 @@ seneschal = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {
@@ -342,6 +653,7 @@ court_chaplain = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {
@@ -359,6 +671,7 @@ marshal_of_the_court = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {
@@ -376,6 +689,7 @@ master_of_coin = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {
@@ -393,6 +707,7 @@ herald_of_arms = {
 	allow = {
 		NOT = { has_trait_category = cabinet }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {
@@ -410,6 +725,7 @@ court_astrologer = {
 	allow = {
 		NOT = { has_trait_category = religious_figure }
 		in_cabinet = yes
+		current_age = age_1_feudal
 	}
 
 	modifier = {

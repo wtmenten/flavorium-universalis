@@ -2,15 +2,20 @@
 
 ###############################################################################
 # CABINET LEGACY EVENTS
-# cc_legacy.1  — Protege Inheritance (notable minister dies)
+# cc_legacy.1  — Elder Minister's Succession (lives, 10+ years, age 60+)
 # cc_legacy.2  — Legendary Minister's Death (permanent modifier + consecrate)
-# Fired from cc_legacy_pulse.txt on_cabinet_death hook.
-# scope:cc_legacy_minister = the deceased minister.
+# cc_legacy.3  — Retired Legend's Final Gift (retired_legend trait on death)
+#
+# cc_legacy.1 fires from yearly_country_pulse random_events (30% chance).
+# cc_legacy.2 and cc_legacy.3 fire from cc_legacy_pulse.txt on_cabinet_death.
+# scope:cc_legacy_minister = the deceased minister (legacy.2 and legacy.3).
+# scope:cc_legacy_elder   = the living senior minister (legacy.1).
 ###############################################################################
 
-# "A Mentor's Last Gift"
-# Fires when a minister with a notable cc trait dies.
-# Offers to grant one of the deceased's traits to a young courtier.
+# "A Mentor Plans Their Succession"
+# Fires when a minister with a notable trait has served 10+ years and reached 60+.
+# Offers to pass the trait to a young protege (minister becomes retired_legend)
+# or to invest in a protege's skills directly.
 cc_legacy.1 = {
 	type = country_event
 	title = cc_legacy.1.title
@@ -19,11 +24,130 @@ cc_legacy.1 = {
 
 	illustration_tags = {
 		10 = interior
+	}
 
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			years_of_service_in_cabinet > 9
+			age_in_years >= 60
+			NOT = { has_variable = cc_legacy_1_offered }
+			OR = {
+				has_trait = grand_chancellor
+				has_trait = cavalry_marshal
+				has_trait = supreme_commander
+				has_trait = learned_courtier
+				has_trait = enlightenment_herald
+				has_trait = master_urbanist
+				has_trait = progressive_rationalist
+				has_trait = confucian_mandarin
+				has_trait = caliphate_diplomat
+				has_trait = seneschal
+				has_trait = marshal_of_the_court
+			}
+		}
+	}
+
+	weight_multiplier = {
+		base = 1
+		# Older ministers — succession more urgent
+		modifier = {
+			add = 1
+			any_cabinet_character = {
+				in_cabinet = yes
+				years_of_service_in_cabinet > 9
+				age_in_years >= 70
+				OR = {
+					has_trait = grand_chancellor    has_trait = cavalry_marshal
+					has_trait = supreme_commander   has_trait = learned_courtier
+					has_trait = enlightenment_herald  has_trait = master_urbanist
+					has_trait = progressive_rationalist  has_trait = confucian_mandarin
+					has_trait = caliphate_diplomat  has_trait = seneschal
+					has_trait = marshal_of_the_court
+				}
+				NOT = { has_variable = cc_legacy_1_offered }
+			}
+		}
+		# Very long service — 15+ years
+		modifier = {
+			add = 1
+			any_cabinet_character = {
+				in_cabinet = yes
+				years_of_service_in_cabinet > 14
+				age_in_years >= 60
+				OR = {
+					has_trait = grand_chancellor    has_trait = cavalry_marshal
+					has_trait = supreme_commander   has_trait = learned_courtier
+					has_trait = enlightenment_herald  has_trait = master_urbanist
+					has_trait = progressive_rationalist  has_trait = confucian_mandarin
+					has_trait = caliphate_diplomat  has_trait = seneschal
+					has_trait = marshal_of_the_court
+				}
+				NOT = { has_variable = cc_legacy_1_offered }
+			}
+		}
+		# High-skill minister — legacy matters more
+		modifier = {
+			add = 1
+			any_cabinet_character = {
+				in_cabinet = yes
+				years_of_service_in_cabinet > 9
+				age_in_years >= 60
+				OR = { adm > 66  dip > 66  mil > 66 }
+				OR = {
+					has_trait = grand_chancellor    has_trait = cavalry_marshal
+					has_trait = supreme_commander   has_trait = learned_courtier
+					has_trait = enlightenment_herald  has_trait = master_urbanist
+					has_trait = progressive_rationalist  has_trait = confucian_mandarin
+					has_trait = caliphate_diplomat  has_trait = seneschal
+					has_trait = marshal_of_the_court
+				}
+				NOT = { has_variable = cc_legacy_1_offered }
+			}
+		}
 	}
 
 	immediate = {
-		# Find a young eligible courtier as protege candidate
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				years_of_service_in_cabinet > 9
+				age_in_years >= 60
+				NOT = { has_variable = cc_legacy_1_offered }
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = cavalry_marshal
+					has_trait = supreme_commander
+					has_trait = learned_courtier
+					has_trait = enlightenment_herald
+					has_trait = master_urbanist
+					has_trait = progressive_rationalist
+					has_trait = confucian_mandarin
+					has_trait = caliphate_diplomat
+					has_trait = seneschal
+					has_trait = marshal_of_the_court
+				}
+			}
+			save_scope_as = cc_legacy_elder
+		}
+
+		scope:cc_legacy_elder = {
+			set_variable = cc_legacy_1_offered
+			# Record which trait type to use on death (values 1-11)
+			if = { limit = { has_trait = grand_chancellor } set_variable = { name = cc_retired_legend_type value = 1 } }
+			else_if = { limit = { has_trait = cavalry_marshal } set_variable = { name = cc_retired_legend_type value = 2 } }
+			else_if = { limit = { has_trait = supreme_commander } set_variable = { name = cc_retired_legend_type value = 3 } }
+			else_if = { limit = { has_trait = learned_courtier } set_variable = { name = cc_retired_legend_type value = 4 } }
+			else_if = { limit = { has_trait = enlightenment_herald } set_variable = { name = cc_retired_legend_type value = 5 } }
+			else_if = { limit = { has_trait = master_urbanist } set_variable = { name = cc_retired_legend_type value = 6 } }
+			else_if = { limit = { has_trait = progressive_rationalist } set_variable = { name = cc_retired_legend_type value = 7 } }
+			else_if = { limit = { has_trait = confucian_mandarin } set_variable = { name = cc_retired_legend_type value = 8 } }
+			else_if = { limit = { has_trait = caliphate_diplomat } set_variable = { name = cc_retired_legend_type value = 9 } }
+			else_if = { limit = { has_trait = seneschal } set_variable = { name = cc_retired_legend_type value = 10 } }
+			else = { set_variable = { name = cc_retired_legend_type value = 11 } }
+		}
+
+		# Find a young eligible courtier as protege
 		random_character = {
 			limit = {
 				character_age < 35
@@ -35,103 +159,108 @@ cc_legacy.1 = {
 		}
 	}
 
-	# Inherit the cabinet trait
+	# "Pass the Torch" — protege inherits the cabinet trait; elder becomes retired_legend
 	option = {
 		name = cc_legacy.1.a
-		trigger = {
-			exists = scope:cc_legacy_protege
-		}
-		# Grant whichever notable cabinet trait the deceased had (first match)
+		trigger = { exists = scope:cc_legacy_protege }
 		scope:cc_legacy_protege = {
 			if = {
-				limit = { NOT = { has_trait = grand_chancellor } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = grand_chancellor } } add_trait = trait:grand_chancellor }
+				limit = { scope:cc_legacy_elder = { has_trait = grand_chancellor } }
+				add_trait = trait:grand_chancellor
 			}
-			if = {
-				limit = { NOT = { has_trait = cavalry_marshal } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = cavalry_marshal } } add_trait = trait:cavalry_marshal }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = cavalry_marshal } }
+				add_trait = trait:cavalry_marshal
 			}
-			if = {
-				limit = { NOT = { has_trait = supreme_commander } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = supreme_commander } } add_trait = trait:supreme_commander }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = supreme_commander } }
+				add_trait = trait:supreme_commander
 			}
-			if = {
-				limit = { NOT = { has_trait = learned_courtier } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = learned_courtier } } add_trait = trait:learned_courtier }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = learned_courtier } }
+				add_trait = trait:learned_courtier
 			}
-			if = {
-				limit = { NOT = { has_trait = enlightenment_herald } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = enlightenment_herald } } add_trait = trait:enlightenment_herald }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = enlightenment_herald } }
+				add_trait = trait:enlightenment_herald
 			}
-			if = {
-				limit = { NOT = { has_trait = master_urbanist } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = master_urbanist } } add_trait = trait:master_urbanist }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = master_urbanist } }
+				add_trait = trait:master_urbanist
 			}
-			if = {
-				limit = { NOT = { has_trait = progressive_rationalist } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = progressive_rationalist } } add_trait = trait:progressive_rationalist }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = progressive_rationalist } }
+				add_trait = trait:progressive_rationalist
 			}
-			if = {
-				limit = { NOT = { has_trait = confucian_mandarin } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = confucian_mandarin } } add_trait = trait:confucian_mandarin }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = confucian_mandarin } }
+				add_trait = trait:confucian_mandarin
 			}
-			if = {
-				limit = { NOT = { has_trait = caliphate_diplomat } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = caliphate_diplomat } } add_trait = trait:caliphate_diplomat }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = caliphate_diplomat } }
+				add_trait = trait:caliphate_diplomat
 			}
-			if = {
-				limit = { NOT = { has_trait = seneschal } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = seneschal } } add_trait = trait:seneschal }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = seneschal } }
+				add_trait = trait:seneschal
 			}
-			if = {
-				limit = { NOT = { has_trait = marshal_of_the_court } }
-				if = { limit = { scope:cc_legacy_minister = { has_trait = marshal_of_the_court } } add_trait = trait:marshal_of_the_court }
+			else_if = {
+				limit = { scope:cc_legacy_elder = { has_trait = marshal_of_the_court } }
+				add_trait = trait:marshal_of_the_court
 			}
+		}
+		scope:cc_legacy_elder = {
+			# Remove the transferred cabinet trait and become a retired legend
+			if = { limit = { has_trait = grand_chancellor } remove_trait = trait:grand_chancellor }
+			else_if = { limit = { has_trait = cavalry_marshal } remove_trait = trait:cavalry_marshal }
+			else_if = { limit = { has_trait = supreme_commander } remove_trait = trait:supreme_commander }
+			else_if = { limit = { has_trait = learned_courtier } remove_trait = trait:learned_courtier }
+			else_if = { limit = { has_trait = enlightenment_herald } remove_trait = trait:enlightenment_herald }
+			else_if = { limit = { has_trait = master_urbanist } remove_trait = trait:master_urbanist }
+			else_if = { limit = { has_trait = progressive_rationalist } remove_trait = trait:progressive_rationalist }
+			else_if = { limit = { has_trait = confucian_mandarin } remove_trait = trait:confucian_mandarin }
+			else_if = { limit = { has_trait = caliphate_diplomat } remove_trait = trait:caliphate_diplomat }
+			else_if = { limit = { has_trait = seneschal } remove_trait = trait:seneschal }
+			else_if = { limit = { has_trait = marshal_of_the_court } remove_trait = trait:marshal_of_the_court }
+			add_trait = trait:retired_legend
 		}
 		add_prestige = prestige_mild_bonus
 		custom_tooltip = cc_legacy.1.a.tt
 	}
 
-	# Inherit the religious_figure trait instead (only shown if deceased had a rf trait)
+	# "Groom the Protege" — invest in the protege's skills; elder keeps their trait
 	option = {
 		name = cc_legacy.1.b
-		trigger = {
-			exists = scope:cc_legacy_protege
-			scope:cc_legacy_minister = {
-				OR = {
-					has_trait = sufi_scholar
-					has_trait = mystical_patriarch
-					has_trait = ecumenical_patriarch_advisor
-					has_trait = brahmin_counselor
-					has_trait = reformist_theologian
-					has_trait = crown_theologian
-				}
+		trigger = { exists = scope:cc_legacy_protege }
+		scope:cc_legacy_protege = {
+			# Skill boost themed to the elder's expertise
+			if = {
+				limit = { scope:cc_legacy_elder = { OR = { has_trait = grand_chancellor  has_trait = caliphate_diplomat } } }
+				add_dip = 8
+			}
+			else_if = {
+				limit = { scope:cc_legacy_elder = { OR = { has_trait = cavalry_marshal  has_trait = supreme_commander  has_trait = marshal_of_the_court } } }
+				add_mil = 8
+			}
+			else = {
+				add_adm = 8
 			}
 		}
-		scope:cc_legacy_protege = {
-			if = { limit = { scope:cc_legacy_minister = { has_trait = sufi_scholar } } add_trait = trait:sufi_scholar }
-			else_if = { limit = { scope:cc_legacy_minister = { has_trait = mystical_patriarch } } add_trait = trait:mystical_patriarch }
-			else_if = { limit = { scope:cc_legacy_minister = { has_trait = ecumenical_patriarch_advisor } } add_trait = trait:ecumenical_patriarch_advisor }
-			else_if = { limit = { scope:cc_legacy_minister = { has_trait = brahmin_counselor } } add_trait = trait:brahmin_counselor }
-			else_if = { limit = { scope:cc_legacy_minister = { has_trait = reformist_theologian } } add_trait = trait:reformist_theologian }
-			else_if = { limit = { scope:cc_legacy_minister = { has_trait = crown_theologian } } add_trait = trait:crown_theologian }
-		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = prestige_weak_bonus
 		custom_tooltip = cc_legacy.1.b.tt
 	}
 
-	# Decline the legacy
+	# "Not Yet" — decline; minor estate disappointment
 	option = {
 		name = cc_legacy.1.c
 		add_prestige = prestige_weak_bonus
 		if = {
 			limit = {
-				scope:cc_legacy_minister = {
+				scope:cc_legacy_elder = {
 					OR = {
 						has_trait = cavalry_marshal
 						has_trait = supreme_commander
 						has_trait = marshal_of_the_court
-						has_trait = commissariat_officer
 					}
 				}
 			}
@@ -139,7 +268,7 @@ cc_legacy.1 = {
 		}
 		else_if = {
 			limit = {
-				scope:cc_legacy_minister = {
+				scope:cc_legacy_elder = {
 					OR = {
 						has_trait = learned_courtier
 						has_trait = master_urbanist
@@ -231,5 +360,114 @@ cc_legacy.2 = {
 		}
 		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legacy.2.b.tt
+	}
+}
+
+
+# "The Elder's Final Gift"
+# Fires when a retired_legend minister dies.
+# Reads cc_retired_legend_type variable to grant the appropriate permanent modifier.
+# (1=grand_chancellor 2=cavalry_marshal 3=supreme_commander 4=learned_courtier
+#  5=enlightenment_herald 6=master_urbanist 7=progressive_rationalist 8=confucian_mandarin
+#  9=caliphate_diplomat 10=seneschal 11=marshal_of_the_court)
+cc_legacy.3 = {
+	type = country_event
+	title = cc_legacy.3.title
+	desc = cc_legacy.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	# Accept the elder's lasting influence — permanent legacy modifier
+	option = {
+		name = cc_legacy.3.a
+		if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 1 } }
+			add_country_modifier = { modifier = cc_legacy_elder_grand_chancellor years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 2 } }
+			add_country_modifier = { modifier = cc_legacy_elder_cavalry_marshal years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 3 } }
+			add_country_modifier = { modifier = cc_legacy_elder_supreme_commander years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 4 } }
+			add_country_modifier = { modifier = cc_legacy_elder_learned_courtier years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 5 } }
+			add_country_modifier = { modifier = cc_legacy_elder_enlightenment_herald years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 6 } }
+			add_country_modifier = { modifier = cc_legacy_elder_master_urbanist years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 7 } }
+			add_country_modifier = { modifier = cc_legacy_elder_progressive_rationalist years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 8 } }
+			add_country_modifier = { modifier = cc_legacy_elder_confucian_mandarin years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 9 } }
+			add_country_modifier = { modifier = cc_legacy_elder_caliphate_diplomat years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 10 } }
+			add_country_modifier = { modifier = cc_legacy_elder_seneschal years = -1 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_legacy_elder_marshal_of_the_court years = -1 }
+		}
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_legacy.3.a.tt
+	}
+
+	# Consecrate — pay 15× monthly income for the upgraded modifier
+	option = {
+		name = cc_legacy.3.b
+		trigger = {
+			gold >= {
+				value = monthly_income_trade_and_tax
+				multiply = 15
+			}
+		}
+		if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 1 } }
+			add_country_modifier = { modifier = cc_legacy_elder_grand_chancellor_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 2 } }
+			add_country_modifier = { modifier = cc_legacy_elder_cavalry_marshal_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 3 } }
+			add_country_modifier = { modifier = cc_legacy_elder_supreme_commander_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 4 } }
+			add_country_modifier = { modifier = cc_legacy_elder_learned_courtier_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 5 } }
+			add_country_modifier = { modifier = cc_legacy_elder_enlightenment_herald_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 6 } }
+			add_country_modifier = { modifier = cc_legacy_elder_master_urbanist_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 7 } }
+			add_country_modifier = { modifier = cc_legacy_elder_progressive_rationalist_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 8 } }
+			add_country_modifier = { modifier = cc_legacy_elder_confucian_mandarin_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 9 } }
+			add_country_modifier = { modifier = cc_legacy_elder_caliphate_diplomat_consecrated years = -1 }
+		}
+		else_if = { limit = { scope:cc_legacy_minister = { var:cc_retired_legend_type = 10 } }
+			add_country_modifier = { modifier = cc_legacy_elder_seneschal_consecrated years = -1 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_legacy_elder_marshal_of_the_court_consecrated years = -1 }
+		}
+		add_gold = {
+			value = monthly_income_trade_and_tax
+			multiply = -15
+		}
+		add_prestige = prestige_severe_bonus
+		custom_tooltip = cc_legacy.3.b.tt
 	}
 }

@@ -1059,3 +1059,374 @@ cc_cond.5 = {
 		name = cc_cond.5.dismiss
 	}
 }
+
+# ============================================================
+# FAMILY F — ACTION-FORGED TRAITS (cc_cond.30-34)
+# Traits earned by ministers actively performing specific cabinet actions.
+# Variable cc_cond_NN_done prevents re-offer to the same minister.
+# ============================================================
+
+# "The Integration Specialist"
+# A minister who devotes years to integrating territories develops a
+# systematic mastery of diplomatic absorption and local administration.
+# Requires: integrate_area or integrate_province action + adm > 50 + dip > 33.
+cc_cond.30 = {
+	type = country_event
+	title = cc_cond.30.title
+	desc = cc_cond.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			OR = {
+				cabinet_action = cabinet_action:integrate_area
+				cabinet_action = cabinet_action:integrate_province
+			}
+			adm > 50
+			dip > 33
+			NOR = {
+				has_trait = seasoned_integrator
+				has_trait = able_integrator
+				has_trait = master_integrator
+				has_trait = iron_integrator
+			}
+			NOT = { has_variable = cc_cond_30_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:integrate_area
+					cabinet_action = cabinet_action:integrate_province
+				}
+				adm > 50
+				dip > 33
+				NOR = {
+					has_trait = seasoned_integrator
+					has_trait = able_integrator
+					has_trait = master_integrator
+					has_trait = iron_integrator
+				}
+				NOT = { has_variable = cc_cond_30_done }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Seasoned Integrator — adm > 55 (premium)
+	option = {
+		name = cc_cond.30.a
+		trigger = { scope:minister = { adm > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_30_done
+			add_trait = trait:seasoned_integrator
+		}
+	}
+
+	# Competent administrator — still valuable, random minor benefit
+	option = {
+		name = cc_cond.30.b
+		scope:minister = { set_variable = cc_cond_30_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_gold = 25 }
+			30 = { }
+		}
+	}
+}
+
+# "The Colonial Strategist"
+# Years spent managing colonial expansion transforms a diplomatic minister
+# into an expert in frontier governance and settler management.
+# Requires: colonization/frontier cabinet action + dip > 50.
+cc_cond.31 = {
+	type = country_event
+	title = cc_cond.31.title
+	desc = cc_cond.31.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			OR = {
+				cabinet_action = cabinet_action:send_people_to_the_colonies
+				cabinet_action = cabinet_action:send_people_to_colonial_charter
+				cabinet_action = cabinet_action:settle_the_frontier
+			}
+			dip > 50
+			NOR = {
+				has_trait = frontier_administrator
+				has_trait = age_of_discovery_pioneer
+				has_trait = chief_cartographer
+			}
+			NOT = { has_variable = cc_cond_31_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:send_people_to_the_colonies
+					cabinet_action = cabinet_action:send_people_to_colonial_charter
+					cabinet_action = cabinet_action:settle_the_frontier
+				}
+				dip > 50
+				NOR = {
+					has_trait = frontier_administrator
+					has_trait = age_of_discovery_pioneer
+					has_trait = chief_cartographer
+				}
+				NOT = { has_variable = cc_cond_31_done }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Frontier Administrator — dip > 55 (premium)
+	option = {
+		name = cc_cond.31.a
+		trigger = { scope:minister = { dip > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_31_done
+			add_trait = trait:frontier_administrator
+		}
+	}
+
+	# Competent handler — random minor colonial benefit
+	option = {
+		name = cc_cond.31.b
+		scope:minister = { set_variable = cc_cond_31_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_gold = 35 }
+			30 = { }
+		}
+	}
+}
+
+# "The Development Commissioner"
+# A minister who dedicates themselves to developing the realm's provinces
+# gains deep insight into construction, urban growth, and local investment.
+# Requires: develop_province action + adm > 50 + capital dev > 25.
+cc_cond.32 = {
+	type = country_event
+	title = cc_cond.32.title
+	desc = cc_cond.32.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		capital.development > 25
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			cabinet_action = cabinet_action:develop_province
+			adm > 50
+			NOR = {
+				has_trait = development_patron
+				has_trait = urban_planner
+				has_trait = grand_architect
+				has_trait = master_urbanist
+			}
+			NOT = { has_variable = cc_cond_32_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				cabinet_action = cabinet_action:develop_province
+				adm > 50
+				NOR = {
+					has_trait = development_patron
+					has_trait = urban_planner
+					has_trait = grand_architect
+					has_trait = master_urbanist
+				}
+				NOT = { has_variable = cc_cond_32_done }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Development Patron — adm > 55 (premium)
+	option = {
+		name = cc_cond.32.a
+		trigger = { scope:minister = { adm > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_32_done
+			add_trait = trait:development_patron
+		}
+	}
+
+	# Routine oversight — small random development benefit
+	option = {
+		name = cc_cond.32.b
+		scope:minister = { set_variable = cc_cond_32_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_gold = 25 }
+			30 = { }
+		}
+	}
+}
+
+# "The Shadow Handler"
+# Counter-espionage work is unglamorous but vital — a minister who
+# excels at it develops an instinctive mastery of intelligence networks.
+# Requires: counter_espionage_action + dip > 55.
+cc_cond.33 = {
+	type = country_event
+	title = cc_cond.33.title
+	desc = cc_cond.33.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			cabinet_action = cabinet_action:counter_espionage_action
+			dip > 55
+			NOT = { has_trait = espionage_director }
+			NOT = { has_variable = cc_cond_33_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				cabinet_action = cabinet_action:counter_espionage_action
+				dip > 55
+				NOT = { has_trait = espionage_director }
+				NOT = { has_variable = cc_cond_33_done }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Espionage Director — dip > 60 (premium)
+	option = {
+		name = cc_cond.33.a
+		trigger = { scope:minister = { dip > 60 } }
+		scope:minister = {
+			set_variable = cc_cond_33_done
+			add_trait = trait:espionage_director
+		}
+	}
+
+	# Competent agent — small random intelligence benefit
+	option = {
+		name = cc_cond.33.b
+		scope:minister = { set_variable = cc_cond_33_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_gold = 30 }
+			30 = { }
+		}
+	}
+}
+
+# "The Treasury Inspector"
+# A minister tasked with reforming taxation or fighting inflation develops
+# a ruthless fiscal discipline that serves the crown for decades.
+# Requires: reform_taxation_system or reduce_inflation action + adm > 55.
+cc_cond.34 = {
+	type = country_event
+	title = cc_cond.34.title
+	desc = cc_cond.34.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_cabinet_action = yes
+			OR = {
+				cabinet_action = cabinet_action:reform_taxation_system
+				cabinet_action = cabinet_action:reduce_inflation
+			}
+			adm > 55
+			NOR = {
+				has_trait = treasury_enforcer
+				has_trait = tax_inspector_general
+			}
+			NOT = { has_variable = cc_cond_34_done }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:reform_taxation_system
+					cabinet_action = cabinet_action:reduce_inflation
+				}
+				adm > 55
+				NOR = {
+					has_trait = treasury_enforcer
+					has_trait = tax_inspector_general
+				}
+				NOT = { has_variable = cc_cond_34_done }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Treasury Enforcer — adm > 60 (premium)
+	option = {
+		name = cc_cond.34.a
+		trigger = { scope:minister = { adm > 60 } }
+		scope:minister = {
+			set_variable = cc_cond_34_done
+			add_trait = trait:treasury_enforcer
+		}
+	}
+
+	# Competent inspector — small random fiscal benefit
+	option = {
+		name = cc_cond.34.b
+		scope:minister = { set_variable = cc_cond_34_done }
+		random_list = {
+			40 = { add_gold = 50 }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}

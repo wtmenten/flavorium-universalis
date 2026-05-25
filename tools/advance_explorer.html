@@ -29,7 +29,7 @@ button{font-family:inherit;cursor:pointer}
 .ctl-label{font-size:11px;color:var(--text-dim)}
 .ctl-sep{width:1px;background:var(--card-border);align-self:stretch;margin:8px 0}
 .pill-group{display:flex;border:1px solid var(--card-border);border-radius:5px;overflow:hidden}
-.pill{padding:5px 11px;background:transparent;border:none;color:var(--text-dim);font-size:11px;font-weight:500;transition:background .12s,color .12s}
+.pill{padding:4px 8px;background:transparent;border:none;color:var(--text-dim);font-size:11px;font-weight:500;transition:background .12s,color .12s;display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:26px}
 .pill:hover{background:var(--hover-bg);color:var(--text)}
 .pill.on{background:var(--card-border);color:var(--text)}
 .body{display:grid;grid-template-columns:1fr 520px;overflow:hidden}
@@ -110,6 +110,31 @@ details[open] .univ-strip summary::before{content:'-'}
 .def-row{display:flex;justify-content:space-between;gap:8px;padding:1px 0}
 .def-k{color:var(--text-dim);font-size:9px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .def-v{color:var(--text);font-size:9px;font-weight:500;flex-shrink:0;text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* search bar */
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-input{background:var(--card-bg);border:1px solid var(--card-border);border-radius:5px;color:var(--text);font-size:12px;font-family:inherit;padding:5px 26px 5px 9px;width:200px;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:#4a5068}
+.search-input::placeholder{color:var(--text-dim)}
+.search-clear{position:absolute;right:5px;background:transparent;border:none;color:var(--text-dim);font-size:14px;line-height:1;padding:2px 3px;cursor:pointer}
+.search-clear:hover{color:var(--text)}
+.search-active .search-input{border-color:#5baee866}
+/* summary panel collapse (≤1280px) */
+.summary-close-btn{display:none;margin-left:auto;background:transparent;border:1px solid var(--card-border);border-radius:4px;color:var(--text-dim);font-size:11px;padding:3px 8px;align-items:center;gap:4px;white-space:nowrap}
+.summary-fab{display:none;position:fixed;bottom:20px;right:20px;z-index:100;background:var(--panel-bg);border:1px solid var(--card-border);border-radius:20px;color:var(--text);font-size:12px;font-weight:500;padding:8px 16px;box-shadow:0 4px 16px rgba(0,0,0,.45);align-items:center;gap:8px}
+@media(max-width:1280px){
+  .summary-close-btn{display:flex}
+  .summary-fab{display:flex}
+  .summary-fab.sp-hidden{display:none}
+  .body.summary-collapsed{grid-template-columns:1fr 0}
+  .body.summary-collapsed .right{overflow:hidden;padding:0;min-width:0;border-left:none}
+}
+/* collapsible ADM/DIP/MIL cat groups */
+.sum-cat-details{margin-bottom:0}
+.sum-cat-details>summary{cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;justify-content:space-between;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 3px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sum-cat-details>summary::-webkit-details-marker{display:none}
+.sum-cat-details>summary::after{content:'▾';font-size:9px;opacity:.55;flex-shrink:0}
+.sum-cat-details:not([open])>summary::after{content:'▸'}
+.sum-cat-details:first-child>summary{margin-top:0}
 </style>
 </head>
 <body>
@@ -176,6 +201,40 @@ details[open] .univ-strip summary::before{content:'-'}
   const getUnlockDef = (unlockKey, value) =>
     (typeof UNLOCK_DEFS !== 'undefined') && UNLOCK_DEFS?.[unlockKey]?.[value];
 
+  const parseSearch = raw => {
+    const terms = raw.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    if (!terms.length) return null;
+    return terms.map(t =>
+      new RegExp(t.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*'), 'i')
+    );
+  };
+
+  const advMatchesSearch = (adv, patterns) => {
+    if (!patterns) return true;
+    return patterns.some(re =>
+      re.test(adv.name) ||
+      adv.effects.some(([k, v]) => re.test(k) || re.test(String(v)))
+    );
+  };
+
+  // ── icons ────────────────────────────────────────────────────────────────────
+  const IC = {
+    calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+    hash:     'M4 9h16M4 15h16M10 3L8 21M16 3l-2 18',
+    layers:   'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
+    lock:     'M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM7 11V7a5 5 0 0 1 10 0v4',
+    sliders:  'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6',
+    globe:    'M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
+    branch:   'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9',
+    filter:   'M22 3H2l8 9.46V19l4 2V12.46L22 3z',
+  };
+
+  function Icon({ d, size=13 }) {
+    return html`<svg width=${size} height=${size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      style="display:block;flex-shrink:0"><path d=${d} /></svg>`;
+  }
+
   // ── components ───────────────────────────────────────────────────────────────
 
   function UnlockTip({ unlockKey, value }) {
@@ -199,33 +258,63 @@ details[open] .univ-strip summary::before{content:'-'}
       </span>`;
   }
 
-  function Pill({ label, active, onClick }) {
-    return html`<button class=${`pill${active?' on':''}`} onClick=${onClick}>${label}</button>`;
+  function Pill({ children, active, onClick, title }) {
+    return html`<button class=${`pill${active?' on':''}`} title=${title} onClick=${onClick}>${children}</button>`;
   }
 
-  function Header({ grp, show, showUniv, showAdvances, onGrp, onShow, onToggleUniv, onToggleAdvances}) {
+  function Header({ grp, show, showUniv, showAdvances, sumUniv, maxAge,
+                     search, onGrp, onShow, onToggleUniv, onToggleAdvances,
+                     onToggleSumUniv, onMaxAge, onSearch }) {
     return html`
       <div class="header">
         <h1>Advance Branch Explorer</h1>
         <span class="sub">Cabinets & Choices — EU5</span>
         <div class="spacer"></div>
+        <div class=${`search-wrap${search ? ' search-active' : ''}`}>
+          <input class="search-input" type="text" placeholder="Filter… (a, b*  comma=OR  *=wildcard)"
+            value=${search} onInput=${e => onSearch(e.target.value)} />
+          ${search && html`<button class="search-clear" title="Clear" onClick=${() => onSearch('')}>✕</button>`}
+        </div>
         <div class="controls">
-          <span class="ctl-label">Summary:</span>
           <div class="pill-group">
-            <${Pill} label="By Age" active=${grp==='age'} onClick=${()=>onGrp('age')} />
-            <${Pill} label="By Key" active=${grp==='key'} onClick=${()=>onGrp('key')} />
-          </div>
-          <div class="ctl-sep"></div>
-          <span class="ctl-label">Show:</span>
-          <div class="pill-group">
-            <${Pill} label="All"       active=${show==='all'}       onClick=${()=>onShow('all')} />
-            <${Pill} label="Unlocks"   active=${show==='unlocks'}   onClick=${()=>onShow('unlocks')} />
-            <${Pill} label="Modifiers" active=${show==='modifiers'} onClick=${()=>onShow('modifiers')} />
+            <${Pill} title="Group summary by age" active=${grp==='age'} onClick=${()=>onGrp('age')}>
+              <${Icon} d=${IC.calendar} />
+            </${Pill}>
+            <${Pill} title="Group summary by key" active=${grp==='key'} onClick=${()=>onGrp('key')}>
+              <${Icon} d=${IC.hash} />
+            </${Pill}>
           </div>
           <div class="ctl-sep"></div>
           <div class="pill-group">
-            <${Pill} label="Uni. Adv." active=${showUniv} onClick=${onToggleUniv} />
-            <${Pill} label="Branch Adv." active=${showAdvances} onClick=${onToggleAdvances} />
+            <${Pill} title="Show all effects" active=${show==='all'} onClick=${()=>onShow('all')}>
+              <${Icon} d=${IC.layers} />
+            </${Pill}>
+            <${Pill} title="Show unlocks only" active=${show==='unlocks'} onClick=${()=>onShow('unlocks')}>
+              <${Icon} d=${IC.lock} />
+            </${Pill}>
+            <${Pill} title="Show modifiers only" active=${show==='modifiers'} onClick=${()=>onShow('modifiers')}>
+              <${Icon} d=${IC.sliders} />
+            </${Pill}>
+          </div>
+          <div class="ctl-sep"></div>
+          <div class="pill-group">
+            <${Pill} title="Show universal advances in cards" active=${showUniv} onClick=${onToggleUniv}>
+              <${Icon} d=${IC.globe} />
+            </${Pill}>
+            <${Pill} title="Show branch advance details" active=${showAdvances} onClick=${onToggleAdvances}>
+              <${Icon} d=${IC.branch} />
+            </${Pill}>
+            <${Pill} title="Include universal advances in summary" active=${sumUniv} onClick=${onToggleSumUniv}>
+              <span style="font-size:10px;line-height:1;font-style:normal">Σ</span><${Icon} d=${IC.globe} />
+            </${Pill}>
+          </div>
+          <div class="ctl-sep"></div>
+          <${Icon} d=${IC.filter} size=${11} style="color:var(--text-dim);flex-shrink:0" />
+          <div class="pill-group">
+            ${D.ages.map((age, i) => html`
+              <${Pill} key=${age} title=${'Through ' + D.ageLabels[age]} active=${maxAge===i} onClick=${()=>onMaxAge(i)}>
+                ${i+1}
+              </${Pill}>`)}
           </div>
         </div>
       </div>`;
@@ -279,10 +368,12 @@ details[open] .univ-strip summary::before{content:'-'}
       </div>`;
   }
 
-  function BranchCol({ age, branch, selected }) {
-    const advs = D.branches[age][branch] || [];
-    const cls  = `branch-col col-${branch}` + (selected ? ` selected-${branch}` : ' unselected');
-    if (!advs.length) return html`<div class=${cls}><div class="no-adv">no branch advances</div></div>`;
+  function BranchCol({ advs, origCount, branch, selected }) {
+    const cls = `branch-col col-${branch}` + (selected ? ` selected-${branch}` : ' unselected');
+    if (!advs.length) {
+      const msg = origCount > 0 ? 'no matching advances' : 'no branch advances';
+      return html`<div class=${cls}><div class="no-adv">${msg}</div></div>`;
+    }
     return html`
       <div class=${cls}>
         <${ColSummary} advs=${advs} />
@@ -290,33 +381,41 @@ details[open] .univ-strip summary::before{content:'-'}
       </div>`;
   }
 
-  function AgeCard({ age, selected, showUniv, showAdvances, onPick }) {
-    const B      = D.branches[age];
-    const univFx = (B.universal||[]).filter(a => a.effects.length > 0);
+  function AgeCard({ age, selected, showUniv, showAdvances, onPick, filterFn }) {
+    const B       = D.branches[age];
+    const allUniv = (B.universal||[]).filter(a => a.effects.length > 0);
+    const univFx  = allUniv.filter(filterFn);
+
+    // precompute per-branch filtered/total so tabs and cols share same data
+    const branchData = BRANCHES.map(b => {
+      const all = B[b] || [];
+      return { b, all, filtered: all.filter(filterFn) };
+    });
+
     return html`
       <div class="age-card ${showAdvances?'':'adv-hidden'}">
         <div class="age-title">
           ${D.ageLabels[age]}
-          ${univFx.length > 0 && html`<span class="univ-tag">(+${univFx.length} universal)</span>`}
+          ${allUniv.length > 0 && html`<span class="univ-tag">(+${univFx.length}/${allUniv.length} universal)</span>`}
         </div>
-        ${univFx.length > 0 && html`
+        ${allUniv.length > 0 && html`
           <div class=${`univ-strip${showUniv?'':' univ-hidden'}`}>
             <details>
-              <summary>${univFx.length} universal advances (always active)</summary>
+              <summary>${univFx.length} universal advance${univFx.length!==1?'s':''} (always active)</summary>
               <div class="univ-adv">${univFx.map(a => html`<${AdvBlock} key=${a.name} adv=${a} />`)}</div>
             </details>
           </div>`}
         <div class="branch-tabs">
-          ${BRANCHES.map(b => {
-            const advs = B[b] || [];
-            const uCnt = advs.reduce((s,a) => s + a.effects.filter(([k])=>isUnlock(k)).length, 0);
-            const mCnt = advs.reduce((s,a) => s + a.effects.filter(([k])=>!isUnlock(k)).length, 0);
+          ${branchData.map(({ b, all, filtered }) => {
+            const uCnt = filtered.reduce((s,a) => s + a.effects.filter(([k])=>isUnlock(k)).length, 0);
+            const mCnt = filtered.reduce((s,a) => s + a.effects.filter(([k])=>!isUnlock(k)).length, 0);
+            const dimmed = all.length > 0 && filtered.length === 0;
             return html`
-              <button key=${b} class=${`branch-tab${selected===b?` sel-${b}`:''}`}
-                disabled=${advs.length===0} onClick=${()=>onPick(b)}>
+              <button key=${b} class=${`branch-tab${selected===b?` sel-${b}`:''}${dimmed?' unselected':''}`}
+                disabled=${all.length===0} onClick=${()=>onPick(b)}>
                 ${b.toUpperCase()}<br/>
                 <span class="cnt">
-                  ${advs.length} adv.${' '}
+                  ${filtered.length}${filtered.length!==all.length?`/${all.length}`:''} adv.${' '}
                   ${uCnt>0 && html`<span class="cnt-u">${uCnt}u</span>`}
                   ${uCnt>0 && mCnt>0 && html`<span style="color:var(--text-dim)"> · </span>`}
                   ${mCnt>0 && html`<span class="cnt-m">${mCnt}m</span>`}
@@ -325,8 +424,8 @@ details[open] .univ-strip summary::before{content:'-'}
           })}
         </div>
         <div class="branch-detail">
-          ${BRANCHES.map(b => html`
-            <${BranchCol} key=${b} age=${age} branch=${b} selected=${selected===b} />`)}
+          ${branchData.map(({ b, all, filtered }) => html`
+            <${BranchCol} key=${b} advs=${filtered} origCount=${all.length} branch=${b} selected=${selected===b} />`)}
         </div>
       </div>`;
   }
@@ -401,28 +500,30 @@ details[open] .univ-strip summary::before{content:'-'}
           ? groups.map(([lbl,items]) => html`<${SumGroupAge} key=${lbl} lbl=${lbl} items=${items} />`)
           : catGroups
             ? ['adm','dip','mil','other'].map(cat => catGroups[cat].length ? html`
-                <div key=${cat} class="sum-cat-group">
-                  <div class="sum-cat-header" style=${{color: cat==='other' ? 'var(--text-dim)' : `var(--${cat})`}}>
+                <details key=${cat} class="sum-cat-details" open>
+                  <summary style=${{color: cat==='other' ? 'var(--text-dim)' : `var(--${cat})`}}>
                     ${CAT_LABELS[cat]}
-                  </div>
+                  </summary>
                   ${catGroups[cat].map(([k,items]) => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
-                </div>` : null)
+                </details>` : null)
             : groups.map(([k,items]) => html`<${SumGroupKey} key=${k} keyName=${k} items=${items} />`)}
       </div>`;
   }
 
-  function SummaryPanel({ sel, grp, show, showUniv }) {
+  function SummaryPanel({ sel, grp, show, sumUniv, maxAge, onToggleSummary, filterFn }) {
+    const summaryAges = useMemo(() => D.ages.slice(0, maxAge + 1), [maxAge]);
+
     const effects = useMemo(() => {
       const out = [];
-      for (const age of D.ages) {
+      for (const age of summaryAges) {
         const B     = D.branches[age];
-        const univs = showUniv ? (B.universal||[]) : [];
-        for (const a of [...univs, ...(B[sel[age]]||[])])
+        const univs = sumUniv ? (B.universal||[]) : [];
+        for (const a of [...univs, ...(B[sel[age]]||[])].filter(filterFn))
           for (const [k,v] of a.effects)
             out.push({k, v, src:a.name, isMod:a.isMod, age, ageLabel:D.ageLabels[age]});
       }
       return out;
-    }, [sel, showUniv]);
+    }, [sel, sumUniv, summaryAges, filterFn]);
 
     const filtered  = show==='unlocks'   ? effects.filter(e=> isUnlock(e.k))
                     : show==='modifiers' ? effects.filter(e=>!isUnlock(e.k))
@@ -432,12 +533,18 @@ details[open] .univ-strip summary::before{content:'-'}
 
     return html`
       <div class="right by-${grp}">
-        <div class="sum-header"><h2>Summary</h2></div>
+        <div class="sum-header">
+          <h2>Summary</h2>
+          <button class="summary-close-btn" onClick=${onToggleSummary}>Hide ✕</button>
+        </div>
         <div class="combo-label">
-          ${D.ages.map((age, i) => html`
+          ${summaryAges.map((age, i) => html`
             <span key=${age} style=${{color:`var(--${sel[age]||'text-dim'})`}}>
               ${D.ageLabels[age].replace('Age of ','')}: ${(sel[age]||'?').toUpperCase()}
-            </span>${i<D.ages.length-1 ? ' > ' : ''}`)}
+            </span>${i<summaryAges.length-1 ? ' > ' : ''}`)}
+          ${summaryAges.length < D.ages.length
+            ? html`<span style="color:var(--text-dim)"> (${D.ages.length - summaryAges.length} age${D.ages.length - summaryAges.length>1?'s':''} hidden)</span>`
+            : null}
         </div>
         ${!filtered.length
           ? html`<div class="empty">Select a branch for each age.</div>`
@@ -450,11 +557,18 @@ details[open] .univ-strip summary::before{content:'-'}
   }
 
   function App() {
-    const [sel,      setSel]      = useState({});
-    const [grp,      setGrp]      = useState('age');
-    const [show,     setShow]     = useState('all');
-    const [showUniv, setShowUniv] = useState(false);
-    const [showAdvances, setShowAdvances] = useState(false);
+    const [sel,         setSel]         = useState({});
+    const [grp,         setGrp]         = useState('age');
+    const [show,        setShow]        = useState('all');
+    const [showUniv,    setShowUniv]    = useState(true);
+    const [showAdvances,setShowAdvances]= useState(false);
+    const [sumUniv,     setSumUniv]     = useState(false);
+    const [maxAge,      setMaxAge]      = useState(D.ages.length - 1);
+    const [summaryOpen, setSummaryOpen] = useState(true);
+    const [search,      setSearch]      = useState('');
+
+    const patterns = useMemo(() => parseSearch(search), [search]);
+    const filterFn = useCallback(adv => advMatchesSearch(adv, patterns), [patterns]);
 
     useEffect(() => {
       const init = {};
@@ -470,15 +584,23 @@ details[open] .univ-strip summary::before{content:'-'}
     return html`
       <div class="app">
         <${Header} grp=${grp} show=${show} showUniv=${showUniv} showAdvances=${showAdvances}
-          onGrp=${setGrp} onShow=${setShow} onToggleUniv=${()=>setShowUniv(v=>!v)} onToggleAdvances=${()=>setShowAdvances(v=>!v)} />
-        <div class="body">
+          sumUniv=${sumUniv} maxAge=${maxAge} search=${search} onSearch=${setSearch}
+          onGrp=${setGrp} onShow=${setShow}
+          onToggleUniv=${()=>setShowUniv(v=>!v)} onToggleAdvances=${()=>setShowAdvances(v=>!v)}
+          onToggleSumUniv=${()=>setSumUniv(v=>!v)} onMaxAge=${setMaxAge} />
+        <div class=${'body' + (summaryOpen ? '' : ' summary-collapsed')}>
           <div class="left">
             ${D.ages.map(age => html`
               <${AgeCard} key=${age} age=${age} selected=${sel[age]}
-                showUniv=${showUniv} showAdvances=${showAdvances} onPick=${b=>pick(age,b)} />`)}
+                showUniv=${showUniv} showAdvances=${showAdvances} filterFn=${filterFn}
+                onPick=${b=>pick(age,b)} />`)}
           </div>
-          <${SummaryPanel} sel=${sel} grp=${grp} show=${show} showUniv=${showUniv} />
+          <${SummaryPanel} sel=${sel} grp=${grp} show=${show}
+            sumUniv=${sumUniv} maxAge=${maxAge}
+            filterFn=${filterFn} onToggleSummary=${()=>setSummaryOpen(v=>!v)} />
         </div>
+        <button class=${'summary-fab' + (summaryOpen ? ' sp-hidden' : '')}
+          onClick=${()=>setSummaryOpen(true)}>Summary ▶</button>
       </div>`;
   }
 

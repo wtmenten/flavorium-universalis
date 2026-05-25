@@ -15,14 +15,14 @@ cc_traits.1 = {
 	outcome = neutral
 
 	trigger = {
+		OR = {
+			has_advance = state_efficiency
+			has_advance = tolerance_idea
+			has_advance = experienced_diplomats
+		}
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = yes
-			OR = {
-				country.has_advance = state_efficiency
-				country.has_advance = tolerance_idea
-				country.has_advance = experienced_diplomats
-			}
 			OR = {
 				cabinet_action = cabinet_action:integrate_area
 				cabinet_action = cabinet_action:integrate_province
@@ -98,27 +98,72 @@ cc_traits.1 = {
 
 	option = {
 		name = cc_traits.1.a
+		trigger = {
+			scope:integrating_minister = {
+				adm > 66  mil > 66  dip > 66
+			}
+		}
 		scope:integrating_minister = {
 			set_variable = cc_integration_done
-			if = {
-				limit = { adm > 66  mil > 66  dip > 66 }
-				add_trait = trait:iron_integrator
-			}
-			else_if = {
-				limit = { adm > 66  dip > 66 }
-				add_trait = trait:master_integrator
-			}
-			else_if = {
-				limit = { adm > 33  mil > 33  dip > 33 }
-				add_trait = trait:able_integrator
-			}
-			else = {
-				add_trait = trait:fumbling_integrator
-			}
+			add_trait = trait:iron_integrator
 		}
 	}
 	option = {
 		name = cc_traits.1.b
+		trigger = {
+			scope:integrating_minister = {
+				adm > 66 
+				dip > 66 
+				mil < 66
+				mil > 33
+			}
+		}
+		scope:integrating_minister = { 
+			set_variable = cc_integration_done 
+			add_trait = trait:master_integrator
+		}
+	}
+	option = {
+		name = cc_traits.1.c
+		trigger = {
+			scope:integrating_minister = {
+				OR = {
+					adm < 66
+					dip < 66
+				}
+				mil < 66
+				adm > 33
+				dip > 33
+				mil > 33
+			}
+		}
+		scope:integrating_minister = { 
+			set_variable = cc_integration_done 
+			add_trait = trait:able_integrator
+		}
+	}
+	option = {
+		name = cc_traits.1.d
+		trigger = {
+			scope:integrating_minister = {
+				AND = {
+					adm > 33
+					dip > 33
+					mil > 33
+					OR = {
+						adm < 66
+						dip < 66
+					}
+				}
+			}
+		}
+		scope:integrating_minister = { 
+			set_variable = cc_integration_done 
+			add_trait = trait:fumbling_integrator
+		}
+	}
+	option = {
+		name = cc_traits.1.e
 		scope:integrating_minister = { set_variable = cc_integration_done }
 	}
 }
@@ -150,17 +195,17 @@ cc_traits.10 = {
 			OR = {
 				AND = {
 					OR = {
-						country.capital.sub_continent = sub_continent:western_europe
-						country.capital.sub_continent = sub_continent:eastern_europe
+						scope:country.capital.sub_continent = sub_continent:western_europe
+						scope:country.capital.sub_continent = sub_continent:eastern_europe
 					}
-					country.has_advance = renaissance_thought
+					scope:country = { has_advance = renaissance_thought }
 					NOT = { has_trait = renaissance_humanist }
 					adm > 50
 				}
 				AND = {
 					OR = {
-						country.capital.sub_continent = sub_continent:east_asia
-						country.capital.sub_continent = sub_continent:south_east_asia
+						scope:country.capital.sub_continent = sub_continent:east_asia
+						scope:country.capital.sub_continent = sub_continent:south_east_asia
 					}
 					NOT = { has_trait = eastern_pragmatist }
 					adm > 50
@@ -206,17 +251,17 @@ cc_traits.10 = {
 				OR = {
 					AND = {
 						OR = {
-							country.capital.sub_continent = sub_continent:western_europe
-							country.capital.sub_continent = sub_continent:eastern_europe
+							scope:country.capital.sub_continent = sub_continent:western_europe
+							scope:country.capital.sub_continent = sub_continent:eastern_europe
 						}
-						country.has_advance = renaissance_thought
+						scope:country = { has_advance = renaissance_thought }
 						NOT = { has_trait = renaissance_humanist }
 						adm > 50
 					}
 					AND = {
 						OR = {
-							country.capital.sub_continent = sub_continent:east_asia
-							country.capital.sub_continent = sub_continent:south_east_asia
+							scope:country.capital.sub_continent = sub_continent:east_asia
+							scope:country.capital.sub_continent = sub_continent:south_east_asia
 						}
 						NOT = { has_trait = eastern_pragmatist }
 						adm > 50
@@ -278,10 +323,14 @@ cc_traits.10 = {
 		}
 	}
 
-	# Dismiss — always available; marks minister as offered so they aren't re-selected
+	# Dismiss — the ruler takes notes anyway; small random benefit
 	option = {
 		name = cc_traits.10.d
 		scope:minister = { set_variable = cc_age_trait_10_done }
+		random_list = {
+			50 = { add_country_modifier = { modifier = cc_temp_renaissance_observation years = 5 } }
+			50 = { }
+		}
 	}
 }
 
@@ -308,7 +357,7 @@ cc_traits.11 = {
 			OR = {
 				AND = {
 					NOT = { has_trait = age_of_discovery_pioneer }
-					country.has_advance = explorer_commisions_advance
+					scope:country = { has_advance = explorer_commisions_advance }
 					adm > 50
 					dip > 33
 					mil > 33
@@ -353,7 +402,7 @@ cc_traits.11 = {
 				OR = {
 					AND = {
 						NOT = { has_trait = age_of_discovery_pioneer }
-						country.has_advance = explorer_commisions_advance
+						scope:country = { has_advance = explorer_commisions_advance }
 						adm > 50
 						dip > 33
 						mil > 33
@@ -439,7 +488,7 @@ cc_traits.12 = {
 						AND = {
 							NOT = { religion = religion:catholic }
 							dip > 33
-						} 
+						}
 					}
 				}
 				AND = {
@@ -448,13 +497,23 @@ cc_traits.12 = {
 				}
 				AND = {
 					NOT = { has_trait = reformist_theologian }
-					NOT = { religion.group = religion_group:christian } 
+					NOT = { religion.group = religion_group:christian }
 					has_estate = estate_type:clergy_estate
 				}
 				AND = {
 					NOT = { has_trait = orthodox_defender }
 					NOT = { religion.group = religion_group:christian }
 					mil > 66
+				}
+				# Universal fallback: any minister without a reformation or dogmatic trait
+				AND = {
+					NOR = {
+						has_trait = reformation_preacher
+						has_trait = reformation_inquisitor
+						has_trait = reformist_theologian
+						has_trait = orthodox_defender
+						has_trait = dogmatic_zealot
+					}
 				}
 			}
 		}
@@ -573,7 +632,7 @@ cc_traits.12 = {
 								AND = {
 									NOT = { religion = religion:catholic }
 									dip > 33
-								} 
+								}
 							}
 						}
 						AND = {
@@ -582,13 +641,23 @@ cc_traits.12 = {
 						}
 						AND = {
 							NOT = { has_trait = reformist_theologian }
-							NOT = { religion.group = religion_group:christian } 
+							NOT = { religion.group = religion_group:christian }
 							has_estate = estate_type:clergy_estate
 						}
 						AND = {
 							NOT = { has_trait = orthodox_defender }
 							NOT = { religion.group = religion_group:christian }
 							mil > 66
+						}
+						# Universal: any minister without a reformation or dogmatic trait
+						AND = {
+							NOR = {
+								has_trait = reformation_preacher
+								has_trait = reformation_inquisitor
+								has_trait = reformist_theologian
+								has_trait = orthodox_defender
+								has_trait = dogmatic_zealot
+							}
 						}
 					}
 				}
@@ -656,6 +725,20 @@ cc_traits.12 = {
 			add_trait = trait:orthodox_defender
 		}
 	}
+
+	# Intolerant / no religious position — random outcome (universal fallback)
+	option = {
+		name = cc_traits.12.e
+		scope:minister = {
+			set_variable = cc_age_trait_12_done
+			random_list = {
+				40 = { add_trait = trait:dogmatic_zealot }
+				30 = { }
+				30 = { }
+			}
+		}
+		add_prestige = prestige_weak_bonus
+	}
 }
 
 # Age of Absolutism — one of five governance postures
@@ -684,12 +767,12 @@ cc_traits.13 = {
 				AND = {
 					NOT = { has_trait = noble_patron }
 					dip > 66
-					country.government_type = government_type:monarchy
-					country.has_advance = noble_patronage_advance
+					scope:country.government_type = government_type:monarchy
+					scope:country = { has_advance = noble_patronage_advance }
 				}
 				AND = {
 					NOT = { has_trait = parliamentarian }
-					country.modifier:has_a_parliamentary_system = yes
+					scope:country.modifier:has_a_parliamentary_system = yes
 					dip > 66
 				}
 				AND = {
@@ -724,12 +807,12 @@ cc_traits.13 = {
 					AND = {
 						NOT = { has_trait = noble_patron }
 						dip > 66
-						country.government_type = government_type:monarchy
-						country.has_advance = noble_patronage_advance
+						scope:country.government_type = government_type:monarchy
+						scope:country = { has_advance = noble_patronage_advance }
 					}
 					AND = {
 						NOT = { has_trait = parliamentarian }
-						country.modifier:has_a_parliamentary_system = yes
+						scope:country.modifier:has_a_parliamentary_system = yes
 						dip > 66
 					}
 					AND = {
@@ -1169,6 +1252,848 @@ cc_traits.21 = {
 		scope:learner = {
 			set_variable = cc_teach_21_done
 			add_trait = trait:loyal_steward
+		}
+	}
+}
+
+###############################################################################
+# NEW AGE TRAIT EVENTS — cc_traits.30-39
+# Complex trigger conditions; 2 per age (ages 2-6).
+# Each uses cc_age_trait_NN_done variable to prevent repeat offers.
+###############################################################################
+
+# "The Empiricist's Method"
+# A minister with a sharp administrative mind begins applying systematic
+# observation to court practice — empirical method comes to governance.
+# Age 2+, adm > 55, country has renaissance_thought advance.
+cc_traits.30 = {
+	type = country_event
+	title = cc_traits.30.title
+	desc = cc_traits.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_2_renaissance
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		has_advance = renaissance_thought
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_30_done }
+			in_cabinet = yes
+			adm > 55
+			NOT = { has_trait = empiricist_counselor }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+		modifier = {
+			factor = 0.3
+			NOT = {
+				OR = {
+					current_age = age_2_renaissance
+					current_age = age_3_discovery
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_30_done }
+				in_cabinet = yes
+				adm > 55
+				NOT = { has_trait = empiricist_counselor }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Empiricist — adm > 60 (premium)
+	option = {
+		name = cc_traits.30.a
+		trigger = { scope:minister = { adm > 60 } }
+		scope:minister = {
+			set_variable = cc_age_trait_30_done
+			add_trait = trait:empiricist_counselor
+		}
+	}
+
+	# Curious observer — small random benefit; minister notes down ideas
+	option = {
+		name = cc_traits.30.b
+		scope:minister = { set_variable = cc_age_trait_30_done }
+		random_list = {
+			40 = { add_country_modifier = { modifier = cc_temp_renaissance_observation years = 5 } }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The Urban Reformer"
+# A burgher minister with sharp administrative instincts pushes for
+# streamlined construction and civic investment in the growing capital.
+# Age 2+, burgher estate, adm > 50, capital dev > 30.
+cc_traits.31 = {
+	type = country_event
+	title = cc_traits.31.title
+	desc = cc_traits.31.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_2_renaissance
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		capital.development > 30
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_31_done }
+			in_cabinet = yes
+			has_estate = estate_type:burghers_estate
+			adm > 50
+			NOT = { has_trait = civic_chancellor }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			add = 2
+			capital.development > 40
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_31_done }
+				in_cabinet = yes
+				has_estate = estate_type:burghers_estate
+				adm > 50
+				NOT = { has_trait = civic_chancellor }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Civic Chancellor — adm > 55 + capital dev > 35 (premium)
+	option = {
+		name = cc_traits.31.a
+		trigger = {
+			scope:minister = { adm > 55 }
+			capital.development > 35
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_31_done
+			add_trait = trait:civic_chancellor
+		}
+	}
+
+	# Cautious investment — small random civic benefit
+	option = {
+		name = cc_traits.31.b
+		scope:minister = { set_variable = cc_age_trait_31_done }
+		random_list = {
+			40 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 } }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The Cartographer's Commission"
+# A diplomatic minister oversees the systematic charting of new lands —
+# turning raw exploration into lasting geographic knowledge.
+# Age 3+, dip > 50, explorer_commisions_advance, minister on colonization action.
+cc_traits.32 = {
+	type = country_event
+	title = cc_traits.32.title
+	desc = cc_traits.32.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		has_advance = explorer_commisions_advance
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_32_done }
+			in_cabinet = yes
+			dip > 50
+			NOT = { has_trait = chief_cartographer }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = {
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+				}
+			}
+		}
+		modifier = {
+			add = 3
+			any_cabinet_character = {
+				in_cabinet = yes
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:send_people_to_the_colonies
+					cabinet_action = cabinet_action:send_people_to_colonial_charter
+					cabinet_action = cabinet_action:settle_the_frontier
+				}
+				dip > 50
+			}
+		}
+	}
+
+	immediate = {
+		# Prefer a minister actively on a colonization or exploration action
+		if = {
+			limit = {
+				any_cabinet_character = {
+					NOT = { has_variable = cc_age_trait_32_done }
+					in_cabinet = yes
+					dip > 50
+					NOT = { has_trait = chief_cartographer }
+					has_cabinet_action = yes
+					OR = {
+						cabinet_action = cabinet_action:send_people_to_the_colonies
+						cabinet_action = cabinet_action:send_people_to_colonial_charter
+						cabinet_action = cabinet_action:settle_the_frontier
+					}
+				}
+			}
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_32_done }
+					in_cabinet = yes
+					dip > 50
+					NOT = { has_trait = chief_cartographer }
+					has_cabinet_action = yes
+					OR = {
+						cabinet_action = cabinet_action:send_people_to_the_colonies
+						cabinet_action = cabinet_action:send_people_to_colonial_charter
+						cabinet_action = cabinet_action:settle_the_frontier
+					}
+				}
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_32_done }
+					in_cabinet = yes
+					dip > 50
+					NOT = { has_trait = chief_cartographer }
+				}
+				save_scope_as = minister
+			}
+		}
+	}
+
+	# Chief Cartographer — dip > 55 (premium)
+	option = {
+		name = cc_traits.32.a
+		trigger = { scope:minister = { dip > 55 } }
+		scope:minister = {
+			set_variable = cc_age_trait_32_done
+			add_trait = trait:chief_cartographer
+		}
+	}
+
+	# Skeptical administration — the minister catalogues but doesn't explore
+	option = {
+		name = cc_traits.32.b
+		scope:minister = {
+			set_variable = cc_age_trait_32_done
+			random_list = {
+				35 = { add_trait = trait:age_of_discovery_skeptic }
+				35 = { add_gold = 25 }
+				30 = { }
+			}
+		}
+	}
+}
+
+# "The Merchant's Grand Tour"
+# A well-connected burgher minister leverages the realm's subjects
+# and trading contacts to establish a powerful commercial consortium.
+# Age 3+, burgher dip > 55, at least one subject.
+cc_traits.33 = {
+	type = country_event
+	title = cc_traits.33.title
+	desc = cc_traits.33.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = bank
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_3_discovery
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		num_subjects >= 1
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_33_done }
+			in_cabinet = yes
+			has_estate = estate_type:burghers_estate
+			dip > 55
+			NOT = { has_trait = trade_consortium_minister }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = {
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_33_done }
+				in_cabinet = yes
+				has_estate = estate_type:burghers_estate
+				dip > 55
+				NOT = { has_trait = trade_consortium_minister }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Trade Consortium Minister — dip > 60 (premium)
+	option = {
+		name = cc_traits.33.a
+		trigger = { scope:minister = { dip > 60 } }
+		scope:minister = {
+			set_variable = cc_age_trait_33_done
+			add_trait = trait:trade_consortium_minister
+		}
+	}
+
+	# Modest contact network — small random trade benefit
+	option = {
+		name = cc_traits.33.b
+		scope:minister = { set_variable = cc_age_trait_33_done }
+		random_list = {
+			40 = { add_gold = 50 }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The Peacemaker's Gambit"
+# While the Reformation reshapes Europe, a minister with a silver tongue
+# seeks to reduce sectarian tensions rather than inflame them.
+# Age 4+, dip > 55, not at war, has tolerance_idea advance.
+cc_traits.34 = {
+	type = country_event
+	title = cc_traits.34.title
+	desc = cc_traits.34.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = happy
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		at_war = no
+		has_advance = tolerance_idea
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_34_done }
+			in_cabinet = yes
+			dip > 55
+			NOR = {
+				has_trait = peace_commissioner
+				has_trait = dogmatic_zealot
+				has_trait = reformation_preacher
+				has_trait = reformation_inquisitor
+			}
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_4_reformation }
+		}
+		modifier = {
+			add = 2
+			has_advance = tolerance_idea
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_34_done }
+				in_cabinet = yes
+				dip > 55
+				NOR = {
+					has_trait = peace_commissioner
+					has_trait = dogmatic_zealot
+					has_trait = reformation_preacher
+					has_trait = reformation_inquisitor
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Peace Commissioner — dip > 60 (premium)
+	option = {
+		name = cc_traits.34.a
+		trigger = { scope:minister = { dip > 60 } }
+		scope:minister = {
+			set_variable = cc_age_trait_34_done
+			add_trait = trait:peace_commissioner
+		}
+	}
+
+	# Dogmatic refusal — the minister chooses confrontation over compromise
+	option = {
+		name = cc_traits.34.b
+		trigger = { scope:minister = { NOT = { dip > 60 } } }
+		scope:minister = {
+			set_variable = cc_age_trait_34_done
+			add_trait = trait:dogmatic_zealot
+		}
+	}
+
+	# Polite decline — random minor outcome
+	option = {
+		name = cc_traits.34.c
+		scope:minister = { set_variable = cc_age_trait_34_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.03 } }
+			30 = { }
+		}
+	}
+}
+
+# "The Theological Statesman"
+# A clergy minister with sharp administrative talent learns to weave
+# faith into governance — theology in service of the state.
+# Age 4+, clergy estate, adm > 55, parliament or high clergy satisfaction.
+cc_traits.35 = {
+	type = country_event
+	title = cc_traits.35.title
+	desc = cc_traits.35.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_4_reformation
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_35_done }
+			in_cabinet = yes
+			has_estate = estate_type:clergy_estate
+			adm > 55
+			NOT = { has_trait_category = religious_figure }
+		}
+		OR = {
+			modifier:has_a_parliamentary_system = yes
+			any_estate = {
+				estate_type = estate_type:clergy_estate
+				estate_satisfaction >= 0.6
+			}
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = {
+				OR = {
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+				}
+			}
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_35_done }
+				in_cabinet = yes
+				has_estate = estate_type:clergy_estate
+				adm > 55
+				NOT = { has_trait_category = religious_figure }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Theological Statesman — adm > 60 (premium)
+	option = {
+		name = cc_traits.35.a
+		trigger = { scope:minister = { adm > 60 } }
+		scope:minister = {
+			set_variable = cc_age_trait_35_done
+			add_trait = trait:theological_statesman
+		}
+	}
+
+	# Crown Theologian — adm > 55, only if they don't already have it
+	option = {
+		name = cc_traits.35.b
+		trigger = {
+			scope:minister = {
+				adm > 55
+				NOT = { has_trait = crown_theologian }
+			}
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_35_done
+			add_trait = trait:crown_theologian
+		}
+	}
+
+	# Remain a pastoral figure — small random clerical benefit
+	option = {
+		name = cc_traits.35.c
+		scope:minister = { set_variable = cc_age_trait_35_done }
+		random_list = {
+			40 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 } }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The Standing Army Advocate"
+# As military revolution sweeps the continent, a skilled military minister
+# champions the cause of a permanent standing force over feudal levies.
+# Age 5+, mil > 60, monarchy, military_revolution_advance.
+cc_traits.36 = {
+	type = country_event
+	title = cc_traits.36.title
+	desc = cc_traits.36.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		government_type = government_type:monarchy
+		has_advance = military_revolution_advance
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_36_done }
+			in_cabinet = yes
+			mil > 60
+			NOT = { has_trait = standing_army_advocate }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_5_absolutism }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_36_done }
+				in_cabinet = yes
+				mil > 60
+				NOT = { has_trait = standing_army_advocate }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Standing Army Advocate — mil > 65 (premium)
+	option = {
+		name = cc_traits.36.a
+		trigger = { scope:minister = { mil > 65 } }
+		scope:minister = {
+			set_variable = cc_age_trait_36_done
+			add_trait = trait:standing_army_advocate
+		}
+	}
+
+	# Traditional approach — nobles prefer the old levy system; random minor reward
+	option = {
+		name = cc_traits.36.b
+		scope:minister = { set_variable = cc_age_trait_36_done }
+		random_list = {
+			40 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.04 } }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The Tax Inspector"
+# Administrative centralization demands someone to enforce the new fiscal
+# regime. A sharp-minded minister takes on the thankless task of audit and reform.
+# Age 5+, adm > 60, integrate_area_advance.
+cc_traits.37 = {
+	type = country_event
+	title = cc_traits.37.title
+	desc = cc_traits.37.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		OR = {
+			current_age = age_5_absolutism
+			current_age = age_6_revolutions
+		}
+		has_advance = integrate_area_advance
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_37_done }
+			in_cabinet = yes
+			adm > 60
+			NOT = { has_trait = tax_inspector_general }
+			NOT = { has_trait = absolute_administrator }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+		modifier = {
+			factor = 0.3
+			NOT = { current_age = age_5_absolutism }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_37_done }
+				in_cabinet = yes
+				adm > 60
+				NOT = { has_trait = tax_inspector_general }
+				NOT = { has_trait = absolute_administrator }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Tax Inspector General — adm > 65 (premium)
+	option = {
+		name = cc_traits.37.a
+		trigger = { scope:minister = { adm > 65 } }
+		scope:minister = {
+			set_variable = cc_age_trait_37_done
+			add_trait = trait:tax_inspector_general
+		}
+	}
+
+	# Softer hand — the minister avoids making enemies; small random fiscal benefit
+	option = {
+		name = cc_traits.37.b
+		scope:minister = { set_variable = cc_age_trait_37_done }
+		random_list = {
+			40 = { add_gold = 50 }
+			30 = { add_prestige = prestige_weak_bonus }
+			30 = { }
+		}
+	}
+}
+
+# "The National Minister"
+# As the Age of Revolutions transforms governance, a minister with vision
+# seizes the moment to build lasting national institutions.
+# Age 6, adm > 60, parliamentary system.
+cc_traits.38 = {
+	type = country_event
+	title = cc_traits.38.title
+	desc = cc_traits.38.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		current_age = age_6_revolutions
+		modifier:has_a_parliamentary_system = yes
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_38_done }
+			in_cabinet = yes
+			adm > 60
+			NOT = { has_trait = national_reformer }
+		}
+	}
+
+	weight_multiplier = {
+		base = 10
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_38_done }
+				in_cabinet = yes
+				adm > 60
+				NOT = { has_trait = national_reformer }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# National Reformer — adm > 65 + parliamentary system (premium)
+	option = {
+		name = cc_traits.38.a
+		trigger = { scope:minister = { adm > 65 } }
+		scope:minister = {
+			set_variable = cc_age_trait_38_done
+			add_trait = trait:national_reformer
+		}
+	}
+
+	# Cautious reformer — the minister hedges; small random benefit
+	option = {
+		name = cc_traits.38.b
+		scope:minister = { set_variable = cc_age_trait_38_done }
+		random_list = {
+			40 = { add_prestige = prestige_weak_bonus }
+			30 = { add_country_modifier = { modifier = cc_synergy_governing_compact years = 5 } }
+			30 = { }
+		}
+	}
+}
+
+# "The Industrial Visionary"
+# The first stirrings of industrialisation reach the capital. A burgher
+# minister with sharp administrative talent sees the possibilities ahead.
+# Age 6, burgher adm > 55, capital dev > 40, printing_press_advance.
+cc_traits.39 = {
+	type = country_event
+	title = cc_traits.39.title
+	desc = cc_traits.39.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = bank
+	}
+
+	trigger = {
+		current_age = age_6_revolutions
+		has_advance = printing_press_advance
+		capital.development > 40
+		any_cabinet_character = {
+			NOT = { has_variable = cc_age_trait_39_done }
+			in_cabinet = yes
+			has_estate = estate_type:burghers_estate
+			adm > 55
+			NOT = { has_trait = industrial_visionary }
+		}
+	}
+
+	weight_multiplier = {
+		base = 8
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				NOT = { has_variable = cc_age_trait_39_done }
+				in_cabinet = yes
+				has_estate = estate_type:burghers_estate
+				adm > 55
+				NOT = { has_trait = industrial_visionary }
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Industrial Visionary — adm > 60 + dev > 40 (premium)
+	option = {
+		name = cc_traits.39.a
+		trigger = {
+			scope:minister = { adm > 60 }
+			capital.development > 40
+		}
+		scope:minister = {
+			set_variable = cc_age_trait_39_done
+			add_trait = trait:industrial_visionary
+		}
+	}
+
+	# Cautious investor — small random economic benefit
+	option = {
+		name = cc_traits.39.b
+		scope:minister = { set_variable = cc_age_trait_39_done }
+		random_list = {
+			40 = { add_gold = 75 }
+			30 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 } }
+			30 = { }
 		}
 	}
 }

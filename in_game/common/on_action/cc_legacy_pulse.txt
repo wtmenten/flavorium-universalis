@@ -11,7 +11,7 @@ cc_on_cabinet_death = {
 	effect = {
 		scope:target = { save_scope_as = cc_legacy_minister }
 
-		# Track B: Legendary minister death → permanent modifier event
+		# Track B: Legendary minister death → permanent modifier event (cc_legacy.2)
 		if = {
 			limit = {
 				scope:cc_legacy_minister = {
@@ -28,33 +28,14 @@ cc_on_cabinet_death = {
 			trigger_event_silently = cc_legacy.2
 		}
 
-		# Track A: Minister with notable traits → protege inheritance event
+		# Track C: Retired legend dies → legacy modifier event (cc_legacy.3)
 		else_if = {
 			limit = {
-				scope:cc_legacy_minister = {
-					OR = {
-						has_trait = grand_chancellor
-						has_trait = cavalry_marshal
-						has_trait = supreme_commander
-						has_trait = learned_courtier
-						has_trait = enlightenment_herald
-						has_trait = master_urbanist
-						has_trait = progressive_rationalist
-						has_trait = confucian_mandarin
-						has_trait = caliphate_diplomat
-						has_trait = seneschal
-						has_trait = marshal_of_the_court
-					}
-				}
-				# Limit to one protege event per game year
-				NOT = { has_variable = cc_legacy_protege_this_year }
+				scope:cc_legacy_minister = { has_trait = retired_legend }
+				NOT = { has_variable = cc_legacy_legendary_fired }
 			}
-			set_variable = {
-				name = cc_legacy_protege_this_year
-				value = yes
-				days = 365
-			}
-			trigger_event_silently = cc_legacy.1
+			set_variable = { name = cc_legacy_legendary_fired value = yes }
+			trigger_event_silently = cc_legacy.3
 		}
 	}
 }

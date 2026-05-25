@@ -93,8 +93,8 @@ cc_cabinet.2 = {
 
 	option = {
 		name = cc_cabinet.2.a
-		add_gold = -75
-		trigger_event_non_silently = { id = cc_cabinet.3 months = 6 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
+		trigger_event_silently = { id = cc_cabinet.3 months = 6 }
 	}
 
 	option = {
@@ -103,35 +103,33 @@ cc_cabinet.2 = {
 			target = scope:minister
 			modifier = cc_refused_funds_opinion
 		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_penalty
+		}
 	}
 }
 
-# "The Minister Puts the Funds to Work" (follow-up to cc_cabinet.2 option A)
+# "The Minister Puts the Funds to Work" (silent follow-up to cc_cabinet.2 option A)
+# Resolves randomly — no player choice needed.
 cc_cabinet.3 = {
 	type = country_event
-	title = cc_cabinet.3.title
-	desc = cc_cabinet.3.desc
-	outcome = neutral
+	hidden = yes
 
-	illustration_tags = {
-		10 = interior
-	}
-
-	immediate = { }
-
-	option = {
-		name = cc_cabinet.3.a
-		add_prestige = prestige_mild_bonus
-		add_country_modifier = {
-			modifier = cc_cabinet_ministerial_investment
-			years = 5
-			mode = add_and_extend
+	immediate = {
+		random_list = {
+			60 = {
+				add_prestige = prestige_mild_bonus
+				add_country_modifier = {
+					modifier = cc_cabinet_ministerial_investment
+					years = 5
+					mode = add_and_extend
+				}
+			}
+			40 = {
+				add_gold = { value = monthly_income_trade_and_tax multiply = 2 }
+			}
 		}
-	}
-
-	option = {
-		name = cc_cabinet.3.b
-		add_gold = 25
 	}
 }
 
@@ -226,6 +224,8 @@ cc_cabinet.10 = {
 			type = estate_type:burghers_estate
 			value = estate_satisfaction_mild_penalty
 		}
+		set_variable = { name = cc_snubbed_estate_burghers value = yes }
+		trigger_event_silently = { id = cc_cabinet.50 months = { 6 12 } }
 	}
 
 	option = {
@@ -238,11 +238,13 @@ cc_cabinet.10 = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_mild_penalty
 		}
+		set_variable = { name = cc_snubbed_estate_nobles value = yes }
+		trigger_event_silently = { id = cc_cabinet.50 months = { 6 12 } }
 	}
 
 	option = {
 		name = cc_cabinet.10.c
-		add_gold = -50
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_weak_bonus
@@ -259,6 +261,7 @@ cc_cabinet.10 = {
 
 	option = {
 		name = cc_cabinet.10.d
+		trigger_event_silently = { id = cc_cabinet.52 months = { 3 8 } }
 	}
 }
 
@@ -298,7 +301,7 @@ cc_cabinet.11 = {
 
 	option = {
 		name = cc_cabinet.11.a
-		add_gold = -100
+		add_gold = { value = monthly_income_trade_and_tax multiply = -8 }
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_mild_bonus
@@ -738,7 +741,7 @@ cc_cabinet.30 = {
 
 	option = {
 		name = cc_cabinet.30.a
-		add_gold = -50
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
 		scope:target_province = {
 			change_development = development_mild_bonus
 		}
@@ -935,10 +938,106 @@ cc_cabinet.33 = {
 		scope:target_province = {
 			change_development = development_mild_bonus
 		}
-		add_gold = -75
+		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
 	}
 
 	option = {
 		name = cc_cabinet.33.c
+	}
+}
+
+###############################################################################
+# FOLLOW-UP EVENTS (cc_cabinet.50–52)
+# Silently triggered by cc_cabinet.10 options.
+###############################################################################
+
+# "The Snubbed Estate Retaliates"
+# Triggered silently by cc_cabinet.10 option A (burghers snubbed) or option B (nobles snubbed).
+# Uses a variable set at the time of the choice to determine which estate retaliates.
+cc_cabinet.50 = {
+	type = country_event
+	title = cc_cabinet.50.title
+	desc = cc_cabinet.50.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = cc_snubbed_estate_burghers }
+			clear_variable = cc_snubbed_estate_burghers
+			add_estate_satisfaction = {
+				type = estate_type:burghers_estate
+				value = estate_satisfaction_weak_penalty
+			}
+			add_country_modifier = {
+				modifier = cc_burgher_resentment
+				years = 3
+				mode = add_and_extend
+			}
+		}
+		if = {
+			limit = { has_variable = cc_snubbed_estate_nobles }
+			clear_variable = cc_snubbed_estate_nobles
+			add_prestige = prestige_weak_penalty
+			add_country_modifier = {
+				modifier = cc_noble_resentment
+				years = 3
+				mode = add_and_extend
+			}
+		}
+	}
+
+	# Smooth things over with coin
+	option = {
+		name = cc_cabinet.50.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		if = {
+			limit = { has_country_modifier = cc_burgher_resentment }
+			remove_country_modifier = cc_burgher_resentment
+		}
+		if = {
+			limit = { has_country_modifier = cc_noble_resentment }
+			remove_country_modifier = cc_noble_resentment
+		}
+	}
+
+	# Let it stand
+	option = {
+		name = cc_cabinet.50.b
+	}
+}
+
+# "The Minister's Idle Influence"
+# Silently triggered by cc_cabinet.10 option D (do nothing).
+# Hidden event — effects resolve automatically with no player notification.
+cc_cabinet.52 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		random_list = {
+			40 = {
+				add_gold = { value = monthly_income_trade_and_tax multiply = 2 }
+			}
+			30 = {
+				random_list = {
+					1 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus } }
+					1 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_bonus } }
+					1 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_weak_bonus } }
+				}
+			}
+			20 = {
+				add_gold = { value = monthly_income_trade_and_tax multiply = -2 }
+			}
+			10 = {
+				random_list = {
+					1 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty } }
+					1 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty } }
+				}
+			}
+		}
 	}
 }
