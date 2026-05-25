@@ -1,0 +1,732 @@
+﻿############################################
+# Age of Discovery (Age 3)
+# Late Renaissance Ideas mini-tree
+# Catchup/continuation of Renaissance themes:
+# humanism, natural philosophy, artistic patronage,
+# civic identity, Islamic scholarship, Neo-Confucian revival
+############################################
+
+late_renaissance_ideas = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	depth = 0
+
+	global_max_literacy = 1
+	global_burghers_max_literacy = 1
+}
+
+renaissance_natural_philosophy = {
+	age = age_3_discovery
+	icon = expansionism
+	requires = late_renaissance_ideas
+
+	global_life_expectancy = 2
+	global_disease_resistance = 0.05
+}
+
+renaissance_civic_humanism = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	for = adm
+	requires = late_renaissance_ideas
+
+	stability_cost = -0.05
+	country_cabinet_efficiency = 0.05
+}
+
+renaissance_church_patronage = {
+	age = age_3_discovery
+	icon = diplomatic_range_age_1
+	requires = renaissance_natural_philosophy
+
+	potential = {
+		OR = {
+			religion = religion:catholic
+			religion = religion:orthodox
+			religion = religion:lutheran
+			religion = religion:calvinist
+			religion = religion:anglican
+		}
+	}
+
+	global_institution_growth_modifier = 0.10
+	global_pop_conversion_speed_modifier = 0.05
+}
+
+scholastic_reform_advance = {
+	age = age_3_discovery
+	icon = diplomatic_range_age_1
+	requires = renaissance_church_patronage
+
+	potential = {
+		religion = religion:catholic
+	}
+
+	stability_cost = -0.05
+	global_clergy_max_literacy = 1
+}
+
+islamic_observatory_tradition = {
+	age = age_3_discovery
+	icon = expansionism
+	requires = renaissance_natural_philosophy
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+		original_capital ?= { sub_continent = sub_continent:middle_east }
+	}
+
+	global_life_expectancy = 2
+	diplomatic_range_modifier = 0.10
+}
+
+ottoman_polymath_networks = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	requires = islamic_observatory_tradition
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:middle_east }
+	}
+
+	global_disease_resistance = 0.05
+	cultural_influence_modifier = 0.05
+}
+
+renaissance_court_culture = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	requires = renaissance_civic_humanism
+
+	potential = {
+		government_type = government_type:monarchy
+	}
+
+	cultural_influence_modifier = 0.05
+	power_projection = 3
+}
+
+civic_republic_ideals = {
+	age = age_3_discovery
+	icon = diplomatic_range_age_1
+	requires = renaissance_civic_humanism
+
+	potential = {
+		government_type = government_type:republic
+	}
+
+	legislative_efficiency = 0.05
+	stability_cost = -0.05
+}
+
+east_asian_classical_revival = {
+	age = age_3_discovery
+	icon = diplomatic_range_age_1
+	requires = late_renaissance_ideas
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	global_max_literacy = 5
+	country_cabinet_efficiency = 0.05
+}
+
+chinese_examination_refinement = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	requires = east_asian_classical_revival
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	country_cabinet_efficiency = 0.10
+	stability_cost = -0.05
+}
+
+italian_masters_advance = {
+	age = age_3_discovery
+	icon = diplomatic_influence
+	requires = late_renaissance_ideas
+
+	potential = {
+		culture ?= { has_culture_group = culture_group:italian_group }
+	}
+
+	skill_of_new_artists = 0.10
+	cultural_influence_modifier = 0.05
+}
+
+############################################
+# Age of Reformation (Age 4)
+# Late Discovery Ideas mini-tree
+# Catchup/continuation of Discovery themes:
+# cartography, colonial consolidation, maritime trade,
+# Silk Road revival, missionary reach
+############################################
+
+late_discovery_ideas = {
+	age = age_4_reformation
+	icon = diplomatic_range_age_1
+	depth = 0
+
+	trade_range = 100
+	colonial_range = 150
+}
+
+systematic_cartography = {
+	age = age_4_reformation
+	icon = expansionism
+	requires = late_discovery_ideas
+
+	trade_range = 100
+	diplomatic_range_modifier = 0.10
+}
+
+discovery_colonial_consolidation = {
+	age = age_4_reformation
+	icon = expansionism
+	for = dip
+	requires = late_discovery_ideas
+
+	subject_loyalty = 3
+	global_integration_speed_modifier = 0.10
+}
+
+maritime_republic_trade = {
+	age = age_4_reformation
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = systematic_cartography
+
+	potential = {
+		government_type = government_type:republic
+	}
+
+	global_merchant_power = 0.10
+	merchant_power_from_maritime = 0.02
+}
+
+east_asian_maritime_tribute = {
+	age = age_4_reformation
+	icon = diplomatic_influence
+	requires = systematic_cartography
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	naval_range = 150
+	subject_loyalty = 3
+}
+
+missionary_expansion_advance = {
+	age = age_4_reformation
+	icon = diplomatic_range_age_1
+	requires = discovery_colonial_consolidation
+
+	potential = {
+		OR = {
+			religion = religion:catholic
+			religion = religion:lutheran
+			religion = religion:calvinist
+			religion = religion:anglican
+		}
+	}
+
+	global_pop_conversion_speed_modifier = 0.10
+	colonial_range = 100
+}
+
+colonial_ecclesiastical_order = {
+	age = age_4_reformation
+	icon = diplomatic_range_age_1
+	requires = missionary_expansion_advance
+
+	potential = {
+		religion = religion:catholic
+		original_capital ?= { continent = continent:europe }
+		any_subject = {
+			is_subject_type = colonial_nation
+		}
+	}
+
+	global_institution_growth_modifier = 0.10
+	colonial_range = 100
+}
+
+iberian_colonial_doctrine = {
+	age = age_4_reformation
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = discovery_colonial_consolidation
+
+	potential = {
+		culture ?= { has_culture_group = culture_group:iberian_group }
+	}
+
+	colonial_range = 200
+	naval_morale = 0.05
+}
+
+iberian_heavy_fleet = {
+	age = age_4_reformation
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = iberian_colonial_doctrine
+
+	potential = {
+		culture ?= { has_culture_group = culture_group:iberian_group }
+	}
+
+	navy_heavy_ship_power = 0.15
+	naval_morale = 0.05
+}
+
+overland_trade_routes = {
+	age = age_4_reformation
+	icon = diplomatic_influence
+	requires = late_discovery_ideas
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+	}
+
+	trade_range = 150
+	army_logistics_distance = 25
+}
+
+silk_road_revival = {
+	age = age_4_reformation
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = overland_trade_routes
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+		OR = {
+			original_capital ?= { sub_continent = sub_continent:middle_east }
+			original_capital ?= { sub_continent = sub_continent:central_asia }
+		}
+	}
+
+	trade_range = 150
+	diplomatic_range_modifier = 0.15
+	global_merchant_power = 0.10
+}
+
+############################################
+# Age of Absolutism (Age 5)
+# Late Reformation Ideas mini-tree
+# Catchup/continuation of Reformation themes:
+# confessional state-building, Peace of Westphalia,
+# church-state relations, Indian syncretic tolerance,
+# East Asian state-religion integration
+############################################
+
+late_reformation_ideas = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	depth = 0
+
+	stability_cost = -0.05
+	global_pop_conversion_speed_modifier = 0.05
+}
+
+confessional_state_building = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	for = adm
+	requires = late_reformation_ideas
+
+	government_reform_slots = 1
+}
+
+protestant_church_state = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = confessional_state_building
+
+	potential = {
+		OR = {
+			religion = religion:lutheran
+			religion = religion:calvinist
+			religion = religion:anglican
+		}
+	}
+
+	global_max_literacy = 5
+	country_cabinet_efficiency = 0.05
+}
+
+lutheran_education_advance = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = protestant_church_state
+
+	potential = {
+		OR = {
+			religion = religion:lutheran
+			religion = religion:calvinist
+			religion = religion:anglican
+		}
+		original_capital ?= { continent = continent:europe }
+	}
+
+	global_max_literacy = 5
+	stability_cost = -0.05
+}
+
+catholic_confession_legacy = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = confessional_state_building
+
+	potential = {
+		religion = religion:catholic
+	}
+
+	global_institution_growth_modifier = 0.10
+	stability_cost = -0.05
+}
+
+jesuitical_reform_advance = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = catholic_confession_legacy
+
+	potential = {
+		religion = religion:catholic
+		original_capital ?= { continent = continent:europe }
+		any_subject = {
+			is_subject_type = colonial_nation
+		}
+	}
+
+	global_institution_growth_modifier = 0.10
+	colonial_range = 100
+}
+
+sunni_confessional_state = {
+	age = age_5_absolutism
+	icon = expansionism
+	requires = confessional_state_building
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+	}
+
+	global_pop_conversion_speed_modifier = 0.10
+	power_projection = 3
+}
+
+ottoman_millet_advance = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	requires = sunni_confessional_state
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+		original_capital ?= { sub_continent = sub_continent:middle_east }
+	}
+
+	global_integration_speed_modifier = 0.10
+	subject_loyalty = 3
+}
+
+post_war_religious_settlement = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	requires = late_reformation_ideas
+
+	tolerance_heretic = 1
+}
+
+westphalian_advance = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	requires = post_war_religious_settlement
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:western_europe }
+	}
+
+	diplomatic_range_modifier = 0.10
+	subject_loyalty = 3
+}
+
+indian_syncretic_tradition = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = late_reformation_ideas
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:south_asia }
+	}
+
+	global_pop_conversion_speed_modifier = -0.05
+	cultural_influence_modifier = 0.05
+	cultural_tradition_modifier = -0.05
+}
+
+mughal_sulh_e_kul = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	requires = indian_syncretic_tradition
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:south_asia }
+	}
+
+	global_integration_speed_modifier = 0.10
+	cultural_influence_modifier = 0.10
+}
+
+indian_court_tolerance = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = mughal_sulh_e_kul
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:south_asia }
+	}
+
+	country_cabinet_efficiency = 0.05
+	stability_cost = -0.05
+}
+
+east_asian_state_orthodoxy = {
+	age = age_5_absolutism
+	icon = diplomatic_influence
+	requires = late_reformation_ideas
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	global_pop_conversion_speed_modifier = 0.05
+	country_cabinet_efficiency = 0.05
+}
+
+confucian_bureaucratic_faith = {
+	age = age_5_absolutism
+	icon = diplomatic_range_age_1
+	requires = east_asian_state_orthodoxy
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	country_cabinet_efficiency = 0.10
+	government_reform_slots = 1
+}
+
+############################################
+# Age of Revolutions (Age 6)
+# Late Absolutism Ideas mini-tree
+# Catchup/continuation of Absolutism themes:
+# enlightened despotism, standing army professionalism,
+# mercantilist evolution, Qing consolidation,
+# Ottoman reform precursors, Indian administration
+############################################
+
+late_absolutism_ideas = {
+	age = age_6_revolutions
+	icon = diplomatic_influence
+	depth = 0
+
+	country_cabinet_efficiency = 0.05
+	stability_cost = -0.05
+}
+
+enlightened_administration = {
+	age = age_6_revolutions
+	icon = diplomatic_influence
+	for = adm
+	requires = late_absolutism_ideas
+
+	legislative_efficiency = 0.05
+	stability_cost = -0.05
+}
+
+enlightened_despotism_advance = {
+	age = age_6_revolutions
+	icon = diplomatic_influence
+	requires = enlightened_administration
+
+	potential = {
+		government_type = government_type:monarchy
+	}
+
+	government_reform_slots = 1
+	country_cabinet_efficiency = 0.05
+}
+
+reform_from_above = {
+	age = age_6_revolutions
+	icon = diplomatic_range_age_1
+	requires = enlightened_despotism_advance
+
+	potential = {
+		government_type = government_type:monarchy
+		original_capital ?= { continent = continent:europe }
+	}
+
+	stability_cost = -0.10
+	global_max_literacy = 5
+}
+
+mercantilist_legacy_advance = {
+	age = age_6_revolutions
+	icon = merchant_power_from_maritime_reformation_advance
+	for = dip
+	requires = enlightened_administration
+
+	potential = {
+		government_type = government_type:republic
+	}
+	
+	trade_range_modifier = 0.25
+	global_merchant_power = 0.15
+	bank_interest = -0.01
+}
+
+colonial_mercantile_system = {
+	age = age_6_revolutions
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = enlightened_administration
+
+	potential = {
+		original_capital ?= { continent = continent:europe }
+		any_subject = {
+			is_subject_type = colonial_nation
+		}
+	}
+	
+	trade_sea_efficiency = 0.05
+	global_merchant_power = 0.10
+	subject_loyalty = 5
+}
+
+professional_standing_army = {
+	age = age_6_revolutions
+	icon = expansionism
+	for = mil
+	requires = late_absolutism_ideas
+
+	discipline = 0.02
+	army_logistics_distance = 25
+}
+
+prussian_discipline_advance = {
+	age = age_6_revolutions
+	icon = expansionism
+	requires = professional_standing_army
+
+	potential = {
+		culture ?= { has_culture_group = culture_group:german_group }
+	}
+
+	military_tactics = 0.10
+	land_morale = 0.05
+}
+
+prussian_general_staff = {
+	age = age_6_revolutions
+	icon = expansionism
+	requires = prussian_discipline_advance
+
+	potential = {
+		culture ?= { has_culture_group = culture_group:german_group }
+	}
+
+	discipline = 0.02
+	military_tactics = 0.10
+}
+
+ottoman_military_reform = {
+	age = age_6_revolutions
+	icon = expansionism
+	requires = professional_standing_army
+
+	potential = {
+		OR = {
+			religion = religion:sunni
+			religion = religion:shia
+			religion = religion:ibadi
+		}
+		original_capital ?= { sub_continent = sub_continent:middle_east }
+	}
+
+	military_tactics = 0.10
+	discipline = 0.02
+}
+
+qing_administrative_consolidation = {
+	age = age_6_revolutions
+	icon = diplomatic_influence
+	requires = late_absolutism_ideas
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	country_cabinet_efficiency = 0.10
+	stability_cost = -0.05
+}
+
+east_asian_bureaucratic_peak = {
+	age = age_6_revolutions
+	icon = diplomatic_range_age_1
+	requires = qing_administrative_consolidation
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+
+	government_reform_slots = 1
+	global_max_literacy = 1
+}
+
+indian_administrative_sophistication = {
+	age = age_6_revolutions
+	icon = diplomatic_range_age_1
+	requires = late_absolutism_ideas
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:south_asia }
+	}
+
+	country_cabinet_efficiency = 0.05
+	total_loan_capacity_modifier = 0.20
+}
+
+maratha_fiscal_administration = {
+	age = age_6_revolutions
+	icon = merchant_power_from_maritime_reformation_advance
+	requires = indian_administrative_sophistication
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:south_asia }
+	}
+
+	global_merchant_power = 0.10
+	stability_cost = -0.05
+}
