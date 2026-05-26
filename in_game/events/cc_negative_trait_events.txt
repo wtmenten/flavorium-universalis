@@ -66,8 +66,15 @@ cc_neg.1 = {
 				}
 				NOT = { has_variable = cc_neg1_warned }
 			}
-			save_scope_as = troubled_minister
+			save_scope_as = minister
 			set_variable = { name = cc_neg1_warned value = yes }
+			set_variable = { name = cc_granting_trait value = yes }
+		}
+	}
+
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
 		}
 	}
 
@@ -85,7 +92,7 @@ cc_neg.1 = {
 	# Dismiss the minister before they stagnate
 	option = {
 		name = cc_neg.1.b
-		remove_from_cabinet = scope:troubled_minister
+		remove_from_cabinet = scope:minister
 		add_prestige = prestige_weak_bonus
 		set_variable = { name = cc_neg1_fired value = yes }
 	}
@@ -93,7 +100,7 @@ cc_neg.1 = {
 	# Ignore the warning — minister gains stagnant_counselor
 	option = {
 		name = cc_neg.1.c
-		scope:troubled_minister = { add_trait = trait:stagnant_counselor }
+		scope:minister = { add_trait = trait:stagnant_counselor }
 		set_variable = { name = cc_neg1_fired value = yes }
 	}
 }
@@ -162,9 +169,16 @@ cc_neg.2 = {
 					has_trait = reckless_expander
 				}
 			}
-			save_scope_as = troubled_minister
+			save_scope_as = minister
+			set_variable = { name = cc_granting_trait value = yes }
 		}
 		set_variable = { name = cc_neg2_fired value = yes }
+	}
+
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
 	}
 
 	option = {
@@ -179,7 +193,9 @@ cc_neg.2 = {
 
 	option = {
 		name = cc_neg.2.b
-		scope:troubled_minister = { add_trait = trait:war_profiteer }
+		scope:minister = {
+			add_trait = trait:war_profiteer
+		}
 	}
 }
 
@@ -221,22 +237,29 @@ cc_neg.3 = {
 				in_cabinet = yes
 				has_variable = cc_schemer_risk_target
 			}
-			save_scope_as = troubled_minister
+			set_variable = { name = cc_granting_trait value = yes }
+			save_scope_as = minister
 		}
 		set_variable = { name = cc_neg3_fired value = yes }
 		remove_variable = cc_tension_schemer_risk
+	}
+
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
 	}
 
 	option = {
 		name = cc_neg.3.a
 		# Reassign them to a demanding task to channel their ambitions
 		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 3 }
-		scope:troubled_minister = { remove_variable = cc_schemer_risk_target }
+		scope:minister = { remove_variable = cc_schemer_risk_target }
 	}
 
 	option = {
 		name = cc_neg.3.b
-		scope:troubled_minister = {
+		scope:minister = {
 			add_trait = trait:court_schemer
 			remove_variable = cc_schemer_risk_target
 		}
@@ -314,21 +337,30 @@ cc_neg.4 = {
 				}
 				NOT = { has_variable = cc_neg4_warned }
 			}
-			save_scope_as = troubled_minister
+			save_scope_as = minister
 			set_variable = { name = cc_neg4_warned value = yes }
+			set_variable = { name = cc_granting_trait value = yes }
 		}
 		set_variable = { name = cc_neg4_fired value = yes }
 	}
 
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
+	}
+
 	option = {
 		name = cc_neg.4.a
-		remove_from_cabinet = scope:troubled_minister
+		remove_from_cabinet = scope:minister
 		add_country_modifier = { modifier = cc_cabinet_parliamentary_guidance years = 3 }
 	}
 
 	option = {
 		name = cc_neg.4.b
-		scope:troubled_minister = { add_trait = trait:inefficient_bureaucrat }
+		scope:minister = {
+			add_trait = trait:inefficient_bureaucrat
+		}
 	}
 }
 
@@ -388,10 +420,17 @@ cc_neg.5 = {
 					has_trait = reckless_expander
 				}
 			}
-			save_scope_as = troubled_minister
+			save_scope_as = minister
+			set_variable = { name = cc_granting_trait value = yes }
 		}
 		set_variable = { name = cc_neg5_fired value = yes }
 		remove_variable = cc_neg5_corruption_ready
+	}
+
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
 	}
 
 	option = {
@@ -405,7 +444,9 @@ cc_neg.5 = {
 
 	option = {
 		name = cc_neg.5.b
-		scope:troubled_minister = { add_trait = trait:corrupted_official }
+		scope:minister = {
+			add_trait = trait:corrupted_official
+		}
 	}
 }
 
@@ -478,20 +519,29 @@ cc_neg.6 = {
 					has_trait = reckless_expander
 				}
 			}
-			save_scope_as = troubled_minister
+			set_variable = { name = cc_granting_trait value = yes }
+			save_scope_as = minister
 		}
 		set_variable = { name = cc_neg6_fired value = yes }
 	}
 
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
+	}
+
 	option = {
 		name = cc_neg.6.a
-		remove_from_cabinet = scope:troubled_minister
+		remove_from_cabinet = scope:minister
 		add_prestige = prestige_weak_bonus
 	}
 
 	option = {
 		name = cc_neg.6.b
-		scope:troubled_minister = { add_trait = trait:outdated_general }
+		scope:minister = {
+			add_trait = trait:outdated_general
+		}
 	}
 }
 
@@ -542,14 +592,23 @@ cc_neg.7 = {
 					has_trait = reckless_expander
 				}
 			}
-			save_scope_as = troubled_minister
+			set_variable = { name = cc_granting_trait value = yes }
+			save_scope_as = minister
 		}
 		set_variable = { name = cc_neg7_fired value = yes }
 	}
 
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
+	}
+
 	option = {
 		name = cc_neg.7.a
-		scope:troubled_minister = { add_trait = trait:cynical_courtier }
+		scope:minister = {
+			add_trait = trait:cynical_courtier
+		}
 		remove_variable = cc_synergy_consolation_count
 	}
 
@@ -618,20 +677,29 @@ cc_neg.8 = {
 					has_trait = outdated_general
 				}
 			}
-			save_scope_as = troubled_minister
+			set_variable = { name = cc_granting_trait value = yes }
+			save_scope_as = minister
 		}
 		set_variable = { name = cc_neg8_fired value = yes }
 		remove_variable = cc_neg8_failed_war
 	}
 
+	after = {
+		scope:minister = {
+			remove_variable = cc_granting_trait
+		}
+	}
+
 	option = {
 		name = cc_neg.8.a
-		scope:troubled_minister = { add_trait = trait:reckless_expander }
+		scope:minister = {
+			add_trait = trait:reckless_expander
+		}
 	}
 
 	option = {
 		name = cc_neg.8.b
-		remove_from_cabinet = scope:troubled_minister
+		remove_from_cabinet = scope:minister
 		add_prestige = prestige_weak_bonus
 	}
 }

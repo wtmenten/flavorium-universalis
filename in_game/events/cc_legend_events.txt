@@ -3,7 +3,7 @@
 ###############################################################################
 # LEGEND QUEST CHAINS
 # Each quest fires once when conditions are fully met.
-# Legendary traits:   allow = { always = no } — granted only here.
+# Legendary traits:   allow = { has_variable = cc_granting_trait } — granted only here.
 # Legendary reforms:  gated by has_variable set in these events.
 # Variable keys set: cc_legend_X_unlocked (checked in reform potential/allow)
 ###############################################################################
@@ -36,13 +36,23 @@ cc_legend.1 = {
 
 	immediate = {
 		set_variable = { name = cc_legend_1_fired value = yes }
+		ruler = {
+			set_variable = { name = cc_granting_trait value = yes }
+		}
+	}
+	after = {
+		ruler = {
+			remove_variable = cc_granting_trait
+		}
 	}
 
 	# Philosophers Court Reform + ruler legendary trait
 	option = {
 		name = cc_legend.1.a
 		set_variable = { name = cc_legend_philosophers_court_unlocked value = yes }
-		ruler = { add_trait = trait:philosopher_king }
+		ruler = {
+			add_trait = trait:philosopher_king
+		}
 		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.1.a.tt
 	}
@@ -143,7 +153,14 @@ cc_legend.3 = {
 		set_variable = { name = cc_legend_3_fired value = yes }
 		random_cabinet_character = {
 			limit = { in_cabinet = yes has_trait = grand_chancellor }
+			set_variable = { name = cc_granting_trait value = yes }
 			save_scope_as = minister
+		}
+	}
+
+	after = {
+		ruler = {
+			remove_variable = cc_granting_trait
 		}
 	}
 
@@ -151,7 +168,9 @@ cc_legend.3 = {
 	option = {
 		name = cc_legend.3.a
 		set_variable = { name = cc_legend_grand_bazaar_unlocked value = yes }
-		scope:minister = { add_trait = trait:grand_vizier_legendary }
+		scope:minister = {
+			add_trait = trait:grand_vizier_legendary
+		}
 		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.3.a.tt
 	}
@@ -259,7 +278,14 @@ cc_legend.5 = {
 		set_variable = { name = cc_legend_5_fired value = yes }
 		random_cabinet_character = {
 			limit = { in_cabinet = yes has_trait = parliamentary_broker }
+			set_variable = { name = cc_granting_trait value = yes }
 			save_scope_as = minister
+		}
+	}
+
+	after = {
+		ruler = {
+			remove_variable = cc_granting_trait
 		}
 	}
 
@@ -267,7 +293,9 @@ cc_legend.5 = {
 	option = {
 		name = cc_legend.5.a
 		set_variable = { name = cc_legend_peoples_assembly_unlocked value = yes }
-		scope:minister = { add_trait = trait:tribune_of_the_people }
+		scope:minister = {
+			add_trait = trait:tribune_of_the_people
+		}
 		add_prestige = prestige_severe_bonus
 		custom_tooltip = cc_legend.5.a.tt
 	}

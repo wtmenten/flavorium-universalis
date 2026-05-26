@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
-generate_workshop.py — Regenerate GEN: sections in WORKSHOP_DESCRIPTION.md.
-Reads mod files to produce up-to-date content for the Steam Workshop description.
+generate_workshop.py — Regenerate GEN: sections in WORKSHOP_DESCRIPTION.bbcode.
+Reads mod files to produce up-to-date BBCode content for the Steam Workshop description.
 
 Usage:
     python tools/generate_workshop.py                       # regenerate all sections
     python tools/generate_workshop.py --section advances    # one section only
     python tools/generate_workshop.py --dry-run             # print to stdout, don't write
+    python tools/generate_workshop.py --clean               # write marker-stripped copy ready for paste
+
+The source file (WORKSHOP_DESCRIPTION.bbcode) keeps <!-- GEN:name --> markers so the
+generator can be re-run. Use --clean to emit a paste-ready file with markers removed.
 """
 
 import argparse
@@ -15,7 +19,7 @@ import sys
 from pathlib import Path
 
 MOD_ROOT = Path(__file__).resolve().parent.parent
-WORKSHOP_FILE = MOD_ROOT / "WORKSHOP_DESCRIPTION.md"
+WORKSHOP_FILE = MOD_ROOT / "WORKSHOP_DESCRIPTION.bbcode"
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -69,20 +73,21 @@ TRAIT_FILES: list[tuple[str, str, str]] = [
 ]
 
 EVENT_INFO: list[tuple[str, str, str]] = [
-    ("cc_cabinet",  "cc_cabinet_events.txt",           "Minister counsel, estate relations, diplomatic situations, provincial affairs"),
-    ("cc_traits",   "cc_trait_events.txt",             "Age trait acquisition, ruler teaching, peer learning"),
-    ("cc_cond",     "cc_conditional_trait_events.txt", "Conditional trait spawning based on realm conditions and actions"),
-    ("cc_synergy",  "cc_synergy_events.txt",           "Trait pair synergies — temporary bonuses when ministers share trait families"),
-    ("cc_neg",      "cc_negative_trait_events.txt",    "Underperformance events and rehabilitation chains"),
-    ("cc_wealth",   "cc_wealth_events.txt",            "Wealth hoarding pressure and minister enrichment"),
-    ("cc_dual",     "cc_dual_synergy_events.txt",      "Cabinet × religious figure dual-role synergies"),
-    ("cc_intl",     "cc_intl_synergy_events.txt",      "Cross-country interactions between neighboring courts"),
-    ("cc_feudal",   "cc_feudal_events.txt",            "Feudal era court events"),
-    ("cc_legacy",   "cc_legacy_events.txt",            "Senior minister retirement and legacy transmission"),
-    ("cc_legend",   "cc_legend_events.txt",            "Legendary minister quest chains"),
+    ("cc_cabinet",      "cc_cabinet_events.txt",           "Minister counsel, estate relations, diplomatic situations, provincial affairs"),
+    ("cc_traits",       "cc_trait_events.txt",             "Age trait acquisition, ruler teaching, peer learning"),
+    ("cc_cond",         "cc_conditional_trait_events.txt", "Conditional trait spawning based on realm conditions and actions"),
+    ("cc_synergy",      "cc_synergy_events.txt",           "Trait pair synergies — temporary bonuses when ministers share trait families"),
+    ("cc_neg",          "cc_negative_trait_events.txt",    "Underperformance events and rehabilitation chains"),
+    ("cc_wealth",       "cc_wealth_events.txt",            "Wealth hoarding pressure and minister enrichment"),
+    ("cc_dual",         "cc_dual_synergy_events.txt",      "Cabinet × religious figure dual-role synergies"),
+    ("cc_intl",         "cc_intl_synergy_events.txt",      "Cross-country interactions between neighboring courts"),
+    ("cc_feudal",       "cc_feudal_events.txt",            "Feudal era court events"),
+    ("cc_legacy",       "cc_legacy_events.txt",            "Senior minister retirement and legacy transmission"),
+    ("cc_legend",       "cc_legend_events.txt",            "Legendary minister quest chains"),
+    ("cc_hyw",          "cc_hyw_events.txt",               "Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure"),
+    ("cc_personality",  "cc_ai_personality_events.txt",    "Dynamic AI personality inflection events — key historical turning points"),
 ]
 
-# Traits to spotlight in the summary section (name + first-sentence description)
 HIGHLIGHTED_TRAITS: list[str] = [
     "iron_disciplinarian",
     "shadow_counselor",
@@ -127,7 +132,6 @@ def load_all_loc() -> dict[str, str]:
 
 def first_sentence(text: str) -> str:
     """Return the first sentence, stripping Clausewitz markup codes."""
-    # Strip [SCOPE.XXX] codes and $subject_type_name$ codes
     text = re.sub(r"\[[^\]]+\]", "", text)
     text = re.sub(r"\$[^$]+\$", lambda m: m.group(0)[1:-1].replace("_", " ").title(), text)
     text = text.strip()
@@ -162,7 +166,6 @@ def _flat_parse(tokens: list[str]) -> dict[str, list[str]]:
             key = tokens[i]
             i += 2
             if i < len(tokens) and tokens[i] == "{":
-                # skip nested block
                 depth = 1
                 i += 1
                 while i < len(tokens) and depth > 0:
@@ -216,38 +219,70 @@ def count_events(path: Path) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Section generators
+# BBCode helpers
+# ---------------------------------------------------------------------------
+
+def bb(tag: str, text: str) -> str:
+    return f"[{tag}]{text}[/{tag}]"
+
+def bold(text: str) -> str:
+    return bb("b", text)
+
+def italic(text: str) -> str:
+    return bb("i", text)
+
+def list_block(items: list[str]) -> str:
+    inner = "\n".join(f"[*] {item}" for item in items)
+    return f"[list]\n{inner}\n[/list]"
+
+def table_block(headers: list[str], rows: list[list[str]]) -> str:
+    header_row = "".join(f"[th]{h}[/th]" for h in headers)
+    lines = [f"[table]", f"[tr]{header_row}[/tr]"]
+    for row in rows:
+        cells = "".join(f"[td]{cell}[/td]" for cell in row)
+        lines.append(f"[tr]{cells}[/tr]")
+    lines.append("[/table]")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Section generators — all return BBCode strings
 # ---------------------------------------------------------------------------
 
 def gen_game_rules(loc: dict[str, str]) -> str:
     path = MOD_ROOT / "main_menu" / "common" / "game_rules" / "cc_game_rules.txt"
     if not path.exists():
-        return "_Game rules file not found._"
+        return italic("Game rules file not found.")
 
-    lines: list[str] = []
+    blocks: list[str] = []
     for rule_id, d in extract_top_blocks(path):
         rule_name = loc.get(f"rule_{rule_id}", id_to_title(rule_id))
         rule_desc = loc.get(f"rule_{rule_id}_desc", "")
         default_opt = (d.get("default") or [""])[0]
 
-        lines.append(f"**{rule_name}**")
+        section = [bold(rule_name)]
         if rule_desc:
-            lines.append(rule_desc)
+            section.append(rule_desc)
 
+        options: list[str] = []
         for key, vals in d.items():
             if key == "default":
                 continue
             if "__block__" in vals:
                 opt_name = loc.get(f"setting_{key}", id_to_title(key))
                 opt_desc = loc.get(f"setting_{key}_desc", "")
-                tag = " *(default)*" if key == default_opt else ""
-                entry = f"- **{opt_name}**{tag}"
+                tag = f" {italic('(default)')}" if key == default_opt else ""
+                entry = f"{bold(opt_name)}{tag}"
                 if opt_desc:
                     entry += f" — {opt_desc}"
-                lines.append(entry)
-        lines.append("")
+                options.append(entry)
 
-    return "\n".join(lines).rstrip()
+        if options:
+            section.append(list_block(options))
+
+        blocks.append("\n".join(section))
+
+    return "\n\n".join(blocks)
 
 
 def gen_trait_summary(loc: dict[str, str]) -> str:
@@ -259,14 +294,15 @@ def gen_trait_summary(loc: dict[str, str]) -> str:
         path = traits_dir / filename
         count = len(extract_top_blocks(path)) if path.exists() else 0
         total += count
-        lines.append(f"**{category} ({count})**")
+        lines.append(bold(f"{category} ({count})"))
         lines.append(desc + ".")
         lines.append("")
 
-    lines.append(f"*Total: {total}+ traits*")
+    lines.append(italic(f"Total: {total}+ traits"))
     lines.append("")
-    lines.append("**Notable traits:**")
-    lines.append("")
+    lines.append(bold("Notable traits:"))
+
+    trait_items: list[str] = []
     for trait_id in HIGHLIGHTED_TRAITS:
         name = loc.get(trait_id, id_to_title(trait_id))
         desc = (
@@ -274,33 +310,33 @@ def gen_trait_summary(loc: dict[str, str]) -> str:
             or loc.get(f"{trait_id}_desc")
             or ""
         )
-        entry = f"- **{name}**"
+        entry = bold(name)
         if desc:
             entry += f" — {first_sentence(desc)}"
-        lines.append(entry)
+        trait_items.append(entry)
 
+    lines.append(list_block(trait_items))
     return "\n".join(lines).rstrip()
 
 
 def gen_event_categories(_loc: dict[str, str]) -> str:
     events_dir = MOD_ROOT / "in_game" / "events"
-    lines = ["| Namespace | Events | Description |",
-             "|-----------|:------:|-------------|"]
     total = 0
+    rows: list[list[str]] = []
     for ns, filename, desc in EVENT_INFO:
         path = events_dir / filename
         count = count_events(path)
         total += count
-        lines.append(f"| `{ns}` | {count} | {desc} |")
-    lines.append("")
-    lines.append(f"*~{total} events total*")
-    return "\n".join(lines)
+        rows.append([ns, str(count), desc])
+
+    return table_block(["Namespace", "Events", "Description"], rows) + \
+           f"\n\n{italic(f'~{total} events total')}"
 
 
 def gen_subject_types(loc: dict[str, str]) -> str:
-    lines: list[str] = []
+    blocks: list[str] = []
     for chain_name, subject_ids in SUBJECT_CHAINS:
-        lines.append(f"**{chain_name}**")
+        items: list[str] = []
         for sid in subject_ids:
             name = (
                 loc.get(sid)
@@ -310,18 +346,17 @@ def gen_subject_types(loc: dict[str, str]) -> str:
             desc = loc.get(f"{sid}_desc", "")
             age = SUBJECT_AGES.get(sid, "?")
             short = first_sentence(desc) if desc else ""
-            entry = f"- **{name}** *(unlocks Age {age})*"
+            entry = f"{bold(name)} {italic(f'(unlocks Age {age})')}"
             if short:
                 entry += f" — {short}"
-            lines.append(entry)
-        lines.append("")
-    return "\n".join(lines).rstrip()
+            items.append(entry)
+        blocks.append(bold(chain_name) + "\n" + list_block(items))
+    return "\n\n".join(blocks)
 
 
 def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
-    # Collect advances from both files, grouped by age
     by_age: dict[str, list[tuple[str, dict[str, list[str]]]]] = {}
     for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt"]:
         path = advance_dir / fname
@@ -332,48 +367,71 @@ def gen_advances(loc: dict[str, str]) -> str:
             age_key = age_vals[0] if age_vals else "unknown"
             by_age.setdefault(age_key, []).append((adv_id, d))
 
-    lines: list[str] = []
+    blocks: list[str] = []
     for age_key, (age_label, _age_num) in AGE_NAMES.items():
         advances = by_age.get(age_key, [])
         if not advances:
             continue
 
-        lines.append(f"**{age_label}** ({len(advances)} advances)")
+        items: list[str] = []
         for adv_id, d in advances:
             name = loc.get(adv_id, id_to_title(adv_id))
             desc = loc.get(f"{adv_id}_desc", "")
             short = first_sentence(desc) if desc else ""
 
-            # Highlight subject type unlocks
             unlocks = d.get("unlock_subject_type", [])
             if unlocks:
                 unlock_names = [
                     loc.get(u) or loc.get(f"AM_{u}") or id_to_title(u)
                     for u in unlocks
                 ]
-                entry = f"- **{name}** — Unlocks: **{', '.join(unlock_names)}**."
+                entry = f"{bold(name)} — Unlocks: {bold(', '.join(unlock_names))}."
                 if short:
                     entry += f" {short}"
             else:
-                entry = f"- **{name}**"
+                entry = bold(name)
                 if short:
                     entry += f" — {short}"
-            lines.append(entry)
-        lines.append("")
+            items.append(entry)
 
-    return "\n".join(lines).rstrip()
+        blocks.append(
+            bold(f"{age_label}") + f" ({len(advances)} advances)\n" + list_block(items)
+        )
+
+    return "\n\n".join(blocks)
 
 
 def gen_country_starts(_loc: dict[str, str]) -> str:
-    return """\
-**France — Lowlands Containment** *(default: on)*
-France begins under elevated antagonism from its Lowlands-culture neighbors (Burgundy, the Low Countries, and nearby realms), reflecting historical anxieties about French regional hegemony. The pressure decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.
-
-**Mamluks — Foreign Rule Strain** *(default: on)*
-The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don't.
-
-**Ottomans — No Colonization** *(default: on)*
-The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than competing in Atlantic exploration."""
+    entries = [
+        (
+            "France — Hundred Years War Flavor", "default: on",
+            "France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: "
+            "levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. "
+            "The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier "
+            "representing its expansionist posture toward the Lowlands."
+        ),
+        (
+            "England — Hundred Years War Flavor", "default: on",
+            "England begins with estate and levy modifiers reflecting its precarious continental position at the "
+            "start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles."
+        ),
+        (
+            "Mamluks — Foreign Rule Strain", "default: on",
+            "The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military "
+            "caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. "
+            "Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don't."
+        ),
+        (
+            "Ottomans — No Colonization", "default: on",
+            "The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman "
+            "orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than "
+            "competing in Atlantic exploration."
+        ),
+    ]
+    blocks: list[str] = []
+    for name, tag, body in entries:
+        blocks.append(f"{bold(name)} {italic(f'({tag})')}\n{body}")
+    return "\n\n".join(blocks)
 
 
 def gen_privileges_reforms(loc: dict[str, str]) -> str:
@@ -397,25 +455,25 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
                 reforms.append((reform_name, reform_desc, adv_name))
 
     if not privileges and not reforms:
-        return "_No estate privileges or government reforms detected._"
+        return italic("No estate privileges or government reforms detected.")
 
-    lines: list[str] = []
+    blocks: list[str] = []
     if privileges:
-        lines.append("**Estate Privileges**")
-        for name, from_adv in privileges:
-            lines.append(f"- **{name}** *(via: {from_adv})*")
-        lines.append("")
+        priv_items = [f"{bold(name)} {italic(f'(via: {from_adv})')}" for name, from_adv in privileges]
+        blocks.append(bold("Estate Privileges") + "\n" + list_block(priv_items))
+
     if reforms:
-        lines.append("**Government Reforms**")
+        reform_items: list[str] = []
         for name, desc, from_adv in reforms:
             short = first_sentence(desc) if desc else ""
-            entry = f"- **{name}**"
+            entry = bold(name)
             if short:
                 entry += f" — {short}"
-            entry += f" *(via: {from_adv})*"
-            lines.append(entry)
+            entry += f" {italic(f'(via: {from_adv})')}"
+            reform_items.append(entry)
+        blocks.append(bold("Government Reforms") + "\n" + list_block(reform_items))
 
-    return "\n".join(lines).rstrip()
+    return "\n\n".join(blocks)
 
 
 # ---------------------------------------------------------------------------
@@ -432,6 +490,8 @@ SECTION_GENERATORS: dict[str, object] = {
     "privileges-reforms": gen_privileges_reforms,
 }
 
+GEN_MARKER = re.compile(r"<!-- GEN:\w+ -->.*?<!-- /GEN:\w+ -->", re.DOTALL)
+
 
 def update_section(text: str, name: str, content: str) -> str:
     pattern = re.compile(
@@ -440,11 +500,17 @@ def update_section(text: str, name: str, content: str) -> str:
     )
     if not pattern.search(text):
         print(
-            f"  WARNING: GEN:{name} marker not found in WORKSHOP_DESCRIPTION.md",
+            f"  WARNING: GEN:{name} marker not found in {WORKSHOP_FILE.name}",
             file=sys.stderr,
         )
         return text
     return pattern.sub(rf"\1\n{content}\n\2", text)
+
+
+def strip_markers(text: str) -> str:
+    """Remove GEN marker comment lines, leaving only the generated content."""
+    text = re.sub(r"<!-- /?GEN:[\w-]+ -->\n?", "", text)
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -465,7 +531,12 @@ def main() -> None:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print generated sections to stdout without writing the file",
+        help="Print generated BBCode sections to stdout without writing the file",
+    )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="After regenerating, also write a marker-stripped copy to WORKSHOP_DESCRIPTION_upload.bbcode",
     )
     args = parser.parse_args()
 
@@ -499,6 +570,11 @@ def main() -> None:
 
     WORKSHOP_FILE.write_text(text, encoding="utf-8")
     print(f"Updated: {WORKSHOP_FILE}", file=sys.stderr)
+
+    if args.clean:
+        clean_path = MOD_ROOT / "WORKSHOP_DESCRIPTION_upload.bbcode"
+        clean_path.write_text(strip_markers(text), encoding="utf-8")
+        print(f"Clean copy: {clean_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

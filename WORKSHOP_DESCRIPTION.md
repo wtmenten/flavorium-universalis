@@ -7,6 +7,10 @@
 ## Overview
 
 Cabinets and Choices enhances the vanilla EUV experience across multiple areas: 
+* Improved AI personality system with dynamic logic and historical changes.
+    * let the AI adjust its personality logically instead of randomly. it might react immediatly to events or due to a build up of circumstances.
+    * Watch the great nations of history make historic shifts in their foreign policy. 
+        * 
 * transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows. 
     * Develop powerful traits over time through events.
     * Clash or collaborate (with you/each-other/foreigners) based on their ideological leanings.
@@ -272,7 +276,7 @@ Many are mixed into exising tech trees, but there are also new micro-trees in ea
 <!-- GEN:event-categories -->
 | Namespace | Events | Description |
 |-----------|:------:|-------------|
-| `cc_cabinet` | 16 | Minister counsel, estate relations, diplomatic situations, provincial affairs |
+| `cc_cabinet` | 18 | Minister counsel, estate relations, diplomatic situations, provincial affairs |
 | `cc_traits` | 18 | Age trait acquisition, ruler teaching, peer learning |
 | `cc_cond` | 15 | Conditional trait spawning based on realm conditions and actions |
 | `cc_synergy` | 26 | Trait pair synergies — temporary bonuses when ministers share trait families |
@@ -283,9 +287,55 @@ Many are mixed into exising tech trees, but there are also new micro-trees in ea
 | `cc_feudal` | 8 | Feudal era court events |
 | `cc_legacy` | 3 | Senior minister retirement and legacy transmission |
 | `cc_legend` | 6 | Legendary minister quest chains |
+| `cc_hyw` | 11 | Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure |
+| `cc_personality` | 18 | Dynamic AI personality inflection events — key historical turning points |
 
-*~141 events total*
+*~172 events total*
 <!-- /GEN:event-categories -->
+
+---
+
+### Hundred Years War Flavor
+
+A system of historical events and starting modifiers for the Hundred Years War situation, activated by the **C&C: Hundred Years War Flavor** game rule (default: on).
+
+- **France and England** begin with historical starting modifiers reflecting their positions at the opening of the conflict — French levy readiness and English estate pressure.
+- **War outcome events** fire when either side wins or loses major wars, stacking levy and estate effects over time to reflect the shifting fortunes of the conflict.
+- **Observer power reactions** — Burgundy, Castile, and Aragon witness western European wars and may choose sides or demand concessions (cc_hyw.12/13).
+- **Vassal defection pressure** — French and English vassals face events when their suzerain suffers defeat, with opportunities to renegotiate terms or waver in loyalty (cc_hyw.20–23).
+- **Lowlands incursion events** — when France or England take land in the lowlands during the HYW, Their Lowlands subjects or the people themselves may demand the land be transfered to them, lest political crises emerge (cc_hyw.30/31).
+- **The Auld Alliance** (cc_hyw.1) — France can formally guarantee Scottish independence, binding England's northern flank and setting up the FRA–SCO–ENG triangle.
+- **Replace Appanage Ruler decision** — France can 'replace' disloyal appanage lords to consolidate control at the cost of their other vassals opinions.
+
+~11 events spanning France, England, Scotland, Burgundy, and observer powers.
+
+---
+
+### Dynamic AI Personalities
+
+AI countries now evolve their strategic personality across the ages — shifting from aggressive early expansion to defensive consolidation, commercial pragmatism, or cautious decline as the game progresses. Controlled by the **C&C: Dynamic AI Personalities** game rule (default: Dynamic Historical + Drift).
+
+**27 countries** have historically-informed personality arcs covering all six ages:
+*TUR, FRA, ENG, MOS, CAS, HAB, POR, SWE, POL, LIT, DAN, BUR, VEN, PAP, GEN, BYZ, HUN, MAM, ETH, MNG, SHO, KOR, NOG/GLH, NAP, SCO, MLO, MLI/SON*
+
+**Key inflection events** fire at historical turning points and give ai-controlled countries a choice between the historical personality and an alternative :
+- **The Conquering Sultan** (TUR, Age 3) — peak Selim/Suleiman era aggressive expansion
+- **The Long Stagnation** (TUR, Age 4) — early Ottoman institutional decline begins
+- **The Sun King Rises** (FRA, Age 5) — Louis XIV's absolutist ambition
+- **Britannia's Maritime Empire** (ENG, Age 5) — English commercial and naval dominance
+- **The Terrible Tsar** (MOS, Age 3) — Ivan the Terrible's consolidation
+- **The New World Empire** (CAS, Age 3) — Castilian colonial and imperial apex
+- **The Great Northern Reckoning** (SWE, Age 4) — Swedish imperial overstretch
+
+After a historical event fires, an **AI personality guard** prevents random drift from overriding the fresh assignment for ~20 years.
+
+**Game rule modes:**
+- **Vanilla** — No changes; vanilla personality assignment only
+- **Dynamic Historical** — Major powers follow age-based personality arcs and fire inflection events at key turning points
+- **Dynamic Drift Only** — Context-driven drift shifts personality for all AI countries based on war outcomes, power, and wealth
+- **Dynamic Historical + Drift** *(default)* — Both: historically-grounded arcs for major powers with context drift for everyone else
+
+~18 inflection events; drift logic fires on yearly and four-yearly pulses for all AI countries.
 
 ---
 
@@ -313,6 +363,18 @@ Gives the Mamluks starting penalties reflecting their status as a foreign milita
 Prevent the Ottomans from colonizing.
 - **Prevent Colonization** *(default)* — The Ottomans are permanently prevented from colonizing.
 - **Allow Colonization** — The Ottomans may still colonize as normal.
+
+**C&C: Dynamic AI Personalities**
+Controls whether AI countries evolve their grand strategies across ages and shift in response to game events.
+- **Vanilla** — No changes. AI personalities use vanilla historical assignments and random rules only.
+- **Dynamic Historical** — Major powers follow historically-informed personality arcs across ages. Key turning points fire choice events with a historical option and one or two alternatives.
+- **Dynamic Drift Only** — Adds context-driven personality changes for all AI countries, shifting in response to war, power, wealth, and circumstance.
+- **Dynamic Historical + Drift** *(default)* — Adds context-driven drift events for all AI countries, shifting personalities in response to war, power, wealth, and circumstance. Major powers follow historically-informed personality arcs across ages. Key turning points fire choice events with a historical option and one or two alternatives. Historical events still guard against random drift for ~20 years after they fire.
+
+**C&C: France — Hundred Years War Flavor**
+Enables historical flavor for the Hundred Years War: starting levy and estate modifiers for France and England, war outcome stacking, vassal defection pressure events, observer power reactions, and the Replace Appanage Ruler decision.
+- **Enabled** *(default)* — France and England start with historical modifiers; war outcomes stack levy and estate effects over time; Burgundy, Brittany, and other vassals may waver when their suzerain suffers defeat.
+- **Disabled** — No HYW-specific starting modifiers, stacking events, or vassal defection pressure will fire.
 <!-- /GEN:game-rules -->
 
 ---
@@ -320,8 +382,11 @@ Prevent the Ottomans from colonizing.
 ### Country Starting Modifiers
 
 <!-- GEN:country-starts -->
-**France — Lowlands Containment** *(default: on)*
-France begins under elevated antagonism from its Lowlands-culture neighbors (Burgundy, the Low Countries, and nearby realms), reflecting historical anxieties about French regional hegemony. The pressure decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.
+**France — Hundred Years War Flavor** *(default: on)*
+France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.
+
+**England — Hundred Years War Flavor** *(default: on)*
+England begins with estate and levy modifiers reflecting its precarious continental position at the start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles.
 
 **Mamluks — Foreign Rule Strain** *(default: on)*
 The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don't.
