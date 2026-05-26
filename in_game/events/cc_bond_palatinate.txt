@@ -1,0 +1,518 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Palatinate Chain — cc_bonds.30–36
+# Root = overlord. scope:bond_subj = the palatinate subject.
+# Primary dimensions: Personal, Political. Secondary: Military, Cultural.
+###############################################################################
+
+# cc_bonds.30 — "The Palatinate Lord's First Homage" (one-shot)
+# Option C (waive ceremony) triggers a false positive — the lord sends a lavish
+# gift, masking the personal damage of the snub.
+cc_bonds.30 = {
+	type = country_event
+	title = cc_bonds.30.title
+	desc = cc_bonds.30.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_30_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_30_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_30_cd  value = yes }
+		}
+	}
+
+	# Grand public ceremony — pol and strong per gain
+	option = {
+		name = cc_bonds.30.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Accept private oath — moderate pol/per gain
+	option = {
+		name = cc_bonds.30.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Waive ceremony — pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.30.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.79  months = 4 }
+	}
+}
+
+# cc_bonds.31 — "Noble Marriage Alliance" (cooldown 15 yrs)
+cc_bonds.31 = {
+	type = country_event
+	title = cc_bonds.31.title
+	desc = cc_bonds.31.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_31_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_31_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_31_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Arrange marriage — prestige cost, strong pol/cul/per gain
+	option = {
+		name = cc_bonds.31.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Deny — pol/per damage
+	option = {
+		name = cc_bonds.31.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Let lord arrange his own match — signals political independence
+	option = {
+		name = cc_bonds.31.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.32 — "Military Service Demand" (cooldown 10 yrs)
+# Option C (exempt palatinate) fires a false negative suggesting the lord
+# "grows emboldened."
+cc_bonds.32 = {
+	type = country_event
+	title = cc_bonds.32.title
+	desc = cc_bonds.32.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_32_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_32_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_32_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Call full noble levy — military gain, mil/pol/per damage
+	option = {
+		name = cc_bonds.32.a
+		add_manpower = 5000
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Subsidize voluntary service — gold cost, mil/per gain
+	option = {
+		name = cc_bonds.32.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Exempt the palatinate — mil/pol/per gain, false negative fires
+	option = {
+		name = cc_bonds.32.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.80  months = 4 }
+	}
+}
+
+# cc_bonds.33 — "Palatinate Church Appointment" (cooldown 12 yrs)
+cc_bonds.33 = {
+	type = country_event
+	title = cc_bonds.33.title
+	desc = cc_bonds.33.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_33_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_33_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_33_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Crown appoints bishop — strengthens crown control, pol/cul damage
+	option = {
+		name = cc_bonds.33.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Lord nominates — pol/cul/per gain, prestige cost
+	option = {
+		name = cc_bonds.33.b
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Joint approval — gold/prestige cost, moderate gains
+	option = {
+		name = cc_bonds.33.c
+		add_prestige = prestige_weak_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.34 — "The Border Dispute" (cooldown 12 yrs)
+# Option C (ignore) triggers a false positive — dispute "resolves quietly."
+cc_bonds.34 = {
+	type = country_event
+	title = cc_bonds.34.title
+	desc = cc_bonds.34.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_34_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_34_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_34_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Back the lord aggressively — mil/pol/per gain, neighbor opinion hit
+	option = {
+		name = cc_bonds.34.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Force palatinate to settle — prestige gain, pol/per damage
+	option = {
+		name = cc_bonds.34.b
+		add_prestige = prestige_mild_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Ignore — pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.34.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.81  months = 6 }
+	}
+}
+
+# cc_bonds.35 — "The Palatinate Asks for Tax Relief" (cooldown 15 yrs)
+# Option A (grant relief) looks "weak" but is the wisest long-term choice.
+# Option B (refuse) looks fiscally responsible but is deeply harmful.
+# Option C (reduce temporarily) fires a false negative.
+cc_bonds.35 = {
+	type = country_event
+	title = cc_bonds.35.title
+	desc = cc_bonds.35.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_35_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_35_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_35_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Grant relief — gold income loss, eco/pol/per gain (the wise "weak" choice)
+	option = {
+		name = cc_bonds.35.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Refuse — eco/pol/per damage (the "fiscally responsible" trap)
+	option = {
+		name = cc_bonds.35.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Reduce temporarily — modest gains, false negative fires
+	option = {
+		name = cc_bonds.35.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.82  months = 5 }
+	}
+}
+
+# cc_bonds.36 — "The Old Lord Dies" (one-shot per palatinate, ~20 yr cooldown)
+# Option B (demand inheritance tax) is THE TRAP: large gold gain, catastrophic
+# pol/per damage. Memory flag cc_bond_mem_interregnum used by AoR events.
+cc_bonds.36 = {
+	type = country_event
+	title = cc_bonds.36.title
+	desc = cc_bonds.36.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = palatinate
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_36_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_36_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_36_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Confirm heir, waive inheritance tax — gold cost, strong pol/per gain
+	option = {
+		name = cc_bonds.36.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Demand full inheritance tax — THE TRAP: gold gain, pol/per devastation
+	option = {
+		name = cc_bonds.36.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Use interregnum to install loyalist — pol gain but memory flag set
+	option = {
+		name = cc_bonds.36.c
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_interregnum  value = yes }
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

@@ -1,0 +1,502 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Colonial Nation Chain — cc_bonds.10–16
+# Root = overlord. scope:bond_subj = the colonial nation subject.
+# Primary dimensions affected: Economic, Cultural. Secondary: Political, Personal.
+###############################################################################
+
+# cc_bonds.10 — "The Colony's First Harvest" (one-shot)
+# Intro event. Option A looks profitable but harms eco long-term (red herring 70
+# fires making it seem fine). Option B costs gold but builds real eco capital
+# (red herring 71 fires making it seem like a mistake).
+cc_bonds.10 = {
+	type = country_event
+	title = cc_bonds.10.title
+	desc = cc_bonds.10.desc
+	illustration_tags = { 10 = economy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_10_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_10_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_10_cd  value = yes }
+		}
+	}
+
+	# Heavy extraction — gold gain, eco bond damage (false positive fires)
+	option = {
+		name = cc_bonds.10.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.70  months = 3 }
+	}
+
+	# Invest in infrastructure — gold cost, eco bond gain (false negative fires)
+	option = {
+		name = cc_bonds.10.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.71  months = 3 }
+	}
+
+	# Hands-off — no change
+	option = {
+		name = cc_bonds.10.c
+	}
+}
+
+# cc_bonds.11 — "Colonial Conscription" (cooldown 12 yrs)
+cc_bonds.11 = {
+	type = country_event
+	title = cc_bonds.11.title
+	desc = cc_bonds.11.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_11_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_11_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_11_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Conscript colonial levies — manpower, mil bond damage
+	option = {
+		name = cc_bonds.11.a
+		add_manpower = 5000
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+
+	# Pay mercenaries instead — gold cost, minor eco hit
+	option = {
+		name = cc_bonds.11.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Decline to raise troops — mil bond improves
+	option = {
+		name = cc_bonds.11.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.12 — "The Governor Reports Unrest" (cooldown 10 yrs)
+# Option A looks decisive but hits 4 dimensions. Option B costs gold but is
+# the only genuinely good choice. Option C triggers a false positive.
+cc_bonds.12 = {
+	type = country_event
+	title = cc_bonds.12.title
+	desc = cc_bonds.12.desc
+	illustration_tags = { 10 = angry }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_12_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_12_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_12_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Send troops to suppress — prestige gain, 4-dimension damage
+	option = {
+		name = cc_bonds.12.a
+		add_prestige = prestige_mild_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Investigate and reform tax code — gold cost, eco+pol improvement
+	option = {
+		name = cc_bonds.12.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Replace the governor — prestige loss, small pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.12.c
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.72  months = 6 }
+	}
+}
+
+# cc_bonds.13 — "Colonial Trade Monopoly Dispute" (cooldown 15 yrs)
+# Option A looks profitable, harms eco and pol. Option C looks costly (gold hit)
+# but gives the best long-term eco and cul gains.
+cc_bonds.13 = {
+	type = country_event
+	title = cc_bonds.13.title
+	desc = cc_bonds.13.desc
+	illustration_tags = { 10 = bank }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_13_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_13_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_13_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Grant burgher monopoly — prestige, damages eco and pol independence
+	option = {
+		name = cc_bonds.13.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Resist monopoly — prestige loss, no bond change
+	option = {
+		name = cc_bonds.13.b
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Let colony trade freely — income cost, broadly positive
+	option = {
+		name = cc_bonds.13.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 3 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.14 — "The Colony Seeks a Voice" (cooldown 20 yrs)
+# Requires relationship isn't deeply broken. Option C triggers false positive.
+# Memory flag cc_bond_mem_voice_granted used by AoR events.
+cc_bonds.14 = {
+	type = country_event
+	title = cc_bonds.14.title
+	desc = cc_bonds.14.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_14_cd }
+			OR = {
+				var:cc_bond_eco >= -1
+				var:cc_bond_pol >= -1
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_14_cd }
+				OR = {
+					var:cc_bond_eco >= -1
+					var:cc_bond_pol >= -1
+				}
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_14_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Grant representation — prestige cost, strong pol/cul/per gains
+	option = {
+		name = cc_bonds.14.a
+		add_prestige = prestige_mild_penalty
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_voice_granted  value = yes }
+			change_variable = { name = cc_bond_pol  add = 3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Symbolic recognition — modest pol/per gains
+	option = {
+		name = cc_bonds.14.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Deny — significant pol/cul/per damage, false positive fires
+	option = {
+		name = cc_bonds.14.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.73  months = 6 }
+	}
+}
+
+# cc_bonds.15 — "Cultural Assimilation Pressure" (cooldown 15 yrs)
+# Option A looks like cultural consolidation, inflicts severe cul damage.
+# Option B looks "weak" to advisors but gives the best cul outcome.
+cc_bonds.15 = {
+	type = country_event
+	title = cc_bonds.15.title
+	desc = cc_bonds.15.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_15_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_15_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_15_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Push assimilation — cultural influence gain, severe cul bond damage
+	option = {
+		name = cc_bonds.15.a
+		culture = { add_cultural_influence = cultural_influence_mild_bonus }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = -3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Support local customs — pol and strong cul gain
+	option = {
+		name = cc_bonds.15.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Ignore — no change
+	option = {
+		name = cc_bonds.15.c
+	}
+}
+
+# cc_bonds.16 — "Colonial Militia Incident" (cooldown 10 yrs)
+# Requires relationship already showing strain (pol or mil ≤ -2).
+# Option A "ends" the incident publicly but accelerates the spiral.
+# Option C triggers a false positive making it look resolved.
+cc_bonds.16 = {
+	type = country_event
+	title = cc_bonds.16.title
+	desc = cc_bonds.16.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_provinces >= 3
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_16_cd }
+			OR = {
+				var:cc_bond_pol <= -2
+				var:cc_bond_mil <= -2
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_provinces >= 3
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_16_cd }
+				OR = {
+					var:cc_bond_pol <= -2
+					var:cc_bond_mil <= -2
+				}
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_16_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Execute ringleaders — prestige gain, 3-dimension damage
+	option = {
+		name = cc_bonds.16.a
+		add_prestige = prestige_mild_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Negotiate — gold cost, genuine mil/pol improvement
+	option = {
+		name = cc_bonds.16.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Disband the militia — severe mil damage, false positive fires
+	option = {
+		name = cc_bonds.16.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.74  months = 6 }
+	}
+}

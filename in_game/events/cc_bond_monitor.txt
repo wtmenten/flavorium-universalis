@@ -1,0 +1,181 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# cc_bonds.1 — Hidden Monitor (10-year passive cycle)
+# Root = overlord. Iterates every tracked subject via the registry map.
+# Applies passive dimension adjustments, sets priming flags, syncs score maps.
+###############################################################################
+
+cc_bonds.1 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_monitor_cd }
+		any_subject = { has_variable = cc_bond_initialized }
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_monitor_cd  value = yes  years = 10 }
+
+		every_key_in_variable_map = {
+			variable = cc_subject_registry_map
+
+			if = {
+				limit = { has_variable = cc_bond_initialized }
+				save_scope_as = cc_sync_subj
+
+				# --- 1. Foreign buildings → eco ±1 ---
+				set_local_variable = { name = lv_invest  value = 0 }
+				prev = {
+					every_owned_foreign_building_location = {
+						limit = { owner = scope:cc_sync_subj }
+						change_local_variable = { name = lv_invest  add = 1 }
+					}
+				}
+				if = {
+					limit = { local_var:lv_invest >= 2 }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { local_var:lv_invest = 0 }
+					change_variable = { name = cc_bond_eco  add = -1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+
+				# --- 2. Culture conversion detection (one-shot) ---
+				if = {
+					limit = {
+						has_variable = cc_bond_mem_cultures_differ
+						culture = prev.culture
+					}
+					# Cultures now match — likely forced conversion
+					change_variable = { name = cc_bond_cul  add = -3 }
+					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+					remove_variable = cc_bond_mem_cultures_differ
+				}
+				else_if = {
+					limit = {
+						has_variable = cc_bond_mem_cultures_differ
+						NOT = { culture = prev.culture }
+					}
+					# Subject retained distinct culture — slight positive
+					change_variable = { name = cc_bond_cul  add = 1 }
+					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+				}
+
+				# --- 3. Province growth → eco ±1 ---
+				if = {
+					limit = { num_provinces > var:cc_bond_init_provinces }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { num_provinces < var:cc_bond_init_provinces }
+					change_variable = { name = cc_bond_eco  add = -1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+
+				# --- 4. War-call frequency → mil ±1 then reset counter ---
+				if = {
+					limit = { var:cc_bond_war_calls >= 4 }
+					change_variable = { name = cc_bond_mil  add = -1 }
+					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+					change_variable = { name = cc_bond_eco  add = -1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { var:cc_bond_war_calls = 0 }
+					change_variable = { name = cc_bond_mil  add = 1 }
+					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+				}
+				set_variable = { name = cc_bond_war_calls  value = 0 }
+
+				# --- 5. Unjust wars accumulation → mil/cul, counter decays ---
+				if = {
+					limit = { var:cc_bond_unjust_wars >= 3 }
+					change_variable = { name = cc_bond_mil  add = -1 }
+					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+				}
+				if = {
+					limit = { var:cc_bond_unjust_wars >= 5 }
+					change_variable = { name = cc_bond_cul  add = -1 }
+					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+				}
+				if = {
+					limit = { var:cc_bond_unjust_wars > 0 }
+					change_variable = { name = cc_bond_unjust_wars  add = -1 }
+				}
+
+				# --- 6. Priming flags ---
+				if = {
+					limit = {
+						var:cc_bond_eco >= 2
+						var:cc_bond_pol >= 2
+						var:cc_bond_per >= 2
+					}
+					set_variable = { name = cc_bond_loyal_primed  value = yes }
+					remove_variable = cc_bond_disloyal_primed
+					remove_variable = cc_bond_revolutionary_primed
+				}
+				else_if = {
+					limit = {
+						OR = {
+							AND = {
+								var:cc_bond_eco <= -3
+								var:cc_bond_pol <= -3
+							}
+							AND = {
+								var:cc_bond_eco <= -3
+								var:cc_bond_cul <= -3
+							}
+							AND = {
+								var:cc_bond_mil <= -3
+								var:cc_bond_pol <= -3
+							}
+						}
+					}
+					set_variable = { name = cc_bond_disloyal_primed  value = yes }
+					remove_variable = cc_bond_loyal_primed
+					if = {
+						limit = {
+							var:cc_bond_eco <= -3
+							var:cc_bond_cul <= -3
+						}
+						set_variable = { name = cc_bond_revolutionary_primed  value = yes }
+					}
+					else = {
+						remove_variable = cc_bond_revolutionary_primed
+					}
+				}
+				else = {
+					remove_variable = cc_bond_loyal_primed
+					remove_variable = cc_bond_disloyal_primed
+					remove_variable = cc_bond_revolutionary_primed
+				}
+
+				# --- 7. Sync scores to overlord variable maps ---
+				set_local_variable = { name = lv_eco  value = var:cc_bond_eco }
+				set_local_variable = { name = lv_mil  value = var:cc_bond_mil }
+				set_local_variable = { name = lv_pol  value = var:cc_bond_pol }
+				set_local_variable = { name = lv_cul  value = var:cc_bond_cul }
+				set_local_variable = { name = lv_per  value = var:cc_bond_per }
+				prev = {
+					remove_from_variable_map = { name = cc_bond_eco_map  key = scope:cc_sync_subj }
+					add_to_variable_map = { name = cc_bond_eco_map  key = scope:cc_sync_subj  value = local_var:lv_eco }
+					remove_from_variable_map = { name = cc_bond_mil_map  key = scope:cc_sync_subj }
+					add_to_variable_map = { name = cc_bond_mil_map  key = scope:cc_sync_subj  value = local_var:lv_mil }
+					remove_from_variable_map = { name = cc_bond_pol_map  key = scope:cc_sync_subj }
+					add_to_variable_map = { name = cc_bond_pol_map  key = scope:cc_sync_subj  value = local_var:lv_pol }
+					remove_from_variable_map = { name = cc_bond_cul_map  key = scope:cc_sync_subj }
+					add_to_variable_map = { name = cc_bond_cul_map  key = scope:cc_sync_subj  value = local_var:lv_cul }
+					remove_from_variable_map = { name = cc_bond_per_map  key = scope:cc_sync_subj }
+					add_to_variable_map = { name = cc_bond_per_map  key = scope:cc_sync_subj  value = local_var:lv_per }
+				}
+			}
+		}
+	}
+}

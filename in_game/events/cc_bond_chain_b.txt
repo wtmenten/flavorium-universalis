@@ -1,0 +1,264 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Chain B: "The Merchant and the Sea" — cc_bonds.110–112
+# A single ambitious trader becomes a dynasty. Spans 25–40 years.
+# Applies to: colonial_nation, puppet_state, crown_dependency.
+# Root = overlord. scope:bond_subj = the subject.
+###############################################################################
+
+# cc_bonds.110 — "A Merchant Seeks Passage" (fires 5–10 yrs into relationship, one-shot)
+cc_bonds.110 = {
+	type = country_event
+	title = cc_bonds.110.title
+	desc = cc_bonds.110.desc
+	illustration_tags = { 10 = bank }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = puppet_state
+				is_subject_type = crown_dependency
+			}
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_110_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = puppet_state
+					is_subject_type = crown_dependency
+				}
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_110_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_110_cd  value = yes }
+		}
+	}
+
+	# Grant full passage rights and a trade monopoly — eco+1, pol-1
+	option = {
+		name = cc_bonds.110.a
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_patronized  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.111  years = 12 }
+	}
+
+	# Grant passage only, no monopoly — eco+1
+	option = {
+		name = cc_bonds.110.b
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_allowed  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.111  years = 12 }
+	}
+
+	# Deny passage — eco-1, per-1
+	# He found another route; fires in 15 years
+	option = {
+		name = cc_bonds.110.c
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_denied  value = yes }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.111  years = 15 }
+	}
+}
+
+# cc_bonds.111 — "The Merchant's Fortune" (fires 12–15 years after cc_bonds.110)
+cc_bonds.111 = {
+	type = country_event
+	title = cc_bonds.111.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized } }
+				desc = cc_bonds.111.desc_patronized
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed } }
+				desc = cc_bonds.111.desc_allowed
+			}
+			desc = cc_bonds.111.desc_denied
+		}
+	}
+	illustration_tags = { 10 = bank }
+
+	# Patronized: He's extremely powerful. Options: tax him, appoint him, or ignore
+	option = {
+		name = cc_bonds.111.a_tax
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_tapped  value = yes }
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 18 }
+	}
+
+	option = {
+		name = cc_bonds.111.a_appoint
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 15 }
+	}
+
+	# Ignore growing influence — schedules terminal event
+	option = {
+		name = cc_bonds.111.a_ignore
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 18 }
+	}
+
+	# Allowed: He's done well but not dominant. Options: offer monopoly now, or let him continue
+	option = {
+		name = cc_bonds.111.b_monopoly
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 15 }
+	}
+
+	option = {
+		name = cc_bonds.111.b_continue
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 18 }
+	}
+
+	# Denied: He routed around us. Offer retroactive deal or accept the loss
+	option = {
+		name = cc_bonds.111.c_deal
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_denied }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 15 }
+	}
+
+	option = {
+		name = cc_bonds.111.c_ignore
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_denied }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 18 }
+	}
+}
+
+# cc_bonds.112 — "The Merchant Dynasty" (terminal — fires 15–20 years after cc_bonds.111)
+# The merchant is dead; his family now controls the economic backbone of the subject.
+cc_bonds.112 = {
+	type = country_event
+	title = cc_bonds.112.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied } }
+				desc = cc_bonds.112.desc_aligned
+			}
+			desc = cc_bonds.112.desc_hostile
+		}
+	}
+	illustration_tags = { 10 = bank }
+
+	# Family is loyal — they fund defense works
+	option = {
+		name = cc_bonds.112.a_charter
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_dynasty_aligned  value = yes }
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+
+	option = {
+		name = cc_bonds.112.a_accept
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_dynasty_aligned  value = yes }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Family is hostile — they have rival connections
+	# No good options: this is the consequence of poor earlier choices
+	option = {
+		name = cc_bonds.112.b_accept
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_merchant_allied }
+			}
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_dynasty_hostile  value = yes }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}

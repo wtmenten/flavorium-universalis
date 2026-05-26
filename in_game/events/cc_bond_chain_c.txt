@@ -1,0 +1,306 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Chain C: "The Forgotten Fort" — cc_bonds.120–122
+# A crumbling fortress becomes a decades-long test of priorities. Spans 30–50 yrs.
+# Applies to: military_march, provincial_governorate, palatinate, puppet_state.
+# Root = overlord. scope:bond_subj = the subject.
+###############################################################################
+
+# cc_bonds.120 — "The Fort Needs Repair" (fires 8–15 yrs in, one-shot)
+cc_bonds.120 = {
+	type = country_event
+	title = cc_bonds.120.title
+	desc = cc_bonds.120.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			OR = {
+				is_subject_type = military_march
+				is_subject_type = provincial_governorate
+				is_subject_type = palatinate
+				is_subject_type = puppet_state
+			}
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_120_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = military_march
+					is_subject_type = provincial_governorate
+					is_subject_type = palatinate
+					is_subject_type = puppet_state
+				}
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_120_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_120_cd  value = yes }
+		}
+	}
+
+	# Fund full repair — mil+2, pol+1, eco-1
+	option = {
+		name = cc_bonds.120.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -12 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_funded  value = yes }
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.121  years = 10 }
+	}
+
+	# Fund partial repair — mil+1, eco-1
+	option = {
+		name = cc_bonds.120.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_partial  value = yes }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.121  years = 10 }
+	}
+
+	# Tell the subject to fund it themselves — mil-1, eco+1, pol-1
+	option = {
+		name = cc_bonds.120.c
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_denied  value = yes }
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.121  years = 12 }
+	}
+
+	# Ignore the report entirely — mil-2, pol-1
+	option = {
+		name = cc_bonds.120.d
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_ignored  value = yes }
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.121  years = 15 }
+	}
+}
+
+# cc_bonds.121 — "The Fort Is Tested" (fires 10–15 years after cc_bonds.120)
+# A neighboring power probes the border. The fort's state determines outcome.
+cc_bonds.121 = {
+	type = country_event
+	title = cc_bonds.121.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_funded } }
+				desc = cc_bonds.121.desc_funded
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_partial } }
+				desc = cc_bonds.121.desc_partial
+			}
+			desc = cc_bonds.121.desc_failed
+		}
+	}
+	illustration_tags = { 10 = military }
+
+	# Fort funded: holds with distinction
+	# Option A: Take credit publicly (per+1, pol-1)
+	option = {
+		name = cc_bonds.121.a_credit
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_funded }
+		}
+		add_prestige = prestige_mild_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+
+	# Option B: Give the subject lord full credit (per+2, pol+1, mil+1) — best outcome
+	option = {
+		name = cc_bonds.121.a_subject_credit
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_funded }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_legacy_positive  value = yes }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+
+	# Fort partial: holds barely, mil-1
+	# Option A: Emergency reinforcement (mil+2, eco-1)
+	option = {
+		name = cc_bonds.121.b_reinforce
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_partial }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+
+	# Option B: Blame the subject for not doing more (per-2, pol-1)
+	option = {
+		name = cc_bonds.121.b_blame
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_partial }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+
+	# Fort denied or ignored: Fort is breached. mil-3, pol-2, prestige penalty
+	# Immediate: apply base damage in immediate block isn't possible for denied paths,
+	# but we can do it in the option since all denied/ignored paths land here
+
+	# Option A: Crown personally leads the recovery (per+2, mil+1, eco-1)
+	option = {
+		name = cc_bonds.121.c_lead
+		trigger = {
+			scope:bond_subj = {
+				OR = {
+					has_variable = cc_bond_mem_fort_denied
+					has_variable = cc_bond_mem_fort_ignored
+				}
+			}
+		}
+		add_prestige = prestige_mild_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+
+	# Option B: Send supplies only (mil+1, eco-1)
+	option = {
+		name = cc_bonds.121.c_supplies
+		trigger = {
+			scope:bond_subj = {
+				OR = {
+					has_variable = cc_bond_mem_fort_denied
+					has_variable = cc_bond_mem_fort_ignored
+				}
+			}
+		}
+		add_prestige = prestige_weak_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_fort_legacy_bitter  value = yes }
+			change_variable = { name = cc_bond_mil  add = -3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.122  years = 20 }
+	}
+}
+
+# cc_bonds.122 — "Who Commands the Fort?" (fires 20 years after cc_bonds.121)
+# The fort has been rebuilt or maintained. Now a question of command structure.
+cc_bonds.122 = {
+	type = country_event
+	title = cc_bonds.122.title
+	desc = cc_bonds.122.desc
+	illustration_tags = { 10 = military }
+
+	# Appoint a crown officer — pol-2, mil+1, per-1
+	option = {
+		name = cc_bonds.122.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Let the subject lord command — pol+2, mil+1, per+2
+	option = {
+		name = cc_bonds.122.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Joint command arrangement — pol+1, mil+1, per+1, gold cost
+	option = {
+		name = cc_bonds.122.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

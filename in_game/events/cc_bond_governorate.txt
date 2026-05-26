@@ -1,0 +1,498 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Provincial Governorate Chain — cc_bonds.20–26
+# Root = overlord. scope:bond_subj = the provincial governorate subject.
+# Primary dimensions: Economic, Political. Secondary: Personal, Cultural.
+###############################################################################
+
+# cc_bonds.20 — "The Governor's First Annual Report" (one-shot)
+# Option B (flexible admin) fires a false negative. Option C sets a memory flag.
+cc_bonds.20 = {
+	type = country_event
+	title = cc_bonds.20.title
+	desc = cc_bonds.20.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_20_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_20_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_20_cd  value = yes }
+		}
+	}
+
+	# Demand strict revenue targets — gold income, eco/pol damage
+	option = {
+		name = cc_bonds.20.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Allow flexible administration — eco/pol gain, false negative fires
+	option = {
+		name = cc_bonds.20.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.75  months = 4 }
+	}
+
+	# Establish oversight council — pol gain, sets memory flag
+	option = {
+		name = cc_bonds.20.c
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_council  value = yes }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.21 — "Provincial Road and Market" (cooldown 12 yrs)
+cc_bonds.21 = {
+	type = country_event
+	title = cc_bonds.21.title
+	desc = cc_bonds.21.desc
+	illustration_tags = { 10 = economy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_21_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_21_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_21_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Force province to self-fund — eco/pol damage
+	option = {
+		name = cc_bonds.21.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Crown funds it — gold cost, eco/pol gain
+	option = {
+		name = cc_bonds.21.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -10 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Do nothing — no change
+	option = {
+		name = cc_bonds.21.c
+	}
+}
+
+# cc_bonds.22 — "The Governor's Military Levy" (cooldown 10 yrs)
+# Option C (no levy) triggers a false negative.
+cc_bonds.22 = {
+	type = country_event
+	title = cc_bonds.22.title
+	desc = cc_bonds.22.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_22_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_22_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_22_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Full levy — manpower, mil/pol damage
+	option = {
+		name = cc_bonds.22.a
+		add_manpower = 5000
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Voluntary levy with pay — gold cost, mil gain
+	option = {
+		name = cc_bonds.22.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+
+	# No levy — mil and pol gain, false negative fires
+	option = {
+		name = cc_bonds.22.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.76  months = 4 }
+	}
+}
+
+# cc_bonds.23 — "Governor's Son Seeks Appointment" (cooldown 15 yrs)
+# Option A (nepotism) looks corrupt but genuinely builds personal bond.
+# Option B (merit appointment) fires a false positive.
+cc_bonds.23 = {
+	type = country_event
+	title = cc_bonds.23.title
+	desc = cc_bonds.23.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_23_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_23_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_23_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Grant court post — pol/cul/per gain (looks corrupt, is genuine investment)
+	option = {
+		name = cc_bonds.23.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Appoint on merit — per loss, false positive fires (written thanks, quiet resentment)
+	option = {
+		name = cc_bonds.23.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.77  months = 5 }
+	}
+
+	# Ignore the request — pol/per damage
+	option = {
+		name = cc_bonds.23.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.24 — "Provincial Legal Customs Conflict" (cooldown 12 yrs)
+# Option A looks like administrative efficiency but inflicts heavy pol/cul damage.
+# Option C (preserve customs) fires a false negative.
+cc_bonds.24 = {
+	type = country_event
+	title = cc_bonds.24.title
+	desc = cc_bonds.24.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_24_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_24_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_24_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Standardize crown law — admin efficiency, heavy pol/cul damage
+	option = {
+		name = cc_bonds.24.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Codify hybrid system — gold cost, moderate gains
+	option = {
+		name = cc_bonds.24.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Preserve local customs — strong pol/cul gain, false negative fires
+	option = {
+		name = cc_bonds.24.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.78  months = 5 }
+	}
+}
+
+# cc_bonds.25 — "The Governor Petitions for Permanence" (cooldown 20 yrs)
+# Option A (hereditary governorship) is THE TRAP: large pol/cul/per gains but
+# also adds liberty desire modifier — the player trades long-term stability for
+# short-term relationship warmth.
+cc_bonds.25 = {
+	type = country_event
+	title = cc_bonds.25.title
+	desc = cc_bonds.25.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_25_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_25_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_25_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Grant hereditary governorship — THE TRAP: great bonds, adds liberty desire
+	option = {
+		name = cc_bonds.25.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Keep crown rotation system — pol loss, no change
+	option = {
+		name = cc_bonds.25.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Extend term length — modest pol/per gain, no drawback
+	option = {
+		name = cc_bonds.25.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.26 — "Corruption Reports" (cooldown 15 yrs)
+# Requires strong relationship (pol or eco ≥ 3) — the corruption emerges from
+# a comfortable relationship, not a strained one.
+# Option A (ignore) looks cost-free — but the ongoing invisible drain is
+# abstracted as a hidden eco hit. Option C (send gift) is the same as A except
+# the gold cost is visible, making it look worse.
+cc_bonds.26 = {
+	type = country_event
+	title = cc_bonds.26.title
+	desc = cc_bonds.26.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = provincial_governorate
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_26_cd }
+			OR = {
+				var:cc_bond_pol >= 3
+				var:cc_bond_eco >= 3
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_26_cd }
+				OR = {
+					var:cc_bond_pol >= 3
+					var:cc_bond_eco >= 3
+				}
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_26_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Ignore it — looks free, conceals ongoing eco drain
+	option = {
+		name = cc_bonds.26.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Audit and punish — stops drain, pol/per cost
+	option = {
+		name = cc_bonds.26.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Send a "gift" — gold cost visible, outcome same as ignoring it
+	option = {
+		name = cc_bonds.26.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

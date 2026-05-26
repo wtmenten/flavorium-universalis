@@ -1,0 +1,445 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Crown Dependency Chain — cc_bonds.50–55
+# Root = overlord. scope:bond_subj = the crown dependency subject.
+# Primary dimensions: Personal, Cultural. Secondary: Political, Economic.
+###############################################################################
+
+# cc_bonds.50 — "The Royal Visit" (one-shot)
+# Option C (send letter only) fires a false positive — dependency "sends warm reply."
+cc_bonds.50 = {
+	type = country_event
+	title = cc_bonds.50.title
+	desc = cc_bonds.50.desc
+	illustration_tags = { 10 = exterior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_50_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_50_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_50_cd  value = yes }
+		}
+	}
+
+	# Visit in person — prestige, pol/cul/per gain
+	option = {
+		name = cc_bonds.50.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Send royal envoy — per gain
+	option = {
+		name = cc_bonds.50.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Send a formal letter — per damage, false positive fires
+	option = {
+		name = cc_bonds.50.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.86  months = 4 }
+	}
+}
+
+# cc_bonds.51 — "Dependency Trade Preferences" (cooldown 12 yrs)
+# Option C (extract advantage) is the obvious gold choice that harms eco/pol/per.
+cc_bonds.51 = {
+	type = country_event
+	title = cc_bonds.51.title
+	desc = cc_bonds.51.desc
+	illustration_tags = { 10 = economy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_51_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_51_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_51_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Favored trade status — eco/pol/per gain, prestige cost
+	option = {
+		name = cc_bonds.51.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Equal terms — eco gain only
+	option = {
+		name = cc_bonds.51.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Extract advantage — gold gain, eco/pol/per damage
+	option = {
+		name = cc_bonds.51.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -3 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.52 — "Royal Family Ceremony" (cooldown 15 yrs)
+# Option C (exclude them) triggers a massive hidden per damage behind a false
+# positive — dependency "sends congratulations" — masking the -4 per hit.
+cc_bonds.52 = {
+	type = country_event
+	title = cc_bonds.52.title
+	desc = cc_bonds.52.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_52_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_52_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_52_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Include prominently — prestige, cul/per gain
+	option = {
+		name = cc_bonds.52.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Token inclusion — per gain
+	option = {
+		name = cc_bonds.52.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Exclude them — pol/cul/per devastation, false positive fires
+	option = {
+		name = cc_bonds.52.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.87  months = 3 }
+	}
+}
+
+# cc_bonds.53 — "Dependency Faces External Threat" (cooldown 10 yrs)
+# Option C (do nothing) fires a false negative — dependency "mobilizes admirably"
+# — masking the severe per damage already done.
+cc_bonds.53 = {
+	type = country_event
+	title = cc_bonds.53.title
+	desc = cc_bonds.53.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_53_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_53_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_53_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Send troops immediately — gold cost, mil/pol/per gain
+	option = {
+		name = cc_bonds.53.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Fund defensive works — gold cost, mil/per gain
+	option = {
+		name = cc_bonds.53.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Leave them to handle it — mil/pol/per damage, false negative fires
+	option = {
+		name = cc_bonds.53.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.88  months = 6 }
+	}
+}
+
+# cc_bonds.54 — "The Dependency's Cultural Festival" (cooldown 12 yrs)
+cc_bonds.54 = {
+	type = country_event
+	title = cc_bonds.54.title
+	desc = cc_bonds.54.desc
+	illustration_tags = { 10 = happy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_54_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_54_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_54_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Sponsor lavishly — gold cost, cul/per gain
+	option = {
+		name = cc_bonds.54.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Attend without sponsoring — prestige, cul/per gain
+	option = {
+		name = cc_bonds.54.b
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Send apologies — modest cul/per gain
+	option = {
+		name = cc_bonds.54.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Ignore entirely — cul/per damage
+	option = {
+		name = cc_bonds.54.d
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.55 — "The Dependency Wants Voice in Succession" (cooldown 20 yrs)
+# Option C (refuse) triggers a false positive — dependency "accepts the royal
+# prerogative" — masking the catastrophic per-5 damage.
+cc_bonds.55 = {
+	type = country_event
+	title = cc_bonds.55.title
+	desc = cc_bonds.55.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = crown_dependency
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_55_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_55_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_55_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Grant consultation rights — prestige cost, pol/per gain
+	option = {
+		name = cc_bonds.55.a
+		add_prestige = prestige_mild_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Advisory role only — pol/per gain
+	option = {
+		name = cc_bonds.55.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Refuse — Crown prerogative — pol/per devastation, false positive fires
+	option = {
+		name = cc_bonds.55.c
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -5 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.89  months = 4 }
+	}
+}

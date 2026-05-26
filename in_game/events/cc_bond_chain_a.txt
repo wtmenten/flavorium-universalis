@@ -1,0 +1,335 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Chain A: "The Young Heir" — cc_bonds.100–102
+# A multi-generational story spanning 30–45 years.
+# Applies to: palatinate, crown_dependency, military_march, provincial_governorate.
+# Root = overlord. scope:bond_subj = the subject.
+###############################################################################
+
+# cc_bonds.100 — "The Young Heir" (one-shot intro, fires within first 5 yrs of relationship)
+# Overlord learns the subject's current ruler has a young heir.
+cc_bonds.100 = {
+	type = country_event
+	title = cc_bonds.100.title
+	desc = cc_bonds.100.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			OR = {
+				is_subject_type = palatinate
+				is_subject_type = crown_dependency
+				is_subject_type = military_march
+				is_subject_type = provincial_governorate
+			}
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_100_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = palatinate
+					is_subject_type = crown_dependency
+					is_subject_type = military_march
+					is_subject_type = provincial_governorate
+				}
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_100_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_100_cd  value = yes }
+		}
+	}
+
+	# Invite heir to court as ward — per+2, pol-1, cul-1
+	# Loyalty to you, but separated from his homeland
+	option = {
+		name = cc_bonds.100.a
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_at_court  value = yes }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+	}
+
+	# Send tutors and gifts to his home court — per+1, cul+1
+	# He grows up with his people but with goodwill toward the overlord
+	option = {
+		name = cc_bonds.100.b
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_gifted  value = yes }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+	}
+
+	# Ignore the dispatch — no bond change
+	option = {
+		name = cc_bonds.100.c
+		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+	}
+}
+
+# cc_bonds.101 — "The Heir Comes of Age" (fires 15 years after cc_bonds.100)
+# Three branches based on memory flags from the earlier choice.
+cc_bonds.101 = {
+	type = country_event
+	title = cc_bonds.101.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_heir_at_court } }
+				desc = cc_bonds.101.desc_court
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_heir_gifted } }
+				desc = cc_bonds.101.desc_gifted
+			}
+			desc = cc_bonds.101.desc_ignored
+		}
+	}
+	illustration_tags = {  }
+
+	# Branch A: Heir was at court — polished and loyal to crown, somewhat alienated from homeland
+	# Option: Keep him at court longer (per+2, delays return)
+	option = {
+		name = cc_bonds.101.a_keep
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_at_court }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 25 }
+	}
+
+	# Option: Send him home with honors and a marriage arrangement (per+1, cul+1)
+	option = {
+		name = cc_bonds.101.a_send
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_at_court }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_loyal  value = yes }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 20 }
+	}
+
+	# Branch B: Heir was gifted — well-educated, fond memories of overlord's generosity
+	# Option: Invite him to court now to formalize the relationship (per+2, cul-1)
+	option = {
+		name = cc_bonds.101.b_invite
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_gifted }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_loyal  value = yes }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 22 }
+	}
+
+	# Option: Send him a property deed as a gesture (per+1, eco-1)
+	option = {
+		name = cc_bonds.101.b_gift
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_gifted }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_neutral  value = yes }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 22 }
+	}
+
+	# Branch C: Heir was ignored — proud, independent-minded, sees overlord as outsider
+	# Option: Late outreach — lavish gifts (per+1, eco-1)
+	option = {
+		name = cc_bonds.101.c_gift
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_heir_at_court }
+				NOT = { has_variable = cc_bond_mem_heir_gifted }
+			}
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_neutral  value = yes }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 22 }
+	}
+
+	# Option: Ignore again — no change
+	option = {
+		name = cc_bonds.101.c_ignore
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_heir_at_court }
+				NOT = { has_variable = cc_bond_mem_heir_gifted }
+			}
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_hostile  value = yes }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 22 }
+	}
+
+	# Option: Interfere in his local court connections (pol-2)
+	option = {
+		name = cc_bonds.101.c_interfere
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_heir_at_court }
+				NOT = { has_variable = cc_bond_mem_heir_gifted }
+			}
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_heir_disposition_hostile  value = yes }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.102  years = 22 }
+	}
+}
+
+# cc_bonds.102 — "The Old Lord's Passing" (fires 20–25 years after cc_bonds.101)
+# The heir is now the ruler. His first act toward the overlord.
+cc_bonds.102 = {
+	type = country_event
+	title = cc_bonds.102.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_loyal } }
+				desc = cc_bonds.102.desc_loyal
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_neutral } }
+				desc = cc_bonds.102.desc_neutral
+			}
+			desc = cc_bonds.102.desc_hostile
+		}
+	}
+	illustration_tags = { 10 = interior }
+
+	# Loyal — he sends a warm personal letter, renews oath eagerly
+	# Option: Reward with honorary title (per+1, pol+1, eco-1)
+	option = {
+		name = cc_bonds.102.a_reward
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_loyal }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Option: Simply acknowledge (per+1)
+	option = {
+		name = cc_bonds.102.a_acknowledge
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_loyal }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Neutral — standard professional renewal
+	# Option: Push for a concession (pol+2, per-1, eco+1)
+	option = {
+		name = cc_bonds.102.b_push
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_neutral }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+
+	# Option: Accept neutral renewal (no change)
+	option = {
+		name = cc_bonds.102.b_accept
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_neutral }
+		}
+	}
+
+	# Hostile — he delays renewing the oath
+	# Option: Demand immediate oath with consequences (pol-2, per-3, mil-1)
+	option = {
+		name = cc_bonds.102.c_demand
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_hostile }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+
+	# Option: Send envoy with gifts (eco-1, per+2)
+	option = {
+		name = cc_bonds.102.c_envoy
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_hostile }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

@@ -1,0 +1,514 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Puppet State Chain — cc_bonds.40–46
+# Root = overlord. scope:bond_subj = the puppet state subject.
+# Primary dimensions: Political, Economic. Secondary: Personal, Cultural.
+###############################################################################
+
+# cc_bonds.40 — "The Puppet Requests an Ambassador" (one-shot)
+# Option C (refuse) fires a false positive.
+cc_bonds.40 = {
+	type = country_event
+	title = cc_bonds.40.title
+	desc = cc_bonds.40.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_40_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_40_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_40_cd  value = yes }
+		}
+	}
+
+	# Full diplomatic mission — strong pol/per gain
+	option = {
+		name = cc_bonds.40.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Limited representative — moderate pol/per gain
+	option = {
+		name = cc_bonds.40.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Refuse — pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.40.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.83  months = 4 }
+	}
+}
+
+# cc_bonds.41 — "Puppet Economic Integration" (cooldown 12 yrs)
+# Option A (force currency union) looks efficient but hits eco/pol/cul.
+cc_bonds.41 = {
+	type = country_event
+	title = cc_bonds.41.title
+	desc = cc_bonds.41.desc
+	illustration_tags = { 10 = economy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_41_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_41_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_41_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Force currency union — prestige, eco/pol/cul damage (looks efficient)
+	option = {
+		name = cc_bonds.41.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Parallel monetary system — prestige cost, eco/pol gain
+	option = {
+		name = cc_bonds.41.b
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Joint trade agreements — gold cost, eco/pol gain
+	option = {
+		name = cc_bonds.41.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.42 — "The Puppet's Internal Faction" (cooldown 10 yrs)
+# Option A (back pro-overlord faction) has a random discovery chance that
+# turns a pol+1 into a pol-3/per-3 catastrophe. Option C fires false positive.
+cc_bonds.42 = {
+	type = country_event
+	title = cc_bonds.42.title
+	desc = cc_bonds.42.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_42_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_42_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_42_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Back pro-overlord faction — pol+1 normally, 25% chance of exposure: pol-3/per-3
+	option = {
+		name = cc_bonds.42.a
+		scope:bond_subj = {
+			random = {
+				chance = 25
+				change_variable = { name = cc_bond_pol  add = -3 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = -3 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+			random = {
+				chance = 75
+				change_variable = { name = cc_bond_pol  add = 1 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = -1 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Back the popular faction — broad genuine gains
+	option = {
+		name = cc_bonds.42.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Ignore — eco/pol damage, false positive fires
+	option = {
+		name = cc_bonds.42.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.84  months = 5 }
+	}
+}
+
+# cc_bonds.43 — "Directing Puppet Foreign Policy" (cooldown 15 yrs)
+# Option C (consult first) achieves the same outcome as A but with pol/per gain.
+cc_bonds.43 = {
+	type = country_event
+	title = cc_bonds.43.title
+	desc = cc_bonds.43.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_43_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_43_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_43_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Force alliance break — diplomatic gain, pol/per damage
+	option = {
+		name = cc_bonds.43.a
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Allow with conditions — moderate pol/per loss
+	option = {
+		name = cc_bonds.43.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Consult first — same outcome, pol/per gain for the courtesy
+	option = {
+		name = cc_bonds.43.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.44 — "Puppet Succession Crisis" (cooldown 20 yrs)
+# Option A (install by force) is THE TRAP: secures succession, destroys 5 dimensions.
+cc_bonds.44 = {
+	type = country_event
+	title = cc_bonds.44.title
+	desc = cc_bonds.44.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_44_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_44_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_44_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Install by force — THE TRAP: control secured, 5-dimension devastation
+	option = {
+		name = cc_bonds.44.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -4 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Support the popular heir — lose succession control, gain all dimensions
+	option = {
+		name = cc_bonds.44.b
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Supervised election — gold/prestige cost, moderate gains
+	option = {
+		name = cc_bonds.44.c
+		add_prestige = prestige_weak_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.45 — "Puppet Requests Military Expansion" (cooldown 12 yrs)
+# Option C (forbid) triggers a false positive.
+cc_bonds.45 = {
+	type = country_event
+	title = cc_bonds.45.title
+	desc = cc_bonds.45.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_45_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_45_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_45_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Allow and fund — gold cost, broad gains
+	option = {
+		name = cc_bonds.45.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Allow, no funds — mil/pol gain
+	option = {
+		name = cc_bonds.45.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Forbid — mil/pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.45.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.85  months = 5 }
+	}
+}
+
+# cc_bonds.46 — "The Loyal Puppet's Request" (cooldown 15 yrs)
+# Only fires when relationship is already positive. A chance to reinforce
+# or to exploit the goodwill — with different long-term consequences.
+cc_bonds.46 = {
+	type = country_event
+	title = cc_bonds.46.title
+	desc = cc_bonds.46.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = puppet_state
+			num_provinces >= 4
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_46_cd }
+			var:cc_bond_pol >= 2
+			var:cc_bond_per >= 1
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = puppet_state
+				num_provinces >= 4
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_46_cd }
+				var:cc_bond_pol >= 2
+				var:cc_bond_per >= 1
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_46_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Invest to reinforce the bond — gold cost, per gain
+	option = {
+		name = cc_bonds.46.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Exploit the goodwill — eco gain, per loss
+	option = {
+		name = cc_bonds.46.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

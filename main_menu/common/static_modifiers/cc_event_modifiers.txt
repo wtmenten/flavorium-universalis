@@ -802,3 +802,82 @@ cc_fra_hyw_noble_sacrifice = {
 	nobles_estate_levy_size = 0.10
 	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
 }
+
+########################
+# Overlord-Subject Bond System — AoR Payoff Modifiers
+########################
+
+# On OVERLORD: Applied when subjects are primed as loyal at AoR. Reduces liberty desire
+# for all remaining subjects — a reward for decades of good governance.
+cc_subject_loyal_bulwark = {
+	game_data = { category = country decaying = yes }
+	subject_loyalty = 8
+}
+
+# On OVERLORD: Applied when a march lord holds the frontier in the AoR. Fort defense bonus.
+cc_march_frontier_defense = {
+	game_data = { category = country decaying = yes }
+	fort_maintenance_cost = -0.10
+	global_manpower_modifier = 0.05
+}
+
+# On OVERLORD: Applied when a provincial governor actively suppresses AoR unrest.
+cc_loyal_governor_support = {
+	game_data = { category = country decaying = yes }
+	monthly_rebel_growth = -0.005
+	subject_loyalty = 3
+}
+
+# On OVERLORD: Applied when the palatinate answers the call to arms in the AoR.
+cc_palatinate_war_banner = {
+	game_data = { category = country decaying = yes }
+	army_heavy_cavalry_power = 0.10
+	discipline = 0.03
+}
+
+# On OVERLORD: Applied when the crown dependency abandons the overlord. Prestige and subject opinion hit.
+cc_abandoned_by_dependency = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = -0.2
+	subject_loyalty = -5
+}
+
+# On OVERLORD: Applied when a culturally well-treated subject stands as a cultural ally in AoR.
+cc_cultural_ally_modifier = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = 0.1
+	diplomatic_reputation = 1
+}
+
+# On SUBJECT: Applied to subjects that are revolutionary hotbeds at AoR.
+# Simulates restless population primed for independence.
+cc_revolutionary_sympathies = {
+	game_data = { category = country decaying = yes }
+	monthly_rebel_growth = 0.015
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+	peasants_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+}
+
+# On SUBJECT: Applied to independence-seeking subjects at AoR.
+cc_independence_spirit = {
+	game_data = { category = country decaying = yes }
+	monthly_rebel_growth = 0.01
+	global_monthly_prosperity = -0.01
+}
+
+# On SUBJECT: Applied to militarily neglected subjects that raise their own banner at AoR.
+# They are hardened fighters, making suppression costly.
+cc_armed_independence_modifier = {
+	game_data = { category = country decaying = yes }
+	discipline = 0.25
+	land_morale = 0.20
+	levy_combat_efficiency_modifier = 0.15
+}
+
+# On SUBJECT: Applied when a palatinate declares armed neutrality in the AoR.
+# Subject refuses military contributions for the duration.
+cc_palatinate_neutrality = {
+	game_data = { category = country decaying = yes }
+	global_levy_size_modifier = -1.0
+	subject_loyalty = -15
+}

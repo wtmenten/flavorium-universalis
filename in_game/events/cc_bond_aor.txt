@@ -1,0 +1,862 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Age of Revolutions Payoff Events — cc_bonds.90–99
+# Fire during age_6_revolutions via yearly_country_pulse.
+# Root = overlord. Each reads bond scores from variable maps on overlord
+# to handle subjects that may have already been released.
+# One-shot per subject via cc_bond_aor_fired flag on overlord (keyed per subject).
+###############################################################################
+
+# cc_bonds.90 — A Loyal Colony in Turbulent Times
+# Triggers: colonial_nation with eco >= 2 AND pol >= 2
+cc_bonds.90 = {
+	type = country_event
+	title = cc_bonds.90.title
+	desc = cc_bonds.90.desc
+	illustration_tags = { 10 = happy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = colonial_nation
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			"variable_map(cc_bond_eco_map|this)" >= 2
+			"variable_map(cc_bond_pol_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_90_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = colonial_nation
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				"variable_map(cc_bond_eco_map|this)" >= 2
+				"variable_map(cc_bond_pol_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_90_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_90_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_subject_loyal_bulwark
+			years = 20
+		}
+	}
+
+	# Formally elevate the colony
+	option = {
+		name = cc_bonds.90.a
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Press emergency levies anyway (relationship damage even in loyalty scenario)
+	option = {
+		name = cc_bonds.90.b
+		add_manpower = { value = scope:bond_subj.monthly_manpower multiply = 6}
+		scope:bond_subj = {
+			add_manpower = { value = scope:bond_subj.monthly_manpower multiply = -6}
+		}
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_mil  add = -2 }
+				clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			}
+		}
+	}
+}
+
+# cc_bonds.91 — The Colony Finds Its Voice
+# Triggers: colonial_nation with eco <= -3 OR pol <= -3
+cc_bonds.91 = {
+	type = country_event
+	title = cc_bonds.91.title
+	desc = cc_bonds.91.desc
+	illustration_tags = { 10 = angry }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = colonial_nation
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			OR = {
+				"variable_map(cc_bond_eco_map|this)" <= -3
+				"variable_map(cc_bond_pol_map|this)" <= -3
+			}
+			NOT = { has_variable = cc_bond_aor_91_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = colonial_nation
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				OR = {
+					"variable_map(cc_bond_eco_map|this)" <= -3
+					"variable_map(cc_bond_pol_map|this)" <= -3
+				}
+				NOT = { has_variable = cc_bond_aor_91_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_91_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_plus
+				add_country_modifier = {
+					modifier = cc_revolutionary_sympathies
+					years = 30
+				}
+			}
+		}
+	}
+
+	# Crack down — more liberty desire, some prestige
+	option = {
+		name = cc_bonds.91.a
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_mild_plus
+			}
+		}
+	}
+
+	# Last-minute concessions — gold cost, pol gain (may prevent worst outcome)
+	option = {
+		name = cc_bonds.91.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -20 }
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_pol  add = 3 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			}
+		}
+	}
+}
+
+# cc_bonds.92 — The Governor Stands With the Crown
+# Triggers: provincial_governorate with eco >= 2 AND pol >= 2
+cc_bonds.92 = {
+	type = country_event
+	title = cc_bonds.92.title
+	desc = cc_bonds.92.desc
+	illustration_tags = { 10 = professional }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = provincial_governorate
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			"variable_map(cc_bond_eco_map|this)" >= 2
+			"variable_map(cc_bond_pol_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_92_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = provincial_governorate
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				"variable_map(cc_bond_eco_map|this)" >= 2
+				"variable_map(cc_bond_pol_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_92_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_92_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+				add_country_modifier = {
+					modifier = cc_loyal_governor_support
+					years = 10
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_bonds.92.a
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_bonds.93 — The Province Remembers
+# Triggers: provincial_governorate with pol <= -3 OR eco <= -3
+cc_bonds.93 = {
+	type = country_event
+	title = cc_bonds.93.title
+	desc = cc_bonds.93.desc
+	illustration_tags = { 10 = angry }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = provincial_governorate
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			OR = {
+				"variable_map(cc_bond_pol_map|this)" <= -3
+				"variable_map(cc_bond_eco_map|this)" <= -3
+			}
+			NOT = { has_variable = cc_bond_aor_93_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = provincial_governorate
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				OR = {
+					"variable_map(cc_bond_pol_map|this)" <= -3
+					"variable_map(cc_bond_eco_map|this)" <= -3
+				}
+				NOT = { has_variable = cc_bond_aor_93_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_93_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_extreme_plus
+			}
+		}
+	}
+
+	# Try to retain with gold bribe
+	option = {
+		name = cc_bonds.93.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -15 }
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_mild_minus
+				change_variable = { name = cc_bond_eco  add = 1 }
+				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Accept the situation
+	option = {
+		name = cc_bonds.93.b
+	}
+}
+
+# cc_bonds.94 — The Palatinate Answers the Call
+# Triggers: palatinate with mil >= 2 AND per >= 2
+cc_bonds.94 = {
+	type = country_event
+	title = cc_bonds.94.title
+	desc = cc_bonds.94.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = palatinate
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_mil_frozen
+				}
+			}
+			"variable_map(cc_bond_mil_map|this)" >= 2
+			"variable_map(cc_bond_per_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_94_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = palatinate
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_mil_frozen
+					}
+				}
+				"variable_map(cc_bond_mil_map|this)" >= 2
+				"variable_map(cc_bond_per_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_94_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_94_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		add_manpower = { value = scope:bond_subj.monthly_manpower multiply = 6}
+		scope:bond_subj = {
+			add_manpower = { value = scope:bond_subj.monthly_manpower multiply = -6}
+		}
+	}
+
+	# Accept freely — add cavalry modifier if no interregnum debt
+	option = {
+		name = cc_bonds.94.a
+		trigger = {
+			NOT = { scope:bond_subj = { has_variable = cc_bond_mem_interregnum } }
+		}
+		add_country_modifier = {
+			modifier = cc_palatinate_war_banner
+			years = 10
+		}
+	}
+
+	# Interregnum debt — the palatinate wants payment first
+	option = {
+		name = cc_bonds.94.b
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_interregnum }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -10 }
+		add_country_modifier = {
+			modifier = cc_palatinate_war_banner
+			years = 10
+		}
+	}
+}
+
+# cc_bonds.95 — The Palatinate Declares Armed Neutrality
+# Triggers: palatinate with pol <= -3 OR per <= -3
+cc_bonds.95 = {
+	type = country_event
+	title = cc_bonds.95.title
+	desc = cc_bonds.95.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = palatinate
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_pol_frozen
+				}
+			}
+			OR = {
+				"variable_map(cc_bond_pol_map|this)" <= -3
+				"variable_map(cc_bond_per_map|this)" <= -3
+			}
+			NOT = { has_variable = cc_bond_aor_95_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = palatinate
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_pol_frozen
+					}
+				}
+				OR = {
+					"variable_map(cc_bond_pol_map|this)" <= -3
+					"variable_map(cc_bond_per_map|this)" <= -3
+				}
+				NOT = { has_variable = cc_bond_aor_95_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_95_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_country_modifier = {
+					modifier = cc_palatinate_neutrality
+					years = 10
+				}
+				add_liberty_desire = liberty_desire_severe_plus
+			}
+		}
+	}
+
+	# Accept neutrality — no further damage
+	option = {
+		name = cc_bonds.95.a
+	}
+
+	# Demand service by force — triggers independence war risk
+	option = {
+		name = cc_bonds.95.b
+		add_prestige = prestige_mild_bonus
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_plus
+				add_country_modifier = {
+					modifier = cc_armed_independence_modifier
+					years = 20
+				}
+			}
+		}
+	}
+}
+
+# cc_bonds.96 — The March Holds the Frontier
+# Triggers: military_march with mil >= 3 AND per >= 2
+cc_bonds.96 = {
+	type = country_event
+	title = cc_bonds.96.title
+	desc = cc_bonds.96.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = military_march
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_mil_frozen
+				}
+			}
+			"variable_map(cc_bond_mil_map|this)" >= 3
+			"variable_map(cc_bond_per_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_96_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = military_march
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_mil_frozen
+					}
+				}
+				"variable_map(cc_bond_mil_map|this)" >= 3
+				"variable_map(cc_bond_per_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_96_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_96_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_march_frontier_defense
+			years = 15
+		}
+	}
+
+	# Standard — accept the march's loyalty
+	option = {
+		name = cc_bonds.96.a
+		trigger = {
+			NOT = { scope:bond_subj = { has_variable = cc_bond_mem_ward_hostage } }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Ward returns — special flavor if heir was sent to court
+	option = {
+		name = cc_bonds.96.b
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_ward_hostage }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+# cc_bonds.97 — The March Lord Raises His Own Banner
+# Triggers: military_march with mil <= -3 OR per <= -4
+cc_bonds.97 = {
+	type = country_event
+	title = cc_bonds.97.title
+	desc = cc_bonds.97.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = military_march
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_mil_frozen
+				}
+			}
+			OR = {
+				"variable_map(cc_bond_mil_map|this)" <= -3
+				"variable_map(cc_bond_per_map|this)" <= -4
+			}
+			NOT = { has_variable = cc_bond_aor_97_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = military_march
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_mil_frozen
+					}
+				}
+				OR = {
+					"variable_map(cc_bond_mil_map|this)" <= -3
+					"variable_map(cc_bond_per_map|this)" <= -4
+				}
+				NOT = { has_variable = cc_bond_aor_97_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_97_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_plus
+				add_country_modifier = {
+					modifier = cc_armed_independence_modifier
+					years = 20
+				}
+			}
+		}
+	}
+
+	# Negotiate — costly gold, pol recovery
+	option = {
+		name = cc_bonds.97.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -15 }
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_mild_minus
+				change_variable = { name = cc_bond_pol  add = 2 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = 2 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Crush them — they fight well; this will be costly
+	option = {
+		name = cc_bonds.97.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# cc_bonds.98 — The Dependency Stands True
+# Triggers: crown_dependency with per >= 3
+cc_bonds.98 = {
+	type = country_event
+	title = cc_bonds.98.title
+	desc = cc_bonds.98.desc
+	illustration_tags = { 10 = happy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = crown_dependency
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_per_frozen
+				}
+			}
+			"variable_map(cc_bond_per_map|this)" >= 3
+			NOT = { has_variable = cc_bond_aor_98_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = crown_dependency
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_per_frozen
+					}
+				}
+				"variable_map(cc_bond_per_map|this)" >= 3
+				NOT = { has_variable = cc_bond_aor_98_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_98_fired  value = yes }
+		}
+		add_prestige = prestige_severe_bonus
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+	}
+
+	option = {
+		name = cc_bonds.98.a
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# cc_bonds.99 — The Dependency Looks Elsewhere
+# Triggers: crown_dependency with per <= -4
+cc_bonds.99 = {
+	type = country_event
+	title = cc_bonds.99.title
+	desc = cc_bonds.99.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = crown_dependency
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_per_frozen
+				}
+			}
+			"variable_map(cc_bond_per_map|this)" <= -4
+			NOT = { has_variable = cc_bond_aor_99_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = crown_dependency
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_per_frozen
+					}
+				}
+				"variable_map(cc_bond_per_map|this)" <= -4
+				NOT = { has_variable = cc_bond_aor_99_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_99_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_extreme_plus
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_abandoned_by_dependency
+			years = 10
+		}
+	}
+
+	# Offer lavish concessions — last chance
+	option = {
+		name = cc_bonds.99.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -20 }
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+				change_variable = { name = cc_bond_per  add = 3 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Let them go gracefully
+	option = {
+		name = cc_bonds.99.b
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Threaten them — independence war
+	option = {
+		name = cc_bonds.99.c
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_extreme_plus
+				add_country_modifier = {
+					modifier = cc_armed_independence_modifier
+					years = 15
+				}
+			}
+		}
+	}
+}

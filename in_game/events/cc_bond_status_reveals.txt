@@ -1,0 +1,342 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Status Reveal Events — cc_bonds.5–9
+# Rare player-visible windows into relationship health.
+# Each has its own 15-year cooldown. Desc varies by current bond scores.
+# Small option effects let the player nudge the relationship even here.
+###############################################################################
+
+# cc_bonds.5 — "Word from the Provinces"
+# Generic reveal. Fires for any tracked subject. Flavor varies by eco/per state.
+cc_bonds.5 = {
+	type = country_event
+	title = cc_bonds.5.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						has_variable = cc_bond_initialized
+						var:cc_bond_eco >= 3
+						var:cc_bond_per >= 3
+					}
+				}
+				desc = cc_bonds.5.desc.thriving
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						has_variable = cc_bond_initialized
+						OR = {
+							var:cc_bond_eco <= -3
+							var:cc_bond_per <= -3
+						}
+					}
+				}
+				desc = cc_bonds.5.desc.strained
+			}
+			desc = cc_bonds.5.desc.neutral
+		}
+	}
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_5_cd }
+		any_subject = { has_variable = cc_bond_initialized }
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_5_cd  value = yes  years = 15 }
+		random_subject = {
+			limit = { has_variable = cc_bond_initialized }
+			save_scope_as = bond_subj
+		}
+	}
+
+	# Respond with interest — small personal bond gain
+	option = {
+		name = cc_bonds.5.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+	# File it away — no effect
+	option = {
+		name = cc_bonds.5.b
+	}
+}
+
+# cc_bonds.6 — "The Diplomat's Report"
+# Colonial nation bond reveal. Flavor based on economic dimension.
+cc_bonds.6 = {
+	type = country_event
+	title = cc_bonds.6.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = colonial_nation
+						has_variable = cc_bond_initialized
+						var:cc_bond_eco >= 2
+					}
+				}
+				desc = cc_bonds.6.desc.content
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = colonial_nation
+						has_variable = cc_bond_initialized
+						var:cc_bond_eco <= -2
+					}
+				}
+				desc = cc_bonds.6.desc.discontent
+			}
+			desc = cc_bonds.6.desc.neutral
+		}
+	}
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_6_cd }
+		any_subject = {
+			is_subject_type = colonial_nation
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_6_cd  value = yes  years = 15 }
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = bond_subj
+		}
+	}
+
+	option = {
+		name = cc_bonds.6.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+	option = {
+		name = cc_bonds.6.b
+	}
+}
+
+# cc_bonds.7 — "Rumors at Court"
+# Palatinate/march loyalty reveal. Flavor based on mil/per state.
+cc_bonds.7 = {
+	type = country_event
+	title = cc_bonds.7.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						OR = {
+							is_subject_type = palatinate
+							is_subject_type = military_march
+						}
+						has_variable = cc_bond_initialized
+						var:cc_bond_mil >= 2
+						var:cc_bond_per >= 2
+					}
+				}
+				desc = cc_bonds.7.desc.loyal
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						OR = {
+							is_subject_type = palatinate
+							is_subject_type = military_march
+						}
+						has_variable = cc_bond_initialized
+						OR = {
+							var:cc_bond_mil <= -2
+							var:cc_bond_per <= -2
+						}
+					}
+				}
+				desc = cc_bonds.7.desc.restless
+			}
+			desc = cc_bonds.7.desc.neutral
+		}
+	}
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_7_cd }
+		any_subject = {
+			OR = {
+				is_subject_type = palatinate
+				is_subject_type = military_march
+			}
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_7_cd  value = yes  years = 15 }
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = palatinate
+					is_subject_type = military_march
+				}
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = bond_subj
+		}
+	}
+
+	option = {
+		name = cc_bonds.7.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+	option = {
+		name = cc_bonds.7.b
+	}
+}
+
+# cc_bonds.8 — "A Letter from the Dependency"
+# Crown dependency personal bond reveal. Tone of letter varies by per score.
+cc_bonds.8 = {
+	type = country_event
+	title = cc_bonds.8.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = crown_dependency
+						has_variable = cc_bond_initialized
+						var:cc_bond_per >= 3
+					}
+				}
+				desc = cc_bonds.8.desc.warm
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = crown_dependency
+						has_variable = cc_bond_initialized
+						var:cc_bond_per <= -2
+					}
+				}
+				desc = cc_bonds.8.desc.cold
+			}
+			desc = cc_bonds.8.desc.formal
+		}
+	}
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_8_cd }
+		any_subject = {
+			is_subject_type = crown_dependency
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_8_cd  value = yes  years = 15 }
+		random_subject = {
+			limit = {
+				is_subject_type = crown_dependency
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = bond_subj
+		}
+	}
+
+	option = {
+		name = cc_bonds.8.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+	option = {
+		name = cc_bonds.8.b
+	}
+}
+
+# cc_bonds.9 — "The Governor's Annual Dispatch"
+# Provincial governorate bond reveal. Flavor based on eco/pol state.
+cc_bonds.9 = {
+	type = country_event
+	title = cc_bonds.9.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = provincial_governorate
+						has_variable = cc_bond_initialized
+						var:cc_bond_eco >= 2
+						var:cc_bond_pol >= 2
+					}
+				}
+				desc = cc_bonds.9.desc.harmonious
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_subject_type = provincial_governorate
+						has_variable = cc_bond_initialized
+						OR = {
+							var:cc_bond_eco <= -2
+							var:cc_bond_pol <= -2
+						}
+					}
+				}
+				desc = cc_bonds.9.desc.troubled
+			}
+			desc = cc_bonds.9.desc.routine
+		}
+	}
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_9_cd }
+		any_subject = {
+			is_subject_type = provincial_governorate
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_bond_9_cd  value = yes  years = 15 }
+		random_subject = {
+			limit = {
+				is_subject_type = provincial_governorate
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = bond_subj
+		}
+	}
+
+	option = {
+		name = cc_bonds.9.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+	option = {
+		name = cc_bonds.9.b
+	}
+}

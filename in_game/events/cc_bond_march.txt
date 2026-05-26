@@ -1,0 +1,526 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Military March Chain — cc_bonds.60–66
+# Root = overlord. scope:bond_subj = the military march subject.
+# Primary dimensions: Military, Personal. Secondary: Political, Economic.
+###############################################################################
+
+# cc_bonds.60 — "The March Lord's Formal Investiture" (one-shot)
+# Option C (minimal ceremony) fires a false positive — lord "proves himself."
+cc_bonds.60 = {
+	type = country_event
+	title = cc_bonds.60.title
+	desc = cc_bonds.60.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_60_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_60_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_60_cd  value = yes }
+		}
+	}
+
+	# Grand ceremony, full noble privileges — prestige cost, mil/pol/per gain
+	option = {
+		name = cc_bonds.60.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Standard investiture — mil/per gain
+	option = {
+		name = cc_bonds.60.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Minimal ceremony — mil/per damage, false positive fires
+	option = {
+		name = cc_bonds.60.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.70  months = 8 }
+	}
+}
+
+# cc_bonds.61 — "Sharing the War Spoils" (cooldown 10 yrs)
+# Option C (keep most for crown) fires a false positive — march "accepts without complaint."
+cc_bonds.61 = {
+	type = country_event
+	title = cc_bonds.61.title
+	desc = cc_bonds.61.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_61_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_61_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_61_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Generous share — gold cost, mil/per gain
+	option = {
+		name = cc_bonds.61.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Standard division — mil/per gain
+	option = {
+		name = cc_bonds.61.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Keep most for crown — gold gain, mil/pol/per damage, false positive fires
+	option = {
+		name = cc_bonds.61.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 6 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.71  months = 5 }
+	}
+}
+
+# cc_bonds.62 — "March Lord Requests Garrison Funding" (cooldown 12 yrs)
+# Option C (deny funding) is the obvious savings choice that inflicts serious
+# mil/pol/per damage — one of the clearest traps in the march chain.
+cc_bonds.62 = {
+	type = country_event
+	title = cc_bonds.62.title
+	desc = cc_bonds.62.desc
+	illustration_tags = { 10 = military }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_62_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_62_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_62_cd  value = yes  years = 12 }
+		}
+	}
+
+	# Fund fully — gold cost, mil/pol/per gain
+	option = {
+		name = cc_bonds.62.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Fund partially — smaller gold cost, mil gain
+	option = {
+		name = cc_bonds.62.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+	}
+
+	# Deny funding — obvious savings, serious mil/pol/per damage
+	option = {
+		name = cc_bonds.62.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.63 — "The March Lord's Feud" (cooldown 10 yrs)
+# Option C (side against the lord) fires a false positive — lord "pledges renewed service."
+cc_bonds.63 = {
+	type = country_event
+	title = cc_bonds.63.title
+	desc = cc_bonds.63.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_63_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_63_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_63_cd  value = yes  years = 10 }
+		}
+	}
+
+	# Back the lord — mil/per gain, noble estate cost
+	option = {
+		name = cc_bonds.63.a
+		add_prestige = prestige_weak_penalty
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 3 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Mediate neutrally — gold cost, mil/pol/per gain
+	option = {
+		name = cc_bonds.63.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Side against the lord — prestige gain, mil/per devastation, false positive fires
+	option = {
+		name = cc_bonds.63.c
+		add_prestige = prestige_weak_bonus
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -4 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.72  months = 5 }
+	}
+}
+
+# cc_bonds.64 — "Frontier Administration Rights" (cooldown 15 yrs)
+# Option A (grant judicial authority) adds liberty desire — the pol/per gains
+# come at the cost of long-term control.
+cc_bonds.64 = {
+	type = country_event
+	title = cc_bonds.64.title
+	desc = cc_bonds.64.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_64_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_64_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_64_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Grant judicial authority — strong pol/per gain, liberty desire cost
+	option = {
+		name = cc_bonds.64.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 3 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Retain crown judicial rights — pol/per damage
+	option = {
+		name = cc_bonds.64.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Joint border court — gold cost, pol/per gain
+	option = {
+		name = cc_bonds.64.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+# cc_bonds.65 — "Campaign Alongside the March Lord" (cooldown 20 yrs)
+# Option D (reassign their forces) fires a false positive — "march performs admirably."
+cc_bonds.65 = {
+	type = country_event
+	title = cc_bonds.65.title
+	desc = cc_bonds.65.desc
+	illustration_tags = { 10 = army }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_65_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_65_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_65_cd  value = yes  years = 20 }
+		}
+	}
+
+	# Command alongside personally — strong mil/per gain
+	option = {
+		name = cc_bonds.65.a
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 5 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Send royal general — mil/per gain
+	option = {
+		name = cc_bonds.65.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 2 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Let march operate independently — mil/pol/per gain
+	option = {
+		name = cc_bonds.65.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Reassign their forces — mil/pol/per devastation, false positive fires
+	option = {
+		name = cc_bonds.65.d
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_mil  add = -3 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -5 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.73  months = 8 }
+	}
+}
+
+# cc_bonds.66 — "The March Lord's Heir" (cooldown 15 yrs)
+# Option A (bring heir to court) has per-1 short-term but sets memory flag
+# cc_bond_mem_ward_hostage, which unlocks special flavor in AoR events.
+cc_bonds.66 = {
+	type = country_event
+	title = cc_bonds.66.title
+	desc = cc_bonds.66.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = military_march
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_66_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_march
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_66_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_66_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Bring heir to court as ward — per-1 short-term, sets memory flag for AoR
+	option = {
+		name = cc_bonds.66.a
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_ward_hostage  value = yes }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Arrange a marriage for the heir — per gain
+	option = {
+		name = cc_bonds.66.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Ignore — pol/per loss
+	option = {
+		name = cc_bonds.66.c
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}

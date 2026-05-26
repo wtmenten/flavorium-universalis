@@ -1,0 +1,329 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Chain D: "The Scholar's Name" — cc_bonds.130–132
+# A single mind shapes how the subject sees itself and its overlord.
+# Spans 20–45 years. Applies to all subject types with cc_bond_initialized.
+# Root = overlord. scope:bond_subj = the subject.
+###############################################################################
+
+# cc_bonds.130 — "A Brilliant Student" (fires 10–15 yrs in, one-shot)
+cc_bonds.130 = {
+	type = country_event
+	title = cc_bonds.130.title
+	desc = cc_bonds.130.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			num_provinces >= 2
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_130_cd }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				num_provinces >= 2
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_130_cd }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_130_cd  value = yes }
+		}
+	}
+
+	# Bring to overlord's court — cul-1, per+2
+	option = {
+		name = cc_bonds.130.a
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_at_court  value = yes }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.131  years = 10 }
+	}
+
+	# Fund education at home, let publish freely — cul+2, pol+1
+	option = {
+		name = cc_bonds.130.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_at_home  value = yes }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.131  years = 10 }
+	}
+
+	# Offer employment as crown propagandist — cul-2, per+1
+	option = {
+		name = cc_bonds.130.c
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_propagandist  value = yes }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.131  years = 8 }
+	}
+
+	# Ignore — no bond change; scholar found own way
+	option = {
+		name = cc_bonds.130.d
+		trigger_event_silently = { id = cc_bonds.131  years = 15 }
+	}
+}
+
+# cc_bonds.131 — "The Scholar's First Work" (fires 8–15 years after cc_bonds.130)
+cc_bonds.131 = {
+	type = country_event
+	title = cc_bonds.131.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_court } }
+				desc = cc_bonds.131.desc_court
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home } }
+				desc = cc_bonds.131.desc_home
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_propagandist } }
+				desc = cc_bonds.131.desc_prop
+			}
+			desc = cc_bonds.131.desc_free
+		}
+	}
+	illustration_tags = { 10 = interior }
+
+	# At court: work glorifies the empire
+	option = {
+		name = cc_bonds.131.a_use
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_court }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 25 }
+	}
+
+	option = {
+		name = cc_bonds.131.a_standalone
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_court }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_legacy_aligned  value = yes }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 25 }
+	}
+
+	# At home: work celebrates subject's cultural heritage — cul+3, pol-1
+	option = {
+		name = cc_bonds.131.b_sponsor
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_legacy_contested  value = yes }
+			change_variable = { name = cc_bond_cul  add = 3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 22 }
+	}
+
+	option = {
+		name = cc_bonds.131.b_allow
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_legacy_contested  value = yes }
+			change_variable = { name = cc_bond_cul  add = 3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 22 }
+	}
+
+	option = {
+		name = cc_bonds.131.b_suppress
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_suppressed  value = yes }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 28 }
+	}
+
+	# Propagandist: work is transparently political — cul-2, pol-1
+	option = {
+		name = cc_bonds.131.c_more
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_propagandist }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 20 }
+	}
+
+	option = {
+		name = cc_bonds.131.c_distance
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_propagandist }
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_mem_scholar_legacy_counter  value = yes }
+			change_variable = { name = cc_bond_cul  add = -2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 20 }
+	}
+
+	# Free scholar: ambivalent tone — cul+1 only
+	option = {
+		name = cc_bonds.131.d_note
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_scholar_at_court }
+				NOT = { has_variable = cc_bond_mem_scholar_at_home }
+				NOT = { has_variable = cc_bond_mem_scholar_propagandist }
+			}
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.132  years = 25 }
+	}
+}
+
+# cc_bonds.132 — "The Scholar's Legacy" (terminal — fires 20–28 years after cc_bonds.131)
+cc_bonds.132 = {
+	type = country_event
+	title = cc_bonds.132.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_aligned } }
+				desc = cc_bonds.132.desc_aligned
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_contested } }
+				desc = cc_bonds.132.desc_contested
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed } }
+				desc = cc_bonds.132.desc_suppressed
+			}
+			desc = cc_bonds.132.desc_default
+		}
+	}
+	illustration_tags = { 10 = interior }
+
+	# Aligned — scholar's ideas quoted by loyalists
+	option = {
+		name = cc_bonds.132.a
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_aligned }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 2 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Contested — school of thought emphasizing subject's distinct identity
+	option = {
+		name = cc_bonds.132.b_embrace
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_contested }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	option = {
+		name = cc_bonds.132.b_neutral
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_contested }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Suppressed — underground copies circulate; ideas became exciting because forbidden
+	option = {
+		name = cc_bonds.132.c
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed }
+		}
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = -3 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Default / propagandist path
+	option = {
+		name = cc_bonds.132.d
+		trigger = {
+			scope:bond_subj = {
+				NOT = { has_variable = cc_bond_mem_scholar_legacy_aligned }
+				NOT = { has_variable = cc_bond_mem_scholar_legacy_contested }
+				NOT = { has_variable = cc_bond_mem_scholar_suppressed }
+			}
+		}
+	}
+}
