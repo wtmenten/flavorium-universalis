@@ -1312,6 +1312,7 @@ cc.141 = {
 	option = {
 		name = cc.shadow.conflict.1.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		add_stability = stability_mild_penalty
 		scope:shadow_a = { add_liberty_desire = liberty_desire_weak_minus }
 		scope:shadow_b = { add_liberty_desire = liberty_desire_weak_minus }
 	}
@@ -1319,15 +1320,92 @@ cc.141 = {
 	# Let one dominate — one network expands, the other chafes
 	option = {
 		name = cc.shadow.conflict.1.b
-		scope:shadow_a = { add_liberty_desire = liberty_desire_mild_minus }
-		scope:shadow_b = { add_liberty_desire = liberty_desire_mild_plus }
+		add_legitimacy = legitimacy_weak_bonus
+		if = {
+			limit = { scope:shadow_a.monthly_income_trade_and_tax > scope:shadow_b.monthly_income_trade_and_tax }
+			scope:shadow_a = { save_temporary_scope_as = stronger_subj }
+			scope:shadow_b = { save_temporary_scope_as = weaker_subj }
+			
+		}
+		else = {
+			scope:shadow_a = { save_temporary_scope_as = weaker_subj }
+			scope:shadow_b = { save_temporary_scope_as = stronger_subj }
+		}
+		scope:stronger_subj = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_gold = { 
+				value = scope:weaker_subj.monthly_income_trade_and_tax 
+				multiply = 2 min = 25 max = 50 
+			}
+		}
+		scope:weaker_subj = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_gold = { 
+				value = monthly_income_trade_and_tax 
+				multiply = -2 min = -50 max = -25 
+			}
+		}
 	}
 
-	# Ignore the conflict — both grow restless
+	# Extort the weaker one — one network expands, the other chafes
 	option = {
 		name = cc.shadow.conflict.1.c
-		scope:shadow_a = { add_liberty_desire = liberty_desire_weak_plus }
-		scope:shadow_b = { add_liberty_desire = liberty_desire_weak_plus }
+		add_legitimacy = legitimacy_weak_bonus
+		if = {
+			limit = { scope:shadow_a.monthly_income_trade_and_tax < scope:shadow_b.monthly_income_trade_and_tax }
+			scope:shadow_a = { 
+				add_liberty_desire = liberty_desire_mild_minus 
+				add_gold = { 
+					value = monthly_income_trade_and_tax 
+					multiply = -2 min = -200 max = -50 
+				}
+			}
+			scope:shadow_b = { add_liberty_desire = liberty_desire_mild_plus }
+			add_gold = { 
+				value = scope:shadow_a.monthly_income_trade_and_tax 
+				multiply = 2 min = 50 max = 200 
+			}
+		}
+		else = {
+			scope:shadow_a = { add_liberty_desire = liberty_desire_mild_plus }
+			scope:shadow_b = { 
+				add_liberty_desire = liberty_desire_mild_minus 
+				add_gold = { 
+					value = monthly_income_trade_and_tax 
+					multiply = -2 min = -200 max = -50 
+				}
+			}
+			add_gold = { 
+				value = scope:shadow_b.monthly_income_trade_and_tax 
+				multiply = 2 min = 50 max = 200 
+			}
+		}
+	}
+
+	# Leverage the conflict to extort both — both grow restless
+	option = {
+		name = cc.shadow.conflict.1.d
+		add_gold = { 
+			value = 0
+			add = {
+				value = scope:shadow_a.monthly_income_trade_and_tax 
+				multiply = 2
+				min = 50 max = 200 
+			}  
+			add = {
+				value = scope:shadow_b.monthly_income_trade_and_tax 
+				multiply = 2
+				min = 50 max = 200 
+			}  
+		}
+		scope:shadow_a = { 
+			add_liberty_desire = liberty_desire_weak_plus 
+			add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -200 max = -50 }
+		}
+		scope:shadow_b = { 
+			add_liberty_desire = liberty_desire_weak_plus 
+			add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -200 max = -50 }
+		}
 	}
 }
 
@@ -1345,14 +1423,27 @@ cc.142 = {
 	}
 
 	trigger = {
-		any_subject = { is_subject_type = shadow_state }
+		any_subject = { 
+			is_subject_type = shadow_state 
+			dependency_length_days = {
+				target = scope:actor
+				value >= 7300 # 20 years
+			}
+		}
 		NOT = { has_variable = cc_shadow_legit_cooldown }
 	}
 
 	immediate = {
 		set_variable = { name = cc_shadow_legit_cooldown value = yes years = 15 }
 		random_subject = {
-			limit = { is_subject_type = shadow_state }
+			limit = { 
+				is_subject_type = shadow_state 
+				is_disloyal_subject = no
+				dependency_length_days = {
+					target = scope:actor
+					value >= 7300 # 20 years
+				}
+			}
 			save_scope_as = petitioner
 		}
 	}
@@ -1360,18 +1451,51 @@ cc.142 = {
 	# Upgrade to puppet — formal recognition, reduced secrecy
 	option = {
 		name = cc.shadow.legit.1.a
-		trigger = { has_advance = puppet_state_advance }
+		trigger = {
+			has_advance = puppet_state_advance
+			scope:petitioner = {
+				dependency_length_days = {
+					target = scope:actor
+					value >= 273750 # 75 years
+				}
+			}
+			OR = {
+				# Prior diplomatic relationship established with the petitioner
+				scope:petitioner = {
+					has_opinion = { modifier = cc_intl_scholarly_bond  target = root }
+				}
+				# OR overlord has an exceptional diplomatic/intrigue specialist
+				any_cabinet_character = {
+					in_cabinet = yes
+					OR = {
+						has_trait = shadow_counselor
+						has_trait = master_statesman
+						has_trait = dove_of_court
+					}
+				}
+			}
+		 }
 		scope:petitioner = {
 			change_subject_type = subject_type:puppet_state
+			add_legitimacy = legitimacy_weak_penalty
 		}
 		add_prestige = prestige_weak_penalty
+		add_legitimacy = legitimacy_weak_penalty
+		drop_antagonism_bomb = {
+			target = capital
+			modifier = antagonism_embraced_antagonism
+			value = 5
+		}
 	}
 
 	# Reward loyalty without promotion — a generous gift buys silence
 	option = {
 		name = cc.shadow.legit.1.b
-		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
-		scope:petitioner = { add_liberty_desire = liberty_desire_mild_minus }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -6 min = -500 max = -100}
+		scope:petitioner = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_gold = { value = ROOT.monthly_income_trade_and_tax multiply = 6 min = 100 max = 500 }
+		}
 	}
 
 	# Rebuff the petition — they must remain hidden
@@ -1380,6 +1504,28 @@ cc.142 = {
 		scope:petitioner = {
 			add_liberty_desire = liberty_desire_mild_plus
 			add_opinion = { modifier = opinion_harshly_treated target = root }
+		}
+	}
+
+	# Diplomatic framework — statesman crafts a formal treaty of recognized autonomy
+	option = {
+		name = cc.shadow.legit.1.d
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = master_statesman
+					has_trait = tactful_envoy
+					has_trait = dove_of_court
+				}
+			}
+		}
+		add_prestige = prestige_weak_bonus
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -200 max = -50}
+		scope:petitioner = {
+			add_liberty_desire = liberty_desire_mild_minus
+			add_gold = { value = ROOT.monthly_income_trade_and_tax multiply = 2 min = 50 max = 200 }
+			add_opinion = { modifier = cc_intl_scholarly_bond  target = root }
 		}
 	}
 }

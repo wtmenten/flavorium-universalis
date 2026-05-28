@@ -55,6 +55,17 @@ cc_cabinet_provincial_flourishing = {
 	local_build_buildings_cost = -0.05
 }
 
+# Added by province interaction events — local prosperity and literacy bonus
+cc_cabinet_provincial_scholar = {
+	game_data = {
+		category = location
+		decaying = yes
+	}
+
+	local_monthly_prosperity = 0.005
+	local_monthly_literacy = 0.05
+}
+
 # Added by cultural affairs / Reformation events — pop conversion boost
 cc_cabinet_pop_conversion = {
 	game_data = {
@@ -351,6 +362,18 @@ cc_synergy_governing_compact = {
 	remove_government_reform_cost_modifier = -0.08
 }
 
+cc_exploration_enthusiasm = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	navy_light_ship_build_cost_modifier = -0.33
+	navy_heavy_ship_build_cost_modifier = -0.33
+	exploration_maintenance_cost = -0.3
+
+}
+
 ########################
 # Subject Drawback Modifiers
 ########################
@@ -605,6 +628,21 @@ cc_synergy_diplomatic_leverage = {
 	diplomatic_annexation_cost = -0.12
 	antagonism_received_modifier = -0.10
 	diplomatic_capacity = 1
+}
+
+########################
+# Scholar Follow-Up Modifiers
+########################
+
+# Applied by cc_traits.110 when a scholar minister becomes an arts patron
+cc_artistic_patronage = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	cultural_influence_modifier = 0.10
+	global_monthly_literacy = 0.02
 }
 
 ########################
@@ -880,4 +918,28 @@ cc_palatinate_neutrality = {
 	game_data = { category = country decaying = yes }
 	global_levy_size_modifier = -1.0
 	subject_loyalty = -15
+}
+
+# Imperial Federalization modifiers
+
+# On OVERLORD: Applied when a federal member stands in solidarity during AoR (cc_bonds.140).
+cc_federal_union_solidarity = {
+	game_data = { category = country decaying = yes }
+	diplomatic_reputation = 1
+	power_projection = 5
+}
+
+# On OVERLORD: Applied when the false federation is exposed (cc_bonds.143).
+cc_false_federation_exposed = {
+	game_data = { category = country decaying = yes }
+	diplomatic_reputation = -1
+	subject_loyalty = -5
+}
+
+# On OVERLORD: Applied by national_reformer + federal_architect synergy (cc_synergy.27).
+cc_synergy_federal_compact = {
+	game_data = { category = country decaying = yes }
+	diplomatic_reputation = 2
+	subject_loyalty = 5
+	global_integration_speed_modifier = 0.05
 }

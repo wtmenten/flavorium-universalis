@@ -7,6 +7,10 @@ on_war_declared = {
 	on_actions = { cc_on_war_declared }
 }
 
+on_war_declared = {
+	on_actions = { cc_on_hussite_war_declared }
+}
+
 on_winning_war = {
 	on_actions = { cc_on_winning_war }
 }
@@ -295,6 +299,52 @@ cc_on_winning_war = {
 					trigger_event_non_silently = cc_hyw.30
 				}
 				else = { trigger_event_non_silently = cc_hyw.31 }
+			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
+# cc_on_hussite_war_declared
+# Fires when a war between BOH and PAP breaks out during the Hussite Wars situation.
+# Scopes: scope:actor, scope:recipient, scope:war
+# Notifies all Catholic countries (human player first) with a delayed event.
+# ---------------------------------------------------------------------------
+cc_on_hussite_war_declared = {
+	trigger = {
+		is_situation_active = situation:hussite_wars
+		scope:war = {
+			is_in_war = c:PAP
+			is_in_war = c:BOH
+			is_on_opposite_sides = {
+				country = c:BOH
+				target = c:PAP
+			}
+		}
+	}
+	effect = {
+		ordered_country = {
+			limit = {
+				religion = religion:catholic
+				NOT = { this = c:PAP }
+			}
+			order_by = {
+				value = monthly_income_trade_and_tax
+				if = {
+					limit = {
+						is_human = yes
+					}
+					multiply = 100
+				}
+			}
+			set_variable = {
+				value = scope:war
+				name = cc_target_war
+			}
+			save_scope_as = target_country
+			trigger_event_silently = {
+				id = cc_hus.1
+				months = 2
 			}
 		}
 	}

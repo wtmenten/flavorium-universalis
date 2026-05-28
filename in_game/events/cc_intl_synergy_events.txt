@@ -47,7 +47,7 @@ cc_intl.1 = {
 				NOT = { has_variable = cc_intl_1_fired }
 				societal_value:traditionalist_vs_innovative > 20
 			}
-			save_scope_as = scholar_nation
+			save_scope_as = target_nation
 			set_variable = { name = cc_intl_1_fired value = yes years = 12 }
 		}
 		random_cabinet_character = {
@@ -58,9 +58,9 @@ cc_intl.1 = {
 					has_trait = progressive_rationalist
 				}
 			}
-			save_scope_as = scholar_minister
+			save_scope_as = minister
 		}
-		scope:scholar_nation = { capital = { save_scope_as = cc_intl_origin } }
+		scope:target_nation = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
 	}
 
@@ -68,11 +68,11 @@ cc_intl.1 = {
 	option = {
 		name = cc_intl.1.a
 		add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
-		scope:scholar_nation = {
+		scope:target_nation = {
 			add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
-		add_opinion = { target = scope:scholar_nation modifier = cc_intl_scholarly_bond }
+		add_opinion = { target = scope:target_nation modifier = cc_intl_scholarly_bond }
 		add_prestige = prestige_mild_bonus
 	}
 
@@ -83,13 +83,13 @@ cc_intl.1 = {
 		add_migration = {
 			from_location = scope:cc_intl_origin
 			to_location = scope:cc_intl_dest
-			culture = scope:scholar_nation.culture
-			religion = scope:scholar_nation.religion
+			culture = scope:target_nation.culture
+			religion = scope:target_nation.religion
 			type = pop_type:burghers
 			months = 24
 			amount = 0.025
 		}
-		scope:scholar_nation = {
+		scope:target_nation = {
 			add_prestige = prestige_mild_bonus
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
@@ -127,31 +127,117 @@ cc_intl.2 = {
 				has_trait = grand_architect
 			}
 		}
-		any_neighbor_country = { at_war = yes }
+		any_neighbor_country = { 
+			at_war = yes 
+			NOT = { exists = "war_with_country(ROOT)" }
+			capital.continent = ROOT.capital.continent 
+			save_temporary_scope_as = war_nation
+		}
+		scope:war_nation.capital.continent = {
+			any_location_in_continent = {
+				owner = scope:war_nation
+				OR = {
+					province.province_prosperity <= 0.33
+					NOT = { controller = scope:war_nation }
+				}
+			}
+		}
 	}
 
 	immediate = {
 		set_variable = { name = cc_intl_2_cooldown value = yes years = 12 }
 		random_neighbor_country = {
-			limit = { at_war = yes }
+			limit = { 
+				at_war = yes
+				capital.continent = ROOT.capital.continent 
+			}
 			save_scope_as = war_nation
 		}
-		scope:war_nation = { capital = { save_scope_as = cc_intl_origin } }
-		capital = { save_scope_as = cc_intl_dest }
+		capital.continent = {
+			random_location_in_continent = {
+				limit = {
+					owner = scope:war_nation
+					OR = {
+						province.province_prosperity <= 0.33
+						NOT = { controller = scope:war_nation }
+					}
+				}
+				save_scope_as = war_nation_province_1
+			}
+			random_location_in_continent = {
+				limit = {
+					owner = scope:war_nation
+					OR = {
+						province.province_prosperity <= 0.33
+						NOT = { controller = scope:war_nation }
+					}
+				}
+				save_scope_as = war_nation_province_2
+			}
+			random_location_in_continent = {
+				limit = {
+					owner = scope:war_nation
+					OR = {
+						province.province_prosperity <= 0.33
+						NOT = { controller = scope:war_nation }
+					}
+				}
+				save_scope_as = war_nation_province_3
+			}
+			
+			random_location_in_continent = {
+				limit = {
+					owner = ROOT
+					NOT = { location_rank = location_rank:rural_settlement } 
+				}
+				save_scope_as = cc_intl_dest
+			}
+		}
+		
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = learned_courtier
+					has_trait = master_urbanist
+					has_trait = grand_architect
+				}
+			}
+			save_scope_as = minister
+		}
+
 	}
 
 	# Open the court — scholars arrive and enrich the capital
 	option = {
 		name = cc_intl.2.a
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  mode = set_to_largest_and_extend }
 		add_migration = {
-			from_location = scope:cc_intl_origin
+			from_location = scope:war_nation_province_1
+			to_location = scope:cc_intl_dest
+			culture = scope:war_nation.culture
+			religion = scope:war_nation.religion
+			type = pop_type:clergy
+			months = 12
+			amount = 0.004
+		}
+		add_migration = {
+			from_location = scope:war_nation_province_2
 			to_location = scope:cc_intl_dest
 			culture = scope:war_nation.culture
 			religion = scope:war_nation.religion
 			type = pop_type:burghers
-			months = 36
-			amount = 0.025
+			months = 12
+			amount = 0.010
+		}
+		add_migration = {
+			from_location = scope:war_nation_province_3
+			to_location = scope:cc_intl_dest
+			culture = scope:war_nation.culture
+			religion = scope:war_nation.religion
+			type = pop_type:peasants
+			months = 12
+			amount = 0.020
 		}
 		scope:war_nation = {
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
@@ -164,17 +250,45 @@ cc_intl.2 = {
 		name = cc_intl.2.b
 		add_gold = {
 			value = monthly_income_trade_and_tax
-			multiply = -15
+			multiply = -10
+			min = -250
+			max = -75
 		}
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_country_modifier = { 
+			modifier = cc_intl_scholar_influx 
+			years = 8 
+			size  = 0.5 
+			mode = set_to_largest_and_extend 
+		}
 		add_migration = {
-			from_location = scope:cc_intl_origin
+			from_location = scope:war_nation_province_1
+			to_location = scope:cc_intl_dest
+			culture = scope:war_nation.culture
+			religion = this.religion
+			type = pop_type:clergy
+			months = 8
+			amount = 0.008
+		}
+		add_migration = {
+			from_location = scope:war_nation_province_2
+			to_location = scope:cc_intl_dest
+			culture = this.culture
+			religion = this.religion
+			type = pop_type:burghers
+			months = 8
+			amount = 0.008
+		}
+		add_migration = {
+			from_location = scope:war_nation_province_3
 			to_location = scope:cc_intl_dest
 			culture = scope:war_nation.culture
 			religion = scope:war_nation.religion
 			type = pop_type:burghers
-			months = 24
-			amount = 0.025
+			months = 8
+			amount = 0.008
+		}
+		scope:war_nation = {
+			add_opinion = { modifier = denied_aid target = root }
 		}
 	}
 
@@ -182,6 +296,9 @@ cc_intl.2 = {
 	option = {
 		name = cc_intl.2.c
 		add_prestige = prestige_weak_bonus
+		scope:war_nation = {
+			add_opinion = { modifier = denied_aid target = root scale = 1.5 }
+		}
 	}
 }
 
@@ -415,6 +532,16 @@ cc_intl.5 = {
 				}
 			}
 			save_scope_as = steppe_neighbor
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				OR = {
+					has_trait = steppe_warlord_advisor
+					has_trait = steppe_strategos
+				}
+			}
+			save_scope_as = minister
 		}
 		scope:steppe_neighbor = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
@@ -909,6 +1036,13 @@ cc_intl.11 = {
 				opinion = { target = root value < 0 }
 			}
 			save_scope_as = shadow_target
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = shadow_counselor
+			}
+			save_scope_as = minister
 		}
 		scope:shadow_target = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }

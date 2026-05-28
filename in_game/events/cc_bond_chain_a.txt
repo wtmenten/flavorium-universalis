@@ -25,7 +25,7 @@ cc_bonds.100 = {
 				is_subject_type = military_march
 				is_subject_type = provincial_governorate
 			}
-			num_provinces >= 2
+			num_locations >= 10
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_100_cd }
 		}
@@ -40,7 +40,7 @@ cc_bonds.100 = {
 					is_subject_type = military_march
 					is_subject_type = provincial_governorate
 				}
-				num_provinces >= 2
+				num_locations >= 10
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_100_cd }
 			}
@@ -55,6 +55,7 @@ cc_bonds.100 = {
 	# Loyalty to you, but separated from his homeland
 	option = {
 		name = cc_bonds.100.a
+		ai_chance = { base = 40 }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_heir_at_court  value = yes }
 			change_variable = { name = cc_bond_per  add = 2 }
@@ -71,6 +72,7 @@ cc_bonds.100 = {
 	# He grows up with his people but with goodwill toward the overlord
 	option = {
 		name = cc_bonds.100.b
+		ai_chance = { base = 50 }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_heir_gifted  value = yes }
 			change_variable = { name = cc_bond_per  add = 1 }
@@ -84,6 +86,7 @@ cc_bonds.100 = {
 	# Ignore the dispatch — no bond change
 	option = {
 		name = cc_bonds.100.c
+		ai_chance = { base = 10 }
 		trigger_event_silently = { id = cc_bonds.101  years = 15 }
 	}
 }
@@ -112,6 +115,7 @@ cc_bonds.101 = {
 	# Option: Keep him at court longer (per+2, delays return)
 	option = {
 		name = cc_bonds.101.a_keep
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_at_court }
 		}
@@ -125,6 +129,7 @@ cc_bonds.101 = {
 	# Option: Send him home with honors and a marriage arrangement (per+1, cul+1)
 	option = {
 		name = cc_bonds.101.a_send
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_at_court }
 		}
@@ -142,6 +147,7 @@ cc_bonds.101 = {
 	# Option: Invite him to court now to formalize the relationship (per+2, cul-1)
 	option = {
 		name = cc_bonds.101.b_invite
+		ai_chance = { base = 55 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_gifted }
 		}
@@ -196,6 +202,7 @@ cc_bonds.101 = {
 	# Option: Ignore again — no change
 	option = {
 		name = cc_bonds.101.c_ignore
+		ai_chance = { base = 20 }
 		trigger = {
 			scope:bond_subj = {
 				NOT = { has_variable = cc_bond_mem_heir_at_court }
@@ -211,6 +218,7 @@ cc_bonds.101 = {
 	# Option: Interfere in his local court connections (pol-2)
 	option = {
 		name = cc_bonds.101.c_interfere
+		ai_chance = { base = 15 }
 		trigger = {
 			scope:bond_subj = {
 				NOT = { has_variable = cc_bond_mem_heir_at_court }
@@ -267,6 +275,7 @@ cc_bonds.102 = {
 	# Option: Simply acknowledge (per+1)
 	option = {
 		name = cc_bonds.102.a_acknowledge
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_loyal }
 		}
@@ -280,6 +289,7 @@ cc_bonds.102 = {
 	# Option: Push for a concession (pol+2, per-1, eco+1)
 	option = {
 		name = cc_bonds.102.b_push
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_neutral }
 		}
@@ -296,6 +306,7 @@ cc_bonds.102 = {
 	# Option: Accept neutral renewal (no change)
 	option = {
 		name = cc_bonds.102.b_accept
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_neutral }
 		}
@@ -305,6 +316,7 @@ cc_bonds.102 = {
 	# Option: Demand immediate oath with consequences (pol-2, per-3, mil-1)
 	option = {
 		name = cc_bonds.102.c_demand
+		ai_chance = { base = 25 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_heir_disposition_hostile }
 		}

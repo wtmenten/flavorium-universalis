@@ -1,0 +1,617 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# AoR Payoff Events — Imperial Federalization (cc_bonds.140–145)
+# Fire during age_6_revolutions via yearly_country_pulse.
+# Root = overlord. Reads bond scores from variable maps on overlord.
+# One-shot per subject via cc_bond_aor_14X_fired flag on subject.
+#
+# Events 140–143: fire on EXISTING federal subject types.
+# Events 144–145: fire on NON-federal subjects, opening the path to federation.
+###############################################################################
+
+# cc_bonds.140 — The Federal Member Stands with the Union
+# Triggers: equal_federal_member with pol >= 3 AND per >= 2
+cc_bonds.140 = {
+	type = country_event
+	title = cc_bonds.140.title
+	desc = cc_bonds.140.desc
+	illustration_tags = { 10 = happy }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = equal_federal_member
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_pol_frozen
+				}
+			}
+			"variable_map(cc_bond_pol_map|this)" >= 3
+			"variable_map(cc_bond_per_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_140_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = equal_federal_member
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_pol_frozen
+					}
+				}
+				"variable_map(cc_bond_pol_map|this)" >= 3
+				"variable_map(cc_bond_per_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_140_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_140_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_federal_union_solidarity
+			years = 20
+		}
+	}
+
+	# Celebrate the union publicly
+	option = {
+		name = cc_bonds.140.a
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Formalize the bond — the federal parliament strengthens
+	option = {
+		name = cc_bonds.140.b
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_pol  add = 1 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = 1 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_synergy_parliamentary_harmony
+			years = 10
+		}
+	}
+}
+
+# cc_bonds.141 — The Federal Member Demands Equal Rights
+# Triggers: equal_federal_member with pol <= -3 OR per <= -3
+cc_bonds.141 = {
+	type = country_event
+	title = cc_bonds.141.title
+	desc = cc_bonds.141.desc
+	illustration_tags = { 10 = angry }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = equal_federal_member
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_pol_frozen
+				}
+			}
+			OR = {
+				"variable_map(cc_bond_pol_map|this)" <= -3
+				"variable_map(cc_bond_per_map|this)" <= -3
+			}
+			NOT = { has_variable = cc_bond_aor_141_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = equal_federal_member
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_pol_frozen
+					}
+				}
+				OR = {
+					"variable_map(cc_bond_pol_map|this)" <= -3
+					"variable_map(cc_bond_per_map|this)" <= -3
+				}
+				NOT = { has_variable = cc_bond_aor_141_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_141_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_extreme_plus
+				add_country_modifier = {
+					modifier = cc_revolutionary_sympathies
+					years = 30
+				}
+			}
+		}
+	}
+
+	# Grant full representation — costly but genuine
+	option = {
+		name = cc_bonds.141.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -25 }
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_pol  add = 3 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = 2 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Deny the demand — the union holds by force
+	option = {
+		name = cc_bonds.141.b
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_plus
+			}
+		}
+	}
+}
+
+# cc_bonds.142 — The Lesser Member Submits Its Petition
+# Triggers: lesser_federal_member with pol >= 2 AND eco >= 2
+cc_bonds.142 = {
+	type = country_event
+	title = cc_bonds.142.title
+	desc = cc_bonds.142.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = lesser_federal_member
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			"variable_map(cc_bond_pol_map|this)" >= 2
+			"variable_map(cc_bond_eco_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_142_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = lesser_federal_member
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				"variable_map(cc_bond_pol_map|this)" >= 2
+				"variable_map(cc_bond_eco_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_142_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_142_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_mild_minus
+			}
+		}
+	}
+
+	# Elevate them — upgrade to equal_federal_member
+	option = {
+		name = cc_bonds.142.a
+		trigger = {
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:equal_federal_member
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Acknowledge the petition — gold and pol improvement, no upgrade
+	option = {
+		name = cc_bonds.142.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -10 }
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_pol  add = 2 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Dismiss the petition
+	option = {
+		name = cc_bonds.142.c
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_pol  add = -2 }
+				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = -1 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+}
+
+# cc_bonds.143 — The False Federation Unravels
+# Triggers: false_federal_member with eco <= -2 AND pol <= -2
+cc_bonds.143 = {
+	type = country_event
+	title = cc_bonds.143.title
+	desc = cc_bonds.143.desc
+	illustration_tags = { 10 = angry }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = false_federal_member
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			"variable_map(cc_bond_eco_map|this)" <= -2
+			"variable_map(cc_bond_pol_map|this)" <= -2
+			NOT = { has_variable = cc_bond_aor_143_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = false_federal_member
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				"variable_map(cc_bond_eco_map|this)" <= -2
+				"variable_map(cc_bond_pol_map|this)" <= -2
+				NOT = { has_variable = cc_bond_aor_143_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_143_fired  value = yes }
+		}
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_extreme_plus
+				add_country_modifier = {
+					modifier = cc_revolutionary_sympathies
+					years = 25
+				}
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_false_federation_exposed
+			years = 15
+		}
+	}
+
+	# Abandon the pretense — convert to puppet_state
+	option = {
+		name = cc_bonds.143.a
+		trigger = {
+			has_advance = puppet_state_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:puppet_state
+		}
+	}
+
+	# Buy silence — massive gold cost, stabilize temporarily
+	option = {
+		name = cc_bonds.143.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -30 }
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+			}
+		}
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_eco  add = 2 }
+				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			}
+		}
+	}
+
+	# Do nothing — let it burn
+	option = {
+		name = cc_bonds.143.c
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+# cc_bonds.144 — The Colony Asserts Its Place
+# Triggers: colonial_nation with pol >= 4 AND per >= 3 (higher threshold than cc_bonds.90)
+# Opens the path to full federal membership when bonds are deeply positive.
+cc_bonds.144 = {
+	type = country_event
+	title = cc_bonds.144.title
+	desc = cc_bonds.144.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					is_subject_type = colonial_nation
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_pol_frozen
+				}
+			}
+			"variable_map(cc_bond_pol_map|this)" >= 4
+			"variable_map(cc_bond_per_map|this)" >= 3
+			NOT = { has_variable = cc_bond_aor_144_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						is_subject_type = colonial_nation
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_pol_frozen
+					}
+				}
+				"variable_map(cc_bond_pol_map|this)" >= 4
+				"variable_map(cc_bond_per_map|this)" >= 3
+				NOT = { has_variable = cc_bond_aor_144_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_144_fired  value = yes }
+		}
+	}
+
+	# Grant full federal membership — equal partner
+	option = {
+		name = cc_bonds.144.a
+		trigger = {
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:equal_federal_member
+		}
+		add_country_modifier = {
+			modifier = cc_federal_union_solidarity
+			years = 20
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Offer lesser membership — they join, but as a second tier
+	option = {
+		name = cc_bonds.144.b
+		trigger = {
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:lesser_federal_member
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Invite to the Imperial Council as a stepping stone
+	option = {
+		name = cc_bonds.144.c
+		trigger = {
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:imperial_council_member
+		}
+	}
+
+	# Decline — maintain the existing arrangement
+	option = {
+		name = cc_bonds.144.d
+		if = {
+			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_per  add = -1 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			}
+		}
+	}
+}
+
+# cc_bonds.145 — The Client Seeks Cover
+# Triggers: shadow_state, client_state, or chartered_company with eco >= 2 AND pol >= 2
+# Offers a path to imperial_council_member (adm path) or false_federal_member (dip path).
+cc_bonds.145 = {
+	type = country_event
+	title = cc_bonds.145.title
+	desc = cc_bonds.145.desc
+	illustration_tags = {  }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		current_age = age_6_revolutions
+		any_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			OR = {
+				AND = {
+					is_subject_of = root
+					OR = {
+						is_subject_type = shadow_state
+						is_subject_type = client_state
+						is_subject_type = chartered_company
+					}
+				}
+				AND = {
+					NOT = { is_subject_of = root }
+					has_variable = cc_bond_eco_frozen
+				}
+			}
+			"variable_map(cc_bond_eco_map|this)" >= 2
+			"variable_map(cc_bond_pol_map|this)" >= 2
+			NOT = { has_variable = cc_bond_aor_145_fired }
+		}
+	}
+
+	immediate = {
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = root
+						OR = {
+							is_subject_type = shadow_state
+							is_subject_type = client_state
+							is_subject_type = chartered_company
+						}
+					}
+					AND = {
+						NOT = { is_subject_of = root }
+						has_variable = cc_bond_eco_frozen
+					}
+				}
+				"variable_map(cc_bond_eco_map|this)" >= 2
+				"variable_map(cc_bond_pol_map|this)" >= 2
+				NOT = { has_variable = cc_bond_aor_145_fired }
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_aor_145_fired  value = yes }
+		}
+	}
+
+	# Grant council membership — the legitimate federal path
+	option = {
+		name = cc_bonds.145.a
+		trigger = {
+			has_advance = colonial_assembly_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:imperial_council_member
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Offer the false charter — extraction under federal branding
+	option = {
+		name = cc_bonds.145.b
+		trigger = {
+			has_advance = false_federal_charter_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:false_federal_member
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 10 }
+	}
+
+	# Maintain the existing arrangement
+	option = {
+		name = cc_bonds.145.c
+		add_prestige = prestige_weak_bonus
+	}
+}

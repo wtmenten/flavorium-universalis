@@ -1,0 +1,125 @@
+﻿
+namespace = cc_hus
+
+######################################
+# cc_hus.1 — "The Pope Calls for Aid"
+# Fires for every Catholic country (except PAP) when BOH and PAP go to war
+# during the Hussite Wars situation. Each country must decide whether to
+# support Rome, abandon the fight for coin, defy the Pope, or stay out entirely.
+######################################
+
+cc_hus.1 = {
+	type = country_event
+	title = cc.hus.1.title
+	desc = cc.hus.1.desc
+	outcome = neutral
+
+	trigger = {
+		exists = c:PAP
+		exists = var:cc_target_war
+		has_game_rule = cc_one_small_loan_on
+	}
+	immediate = {
+		c:PAP.ruler = {
+			save_scope_as = current_pope
+		}
+	}
+	after = {
+		remove_variable = cc_target_war
+	}
+
+	option = { # in the war, on the papal side
+		name = cc.hus.1.a
+		trigger = {
+			var:cc_target_war = {
+				is_in_war = ROOT
+				is_on_same_side = {
+					country = ROOT
+					target = c:PAP
+				}
+			}
+		}
+		add_gold = {
+			value = c:PAP.gold
+			multiply = 0.30
+			min = 2000 max = 10000
+		}
+		c:PAP = {
+			add_opinion = { target = scope:target_country modifier = good_papal_relations }
+		}
+	}
+
+	option = { # in the war, on the opposing side — accept coin and leave
+		name = cc.hus.1.b
+		trigger = {
+			var:cc_target_war = {
+				is_in_war = ROOT
+				is_on_opposite_sides = {
+					country = ROOT
+					target = c:PAP
+				}
+			}
+		}
+		add_gold = {
+			value = c:PAP.gold
+			multiply = 0.15
+			min = 1000 max = 3000
+		}
+		leave_all_wars_with = c:PAP
+		add_stability = stability_weak_bonus
+	}
+
+	option = { # in the war, on the opposing side — refuse to leave
+		name = cc.hus.1.c
+		trigger = {
+			var:cc_target_war = {
+				is_in_war = ROOT
+				is_on_opposite_sides = {
+					country = ROOT
+					target = c:PAP
+				}
+			}
+		}
+		c:PAP = {
+			add_opinion = { target = scope:target_country modifier = folded_to_hussites_modifier }
+		}
+		c:BOH = {
+			add_opinion = { target = scope:target_country modifier = folded_to_hussites_modifier scale = -1 }
+		}
+		add_legitimacy = legitimacy_weak_bonus
+	}
+
+	option = { # not in the war — join on the papal side
+		name = cc.hus.1.d
+		trigger = {
+			var:cc_target_war = {
+				NOT = { is_in_war = ROOT }
+			}
+		}
+		add_gold = {
+			value = c:PAP.gold
+			multiply = 0.20
+			min = 1500 max = 5000
+		}
+		join_war_with = {
+			war = var:cc_target_war
+			target = c:PAP
+		}
+	}
+
+	option = { # not in the war — refuse to join
+		name = cc.hus.1.e
+		trigger = {
+			var:cc_target_war = {
+				NOT = { is_in_war = ROOT }
+			}
+		}
+		c:PAP = {
+			add_opinion = { target = scope:target_country modifier = religious_disagreements_modifier }
+		}
+		c:BOH = {
+			add_opinion = { target = scope:target_country modifier = religious_disagreements_modifier scale = -1 }
+		}
+		add_prestige = prestige_weak_penalty
+	}
+}

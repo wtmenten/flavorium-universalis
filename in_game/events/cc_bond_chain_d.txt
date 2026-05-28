@@ -18,64 +18,123 @@ cc_bonds.130 = {
 	trigger = {
 		has_game_rule = cc_subject_bonds_on
 		any_subject = {
-			num_provinces >= 2
+			num_locations >= 10
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_130_cd }
 		}
 	}
 
 	immediate = {
+		save_scope_as = overlord
 		random_subject = {
 			limit = {
-				num_provinces >= 2
+				num_locations >= 10
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_130_cd }
 			}
 			save_scope_as = bond_subj
+			culture = {
+				save_scope_as = bond_subj_culture
+			}
 		}
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_130_cd  value = yes }
 		}
+		create_character = {
+			create_in_limbo = yes
+			culture = scope:bond_subj.culture
+			religion = scope:bond_subj.religion
+			add_trait = trait:learned_counselor
+			adm = { integer_range = { min = 45  max = 75 } }
+			dip = { integer_range = { min = 40  max = 65 } }
+			mil = { integer_range = { min = 10  max = 35 } }
+			save_scope_as = target_character
+		}
+		
 	}
 
 	# Bring to overlord's court — cul-1, per+2
 	option = {
 		name = cc_bonds.130.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 min = -100 max = -50 }
 		scope:bond_subj = {
+			add_gold = { value = ROOT.monthly_income_trade_and_tax  multiply = 4 min = 50 max = 100 }
 			set_variable = { name = cc_bond_mem_scholar_at_court  value = yes }
 			change_variable = { name = cc_bond_cul  add = -1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_per  add = 2 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
+		scope:target_character = {
+			move_country = ROOT
+		}
 		trigger_event_silently = { id = cc_bonds.131  years = 10 }
+
 	}
 
 	# Fund education at home, let publish freely — cul+2, pol+1
 	option = {
 		name = cc_bonds.130.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -4 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2 min = -75 max = -25 }
 		scope:bond_subj = {
+			add_gold = { value = ROOT.monthly_income_trade_and_tax  multiply = 2 min = 25 max = 75 }
 			set_variable = { name = cc_bond_mem_scholar_at_home  value = yes }
 			change_variable = { name = cc_bond_cul  add = 2 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			# Overlord's institutional culture already permeating — scholar joins shared knowledge economy
+			if = {
+				limit = { has_variable = cc_bond_insti_to_subject }
+				change_variable = { name = cc_bond_eco  add = 1 }
+				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				add_opinion = { target = ROOT modifier = cc_intl_scholarly_bond scale = 1.5 }
+			} 
+			else = {
+				add_opinion = { target = ROOT modifier = cc_intl_scholarly_bond }
+			}
 		}
+		
+		scope:target_character = {
+			move_country = scope:bond_subj
+		}
+		add_prestige = prestige_weak_bonus
 		trigger_event_silently = { id = cc_bonds.131  years = 10 }
 	}
 
 	# Offer employment as crown propagandist — cul-2, per+1
 	option = {
 		name = cc_bonds.130.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2 min = -150 max = -25 }
 		scope:bond_subj = {
+			add_gold = { value = ROOT.monthly_income_trade_and_tax  multiply = 2 min = 25 max = 150 }
 			set_variable = { name = cc_bond_mem_scholar_propagandist  value = yes }
+			if = { # Overlord's institutional culture already permeating — scholars departure is prestigious
+				limit = { has_variable = cc_bond_insti_to_subject }
+				change_variable = { name = cc_bond_cul  add = 1 }
+			} 
 			change_variable = { name = cc_bond_cul  add = -2 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
 		trigger_event_silently = { id = cc_bonds.131  years = 8 }
+		capital.continent = {
+			random_location_in_continent = {
+				limit = {
+					owner = ROOT
+				}
+				province = {
+					every_location_in_province = {
+						add_location_modifier = {
+							modifier = cc_cabinet_provincial_scholar
+							years = 5
+							mode = add_and_extend
+						}
+					}
+				}
+			}
+		}
 	}
 
 	# Ignore — no bond change; scholar found own way
@@ -111,6 +170,7 @@ cc_bonds.131 = {
 	# At court: work glorifies the empire
 	option = {
 		name = cc_bonds.131.a_use
+		ai_chance = { base = 40 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_court }
 		}
@@ -127,6 +187,7 @@ cc_bonds.131 = {
 
 	option = {
 		name = cc_bonds.131.a_standalone
+		ai_chance = { base = 60 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_court }
 		}
@@ -143,6 +204,7 @@ cc_bonds.131 = {
 	# At home: work celebrates subject's cultural heritage — cul+3, pol-1
 	option = {
 		name = cc_bonds.131.b_sponsor
+		ai_chance = { base = 30 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
 		}
@@ -161,6 +223,7 @@ cc_bonds.131 = {
 
 	option = {
 		name = cc_bonds.131.b_allow
+		ai_chance = { base = 50 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
 		}
@@ -176,6 +239,7 @@ cc_bonds.131 = {
 
 	option = {
 		name = cc_bonds.131.b_suppress
+		ai_chance = { base = 15 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_at_home }
 		}
@@ -194,6 +258,7 @@ cc_bonds.131 = {
 	# Propagandist: work is transparently political — cul-2, pol-1
 	option = {
 		name = cc_bonds.131.c_more
+		ai_chance = { base = 30 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_propagandist }
 		}
@@ -208,6 +273,7 @@ cc_bonds.131 = {
 
 	option = {
 		name = cc_bonds.131.c_distance
+		ai_chance = { base = 70 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_propagandist }
 		}
@@ -226,6 +292,7 @@ cc_bonds.131 = {
 	# Free scholar: ambivalent tone — cul+1 only
 	option = {
 		name = cc_bonds.131.d_note
+		ai_chance = { base = 100 }
 		trigger = {
 			scope:bond_subj = {
 				NOT = { has_variable = cc_bond_mem_scholar_at_court }
@@ -267,6 +334,7 @@ cc_bonds.132 = {
 	# Aligned — scholar's ideas quoted by loyalists
 	option = {
 		name = cc_bonds.132.a
+		ai_chance = { base = 100 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_aligned }
 		}
@@ -281,6 +349,7 @@ cc_bonds.132 = {
 	# Contested — school of thought emphasizing subject's distinct identity
 	option = {
 		name = cc_bonds.132.b_embrace
+		ai_chance = { base = 65 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_contested }
 		}
@@ -292,6 +361,7 @@ cc_bonds.132 = {
 
 	option = {
 		name = cc_bonds.132.b_neutral
+		ai_chance = { base = 35 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_contested }
 		}
@@ -304,6 +374,7 @@ cc_bonds.132 = {
 	# Suppressed — underground copies circulate; ideas became exciting because forbidden
 	option = {
 		name = cc_bonds.132.c
+		ai_chance = { base = 100 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed }
 		}
@@ -318,6 +389,7 @@ cc_bonds.132 = {
 	# Default / propagandist path
 	option = {
 		name = cc_bonds.132.d
+		ai_chance = { base = 100 }
 		trigger = {
 			scope:bond_subj = {
 				NOT = { has_variable = cc_bond_mem_scholar_legacy_aligned }

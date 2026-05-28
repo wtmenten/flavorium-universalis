@@ -1,105 +1,199 @@
 ﻿
-# Integration trait grant fires every year when conditions are met.
-# The trigger inside cc_traits.1 prevents it from firing more than once per character.
+###############################################################################
+# CC CABINET PULSE EVENTS
+#
+# Root vanilla pulses chain to named sub-pulses below.
+# Only one of each vanilla pulse type is allowed per file.
+###############################################################################
+
 yearly_country_pulse = {
+	on_actions = {
+		cc_cabinet_yearly_legacy
+		cc_cabinet_yearly_neg_grants
+		cc_cabinet_yearly_neg_rehab
+		cc_cabinet_yearly_legends
+		cc_cabinet_yearly_intl
+	}
+}
+
+monthly_country_pulse = {
+	on_actions = {
+		cc_cabinet_monthly_synergy
+		cc_cabinet_monthly_traits
+		cc_cabinet_monthly_cabinet
+		cc_cabinet_monthly_social_traits
+		cc_cabinet_monthly_age_traits
+		cc_cabinet_monthly_subjects
+	}
+}
+
+biyearly_country_pulse = {
+	on_actions = {
+		cc_cabinet_biyearly_cabinet
+		cc_cabinet_biyearly_feudal
+		cc_cabinet_biyearly_wealth
+	}
+}
+
+###############################################################################
+# YEARLY SUB-PULSES
+###############################################################################
+
+# Elder minister succession planning
+cc_cabinet_yearly_legacy = {
 	random_events = {
-		# Elder minister succession planning (30% chance yearly)
 		1 = cc_legacy.1
 
 		chance_to_happen = 30
 	}
+}
 
+# Negative trait grant checks — sweep, all evaluated each cycle
+cc_cabinet_yearly_neg_grants = {
 	events = {
-
-		# Synergy events
-		cc_synergy.1   cc_synergy.2   cc_synergy.3   cc_synergy.4   cc_synergy.5
-		cc_synergy.6   cc_synergy.7   cc_synergy.8   cc_synergy.9   cc_synergy.10
-		cc_synergy.11  cc_synergy.12  cc_synergy.13  cc_synergy.14  cc_synergy.15
-		cc_synergy.16  cc_synergy.17  cc_synergy.18
-		cc_synergy.21  cc_synergy.22  cc_synergy.23  cc_synergy.24  cc_synergy.25
-		cc_synergy.26
-
-		# Dual-layer synergy events (cabinet × religious_figure on same minister)
-		cc_dual.1   cc_dual.2   cc_dual.3   cc_dual.4   cc_dual.5
-		cc_dual.6   cc_dual.7   cc_dual.8   cc_dual.9   cc_dual.10
-
-		# Legend quest checks
-		cc_legend.1    cc_legend.2    cc_legend.3    cc_legend.4    cc_legend.5
-		cc_legend.8    # Age of Exploration
-
-		# Negative trait grant checks (yearly sweep, low weight handled inside triggers)
 		cc_neg.1    # Stagnant counselor
 		cc_neg.2    # War profiteer
 		cc_neg.4    # Inefficient bureaucrat
 		cc_neg.6    # Outdated general
 		cc_neg.8    # Reckless expander
-
-		# Negative trait rehabilitation checks
-		cc_neg.11   # Stagnant counselor rehab
-		cc_neg.12   # War profiteer rehab
-		cc_neg.13   # Court schemer rehab
-		cc_neg.14   # Inefficient bureaucrat rehab
-		cc_neg.15   # Corrupted official rehab
-		cc_neg.16   # Zealous fanatic rehab
-		cc_neg.17   # Outdated general rehab
-		cc_neg.18   # Cynical courtier rehab
-		cc_neg.19   # Reckless expander rehab
-
-		# Cross-country synergy events (cc_intl namespace)
-		cc_intl.1    # The Philosopher's Exchange
-		cc_intl.2    # Scholars in Exile
-		cc_intl.3    # The Rival Philosopher
-		cc_intl.4    # The Marshal's Doctrine
-		cc_intl.5    # Nomadic Migration
-		cc_intl.6    # The Caliphate Solidarity
-		cc_intl.7    # Protestant Solidarity
-		cc_intl.8    # The Sacred Pilgrimage
-		cc_intl.9    # The Merchant's Compact
-		cc_intl.10   # The Grand Chancellor's Leverage
-		cc_intl.11   # The Shadow Court Reaches Out
-		cc_intl.12   # The Confucian Mission
-
-		# Subject lobbying events
-		cc.201    # The Chartered Company's Petition
-		cc.202    # The March Lord's Demands
-		cc.203    # A Rivalry Among Subjects
-
-		# Subject drawback events
-		cc.120    # Governor's Ambitions
-		cc.124    # Governor Eyes Neighbors
-		cc.121    # Tax Farm Revolt
-		cc.125    # Tax Collectors and Neighbors
-		cc.122    # March Lord's Raid
-		cc.123    # March Lord Independence Bid
-		cc.126    # March Lord Threatens Neighbors
-
-		# Shadow network operation events
-		cc.140    # Intelligence from the Shadows
-		cc.141    # Shadow States in Conflict
-		cc.142    # A Shadow State Seeks Legitimacy
-		cc.143    # The Network Goes Silent
-
-		# Client state / puppet state events
-		cc.150    # The Client State Flexes Its Autonomy
-		cc.151    # The Puppet's Strings
-		cc.152    # Client State and Puppet at Odds
-
-		# Elite enclave / palatinate events
-		cc.160    # The Enclave Lord's Cultural Patronage
-		cc.161    # The Palatinate Demands Recognition
-
-		# Associated republic events
-		cc.170    # The Republic's Scholarly Exchange
-		cc.171    # Republican Dissent
-
-		# Crown dependency / protectorate events
-		cc.180    # The Crown Dependency Seeks Favor
-		cc.181    # Protectorate Growing Pains
 	}
 }
 
-monthly_country_pulse = {
+# Negative trait rehabilitation — one per year, higher chance
+cc_cabinet_yearly_neg_rehab = {
 	random_events = {
+		1 = cc_neg.11   # Stagnant counselor rehab
+		1 = cc_neg.12   # War profiteer rehab
+		1 = cc_neg.13   # Court schemer rehab
+		1 = cc_neg.14   # Inefficient bureaucrat rehab
+		1 = cc_neg.15   # Corrupted official rehab
+		1 = cc_neg.16   # Zealous fanatic rehab
+		1 = cc_neg.17   # Outdated general rehab
+		1 = cc_neg.18   # Cynical courtier rehab
+		1 = cc_neg.19   # Reckless expander rehab
+
+		chance_to_happen = 60
+
+		chance_of_no_event = {
+			value = 10
+		}
+	}
+}
+
+# Legend quest progression checks — sweep, all evaluated each cycle
+cc_cabinet_yearly_legends = {
+	events = {
+		cc_legend.1    cc_legend.2    cc_legend.3    cc_legend.4    cc_legend.5
+		cc_legend.8    # Age of Exploration
+	}
+}
+
+# International cross-country synergy — one per year, high chance
+cc_cabinet_yearly_intl = {
+	random_events = {
+		1 = cc_intl.1    # The Philosopher's Exchange
+		1 = cc_intl.2    # Scholars in Exile
+		1 = cc_intl.3    # The Rival Philosopher
+		1 = cc_intl.4    # The Marshal's Doctrine
+		1 = cc_intl.5    # Nomadic Migration
+		1 = cc_intl.6    # The Caliphate Solidarity
+		1 = cc_intl.7    # Protestant Solidarity
+		1 = cc_intl.8    # The Sacred Pilgrimage
+		1 = cc_intl.9    # The Merchant's Compact
+		1 = cc_intl.10   # The Grand Chancellor's Leverage
+		1 = cc_intl.11   # The Shadow Court Reaches Out
+		1 = cc_intl.12   # The Confucian Mission
+
+		chance_to_happen = 70
+
+		chance_of_no_event = {
+			value = 15
+		}
+	}
+}
+
+###############################################################################
+# MONTHLY SUB-PULSES
+###############################################################################
+
+# Pair synergies and dual-layer synergy events — higher chance
+cc_cabinet_monthly_synergy = {
+	random_events = {
+		1 = cc_synergy.1   1 = cc_synergy.2   1 = cc_synergy.3   1 = cc_synergy.4   1 = cc_synergy.5
+		1 = cc_synergy.6   1 = cc_synergy.7   1 = cc_synergy.8   1 = cc_synergy.9   1 = cc_synergy.10
+		1 = cc_synergy.11  1 = cc_synergy.12  1 = cc_synergy.13  1 = cc_synergy.14  1 = cc_synergy.15
+		1 = cc_synergy.16  1 = cc_synergy.17  1 = cc_synergy.18
+		1 = cc_synergy.21  1 = cc_synergy.22  1 = cc_synergy.23  1 = cc_synergy.24  1 = cc_synergy.25
+		1 = cc_synergy.26
+
+		# Dual-layer (cabinet × religious_figure on same minister)
+		1 = cc_dual.1   1 = cc_dual.2   1 = cc_dual.3   1 = cc_dual.4   1 = cc_dual.5
+		1 = cc_dual.6   1 = cc_dual.7   1 = cc_dual.8   1 = cc_dual.9   1 = cc_dual.10
+
+		chance_to_happen = 35
+
+		chance_of_no_event = {
+			value = 20
+		}
+	}
+}
+
+# Trait and conditional spawning events
+cc_cabinet_monthly_traits = {
+	random_events = {
+		# Integration trait grant
+		13 = cc_traits.1
+
+		# Teachable traits
+		8 = cc_traits.20     # Ruler Teaches Cabinet Member
+		8 = cc_traits.21     # Peer Learning
+
+
+		# Action-forged traits — Family F
+		8 = cc_cond.30    # The Integration Specialist
+		8 = cc_cond.31    # The Colonial Strategist
+		8 = cc_cond.32    # The Development Commissioner
+		6 = cc_cond.33    # The Shadow Handler
+		6 = cc_cond.34    # The Treasury Inspector
+
+		chance_to_happen = 6
+
+		chance_of_no_event = {
+			value = 80
+		}
+	}
+}
+
+
+# Social Value based spawning events
+cc_cabinet_monthly_social_traits = {
+	random_events = {
+		
+		# Conditional trait spawning — Family A/B
+		8 = cc_cond.1      # Family A: Capital Development
+		8 = cc_cond.20     # Family B: Intellectual/Religious cluster
+		8 = cc_cond.21     # Family B: Social Order cluster
+		8 = cc_cond.22     # Family B: Military Doctrine cluster
+		8 = cc_cond.23     # Family B: Economic Doctrine cluster
+		8 = cc_cond.24     # Family B: Expansion/Cultural cluster
+
+		# Conditional trait spawning — Family C/D/E
+		8 = cc_cond.3      # Family D: Military Cost early tier
+		8 = cc_cond.6      # Family D: Military Cost strong tier
+		8 = cc_cond.4      # Family C: Regional/Religious
+		8 = cc_cond.5      # Family E: Parliamentary/Diplomatic
+
+		chance_to_happen = 5
+
+		chance_of_no_event = {
+			value = 90
+		}
+	}
+}
+# Age spawning events
+cc_cabinet_monthly_age_traits = {
+	random_events = {
+
 		# Age-specific trait spawning — core
 		10 = cc_traits.10    # Renaissance Humanist
 		10 = cc_traits.11    # Age of Discovery (Pioneer / Skeptic)
@@ -107,7 +201,7 @@ monthly_country_pulse = {
 		10 = cc_traits.13    # Absolutism (4 choices)
 		10 = cc_traits.14    # Revolutions (3 choices)
 
-		# Age-specific trait spawning — new events
+		# Age-specific trait spawning — extended
 		8 = cc_traits.30    # Empiricist's Method (Age 2+)
 		8 = cc_traits.31    # Urban Reformer (Age 2+, burgher)
 		8 = cc_traits.32    # Cartographer's Commission (Age 3+)
@@ -119,6 +213,17 @@ monthly_country_pulse = {
 		8 = cc_traits.38    # National Minister (Age 6)
 		8 = cc_traits.39    # Industrial Visionary (Age 6, burgher)
 
+		chance_to_happen = 8
+
+		chance_of_no_event = {
+			value = 70
+		}
+	}
+}
+
+# Cabinet ruler/estate idle events and age-2 feudal transition
+cc_cabinet_monthly_cabinet = {
+	random_events = {
 		# Ruler interaction events
 		10 = cc_cabinet.1    # The Minister Seeks Counsel
 		8  = cc_cabinet.2    # A Request for Funds
@@ -131,36 +236,70 @@ monthly_country_pulse = {
 		# Age 2 feudal transition (fires once via variable gate inside event)
 		3  = cc_feudal.10    # The Old Court Gives Way
 
-
-		chance_to_happen = 20
+		chance_to_happen = 33
 
 		chance_of_no_event = {
-			value = 30
+			value = 40
 		}
 	}
 }
 
-biyearly_country_pulse = {
+# Subject-type events — small chance monthly
+cc_cabinet_monthly_subjects = {
 	random_events = {
-		13 = cc_traits.1    # Integration Trait Grant
+		# Subject lobbying
+		1 = cc.201    # The Chartered Company's Petition
+		1 = cc.202    # The March Lord's Demands
+		1 = cc.203    # A Rivalry Among Subjects
 
-		# Conditional trait spawning events
-		8 = cc_cond.1      # Family A: Capital Development
-		8 = cc_cond.20     # Family B: Intellectual/Religious cluster
-		8 = cc_cond.21     # Family B: Social Order cluster
-		8 = cc_cond.22     # Family B: Military Doctrine cluster
-		8 = cc_cond.23     # Family B: Economic Doctrine cluster
-		8 = cc_cond.24     # Family B: Expansion/Cultural cluster
-		8 = cc_cond.3     # Family D: Military Cost early tier
-		8 = cc_cond.6     # Family D: Military Cost strong tier
-		8 = cc_cond.4      # Family C: Regional/Religious
-		8 = cc_cond.5      # Family E: Parliamentary/Diplomatic
+		# Subject drawback events
+		1 = cc.120    # Governor's Ambitions
+		1 = cc.124    # Governor Eyes Neighbors
+		1 = cc.121    # Tax Farm Revolt
+		1 = cc.125    # Tax Collectors and Neighbors
+		1 = cc.122    # March Lord's Raid
+		1 = cc.123    # March Lord Independence Bid
+		1 = cc.126    # March Lord Threatens Neighbors
 
-		# Teachable traits (biyearly to reduce frequency)
-		8 = cc_traits.20     # Ruler Teaches Cabinet Member
-		8 = cc_traits.21     # Peer Learning
+		# Shadow network operation events
+		1 = cc.140    # Intelligence from the Shadows
+		1 = cc.141    # Shadow States in Conflict
+		1 = cc.142    # A Shadow State Seeks Legitimacy
+		1 = cc.143    # The Network Goes Silent
 
-		# Estate interaction events
+		# Client state / puppet state events
+		1 = cc.150    # The Client State Flexes Its Autonomy
+		1 = cc.151    # The Puppet's Strings
+		1 = cc.152    # Client State and Puppet at Odds
+
+		# Elite enclave / palatinate events
+		1 = cc.160    # The Enclave Lord's Cultural Patronage
+		1 = cc.161    # The Palatinate Demands Recognition
+
+		# Associated republic events
+		1 = cc.170    # The Republic's Scholarly Exchange
+		1 = cc.171    # Republican Dissent
+
+		# Crown dependency / protectorate events
+		1 = cc.180    # The Crown Dependency Seeks Favor
+		1 = cc.181    # Protectorate Growing Pains
+
+		chance_to_happen = 8
+
+		chance_of_no_event = {
+			value = 20
+		}
+	}
+}
+
+###############################################################################
+# BIYEARLY SUB-PULSES
+###############################################################################
+
+# Cabinet age-gated, neighboring-country, and province interaction events
+cc_cabinet_biyearly_cabinet = {
+	random_events = {
+		# Age-gated estate interaction
 		5  = cc_cabinet.12   # Revolutionary Sentiments (Age of Revolutions)
 		5  = cc_cabinet.13   # Minister's Ambitions (Age of Absolutism)
 
@@ -176,6 +315,17 @@ biyearly_country_pulse = {
 		5  = cc_cabinet.32   # Confessional Province Work (Age of Reformation)
 		5  = cc_cabinet.33   # Administrative Reform (Age of Absolutism)
 
+		chance_to_happen = 33
+
+		chance_of_no_event = {
+			value = 10
+		}
+	}
+}
+
+# Feudal court events and tension-based negative trait grants
+cc_cabinet_biyearly_feudal = {
+	random_events = {
 		# Feudal court events (Age 1 only — internal triggers gate them)
 		6  = cc_feudal.1     # Feudal Trait Grant
 		5  = cc_feudal.2     # Feast or Fast
@@ -185,25 +335,28 @@ biyearly_country_pulse = {
 		5  = cc_feudal.6     # A Learned Foreigner
 		4  = cc_feudal.7     # The Call to Holy War
 
-		# Negative trait events (tension-based, biyearly)
+		# Negative trait grants — tension-based
 		5  = cc_neg.3        # Court schemer grant
 		5  = cc_neg.5        # Corrupted official grant
 		5  = cc_neg.7        # Cynical courtier grant
 
-		# Action-forged trait events (Family F — cc_cond.30-34)
-		8  = cc_cond.30    # The Integration Specialist
-		8  = cc_cond.31    # The Colonial Strategist
-		8  = cc_cond.32    # The Development Commissioner
-		6  = cc_cond.33    # The Shadow Handler
-		6  = cc_cond.34    # The Treasury Inspector
+		chance_to_happen = 33
 
-		# Wealth hoarding events (self-suppress when gold < 100x monthly income)
+		chance_of_no_event = {
+			value = 10
+		}
+	}
+}
+
+# Wealth hoarding events (self-suppress when gold < 100x monthly income)
+cc_cabinet_biyearly_wealth = {
+	random_events = {
 		10 = cc_wealth.1     # Keeping Up Appearances
 		8  = cc_wealth.2     # A Lavish Party
 		6  = cc_wealth.3     # Noble Estate Building Demand
+		8  = cc_wealth.4     # An Ambitious Arrival
 		6  = cc_wealth.5     # Burgher Estate Building Demand
 		6  = cc_wealth.6     # Clergy Estate Building Demand
-		8  = cc_wealth.4     # An Ambitious Arrival
 		6  = cc_wealth.7     # Estate Demolition
 		8  = cc_wealth.8     # Burgher Urban Investment
 

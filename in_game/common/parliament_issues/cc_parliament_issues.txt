@@ -66,3 +66,99 @@
 		parliament_debate_failed_effect = yes
 	}
 }
+
+cc_create_naval_administration = {
+	estate = crown_estate
+
+	potential = {
+		always = yes
+		# has_advance = naval_charter_advance
+	}
+	allow = {
+		always = yes
+		# has_advance = naval_charter_advance
+		# NOT = {
+		# 	any_subject = {
+		# 		is_subject_type = naval_administration
+		# 	}
+		# }
+		# any_owned_location = {
+		# 	continent = ROOT.capital.continent
+		# 	# is_port = yes
+		# 	NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
+		# 	dominant_culture = {
+		# 		is_primary_or_accepted_in = ROOT
+		# 	} 
+		# }
+	}
+
+	
+	modifier_when_in_debate = {
+		global_sailors_modifier = 0.20
+		navy_light_ship_build_cost_modifier = -0.33
+		navy_heavy_ship_build_cost_modifier = -0.33
+		exploration_maintenance_cost = -0.2
+		exploration_preparation_time_modifier = -0.5
+	}
+
+	chance = {
+		add = 100000
+		# every_province = {
+		# 	limit = {
+		# 		OR = {
+		# 			NOT = { continent = ROOT.capital.continent }
+		# 			# is_overseas_for_owner = yes	
+		# 		}
+		# 	}
+		# 	add = 1
+		# }
+	}
+	
+	on_debate_passed = {
+		# if = {
+		# 	limit = {
+		# 		NOT = {
+		# 			any_subject = {
+		# 				is_subject_type = naval_administration
+		# 			}
+		# 		}
+		# 		any_owned_location = {
+		# 			continent = ROOT.capital.continent
+		# 			# is_port = yes
+		# 			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
+		# 		}
+		# 	}
+		# 	random_owned_location = {
+		# 		limit = { 
+		# 			continent = ROOT.capital.continent
+		# 			# is_port = yes
+		# 			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
+		# 		}
+		# 		weight = {
+		# 			base = 0 
+		# 			modifier = {
+		# 				add = modifier:natural_harbor_suitability
+		# 			}
+
+		# 			modifier = {
+		# 				factor = 100
+		# 				add = 10
+		# 			}
+		# 		}
+
+		# 		create_country_from_location = {
+		# 			make_subject_of = {
+		# 				target = ROOT
+		# 				type = subject_type:naval_administration
+		# 			}
+		# 		}
+
+		# 	}
+		# }
+	}
+
+	on_debate_failed = {
+		parliament_debate_failed_effect = yes
+	}
+
+}

@@ -9,6 +9,8 @@ namespace = cc_bonds
 
 cc_bonds.1 = {
 	type = country_event
+	title = cc_bonds.1.title
+	desc = cc_bonds.1.desc
 	hidden = yes
 
 	trigger = {
@@ -110,7 +112,65 @@ cc_bonds.1 = {
 					change_variable = { name = cc_bond_unjust_wars  add = -1 }
 				}
 
-				# --- 6. Priming flags ---
+				# --- 6. Institution direction tracking (updated each 10-year cycle) ---
+				remove_variable = cc_bond_insti_to_subject
+				remove_variable = cc_bond_insti_to_overlord
+				remove_variable = cc_bond_insti_both
+
+				# Overlord → subject: overlord has an institution this subject lacks
+				if = {
+					limit = {
+						root = {
+							any_institutions_embraced = {
+								NOT = { scope:cc_sync_subj = { has_embraced_institution = prev } }
+							}
+						}
+					}
+					set_variable = { name = cc_bond_insti_to_subject  value = yes }
+				}
+
+				# Subject → overlord: this subject has an institution the overlord lacks
+				if = {
+					limit = {
+						any_institutions_embraced = {
+							NOT = { root = { has_embraced_institution = prev } }
+						}
+					}
+					set_variable = { name = cc_bond_insti_to_overlord  value = yes }
+				}
+
+				# Both directions active simultaneously
+				if = {
+					limit = {
+						has_variable = cc_bond_insti_to_subject
+						has_variable = cc_bond_insti_to_overlord
+					}
+					set_variable = { name = cc_bond_insti_both  value = yes }
+				}
+
+				# Apply passive bond adjustments
+				if = {
+					limit = { has_variable = cc_bond_insti_both }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					change_variable = { name = cc_bond_cul  add = 1 }
+					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { has_variable = cc_bond_insti_to_subject }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { has_variable = cc_bond_insti_to_overlord }
+					# Subject contributing institutions upward — economic link but cultural tension
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					change_variable = { name = cc_bond_cul  add = -1 }
+					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+				}
+
+				# --- 7. Priming flags ---
 				if = {
 					limit = {
 						var:cc_bond_eco >= 2
@@ -157,7 +217,7 @@ cc_bonds.1 = {
 					remove_variable = cc_bond_revolutionary_primed
 				}
 
-				# --- 7. Sync scores to overlord variable maps ---
+				# --- 8. Sync scores to overlord variable maps ---
 				set_local_variable = { name = lv_eco  value = var:cc_bond_eco }
 				set_local_variable = { name = lv_mil  value = var:cc_bond_mil }
 				set_local_variable = { name = lv_pol  value = var:cc_bond_pol }

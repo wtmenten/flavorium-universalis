@@ -7,73 +7,22 @@
 
 ###############################################################################
 # YEARLY COUNTRY PULSE — Bond Event Triggers
+# Chain events use random_events (sample_count = 1) so only 1 fires per subject
+# type per year. Monitor, status reveals, and AoR payoffs stay in events = {}.
 ###############################################################################
 
 yearly_country_pulse = {
 	events = {
 		cc_bonds.1		# Hidden monitor (10-year cycle)
 
-		# Status reveal events (rare glimpses for the player)
+		# Status reveal events — each has its own 15-year cooldown
 		cc_bonds.5
 		cc_bonds.6
 		cc_bonds.7
 		cc_bonds.8
 		cc_bonds.9
 
-		# Colonial Nation chain
-		cc_bonds.10
-		cc_bonds.11
-		cc_bonds.12
-		cc_bonds.13
-		cc_bonds.14
-		cc_bonds.15
-		cc_bonds.16
-
-		# Provincial Governorate chain
-		cc_bonds.20
-		cc_bonds.21
-		cc_bonds.22
-		cc_bonds.23
-		cc_bonds.24
-		cc_bonds.25
-		cc_bonds.26
-
-		# Palatinate chain
-		cc_bonds.30
-		cc_bonds.31
-		cc_bonds.32
-		cc_bonds.33
-		cc_bonds.34
-		cc_bonds.35
-		cc_bonds.36
-
-		# Puppet State chain
-		cc_bonds.40
-		cc_bonds.41
-		cc_bonds.42
-		cc_bonds.43
-		cc_bonds.44
-		cc_bonds.45
-		cc_bonds.46
-
-		# Crown Dependency chain
-		cc_bonds.50
-		cc_bonds.51
-		cc_bonds.52
-		cc_bonds.53
-		cc_bonds.54
-		cc_bonds.55
-
-		# Military March chain
-		cc_bonds.60
-		cc_bonds.61
-		cc_bonds.62
-		cc_bonds.63
-		cc_bonds.64
-		cc_bonds.65
-		cc_bonds.66
-
-		# AoR Payoff events
+		# AoR Payoff events — one-shot guards on each
 		cc_bonds.90
 		cc_bonds.91
 		cc_bonds.92
@@ -85,17 +34,117 @@ yearly_country_pulse = {
 		cc_bonds.98
 		cc_bonds.99
 
-		# Narrative Chain A: The Young Heir
-		cc_bonds.100
+		# AoR Federal Payoff events
+		cc_bonds.140
+		cc_bonds.141
+		cc_bonds.142
+		cc_bonds.143
+		cc_bonds.144
+		cc_bonds.145
+	}
 
-		# Narrative Chain B: The Merchant and the Sea
-		cc_bonds.110
+	on_actions = {
+		cc_bonds_colonial_pulse
+		cc_bonds_governorate_pulse
+		cc_bonds_palatinate_pulse
+		cc_bonds_puppet_pulse
+		cc_bonds_dependency_pulse
+		cc_bonds_march_pulse
+		cc_bonds_narrative_pulse
+	}
+}
 
-		# Narrative Chain C: The Forgotten Fort
-		cc_bonds.120
+# Colonial Nation — at most 1 bond chain event fires per year
+cc_bonds_colonial_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.10
+		10 = cc_bonds.11
+		10 = cc_bonds.12
+		10 = cc_bonds.13
+		10 = cc_bonds.14
+		10 = cc_bonds.15
+		10 = cc_bonds.16
+	}
+}
 
-		# Narrative Chain D: The Scholar's Name
-		cc_bonds.130
+# Provincial Governorate — at most 1 bond chain event fires per year
+cc_bonds_governorate_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.20
+		10 = cc_bonds.21
+		10 = cc_bonds.22
+		10 = cc_bonds.23
+		10 = cc_bonds.24
+		10 = cc_bonds.25
+		10 = cc_bonds.26
+	}
+}
+
+# Palatinate — at most 1 bond chain event fires per year
+cc_bonds_palatinate_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.30
+		10 = cc_bonds.31
+		10 = cc_bonds.32
+		10 = cc_bonds.33
+		10 = cc_bonds.34
+		10 = cc_bonds.35
+		10 = cc_bonds.36
+	}
+}
+
+# Puppet State — at most 1 bond chain event fires per year
+cc_bonds_puppet_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.40
+		10 = cc_bonds.41
+		10 = cc_bonds.42
+		10 = cc_bonds.43
+		10 = cc_bonds.44
+		10 = cc_bonds.45
+		10 = cc_bonds.46
+	}
+}
+
+# Crown Dependency — at most 1 bond chain event fires per year
+cc_bonds_dependency_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.50
+		10 = cc_bonds.51
+		10 = cc_bonds.52
+		10 = cc_bonds.53
+		10 = cc_bonds.54
+		10 = cc_bonds.55
+	}
+}
+
+# Military March — at most 1 bond chain event fires per year
+cc_bonds_march_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.60
+		10 = cc_bonds.61
+		10 = cc_bonds.62
+		10 = cc_bonds.63
+		10 = cc_bonds.64
+		10 = cc_bonds.65
+		10 = cc_bonds.66
+	}
+}
+
+# Narrative chains — at most 1 fires per year across all subject types
+cc_bonds_narrative_pulse = {
+	random_events = {
+		sample_count = 1
+		10 = cc_bonds.100
+		10 = cc_bonds.110
+		10 = cc_bonds.120
+		10 = cc_bonds.130
 	}
 }
 

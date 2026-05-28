@@ -24,7 +24,7 @@ cc_bonds.120 = {
 				is_subject_type = palatinate
 				is_subject_type = puppet_state
 			}
-			num_provinces >= 2
+			num_locations >= 10
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_120_cd }
 		}
@@ -39,7 +39,7 @@ cc_bonds.120 = {
 					is_subject_type = palatinate
 					is_subject_type = puppet_state
 				}
-				num_provinces >= 2
+				num_locations >= 10
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_120_cd }
 			}
@@ -83,6 +83,7 @@ cc_bonds.120 = {
 	# Tell the subject to fund it themselves — mil-1, eco+1, pol-1
 	option = {
 		name = cc_bonds.120.c
+		ai_chance = { base = 30 }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_fort_denied  value = yes }
 			change_variable = { name = cc_bond_mil  add = -1 }
@@ -98,6 +99,7 @@ cc_bonds.120 = {
 	# Ignore the report entirely — mil-2, pol-1
 	option = {
 		name = cc_bonds.120.d
+		ai_chance = { base = 10 }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_fort_ignored  value = yes }
 			change_variable = { name = cc_bond_mil  add = -2 }
@@ -149,6 +151,7 @@ cc_bonds.121 = {
 	# Option B: Give the subject lord full credit (per+2, pol+1, mil+1) — best outcome
 	option = {
 		name = cc_bonds.121.a_subject_credit
+		ai_chance = { base = 65 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_fort_funded }
 		}
@@ -184,6 +187,7 @@ cc_bonds.121 = {
 	# Option B: Blame the subject for not doing more (per-2, pol-1)
 	option = {
 		name = cc_bonds.121.b_blame
+		ai_chance = { base = 25 }
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_fort_partial }
 		}
@@ -267,6 +271,7 @@ cc_bonds.122 = {
 	# Appoint a crown officer — pol-2, mil+1, per-1
 	option = {
 		name = cc_bonds.122.a
+		ai_chance = { base = 30 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = -2 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
@@ -280,6 +285,7 @@ cc_bonds.122 = {
 	# Let the subject lord command — pol+2, mil+1, per+2
 	option = {
 		name = cc_bonds.122.b
+		ai_chance = { base = 50 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = 2 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }

@@ -28,6 +28,8 @@ cc_cond.1 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_dev_trait_event }
 			NOR = {
 				has_trait = urban_planner
 				has_trait = prosperity_herald
@@ -49,6 +51,8 @@ cc_cond.1 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_dev_trait_event }
 				NOR = {
 					has_trait = urban_planner
 					has_trait = prosperity_herald
@@ -78,7 +82,11 @@ cc_cond.1 = {
 				current_age = age_6_revolutions
 			}
 		}
-		scope:minister = { add_trait = trait:master_urbanist }
+		scope:minister = {
+			add_trait = trait:master_urbanist
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -90,7 +98,11 @@ cc_cond.1 = {
 				current_age = age_6_revolutions
 			}
 		}
-		scope:minister = { add_trait = trait:enlightenment_herald }
+		scope:minister = {
+			add_trait = trait:enlightenment_herald
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -102,7 +114,11 @@ cc_cond.1 = {
 				current_age = age_6_revolutions
 			}
 		}
-		scope:minister = { add_trait = trait:progressive_rationalist }
+		scope:minister = {
+			add_trait = trait:progressive_rationalist
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -111,7 +127,11 @@ cc_cond.1 = {
 			capital.development > 50
 			current_age = age_6_revolutions
 		}
-		scope:minister = { add_trait = trait:revolutionary_herald }
+		scope:minister = {
+			add_trait = trait:revolutionary_herald
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	# --- Tier 2 options (dev > 40, age 3+) ---
@@ -128,7 +148,11 @@ cc_cond.1 = {
 			}
 			NOT = { capital.development > 50 }
 		}
-		scope:minister = { add_trait = trait:grand_architect }
+		scope:minister = {
+			add_trait = trait:grand_architect
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -143,7 +167,11 @@ cc_cond.1 = {
 			}
 			NOT = { capital.development > 50 }
 		}
-		scope:minister = { add_trait = trait:arts_patron }
+		scope:minister = {
+			add_trait = trait:arts_patron
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -158,7 +186,11 @@ cc_cond.1 = {
 			}
 			NOT = { capital.development > 50 }
 		}
-		scope:minister = { add_trait = trait:learned_courtier }
+		scope:minister = {
+			add_trait = trait:learned_courtier
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	option = {
@@ -173,7 +205,11 @@ cc_cond.1 = {
 			}
 			NOT = { capital.development > 50 }
 		}
-		scope:minister = { add_trait = trait:reform_minded_counselor }
+		scope:minister = {
+			add_trait = trait:reform_minded_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
 	}
 
 	# --- Tier 1 options (dev > 30, any age, but not higher tiers) ---
@@ -183,7 +219,18 @@ cc_cond.1 = {
 		trigger = {
 			NOT = { capital.development > 40 }
 		}
-		scope:minister = { add_trait = trait:urban_planner }
+		scope:minister = {
+			add_trait = trait:urban_planner
+			set_variable = { name = cc_cond1_urban_initiative value = yes }
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+		if = {
+			limit = {
+				NOT = { scope:minister = { has_variable = cc_cond1_urban_initiative } }
+			}
+			trigger_event_silently =  { id = cc_cond.101 days = 180 }
+		}
 	}
 
 	option = {
@@ -191,7 +238,18 @@ cc_cond.1 = {
 		trigger = {
 			NOT = { capital.development > 40 }
 		}
-		scope:minister = { add_trait = trait:prosperity_herald }
+		scope:minister = {
+			add_trait = trait:prosperity_herald
+			set_variable = { name = cc_cond1_urban_initiative value = yes }
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+		if = {
+			limit = {
+				NOT = { scope:minister = { has_variable = cc_cond1_urban_initiative } }
+			}
+			trigger_event_silently =  { id = cc_cond.101 days = 180 }
+		}
 	}
 
 	option = {
@@ -199,11 +257,107 @@ cc_cond.1 = {
 		trigger = {
 			NOT = { capital.development > 40 }
 		}
-		scope:minister = { add_trait = trait:merchant_syndic }
+		scope:minister = {
+			add_trait = trait:merchant_syndic
+			set_variable = { name = cc_cond1_urban_initiative value = yes }
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+		if = {
+			limit = {
+				NOT = { scope:minister = { has_variable = cc_cond1_urban_initiative } }
+			}
+			trigger_event_silently =  { id = cc_cond.101 days = 180 }
+		}
 	}
 
 	option = {
 		name = cc_cond.1.dismiss
+		set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+	}
+}
+
+
+# cc_cond.101 — Urban Ambitions Take Shape
+# Fires ~6 months after cc_cond.1 Tier 1 options (urban_planner / prosperity_herald / merchant_syndic).
+cc_cond.101 = {
+	type = country_event
+	title = cc_cond.101.title
+	desc = cc_cond.101.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_cond1_urban_initiative
+			}
+			save_scope_as = minister
+		}
+	}
+
+	after = {
+		if = {
+			limit = { exists = scope:minister }
+			scope:minister = { remove_variable = cc_cond1_urban_initiative }
+		}
+	}
+
+	option = {
+		name = cc_cond.101.a
+
+		random_list = {
+
+			# ---- Development push — urban_planner biased ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_trait = urban_planner }
+				}
+				capital = {
+					change_development = development_weak_bonus
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- Trade expansion — merchant_syndic biased ----
+			25 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_trait = merchant_syndic }
+				}
+				add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 2 }
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- Provincial flourishing ----
+			25 = {
+				capital = {
+					add_location_modifier = {
+						modifier = cc_cabinet_provincial_flourishing
+						years = 5
+						mode = add_and_extend
+					}
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- Costly project overrun ----
+			20 = {
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = -3
+					min = -100
+					max = -30
+				}
+				add_prestige = prestige_weak_penalty
+			}
+		}
 	}
 }
 
@@ -233,6 +387,8 @@ cc_cond.20 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_social_trait_event }
 			NOR = {
 				has_trait = innovative_counselor
 				has_trait = traditionalist_guardian
@@ -256,6 +412,8 @@ cc_cond.20 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_social_trait_event }
 				NOR = {
 					has_trait = innovative_counselor
 					has_trait = traditionalist_guardian
@@ -272,35 +430,60 @@ cc_cond.20 = {
 	option = {
 		name = cc_cond.20.innovative
 		trigger = { societal_value:traditionalist_vs_innovative > 50 }
-		scope:minister = { add_trait = trait:innovative_counselor }
+		scope:minister = {
+			add_trait = trait:innovative_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.traditionalist
 		trigger = { societal_value:traditionalist_vs_innovative < -50 }
-		scope:minister = { add_trait = trait:traditionalist_guardian }
+		scope:minister = {
+			add_trait = trait:traditionalist_guardian
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.spiritualist
 		trigger = { societal_value:spiritualist_vs_humanist < -50 }
-		scope:minister = { add_trait = trait:mystical_patriarch }
+		scope:minister = {
+			add_trait = trait:mystical_patriarch
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.humanist
 		trigger = { societal_value:spiritualist_vs_humanist > 50 }
-		scope:minister = { add_trait = trait:humanist_philosopher }
+		scope:minister = {
+			add_trait = trait:humanist_philosopher
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.mysticism
 		trigger = { societal_value:mysticism_vs_jurisprudence < -50 }
-		scope:minister = { add_trait = trait:mystical_counselor }
+		scope:minister = {
+			add_trait = trait:mystical_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.jurisprudence
 		trigger = { societal_value:mysticism_vs_jurisprudence > 50 }
-		scope:minister = { add_trait = trait:legal_scholar }
+		scope:minister = {
+			add_trait = trait:legal_scholar
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.20.dismiss
+		set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 	}
 }
 
@@ -322,6 +505,8 @@ cc_cond.21 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_social_trait_event }
 			NOR = {
 				has_trait = royal_absolutist
 				has_trait = liberal_reformer
@@ -349,6 +534,8 @@ cc_cond.21 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_social_trait_event }
 				NOR = {
 					has_trait = royal_absolutist
 					has_trait = liberal_reformer
@@ -367,45 +554,78 @@ cc_cond.21 = {
 	option = {
 		name = cc_cond.21.absolutist
 		trigger = { societal_value:absolutism_vs_liberalism < -50 }
-		scope:minister = { add_trait = trait:royal_absolutist }
+		scope:minister = {
+			add_trait = trait:royal_absolutist
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.liberal
 		trigger = { societal_value:absolutism_vs_liberalism > 50 }
-		scope:minister = { add_trait = trait:liberal_reformer }
+		scope:minister = {
+			add_trait = trait:liberal_reformer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.centralized
 		trigger = { societal_value:centralization_vs_decentralization < -50 }
-		scope:minister = { add_trait = trait:efficiency_administrator }
+		scope:minister = {
+			add_trait = trait:efficiency_administrator
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.decentralized
 		trigger = { societal_value:centralization_vs_decentralization > 50 }
-		scope:minister = { add_trait = trait:regional_magnate }
+		scope:minister = {
+			add_trait = trait:regional_magnate
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.serfdom
 		trigger = { societal_value:serfdom_vs_free_subjects < -50 }
-		scope:minister = { add_trait = trait:serf_overseer }
+		scope:minister = {
+			add_trait = trait:serf_overseer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.free_subjects
 		trigger = { societal_value:serfdom_vs_free_subjects > 50 }
-		scope:minister = { add_trait = trait:emancipation_minister }
+		scope:minister = {
+			add_trait = trait:emancipation_minister
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.individualism
 		trigger = { societal_value:individualism_vs_communalism < -50 }
-		scope:minister = { add_trait = trait:free_spirit_counselor }
+		scope:minister = {
+			add_trait = trait:free_spirit_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.communalism
 		trigger = { societal_value:individualism_vs_communalism > 50 }
-		scope:minister = { add_trait = trait:community_steward }
+		scope:minister = {
+			add_trait = trait:community_steward
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.21.dismiss
+		set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 	}
 }
 
@@ -427,6 +647,8 @@ cc_cond.22 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_social_trait_event }
 			NOR = {
 				has_trait = elite_trainer
 				has_trait = mass_levy_commander
@@ -454,6 +676,8 @@ cc_cond.22 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_social_trait_event }
 				NOR = {
 					has_trait = elite_trainer
 					has_trait = mass_levy_commander
@@ -472,45 +696,78 @@ cc_cond.22 = {
 	option = {
 		name = cc_cond.22.quality
 		trigger = { societal_value:quality_vs_quantity < -50 }
-		scope:minister = { add_trait = trait:elite_trainer }
+		scope:minister = {
+			add_trait = trait:elite_trainer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.quantity
 		trigger = { societal_value:quality_vs_quantity > 50 }
-		scope:minister = { add_trait = trait:mass_levy_commander }
+		scope:minister = {
+			add_trait = trait:mass_levy_commander
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.offensive
 		trigger = { societal_value:offensive_vs_defensive < -50 }
-		scope:minister = { add_trait = trait:offensive_strategist }
+		scope:minister = {
+			add_trait = trait:offensive_strategist
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.defensive
 		trigger = { societal_value:offensive_vs_defensive > 50 }
-		scope:minister = { add_trait = trait:defensive_commander }
+		scope:minister = {
+			add_trait = trait:defensive_commander
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.land
 		trigger = { societal_value:land_vs_naval < -50 }
-		scope:minister = { add_trait = trait:continental_marshal }
+		scope:minister = {
+			add_trait = trait:continental_marshal
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.naval
 		trigger = { societal_value:land_vs_naval > 50 }
-		scope:minister = { add_trait = trait:admiral_counselor }
+		scope:minister = {
+			add_trait = trait:admiral_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.belligerent
 		trigger = { societal_value:belligerent_vs_conciliatory < -50 }
-		scope:minister = { add_trait = trait:hawk_minister }
+		scope:minister = {
+			add_trait = trait:hawk_minister
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.conciliatory
 		trigger = { societal_value:belligerent_vs_conciliatory > 50 }
-		scope:minister = { add_trait = trait:peacemaker_counselor }
+		scope:minister = {
+			add_trait = trait:peacemaker_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.22.dismiss
+		set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 	}
 }
 
@@ -532,6 +789,8 @@ cc_cond.23 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_social_trait_event }
 			NOR = {
 				has_trait = noble_champion
 				has_trait = merchant_prince
@@ -555,6 +814,8 @@ cc_cond.23 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_social_trait_event }
 				NOR = {
 					has_trait = noble_champion
 					has_trait = merchant_prince
@@ -571,35 +832,60 @@ cc_cond.23 = {
 	option = {
 		name = cc_cond.23.aristocracy
 		trigger = { societal_value:aristocracy_vs_plutocracy < -50 }
-		scope:minister = { add_trait = trait:noble_champion }
+		scope:minister = {
+			add_trait = trait:noble_champion
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.plutocracy
 		trigger = { societal_value:aristocracy_vs_plutocracy > 50 }
-		scope:minister = { add_trait = trait:merchant_prince }
+		scope:minister = {
+			add_trait = trait:merchant_prince
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.mercantilism
 		trigger = { societal_value:mercantilism_vs_free_trade < -50 }
-		scope:minister = { add_trait = trait:mercantilist_official }
+		scope:minister = {
+			add_trait = trait:mercantilist_official
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.free_trade
 		trigger = { societal_value:mercantilism_vs_free_trade > 50 }
-		scope:minister = { add_trait = trait:free_market_advocate }
+		scope:minister = {
+			add_trait = trait:free_market_advocate
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.capital_economy
 		trigger = { societal_value:capital_economy_vs_traditional_economy < -50 }
-		scope:minister = { add_trait = trait:capitalist_minister }
+		scope:minister = {
+			add_trait = trait:capitalist_minister
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.traditional_economy
 		trigger = { societal_value:capital_economy_vs_traditional_economy > 50 }
-		scope:minister = { add_trait = trait:estate_guardian }
+		scope:minister = {
+			add_trait = trait:estate_guardian
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.23.dismiss
+		set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 	}
 }
 
@@ -621,6 +907,8 @@ cc_cond.24 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
+			NOT = { has_variable = cc_recent_social_trait_event }
 			NOR = {
 				has_trait = expansionist_advisor
 				has_trait = consolidation_minister
@@ -644,6 +932,8 @@ cc_cond.24 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				NOT = { has_variable = cc_recent_social_trait_event }
 				NOR = {
 					has_trait = expansionist_advisor
 					has_trait = consolidation_minister
@@ -660,35 +950,60 @@ cc_cond.24 = {
 	option = {
 		name = cc_cond.24.outward
 		trigger = { societal_value:outward_vs_inward < -50 }
-		scope:minister = { add_trait = trait:expansionist_advisor }
+		scope:minister = {
+			add_trait = trait:expansionist_advisor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.inward
 		trigger = { societal_value:outward_vs_inward > 50 }
-		scope:minister = { add_trait = trait:consolidation_minister }
+		scope:minister = {
+			add_trait = trait:consolidation_minister
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.latinized
 		trigger = { societal_value:latinization_vs_hellenization < -50 }
-		scope:minister = { add_trait = trait:roman_administrator }
+		scope:minister = {
+			add_trait = trait:roman_administrator
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.hellenized
 		trigger = { societal_value:latinization_vs_hellenization > 50 }
-		scope:minister = { add_trait = trait:hellenistic_scholar }
+		scope:minister = {
+			add_trait = trait:hellenistic_scholar
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.sinicized
 		trigger = { societal_value:sinicized_vs_unsinicized < -50 }
-		scope:minister = { add_trait = trait:confucian_mandarin }
+		scope:minister = {
+			add_trait = trait:confucian_mandarin
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.unsinicized
 		trigger = { societal_value:sinicized_vs_unsinicized > 50 }
-		scope:minister = { add_trait = trait:steppe_warlord_advisor }
+		scope:minister = {
+			add_trait = trait:steppe_warlord_advisor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
 	}
 	option = {
 		name = cc_cond.24.dismiss
+		set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 	}
 }
 
@@ -711,6 +1026,7 @@ cc_cond.3 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			mil > 33
 			NOR = {
 				has_trait = infantry_drillmaster
@@ -732,6 +1048,7 @@ cc_cond.3 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				mil > 33
 				NOR = {
 					has_trait = infantry_drillmaster
@@ -749,15 +1066,24 @@ cc_cond.3 = {
 
 	option = {
 		name = cc_cond.3.a
-		scope:minister = { add_trait = trait:infantry_drillmaster }
+		scope:minister = {
+			add_trait = trait:infantry_drillmaster
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.3.b
-		scope:minister = { add_trait = trait:scout_captain }
+		scope:minister = {
+			add_trait = trait:scout_captain
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.3.c
-		scope:minister = { add_trait = trait:military_engineer }
+		scope:minister = {
+			add_trait = trait:military_engineer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.3.dismiss
@@ -783,6 +1109,7 @@ cc_cond.6 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			mil > 66
 			NOR = {
 				has_trait = commissariat_officer
@@ -801,6 +1128,7 @@ cc_cond.6 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				mil > 66
 				NOR = {
 					has_trait = commissariat_officer
@@ -815,22 +1143,34 @@ cc_cond.6 = {
 
 	option = {
 		name = cc_cond.6.a
-		scope:minister = { add_trait = trait:commissariat_officer }
+		scope:minister = {
+			add_trait = trait:commissariat_officer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.6.b
-		scope:minister = { add_trait = trait:cavalry_marshal }
+		scope:minister = {
+			add_trait = trait:cavalry_marshal
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.6.c
-		scope:minister = { add_trait = trait:siege_engineer }
+		scope:minister = {
+			add_trait = trait:siege_engineer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.6.d
 		trigger = {
 			scope:minister ?= { mil > 80 }
 		}
-		scope:minister = { add_trait = trait:supreme_commander }
+		scope:minister = {
+			add_trait = trait:supreme_commander
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.6.dismiss
@@ -857,6 +1197,7 @@ cc_cond.4 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			NOR = {
 				has_trait = christian_diplomat
 				has_trait = caliphate_diplomat
@@ -893,6 +1234,7 @@ cc_cond.4 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				NOR = {
 					has_trait = christian_diplomat
 					has_trait = caliphate_diplomat
@@ -917,32 +1259,50 @@ cc_cond.4 = {
 			religion.group = religion_group:christian
 			NOT = { religion = religion:orthodox }
 		}
-		scope:minister = { add_trait = trait:christian_diplomat }
+		scope:minister = {
+			add_trait = trait:christian_diplomat
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.orthodox
 		trigger = { religion = religion:orthodox }
-		scope:minister = { add_trait = trait:ecumenical_patriarch_advisor }
+		scope:minister = {
+			add_trait = trait:ecumenical_patriarch_advisor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.muslim
 		trigger = { religion.group = religion_group:muslim }
-		scope:minister = { add_trait = trait:caliphate_diplomat }
+		scope:minister = {
+			add_trait = trait:caliphate_diplomat
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.dharmic
 		trigger = { religion.group = religion_group:dharmic }
-		scope:minister = { add_trait = trait:brahmin_counselor }
+		scope:minister = {
+			add_trait = trait:brahmin_counselor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.buddhist
 		trigger = { religion.group = religion_group:buddhist }
-		scope:minister = { add_trait = trait:dharma_minister }
+		scope:minister = {
+			add_trait = trait:dharma_minister
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.western_europe
 		trigger = { capital.sub_continent = sub_continent:western_europe }
-		scope:minister = { add_trait = trait:renaissance_patron }
+		scope:minister = {
+			add_trait = trait:renaissance_patron
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.africa
@@ -954,7 +1314,10 @@ cc_cond.4 = {
 				capital.sub_continent = sub_continent:southern_africa
 			}
 		}
-		scope:minister = { add_trait = trait:griot_diplomat }
+		scope:minister = {
+			add_trait = trait:griot_diplomat
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.central_asia
@@ -964,12 +1327,18 @@ cc_cond.4 = {
 				capital.sub_continent = sub_continent:north_asia
 			}
 		}
-		scope:minister = { add_trait = trait:steppe_strategos }
+		scope:minister = {
+			add_trait = trait:steppe_strategos
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.south_asia
 		trigger = { capital.sub_continent = sub_continent:south_asia }
-		scope:minister = { add_trait = trait:mughal_administrator }
+		scope:minister = {
+			add_trait = trait:mughal_administrator
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.new_world
@@ -979,14 +1348,20 @@ cc_cond.4 = {
 				capital.sub_continent = sub_continent:south_america
 			}
 		}
-		scope:minister = { add_trait = trait:new_world_pioneer }
+		scope:minister = {
+			add_trait = trait:new_world_pioneer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.maritime
 		trigger = {
 			"estate_power(estate_type:burghers_estate)" >= 0.30
 		}
-		scope:minister = { add_trait = trait:maritime_champion }
+		scope:minister = {
+			add_trait = trait:maritime_champion
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.4.dismiss
@@ -1013,6 +1388,7 @@ cc_cond.5 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			dip > 50
 			NOR = {
 				has_trait = parliamentary_broker
@@ -1026,6 +1402,7 @@ cc_cond.5 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				dip > 50
 				NOR = {
 					has_trait = parliamentary_broker
@@ -1042,18 +1419,27 @@ cc_cond.5 = {
 		trigger = {
 			modifier:has_a_parliamentary_system = yes
 		}
-		scope:minister = { add_trait = trait:parliamentary_broker }
+		scope:minister = {
+			add_trait = trait:parliamentary_broker
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.5.b
-		scope:minister = { add_trait = trait:diplomatic_attache }
+		scope:minister = {
+			add_trait = trait:diplomatic_attache
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.5.c
 		trigger = {
 			scope:minister ?= { dip > 66 }
 		}
-		scope:minister = { add_trait = trait:grand_chancellor }
+		scope:minister = {
+			add_trait = trait:grand_chancellor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 	option = {
 		name = cc_cond.5.dismiss
@@ -1097,6 +1483,7 @@ cc_cond.30 = {
 				has_trait = iron_integrator
 			}
 			NOT = { has_variable = cc_cond_30_done }
+			NOT = { has_variable = cc_recent_trait_assignment }
 		}
 	}
 
@@ -1118,6 +1505,7 @@ cc_cond.30 = {
 					has_trait = iron_integrator
 				}
 				NOT = { has_variable = cc_cond_30_done }
+				NOT = { has_variable = cc_recent_trait_assignment }
 			}
 			set_variable = { name = cc_granting_trait value = yes }
 			save_scope_as = minister
@@ -1137,6 +1525,7 @@ cc_cond.30 = {
 		scope:minister = {
 			set_variable = cc_cond_30_done
 			add_trait = trait:seasoned_integrator
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
 
@@ -1183,6 +1572,7 @@ cc_cond.31 = {
 				has_trait = chief_cartographer
 			}
 			NOT = { has_variable = cc_cond_31_done }
+			NOT = { has_variable = cc_recent_trait_assignment }
 		}
 	}
 
@@ -1203,6 +1593,7 @@ cc_cond.31 = {
 					has_trait = chief_cartographer
 				}
 				NOT = { has_variable = cc_cond_31_done }
+				NOT = { has_variable = cc_recent_trait_assignment }
 			}
 			set_variable = { name = cc_granting_trait value = yes }
 			save_scope_as = minister
@@ -1222,6 +1613,7 @@ cc_cond.31 = {
 		scope:minister = {
 			set_variable = cc_cond_31_done
 			add_trait = trait:frontier_administrator
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
 
@@ -1266,6 +1658,7 @@ cc_cond.32 = {
 				has_trait = master_urbanist
 			}
 			NOT = { has_variable = cc_cond_32_done }
+			NOT = { has_variable = cc_recent_trait_assignment }
 		}
 	}
 
@@ -1283,6 +1676,7 @@ cc_cond.32 = {
 					has_trait = master_urbanist
 				}
 				NOT = { has_variable = cc_cond_32_done }
+				NOT = { has_variable = cc_recent_trait_assignment }
 			}
 			set_variable = { name = cc_granting_trait value = yes }
 			save_scope_as = minister
@@ -1302,6 +1696,7 @@ cc_cond.32 = {
 		scope:minister = {
 			set_variable = cc_cond_32_done
 			add_trait = trait:development_patron
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
 
@@ -1339,6 +1734,7 @@ cc_cond.33 = {
 			dip > 55
 			NOT = { has_trait = espionage_director }
 			NOT = { has_variable = cc_cond_33_done }
+			NOT = { has_variable = cc_recent_trait_assignment }
 		}
 	}
 
@@ -1351,6 +1747,7 @@ cc_cond.33 = {
 				dip > 55
 				NOT = { has_trait = espionage_director }
 				NOT = { has_variable = cc_cond_33_done }
+				NOT = { has_variable = cc_recent_trait_assignment }
 			}
 			set_variable = { name = cc_granting_trait value = yes }
 
@@ -1371,6 +1768,7 @@ cc_cond.33 = {
 		scope:minister = {
 			set_variable = cc_cond_33_done
 			add_trait = trait:espionage_director
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
 
@@ -1415,6 +1813,7 @@ cc_cond.34 = {
 				has_trait = tax_inspector_general
 			}
 			NOT = { has_variable = cc_cond_34_done }
+			NOT = { has_variable = cc_recent_trait_assignment }
 		}
 	}
 
@@ -1433,6 +1832,7 @@ cc_cond.34 = {
 					has_trait = tax_inspector_general
 				}
 				NOT = { has_variable = cc_cond_34_done }
+				NOT = { has_variable = cc_recent_trait_assignment }
 			}
 			set_variable = { name = cc_granting_trait value = yes }
 			
@@ -1453,6 +1853,7 @@ cc_cond.34 = {
 		scope:minister = {
 			set_variable = cc_cond_34_done
 			add_trait = trait:treasury_enforcer
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
 

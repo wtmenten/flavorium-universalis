@@ -20,6 +20,7 @@ cc_synergy.1 = {
 		ruler = { has_trait = iron_disciplinarian }
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			OR = {
 				has_trait = cavalry_marshal
 				has_trait = commissariat_officer
@@ -33,6 +34,7 @@ cc_synergy.1 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				OR = {
 					has_trait = cavalry_marshal
 					has_trait = commissariat_officer
@@ -51,7 +53,10 @@ cc_synergy.1 = {
 	# Promote the minister — grant supreme_commander
 	option = {
 		name = cc_synergy.1.b
-		scope:minister = { add_trait = trait:supreme_commander }
+		scope:minister = {
+			add_trait = trait:supreme_commander
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 
 	# Decline the synergy
@@ -293,6 +298,7 @@ cc_synergy.6 = {
 		ruler = { has_trait = sufi_scholar }
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			has_trait = caliphate_diplomat
 		}
 		religion.group = religion_group:muslim
@@ -302,7 +308,11 @@ cc_synergy.6 = {
 	immediate = {
 		set_variable = { name = cc_synergy_6_fired value = yes }
 		random_cabinet_character = {
-			limit = { in_cabinet = yes has_trait = caliphate_diplomat }
+			limit = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+				has_trait = caliphate_diplomat
+			}
 			save_scope_as = minister
 		}
 	}
@@ -317,7 +327,10 @@ cc_synergy.6 = {
 	# Promote minister to grand chancellor
 	option = {
 		name = cc_synergy.6.b
-		scope:minister = { add_trait = trait:grand_chancellor }
+		scope:minister = {
+			add_trait = trait:grand_chancellor
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
 	}
 }
 
@@ -1220,6 +1233,7 @@ cc_synergy.24 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_recent_trait_assignment }
 			OR = {
 				has_trait = commissariat_officer
 				has_trait = supreme_commander
@@ -1236,6 +1250,7 @@ cc_synergy.24 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
 				OR = {
 					has_trait = commissariat_officer
 					has_trait = supreme_commander
@@ -1259,6 +1274,7 @@ cc_synergy.24 = {
 			if = {
 				limit = { NOT = { has_trait = siege_engineer } }
 				add_trait = trait:siege_engineer
+				set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			}
 		}
 	}
@@ -1368,5 +1384,138 @@ cc_synergy.26 = {
 		name = cc_synergy.26.b
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
 		add_gold = 100
+	}
+}
+
+# cc_synergy.27 — National Reformer + Federal Architect
+# Type A: two cabinet ministers working in concert on the federal parliament.
+# Fires once when both traits are in cabinet + an equal/lesser federal member exists.
+cc_synergy.27 = {
+	type = country_event
+	title = cc_synergy.27.title
+	desc = cc_synergy.27.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = national_reformer
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = federal_architect
+		}
+		OR = {
+			any_subject = { is_subject_type = equal_federal_member }
+			any_subject = { is_subject_type = lesser_federal_member }
+		}
+		current_age = age_6_revolutions
+		NOT = { has_variable = cc_synergy_27_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_27_fired  value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = national_reformer
+			}
+			save_scope_as = minister_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = federal_architect
+				NOT = { this = scope:minister_a }
+			}
+			save_scope_as = minister_b
+		}
+	}
+
+	# Federal Parliament Compact — 20 years
+	option = {
+		name = cc_synergy.27.a
+		add_country_modifier = { modifier = cc_synergy_federal_compact  years = 20 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = 0.05 }
+	}
+
+	# Parliamentary Harmony — 15 years + prestige
+	option = {
+		name = cc_synergy.27.b
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_synergy_parliamentary_harmony  years = 15 }
+	}
+}
+
+# cc_synergy.28 — Federal Architect + False Federal Member
+# Type C: the architect sees through the deception and presses for reform.
+# Fires once when federal_architect is in cabinet + a false_federal_member exists + not at war.
+cc_synergy.28 = {
+	type = country_event
+	title = cc_synergy.28.title
+	desc = cc_synergy.28.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_trait = federal_architect
+		}
+		any_subject = { is_subject_type = false_federal_member }
+		at_war = no
+		current_age = age_6_revolutions
+		NOT = { has_variable = cc_synergy_28_fired }
+	}
+
+	immediate = {
+		set_variable = { name = cc_synergy_28_fired  value = yes }
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_trait = federal_architect
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = { is_subject_type = false_federal_member }
+			save_scope_as = bond_subj
+		}
+	}
+
+	# Convert to equal_federal_member — genuine reform
+	option = {
+		name = cc_synergy.28.a
+		trigger = {
+			has_advance = federal_constitution_advance
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:equal_federal_member
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Convert to lesser_federal_member — partial concession
+	option = {
+		name = cc_synergy.28.b
+		trigger = {
+			has_advance = federal_constitution_advance
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:lesser_federal_member
+		}
+	}
+
+	# Maintain extraction — pocket the revenue instead
+	option = {
+		name = cc_synergy.28.c
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 10 }
 	}
 }

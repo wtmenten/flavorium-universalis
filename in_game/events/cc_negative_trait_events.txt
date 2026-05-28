@@ -85,7 +85,8 @@ cc_neg.1 = {
 			value = monthly_income_trade_and_tax
 			multiply = -8
 		}
-		add_country_modifier = { modifier = cc_cabinet_provincial_flourishing years = 5 }
+		scope:minister = { set_variable = { name = cc_neg1_new_project value = yes } }
+		trigger_event_silently =  { id = cc_neg.100 days = 150 }
 		set_variable = { name = cc_neg1_fired value = yes }
 	}
 
@@ -102,6 +103,242 @@ cc_neg.1 = {
 		name = cc_neg.1.c
 		scope:minister = { add_trait = trait:stagnant_counselor }
 		set_variable = { name = cc_neg1_fired value = yes }
+	}
+}
+
+
+# ============================================================
+# FOLLOW-UP EVENTS — fire after player intervenes in negative trait events
+# cc_neg.100–103: one per negative trait that has an active intervention option.
+# Minister is re-found via a dedicated character variable set in the triggering option.
+# ============================================================
+
+# cc_neg.100 — A Minister Seizes Initiative
+# Fires ~5 months after cc_neg.1 option A (the heavy investment).
+# Random outcomes weighted by minister estate, skills, and location availability.
+# Costly overrun re-triggers this event up to 2 times before forcing resolution.
+cc_neg.100 = {
+	type = country_event
+	title = cc_neg.100.title
+	desc = cc_neg.100.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = economy
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_neg1_new_project
+			}
+			set_variable = { name = cc_granting_trait value = yes }
+			save_scope_as = minister
+		}
+	}
+
+	after = {
+		if = {
+			limit = { NOT = { has_variable = cc_neg100_retrigger } }
+			if = {
+				limit = { exists = scope:minister }
+				scope:minister = { remove_variable = cc_neg1_new_project remove_variable = cc_granting_trait  }
+			}
+			remove_variable = cc_neg100_overrun_count
+		}
+		else = {
+			remove_variable = cc_neg100_retrigger
+		}
+	}
+
+	option = {
+		name = cc_neg.100.a
+
+		random_list = {
+
+			# ---- POSITIVE: Entrepot — burghers estate favored ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_estate = estate_type:burghers_estate }
+				}
+				random_owned_location = {
+					limit = {
+						owner = root
+						can_build_building = building_type:entrepot
+					}
+					construct_building = { building_type = building_type:entrepot cost_multiplier = 1 }
+				}
+				add_prestige = prestige_mild_bonus
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = 2
+				}
+			}
+
+			# ---- POSITIVE: Library — burghers or clergy favored ----
+			20 = {
+				trigger = {
+					exists = scope:minister
+					OR = {
+						scope:minister = { has_estate = estate_type:burghers_estate }
+						scope:minister = { has_estate = estate_type:clergy_estate }
+					}
+				}
+				random_owned_location = {
+					limit = {
+						owner = root
+						can_build_building = building_type:library
+					}
+					construct_building = { building_type = building_type:library cost_multiplier = 1 }
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- POSITIVE: Temple — clergy estate favored ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_estate = estate_type:clergy_estate }
+				}
+				random_owned_location = {
+					limit = {
+						owner = root
+						can_build_building = building_type:temple
+					}
+					save_scope_as = cc_neg100_temple_loc
+					construct_building = { building_type = building_type:temple cost_multiplier = 1 }
+				}
+				if = {
+					limit = { exists = scope:cc_neg100_temple_loc }
+					scope:cc_neg100_temple_loc = {
+						every_pop = {
+							add_pop_satisfaction = pop_satisfaction_weak_bonus
+						}
+					}
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- POSITIVE: Irrigation systems — peasants estate favored ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_estate = estate_type:peasants_estate }
+				}
+				random_owned_location = {
+					limit = {
+						owner = root
+						can_build_building = building_type:irrigation_systems
+					}
+					construct_building = { building_type = building_type:irrigation_systems cost_multiplier = 1 }
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- POSITIVE: Bailiff — nobles estate favored ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { has_estate = estate_type:nobles_estate }
+				}
+				random_owned_location = {
+					limit = {
+						owner = root
+						can_build_building = building_type:bailiff
+					}
+					construct_building = { building_type = building_type:bailiff cost_multiplier = 1 }
+				}
+				add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- POSITIVE: Provincial flourishing (generic) ----
+			20 = {
+				random_owned_location = {
+					limit = {
+						owner = root
+						development > 5
+					}
+					add_location_modifier = {
+						modifier = cc_cabinet_provincial_flourishing
+						years = 5
+						mode = add_and_extend
+					}
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- NEGATIVE: Pop satisfaction hit ----
+			12 = {
+				random_owned_location = {
+					limit = { owner = root }
+					every_pop = {
+						add_pop_satisfaction = pop_satisfaction_mild_penalty
+					}
+				}
+			}
+
+			# ---- NEGATIVE: Neighbor opinion hit ----
+			10 = {
+				random_neighbor_country = {
+					limit = { NOT = { is_at_war_with = root } }
+					add_opinion = { target = root modifier = cc_neg_project_overreach }
+				}
+				add_prestige = prestige_weak_penalty
+			}
+
+			# ---- NEGATIVE: Prosperity decrease ----
+			10 = {
+				random_owned_location = {
+					limit = {
+						owner = root
+						development > 3
+					}
+					change_prosperity = prosperity_mild_penalty
+				}
+			}
+
+			# ---- NEGATIVE: Stagnant counselor — forced ----
+			8 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { in_cabinet = yes }
+				}
+				scope:minister = { add_trait = trait:stagnant_counselor }
+				add_prestige = prestige_weak_penalty
+			}
+
+			# ---- NEGATIVE: Costly overrun — retriggers up to 2x ----
+			8 = {
+				trigger = {
+					OR = {
+						NOT = { has_variable = cc_neg100_overrun_count }
+						var:cc_neg100_overrun_count < 2 
+					}
+				}
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = -3
+					min = -200
+					max = -50
+				}
+				add_prestige = prestige_weak_penalty
+				if = {
+					limit = { NOT = { has_variable = cc_neg100_overrun_count } }
+					set_variable = { name = cc_neg100_overrun_count value = 0 }
+				}
+				change_variable = { name = cc_neg100_overrun_count add = 1 }
+				if = {
+					limit = { exists = scope:minister }
+					scope:minister = { set_variable = { name = cc_neg1_new_project value = yes } }
+				}
+				set_variable = { name = cc_neg100_retrigger value = yes }
+				trigger_event_silently =  { id = cc_neg.100 days = 90 }
+			}
+		}
 	}
 }
 
@@ -254,7 +491,11 @@ cc_neg.3 = {
 		name = cc_neg.3.a
 		# Reassign them to a demanding task to channel their ambitions
 		add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 3 }
-		scope:minister = { remove_variable = cc_schemer_risk_target }
+		scope:minister = {
+			remove_variable = cc_schemer_risk_target
+			set_variable = { name = cc_neg3_reassigned value = yes }
+		}
+		trigger_event_silently =  { id = cc_neg.101 days = 120 }
 	}
 
 	option = {
@@ -262,6 +503,97 @@ cc_neg.3 = {
 		scope:minister = {
 			add_trait = trait:court_schemer
 			remove_variable = cc_schemer_risk_target
+		}
+	}
+}
+
+
+# cc_neg.101 — The Reassigned Minister Reports
+# Fires ~4 months after cc_neg.3 option A (reassignment to a demanding task).
+cc_neg.101 = {
+	type = country_event
+	title = cc_neg.101.title
+	desc = cc_neg.101.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_neg3_reassigned
+			}
+			save_scope_as = minister
+		}
+	}
+
+	after = {
+		if = {
+			limit = { exists = scope:minister }
+			scope:minister = { remove_variable = cc_neg3_reassigned }
+		}
+	}
+
+	option = {
+		name = cc_neg.101.a
+
+		random_list = {
+
+			# ---- Productive: minister channeled ambitions productively ----
+			30 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { dip > 50 }
+				}
+				add_prestige = prestige_mild_bonus
+				add_stability = stability_weak_bonus
+			}
+
+			# ---- Quietly scheming: busy but not reformed ----
+			25 = {
+				add_country_modifier = { modifier = cc_cabinet_ministerial_investment years = 2 }
+			}
+
+			# ---- Backfired: minister made the situation worse ----
+			20 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { dip < 40 }
+				}
+				set_variable = { name = cc_tension_schemer_risk value = yes }
+				if = {
+					limit = { exists = scope:minister }
+					scope:minister = { set_variable = { name = cc_schemer_risk_target value = yes } }
+				}
+				remove_variable = cc_neg3_fired
+				add_prestige = prestige_weak_penalty
+			}
+
+			# ---- Defection: minister leaked court secrets ----
+			15 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { dip < 40 }
+				}
+				random_neighbor_country = {
+					limit = { NOT = { is_at_war_with = root } }
+					add_opinion = { target = root modifier = cc_diplomatic_insult }
+				}
+				add_prestige = prestige_weak_penalty
+			}
+
+			# ---- Resignation: minister quits under pressure ----
+			10 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { in_cabinet = yes }
+				}
+				remove_from_cabinet = scope:minister
+				add_prestige = prestige_weak_bonus
+			}
 		}
 	}
 }
@@ -440,12 +772,96 @@ cc_neg.5 = {
 			multiply = -15
 		}
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
+		scope:minister = { set_variable = { name = cc_neg5_bought_off value = yes } }
+		trigger_event_silently =  { id = cc_neg.102 days = 180 }
 	}
 
 	option = {
 		name = cc_neg.5.b
 		scope:minister = {
 			add_trait = trait:corrupted_official
+		}
+	}
+}
+
+
+# cc_neg.102 — The Bribe's Aftermath
+# Fires ~6 months after cc_neg.5 option A (paying off the corrupted minister).
+cc_neg.102 = {
+	type = country_event
+	title = cc_neg.102.title
+	desc = cc_neg.102.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = bank
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_neg5_bought_off
+			}
+			save_scope_as = minister
+		}
+	}
+
+	after = {
+		if = {
+			limit = { exists = scope:minister }
+			scope:minister = { remove_variable = cc_neg5_bought_off }
+		}
+	}
+
+	option = {
+		name = cc_neg.102.a
+
+		random_list = {
+
+			# ---- Minister honored the deal ----
+			35 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { adm > 50 }
+				}
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = 5
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- Minister goes quiet — no further incidents ----
+			25 = {
+			}
+
+			# ---- Minister took the money and resumed corruption ----
+			25 = {
+				trigger = {
+					exists = scope:minister
+					scope:minister = { adm < 50 }
+				}
+				add_country_modifier = {
+					modifier = cc_wealth_corruption_1
+					years = 4
+					mode = add_and_extend
+				}
+				set_variable = { name = cc_neg5_corruption_ready value = yes }
+				remove_variable = cc_neg5_fired
+			}
+
+			# ---- Minister extorts further payment ----
+			15 = {
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = -5
+					min = -150
+					max = -50
+				}
+				add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
+				remove_variable = cc_neg5_fired
+			}
 		}
 	}
 }
@@ -701,6 +1117,61 @@ cc_neg.8 = {
 		name = cc_neg.8.b
 		remove_from_cabinet = scope:minister
 		add_prestige = prestige_weak_bonus
+		trigger_event_silently =  { id = cc_neg.103 days = 120 }
+	}
+}
+
+
+# cc_neg.103 — The Dismissed Advisor's Shadow
+# Fires ~4 months after cc_neg.8 option B (dismissing the reckless expander).
+# No minister scope — they were dismissed. Diplomatic ripples from the decision.
+cc_neg.103 = {
+	type = country_event
+	title = cc_neg.103.title
+	desc = cc_neg.103.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	option = {
+		name = cc_neg.103.a
+
+		random_list = {
+
+			# ---- Rivals emboldened ----
+			30 = {
+				random_neighbor_country = {
+					limit = { is_at_war_with = root }
+					add_opinion = { target = root modifier = opinion_expansionist_threat }
+				}
+				add_prestige = prestige_weak_penalty
+			}
+
+			# ---- Ally reassured ----
+			25 = {
+				random_neighbor_country = {
+					limit = {
+						NOT = { is_at_war_with = root }
+					}
+					add_opinion = { target = root modifier = cc_diplomatic_favor }
+				}
+				add_prestige = prestige_weak_bonus
+			}
+
+			# ---- Minister surfaces abroad ----
+			20 = {
+				random_neighbor_country = {
+					limit = { NOT = { is_at_war_with = root } }
+					add_opinion = { target = root modifier = cc_diplomatic_insult }
+				}
+			}
+
+			# ---- Quiet ending ----
+			25 = {
+			}
+		}
 	}
 }
 

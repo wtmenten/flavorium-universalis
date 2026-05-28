@@ -22,6 +22,7 @@ cc_cabinet.1 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 	}
 
@@ -30,9 +31,11 @@ cc_cabinet.1 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -77,6 +80,7 @@ cc_cabinet.2 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 		gold >= 75
 	}
@@ -86,14 +90,16 @@ cc_cabinet.2 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
 		name = cc_cabinet.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -6 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -300 max = -50 }
 		trigger_event_silently = { id = cc_cabinet.3 months = 6 }
 	}
 
@@ -152,6 +158,7 @@ cc_cabinet.4 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 	}
 
@@ -160,9 +167,11 @@ cc_cabinet.4 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -204,6 +213,7 @@ cc_cabinet.10 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 	}
 
@@ -212,9 +222,11 @@ cc_cabinet.10 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -264,7 +276,35 @@ cc_cabinet.10 = {
 
 	option = {
 		name = cc_cabinet.10.d
-		trigger_event_silently = { id = cc_cabinet.52 months = { 3 8 } }
+		set_variable = { name = cc_52_minister value = scope:minister }
+		if = {
+			limit = {
+				scope:minister = {
+					OR = {
+						dip > 55
+						has_trait = diplomatic_attache
+						has_trait = grand_chancellor
+						has_trait = parliamentary_broker
+						has_trait = prosperity_herald
+						has_trait = loyal_steward
+					}
+				}
+			}
+			trigger_event_silently = { id = cc_cabinet.53 months = { 3 8 } }
+		}
+		else_if = {
+			limit = {
+				OR = {
+					estate_satisfaction:nobles_estate < 0.40
+					estate_satisfaction:burghers_estate < 0.40
+					estate_satisfaction:clergy_estate < 0.40
+				}
+			}
+			trigger_event_silently = { id = cc_cabinet.54 months = { 3 8 } }
+		}
+		else = {
+			trigger_event_silently = { id = cc_cabinet.52 months = { 3 8 } }
+		}
 	}
 }
 
@@ -284,6 +324,7 @@ cc_cabinet.11 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 		OR = {
 			estate_satisfaction:nobles_estate < 0.40
@@ -297,9 +338,11 @@ cc_cabinet.11 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -345,6 +388,7 @@ cc_cabinet.12 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 	}
 
@@ -353,9 +397,11 @@ cc_cabinet.12 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -397,6 +443,7 @@ cc_cabinet.13 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 	}
 
@@ -405,9 +452,11 @@ cc_cabinet.13 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -454,6 +503,7 @@ cc_cabinet.20 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_idle_cooldown }
 			OR = {
 				has_cabinet_action = no
 				cabinet_action = cabinet_action:diplomatic_endeavors
@@ -468,6 +518,7 @@ cc_cabinet.20 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_idle_cooldown }
 				OR = {
 					has_cabinet_action = no
 					cabinet_action = cabinet_action:diplomatic_endeavors
@@ -481,6 +532,7 @@ cc_cabinet.20 = {
 			}
 			save_scope_as = neighbor_country
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -526,6 +578,7 @@ cc_cabinet.21 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_idle_cooldown }
 			OR = {
 				has_cabinet_action = no
 				cabinet_action = cabinet_action:diplomatic_endeavors
@@ -541,6 +594,7 @@ cc_cabinet.21 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_idle_cooldown }
 				OR = {
 					has_cabinet_action = no
 					cabinet_action = cabinet_action:diplomatic_endeavors
@@ -555,6 +609,7 @@ cc_cabinet.21 = {
 			}
 			save_scope_as = neighbor_country
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -591,6 +646,7 @@ cc_cabinet.22 = {
 		current_age = age_3_discovery
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_idle_cooldown }
 			OR = {
 				has_cabinet_action = no
 				cabinet_action = cabinet_action:diplomatic_endeavors
@@ -602,6 +658,7 @@ cc_cabinet.22 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_idle_cooldown }
 				OR = {
 					has_cabinet_action = no
 					cabinet_action = cabinet_action:diplomatic_endeavors
@@ -609,6 +666,7 @@ cc_cabinet.22 = {
 			}
 			save_scope_as = minister
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -646,6 +704,7 @@ cc_cabinet.23 = {
 		current_age = age_4_reformation
 		any_cabinet_character = {
 			in_cabinet = yes
+			NOT = { has_variable = cc_idle_cooldown }
 			OR = {
 				has_cabinet_action = no
 				cabinet_action = cabinet_action:diplomatic_endeavors
@@ -660,6 +719,7 @@ cc_cabinet.23 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
+				NOT = { has_variable = cc_idle_cooldown }
 				OR = {
 					has_cabinet_action = no
 					cabinet_action = cabinet_action:diplomatic_endeavors
@@ -673,6 +733,7 @@ cc_cabinet.23 = {
 			}
 			save_scope_as = neighbor_country
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -744,7 +805,7 @@ cc_cabinet.30 = {
 
 	option = {
 		name = cc_cabinet.30.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.2 add = -30 min = -200 max = -50 }
 		scope:target_province = {
 			change_development = development_mild_bonus
 		}
@@ -782,6 +843,7 @@ cc_cabinet.31 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 		any_owned_location = {
 			owner = root
@@ -794,6 +856,7 @@ cc_cabinet.31 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
@@ -804,6 +867,7 @@ cc_cabinet.31 = {
 			}
 			save_scope_as = target_province
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -847,6 +911,7 @@ cc_cabinet.32 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 		any_owned_location = {
 			owner = root
@@ -858,6 +923,7 @@ cc_cabinet.32 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
@@ -865,6 +931,7 @@ cc_cabinet.32 = {
 			limit = { owner = root }
 			save_scope_as = target_province
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -904,6 +971,7 @@ cc_cabinet.33 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_cabinet_action = no
+			NOT = { has_variable = cc_idle_cooldown }
 		}
 		any_owned_location = {
 			owner = root
@@ -915,6 +983,7 @@ cc_cabinet.33 = {
 			limit = {
 				in_cabinet = yes
 				has_cabinet_action = no
+				NOT = { has_variable = cc_idle_cooldown }
 			}
 			save_scope_as = minister
 		}
@@ -922,6 +991,7 @@ cc_cabinet.33 = {
 			limit = { owner = root }
 			save_scope_as = target_province
 		}
+		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
 	}
 
 	option = {
@@ -1024,35 +1094,356 @@ cc_cabinet.50 = {
 }
 
 # "The Minister's Idle Influence"
-# Silently triggered by cc_cabinet.10 option D (do nothing).
+# Silently triggered by cc_cabinet.10 option D — standard minister, no estate tension.
+# Outcome is pre-rolled in immediate, weighted by minister adm/dip/mil.
+# Four exclusive options: only the one matching cc_52_outcome is visible.
 cc_cabinet.52 = {
 	type = country_event
 	title = cc_cabinet.52.title
 	desc = cc_cabinet.52.desc
 	outcome = neutral
 
-	option = {
-		name = cc_cabinet.52.a
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		var:cc_52_minister ?= { save_scope_as = minister }
+		# Pre-roll estate target (reused for both bonus and penalty outcomes)
 		random_list = {
-			40 = {
-				add_gold = { value = monthly_income_trade_and_tax multiply = 2 }
-			}
-			30 = {
-				random_list = {
-					1 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus } }
-					1 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_bonus } }
-					1 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_weak_bonus } }
+			1 = { set_variable = { name = cc_52_estate value = 1 } }
+			1 = { set_variable = { name = cc_52_estate value = 2 } }
+			1 = { set_variable = { name = cc_52_estate value = 3 } }
+		}
+		# Outcome weighted by minister quality
+		if = {
+			limit = {
+				scope:minister ?= {
+					OR = { adm > 60 dip > 60 mil > 60 }
 				}
 			}
-			20 = {
-				add_gold = { value = monthly_income_trade_and_tax multiply = -2 }
-			}
-			10 = {
-				random_list = {
-					1 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty } }
-					1 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty } }
-				}
+			random_list = {
+				55 = { set_variable = { name = cc_52_outcome value = 1 } }
+				30 = { set_variable = { name = cc_52_outcome value = 2 } }
+				15 = { set_variable = { name = cc_52_outcome value = 3 } }
 			}
 		}
+		else_if = {
+			limit = {
+				scope:minister ?= {
+					OR = { adm > 40 dip > 40 mil > 40 }
+				}
+			}
+			random_list = {
+				35 = { set_variable = { name = cc_52_outcome value = 1 } }
+				30 = { set_variable = { name = cc_52_outcome value = 2 } }
+				20 = { set_variable = { name = cc_52_outcome value = 3 } }
+				15 = { set_variable = { name = cc_52_outcome value = 4 } }
+			}
+		}
+		else = {
+			random_list = {
+				20 = { set_variable = { name = cc_52_outcome value = 1 } }
+				20 = { set_variable = { name = cc_52_outcome value = 2 } }
+				25 = { set_variable = { name = cc_52_outcome value = 3 } }
+				35 = { set_variable = { name = cc_52_outcome value = 4 } }
+			}
+		}
+	}
+
+	after = {
+		remove_variable = cc_52_minister
+		remove_variable = cc_52_outcome
+		remove_variable = cc_52_estate
+	}
+
+	# Outcome 1: Gold windfall — minister's connections pay off
+	option = {
+		name = cc_cabinet.52.a
+		trigger = { var:cc_52_outcome = 1 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = 2 }
+	}
+
+	# Outcome 2: Estate goodwill — minister quietly pleased one estate
+	option = {
+		name = cc_cabinet.52.b
+		trigger = { var:cc_52_outcome = 2 }
+		if = {
+			limit = { var:cc_52_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+		}
+		else_if = {
+			limit = { var:cc_52_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_bonus }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_weak_bonus }
+		}
+	}
+
+	# Outcome 3: Minor setback — schemes cost something
+	option = {
+		name = cc_cabinet.52.c
+		trigger = { var:cc_52_outcome = 3 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 }
+	}
+
+	# Outcome 4: Estate ruffled — low-quality minister offends someone
+	option = {
+		name = cc_cabinet.52.d
+		trigger = { var:cc_52_outcome = 4 }
+		if = {
+			limit = { var:cc_52_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
+		}
+		else_if = {
+			limit = { var:cc_52_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_weak_penalty }
+		}
+	}
+}
+
+
+# "The Minister's Subtle Gambit"
+# Silently triggered by cc_cabinet.10 option D — skilled or diplomatic minister.
+# Three strong outcomes; one rare overreach outcome.
+# Outcome weighted by dip and specific diplomatic/courtly traits.
+cc_cabinet.53 = {
+	type = country_event
+	title = cc_cabinet.53.title
+	desc = cc_cabinet.53.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		var:cc_52_minister ?= { save_scope_as = minister }
+		random_neighbor_country = {
+			limit = { NOT = { is_at_war_with = root } }
+			save_scope_as = neighbor_country
+		}
+		# Outcome weighted by minister traits and dip
+		if = {
+			limit = {
+				scope:minister ?= {
+					OR = {
+						has_trait = grand_chancellor
+						dip > 65
+					}
+				}
+			}
+			random_list = {
+				20 = { set_variable = { name = cc_52_outcome value = 1 } }
+				50 = { set_variable = { name = cc_52_outcome value = 2 } }
+				25 = { set_variable = { name = cc_52_outcome value = 3 } }
+				5  = { set_variable = { name = cc_52_outcome value = 4 } }
+			}
+		}
+		else_if = {
+			limit = {
+				scope:minister ?= { has_trait = prosperity_herald }
+			}
+			random_list = {
+				50 = { set_variable = { name = cc_52_outcome value = 1 } }
+				20 = { set_variable = { name = cc_52_outcome value = 2 } }
+				25 = { set_variable = { name = cc_52_outcome value = 3 } }
+				5  = { set_variable = { name = cc_52_outcome value = 4 } }
+			}
+		}
+		else = {
+			random_list = {
+				30 = { set_variable = { name = cc_52_outcome value = 1 } }
+				30 = { set_variable = { name = cc_52_outcome value = 2 } }
+				30 = { set_variable = { name = cc_52_outcome value = 3 } }
+				10 = { set_variable = { name = cc_52_outcome value = 4 } }
+			}
+		}
+	}
+
+	after = {
+		remove_variable = cc_52_minister
+		remove_variable = cc_52_outcome
+	}
+
+	# Outcome 1: Trade connections — minister's contacts yield gold
+	option = {
+		name = cc_cabinet.53.a
+		trigger = { var:cc_52_outcome = 1 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = 3 }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Outcome 2: Diplomatic favour — minister opens doors with a neighbor
+	option = {
+		name = cc_cabinet.53.b
+		trigger = { var:cc_52_outcome = 2 }
+		if = {
+			limit = { exists = scope:neighbor_country }
+			add_opinion = { target = scope:neighbor_country modifier = cc_diplomatic_favor }
+			scope:neighbor_country = {
+				add_opinion = { target = root modifier = cc_diplomatic_favor }
+			}
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Outcome 3: Subtle influence — minister expands diplomatic reach
+	option = {
+		name = cc_cabinet.53.c
+		trigger = { var:cc_52_outcome = 3 }
+		add_country_modifier = {
+			modifier = cc_cabinet_diplomatic_influence
+			years = 8
+			mode = add_and_extend
+		}
+	}
+
+	# Outcome 4: Overreach — minister's ambitions backfire (rare)
+	option = {
+		name = cc_cabinet.53.d
+		trigger = { var:cc_52_outcome = 4 }
+		add_prestige = prestige_mild_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_penalty
+		}
+	}
+}
+
+
+# "Idle Hands in Troubled Times"
+# Silently triggered by cc_cabinet.10 option D — any estate satisfaction < 40%.
+# Minister becomes entangled in estate tensions while unsupervised.
+# Outcome weighted by minister adm and estate-management traits.
+cc_cabinet.54 = {
+	type = country_event
+	title = cc_cabinet.54.title
+	desc = cc_cabinet.54.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		var:cc_52_minister ?= { save_scope_as = minister }
+		# Identify the most restless estate (first match wins: nobles > burghers > clergy)
+		if = {
+			limit = { estate_satisfaction:nobles_estate < 0.40 }
+			set_variable = { name = cc_54_estate value = 1 }
+		}
+		else_if = {
+			limit = { estate_satisfaction:burghers_estate < 0.40 }
+			set_variable = { name = cc_54_estate value = 2 }
+		}
+		else_if = {
+			limit = { estate_satisfaction:clergy_estate < 0.40 }
+			set_variable = { name = cc_54_estate value = 3 }
+		}
+		else = {
+			set_variable = { name = cc_54_estate value = 1 }
+		}
+		# Outcome weighted by minister skill — adm and estate-management traits
+		if = {
+			limit = {
+				scope:minister ?= {
+					OR = {
+						adm > 60
+						has_trait = efficiency_administrator
+						has_trait = community_steward
+						has_trait = regional_magnate
+						has_trait = privilege_reformer
+					}
+				}
+			}
+			random_list = {
+				50 = { set_variable = { name = cc_52_outcome value = 1 } }
+				30 = { set_variable = { name = cc_52_outcome value = 2 } }
+				20 = { set_variable = { name = cc_52_outcome value = 3 } }
+			}
+		}
+		else_if = {
+			limit = {
+				scope:minister ?= {
+					OR = {
+						has_trait = hawk_minister
+						has_trait = stagnant_counselor
+						adm < 30
+					}
+				}
+			}
+			random_list = {
+				20 = { set_variable = { name = cc_52_outcome value = 1 } }
+				20 = { set_variable = { name = cc_52_outcome value = 2 } }
+				60 = { set_variable = { name = cc_52_outcome value = 3 } }
+			}
+		}
+		else = {
+			random_list = {
+				35 = { set_variable = { name = cc_52_outcome value = 1 } }
+				30 = { set_variable = { name = cc_52_outcome value = 2 } }
+				35 = { set_variable = { name = cc_52_outcome value = 3 } }
+			}
+		}
+	}
+
+	after = {
+		remove_variable = cc_52_minister
+		remove_variable = cc_52_outcome
+		remove_variable = cc_54_estate
+	}
+
+	# Outcome 1: Minister soothes tensions
+	option = {
+		name = cc_cabinet.54.a
+		trigger = { var:cc_52_outcome = 1 }
+		if = {
+			limit = { var:cc_54_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_bonus }
+		}
+		else_if = {
+			limit = { var:cc_54_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Outcome 2: Minister turns unrest to the crown's advantage
+	option = {
+		name = cc_cabinet.54.b
+		trigger = { var:cc_52_outcome = 2 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = 3 }
+		add_country_modifier = {
+			modifier = cc_cabinet_ministerial_investment
+			years = 4
+			mode = add_and_extend
+		}
+	}
+
+	# Outcome 3: Minister inflames tensions further
+	option = {
+		name = cc_cabinet.54.c
+		trigger = { var:cc_52_outcome = 3 }
+		if = {
+			limit = { var:cc_54_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+		}
+		else_if = {
+			limit = { var:cc_54_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_penalty }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_penalty }
+		}
+		add_prestige = prestige_weak_penalty
 	}
 }

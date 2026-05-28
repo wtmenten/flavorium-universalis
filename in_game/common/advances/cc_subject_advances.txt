@@ -204,7 +204,7 @@ military_march_advance = {
 	icon = expansionism
 	requires = subject_loyalty_absolutism
 	for = mil
-	
+
 	potential = {
 		has_advance_available = marcher_lords
 	}
@@ -215,4 +215,108 @@ military_march_advance = {
 	unlock_subject_type = military_march
 	unlock_estate_privilege = ep_nobles_march_charter
 	unlock_government_reform = cc_march_charter_reform
+}
+
+#####################################
+# Age of Revolutions (Age 6)
+# Imperial Federalization advance chains
+#####################################
+
+# ADM PATH: indirect_rule -> colonial_assembly_advance -> federal_constitution_advance
+
+colonial_assembly_advance = {
+	age = age_6_revolutions
+	icon = diplomatic_range_age_1
+	for = adm
+	requires = indirect_rule
+
+	potential = {
+		OR = {
+			any_subject = { is_subject_type = colonial_nation }
+			any_subject = { is_subject_type = client_state }
+			any_subject = { is_subject_type = shadow_state }
+			any_subject = { is_subject_type = chartered_company }
+		}
+	}
+	allow = {
+		OR = {
+			any_subject = { is_subject_type = colonial_nation }
+			any_subject = { is_subject_type = client_state }
+			any_subject = { is_subject_type = shadow_state }
+			any_subject = { is_subject_type = chartered_company }
+		}
+	}
+
+	subject_loyalty = 5
+	global_integration_speed_modifier = 0.10
+}
+
+federal_constitution_advance = {
+	age = age_6_revolutions
+	icon = diplomatic_influence
+	for = adm
+	requires = colonial_assembly_advance
+
+	potential = {
+		has_advance = colonial_assembly_advance
+	}
+	allow = {
+		has_advance = colonial_assembly_advance
+	}
+
+	unlock_subject_type = imperial_council_member
+	unlock_subject_type = equal_federal_member
+	unlock_subject_type = lesser_federal_member
+
+	subject_loyalty = 5
+	global_integration_speed_modifier = 0.10
+}
+
+# DIP PATH: additional_loyalist_recruitment -> imperial_trade_compact_advance -> false_federal_charter_advance
+
+imperial_trade_compact_advance = {
+	age = age_6_revolutions
+	icon = merchant_power_from_maritime_reformation_advance
+	for = dip
+	requires = additional_loyalist_recruitment
+
+	potential = {
+		OR = {
+			any_subject = { is_subject_type = colonial_nation }
+			any_subject = { is_subject_type = client_state }
+			any_subject = { is_subject_type = shadow_state }
+			any_subject = { is_subject_type = chartered_company }
+		}
+	}
+	allow = {
+		OR = {
+			any_subject = { is_subject_type = colonial_nation }
+			any_subject = { is_subject_type = client_state }
+			any_subject = { is_subject_type = shadow_state }
+			any_subject = { is_subject_type = chartered_company }
+		}
+	}
+
+	diplomatic_reputation = 1
+	global_trade_center_power = 0.10
+	subject_income_modifier = 0.05
+}
+
+false_federal_charter_advance = {
+	age = age_6_revolutions
+	icon = expansionism
+	for = dip
+	requires = imperial_trade_compact_advance
+
+	potential = {
+		has_advance = imperial_trade_compact_advance
+	}
+	allow = {
+		has_advance = imperial_trade_compact_advance
+	}
+
+	unlock_subject_type = false_federal_member
+
+	diplomatic_reputation = 1
+	subject_income_modifier = 0.05
 }
