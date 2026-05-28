@@ -8,10 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 EU V Modding Documentation: https://eu5.paradoxwikis.com/Modding
 
-look for documentation reference excerpts in the website summarized docs first.
-[docs/eu5-modding-reference.md](Internal summarized modding reference)
+**Documentation references (check in this order):**
+1. [docs/eu5-modding-reference.md](docs/eu5-modding-reference.md) — Internal summarized modding reference
+2. [docs/offline-wiki/](docs/offline-wiki/) — Offline copy of EU5 Paradox Wiki modding pages (40 pages, ~1.5MB)
+3. [tools/wiki_search.py](tools/wiki_search.py) — Fast search tool for offline docs
 
 # lookup tools
+
+## Vanilla game file search
 
 **Prefer `tools/vanilla_search.py` over raw grep for all vanilla lookups.** It handles path scoping, BOM encoding, and result formatting automatically.
 
@@ -32,6 +36,34 @@ python tools/vanilla_search.py biases
 ```
 
 Use these instead of ad-hoc grep when verifying modifier names, finding valid type values, checking trigger/effect syntax in context, or looking up bias names before calling `add_opinion`. Fall back to raw grep only for patterns the tool doesn't cover.
+
+## Offline wiki docs search
+
+**Use `tools/wiki_search.py` to search the offline EU5 modding wiki docs** ([docs/offline-wiki/](docs/offline-wiki/)). Faster than web fetching, works offline.
+
+```
+# Search effects by name (partial match, case-insensitive):
+python tools/wiki_search.py effect every_country
+python tools/wiki_search.py effect add_trait
+
+# Search triggers:
+python tools/wiki_search.py trigger has_advance
+python tools/wiki_search.py trigger is_at_war
+
+# Search scope links:
+python tools/wiki_search.py scope_link overlord
+
+# Search modifier types:
+python tools/wiki_search.py modifier cabinet_efficiency
+
+# Search on-actions:
+python tools/wiki_search.py on_action on_game_start
+
+# Search all offline docs for a term:
+python tools/wiki_search.py all declare_war
+```
+
+**Refreshing the docs:** Run `python tools/wiki_scraper.py` to re-download all wiki pages. Requires `beautifulsoup4` and `requests` (`pip install beautifulsoup4 requests`).
 
 ## Development Environment
 
