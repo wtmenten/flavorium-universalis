@@ -49,7 +49,7 @@ cc_bonds.10 = {
 	# Heavy extraction — gold gain, eco bond damage (false positive fires)
 	option = {
 		name = cc_bonds.10.a
-		add_gold = { value = monthly_income_trade_and_tax  multiply = 8 }
+		add_gold = { value = scope:bond_subj.monthly_income_trade_and_tax  multiply = 0.40  min = 100 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -2 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -60,7 +60,7 @@ cc_bonds.10 = {
 	# Invest in infrastructure — gold cost, eco bond gain (false negative fires)
 	option = {
 		name = cc_bonds.10.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -65  max = -1000 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 2 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -113,7 +113,7 @@ cc_bonds.11 = {
 	# Conscript colonial levies — manpower, mil bond damage
 	option = {
 		name = cc_bonds.11.a
-		add_manpower = 5000
+		add_manpower = { value = scope:bond_subj.monthly_manpower multiply = 5 min = 5 max = 75}
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_mil  add = -2 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
@@ -123,7 +123,7 @@ cc_bonds.11 = {
 	# Pay mercenaries instead — gold cost, minor eco hit
 	option = {
 		name = cc_bonds.11.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -6 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.35  min = -80  max = -1250 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -197,7 +197,7 @@ cc_bonds.12 = {
 	# Investigate and reform tax code — gold cost, eco+pol improvement
 	option = {
 		name = cc_bonds.12.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -8 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -100  max = -1500 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 2 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -278,7 +278,7 @@ cc_bonds.13 = {
 	# Let colony trade freely — income cost, broadly positive
 	option = {
 		name = cc_bonds.13.c
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40  max = -500 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 3 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -505,7 +505,7 @@ cc_bonds.16 = {
 	# Negotiate — gold cost, genuine mil/pol improvement
 	option = {
 		name = cc_bonds.16.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -5 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -65  max = -1000 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
