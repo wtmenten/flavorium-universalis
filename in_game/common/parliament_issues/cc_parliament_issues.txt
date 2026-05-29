@@ -68,29 +68,29 @@
 }
 
 cc_create_naval_administration = {
-	# estate = crown_estate
-	estate = nobles_estate
+	estate = crown_estate
+	# estate = nobles_estate
 
 	potential = {
 		always = yes
-		# has_advance = naval_charter_advance
+		has_advance = naval_charter_advance
 	}
 	allow = {
 		always = yes
-		# has_advance = naval_charter_advance
-		# NOT = {
-		# 	any_subject = {
-		# 		is_subject_type = naval_administration
-		# 	}
-		# }
-		# any_owned_location = {
-		# 	continent = ROOT.capital.continent
-		# 	# is_port = yes
-		# 	NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
-		# 	dominant_culture = {
-		# 		is_primary_or_accepted_in = ROOT
-		# 	} 
-		# }
+		has_advance = naval_charter_advance
+		NOT = {
+			any_subject = {
+				is_subject_type = naval_administration
+			}
+		}
+		any_owned_location = {
+			continent = ROOT.capital.continent
+			# is_port = yes
+			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
+			dominant_culture = {
+				is_primary_or_accepted_in = ROOT
+			} 
+		}
 	}
 
 	wants_this_parliament_issue_bias = {
@@ -106,59 +106,62 @@ cc_create_naval_administration = {
 	}
 
 	chance = {
-		add = 100000
-		# every_province = {
-		# 	limit = {
-		# 		OR = {
-		# 			NOT = { continent = ROOT.capital.continent }
-		# 			# is_overseas_for_owner = yes	
-		# 		}
-		# 	}
-		# 	add = 1
-		# }
+		add = 8
+		every_province = {
+			limit = {
+				OR = {
+					NOT = { continent = ROOT.capital.continent }
+					# is_overseas_for_owner = yes	
+				}
+			}
+			add = 1
+		}
 	}
 	
 	on_debate_passed = {
-		# if = {
-		# 	limit = {
-		# 		NOT = {
-		# 			any_subject = {
-		# 				is_subject_type = naval_administration
-		# 			}
-		# 		}
-		# 		any_owned_location = {
-		# 			continent = ROOT.capital.continent
-		# 			# is_port = yes
-		# 			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
-		# 		}
-		# 	}
-		# 	random_owned_location = {
-		# 		limit = { 
-		# 			continent = ROOT.capital.continent
-		# 			# is_port = yes
-		# 			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
-		# 		}
-		# 		weight = {
-		# 			base = 0 
-		# 			modifier = {
-		# 				add = modifier:natural_harbor_suitability
-		# 			}
+		if = {
+			limit = {
+				NOT = {
+					any_subject = {
+						is_subject_type = naval_administration
+					}
+				}
+				any_owned_location = {
+					continent = ROOT.capital.continent
+					is_port = yes
+					NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = yes }}
+				}
+			}
+			random_owned_location = {
+				limit = { 
+					continent = ROOT.capital.continent
+					is_port = yes
+					NOT = {
+						OR = { 
+							location_rank = location_rank:rural_settlement 
+							is_capital = yes 
+						}
+					}
+				}
+				weight = {
+					base = 0 
+					modifier = {
+						add = modifier:natural_harbor_suitability
+					}
 
-		# 			modifier = {
-		# 				factor = 100
-		# 				add = 10
-		# 			}
-		# 		}
+					modifier = {
+						factor = 100
+						add = 10
+					}
+				}
+				create_country_from_location = {
+					set_capital = prev
+					make_subject_of = {  target = ROOT type = subject_type:naval_administration }
+					change_government_type = government_type:monarchy
+				}
 
-		# 		create_country_from_location = {
-		# 			make_subject_of = {
-		# 				target = ROOT
-		# 				type = subject_type:naval_administration
-		# 			}
-		# 		}
-
-		# 	}
-		# }
+			}
+		}
 	}
 
 	on_debate_failed = {
