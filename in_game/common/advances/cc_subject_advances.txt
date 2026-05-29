@@ -116,12 +116,22 @@ palatinate_advance = {
 }
 
 holy_patronage_advance = {
-	age = age_4_reformation
+	age = age_2_renaissance
 	icon = diplomatic_range_age_1
-	for = dip
-	requires = diplomatic_range_age_3
+	for = mil
+	requires = power_projection_advance_2
 
 	unlock_subject_type = holy_protectorate
+}
+
+military_academy_advance = {
+	age = age_4_reformation
+	icon = diplomatic_influence
+	for = mil
+	requires = protectorate_rights_advance
+
+	unlock_subject_type = military_academy
+	unlock_estate_privilege = ep_nobles_academy_charter
 }
 
 ############################
@@ -207,9 +217,16 @@ military_march_advance = {
 
 	potential = {
 		has_advance_available = marcher_lords
+		has_advance_available = military_academy_advance
 	}
 	allow = {
 		has_advance = marcher_lords
+		has_advance = military_academy_advance
+		any_subject = { is_subject_type = military_academy }
+		OR = {
+			any_subject = { is_subject_type = elite_enclave }
+			any_subject = { is_subject_type = palatinate }
+		}
 	}
 
 	unlock_subject_type = military_march

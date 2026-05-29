@@ -2123,3 +2123,685 @@ cc.181 = {
 		add_prestige = prestige_weak_bonus
 	}
 }
+
+###############################################################################
+# MILITARY ACADEMY EVENTS (Age 4 MIL)
+# cc.190 — Academy Charter Granted (on_activate from ep_nobles_academy_charter)
+# cc.191 — Officer Corps Review (yearly pulse)
+# cc.192 — Military Exercises (yearly pulse)
+# cc.193 — Whispers at Court (yearly pulse, pseudo-random outcomes)
+###############################################################################
+
+cc.190 = {
+	type = country_event
+	title = cc.academy.0.title
+	desc = cc.academy.0.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+	}
+
+	option = {
+		name = cc.academy.0.a
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+cc.191 = {
+	type = country_event
+	title = cc.academy.1.title
+	desc = cc.academy.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_academy
+			NOT = { has_variable = cc_academy_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_academy
+				NOT = { has_variable = cc_academy_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_academy_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Promise a territorial grant to the officer corps
+	option = {
+		name = cc.academy.1.a
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Honour the review but make no promises
+	option = {
+		name = cc.academy.1.b
+	}
+}
+
+cc.192 = {
+	type = country_event
+	title = cc.academy.2.title
+	desc = cc.academy.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = army
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_academy
+			NOT = { has_variable = cc_academy_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_academy
+				NOT = { has_variable = cc_academy_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_academy_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Fund the exercises fully
+	option = {
+		name = cc.academy.2.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		add_country_modifier = {
+			modifier = cc_academy_exercises
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	# Observe only — modest benefit at no cost
+	option = {
+		name = cc.academy.2.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+cc.193 = {
+	type = country_event
+	title = cc.academy.3.title
+	desc = cc.academy.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = discussing
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = military_academy
+			NOT = { has_variable = cc_academy_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = military_academy
+				NOT = { has_variable = cc_academy_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_academy_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Investigate — pseudo-random outcome
+	option = {
+		name = cc.academy.3.a
+		random_list = {
+			50 = {
+				# Success: expose a noble plot
+				add_prestige = prestige_mild_bonus
+				add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+			}
+			50 = {
+				# Failure: scandal erupts
+				add_prestige = prestige_mild_penalty
+				add_country_modifier = {
+					modifier = cc_court_intrigue_scandal
+					years = 5
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	# Ignore — safe, no effect
+	option = {
+		name = cc.academy.3.b
+	}
+}
+
+###############################################################################
+# ELITE ENCLAVE EVENTS — VERSAILLES THEME
+# cc.194 — Nobles Compete for Court Positions (yearly pulse)
+###############################################################################
+
+cc.194 = {
+	type = country_event
+	title = cc.enclave.1.title
+	desc = cc.enclave.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = elite_enclave
+			NOT = { has_variable = cc_enclave_nobles_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = elite_enclave
+				NOT = { has_variable = cc_enclave_nobles_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_enclave_nobles_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Grant court positions — nobles satisfied, their independent power curtailed
+	option = {
+		name = cc.enclave.1.a
+		add_country_modifier = {
+			modifier = cc_enclave_court_favour
+			years = 4
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+	}
+
+	# Refuse — keep positions under direct royal control; nobles displeased
+	option = {
+		name = cc.enclave.1.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+	}
+}
+
+###############################################################################
+# HOLY PROTECTORATE EVENTS (MIL Age 2)
+# cc.195 — The Faith Under Threat (yearly pulse)
+# cc.196 — Crusading Zeal (yearly pulse)
+###############################################################################
+
+cc.195 = {
+	type = country_event
+	title = cc.holy_prot.1.title
+	desc = cc.holy_prot.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			NOT = { has_variable = cc_holy_prot_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { has_variable = cc_holy_prot_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Dispatch forces to defend the faith
+	option = {
+		name = cc.holy_prot.1.a
+		add_country_modifier = {
+			modifier = cc_holy_protectorate_defense
+			years = 4
+			mode = add_and_extend
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Offer prayers but no material support
+	option = {
+		name = cc.holy_prot.1.b
+		add_prestige = prestige_weak_penalty
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}
+
+cc.196 = {
+	type = country_event
+	title = cc.holy_prot.2.title
+	desc = cc.holy_prot.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = armed
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			NOT = { has_variable = cc_holy_prot_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { has_variable = cc_holy_prot_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Back the holy war — religious unity and morale boost
+	option = {
+		name = cc.holy_prot.2.a
+		add_country_modifier = {
+			modifier = cc_spiritual_mandate
+			years = 5
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Counsel restraint — avoid escalation but disappoint the subject
+	option = {
+		name = cc.holy_prot.2.b
+		add_prestige = prestige_weak_bonus
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+}
+
+###############################################################################
+# ARTISTS' COMMUNE EVENTS (ADM Age 2)
+# cc.197 — The Maestro's Commission
+# cc.198 — Artistic Rivalry
+# cc.199 — Cultural Export
+###############################################################################
+
+cc.197 = {
+	type = country_event
+	title = cc.artists.1.title
+	desc = cc.artists.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = artists_commune
+			NOT = { has_variable = cc_artists_commune_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = artists_commune
+				NOT = { has_variable = cc_artists_commune_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_artists_commune_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Commission the masterwork — pay gold, gain cultural prestige
+	option = {
+		name = cc.artists.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -4 }
+		add_country_modifier = {
+			modifier = cc_artistic_patronage
+			years = 6
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Decline the commission — the commune's loyalty wavers
+	option = {
+		name = cc.artists.1.b
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}
+
+cc.198 = {
+	type = country_event
+	title = cc.artists.2.title
+	desc = cc.artists.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = discussing
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = artists_commune
+			NOT = { has_variable = cc_artists_commune_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = artists_commune
+				NOT = { has_variable = cc_artists_commune_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_artists_commune_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Favour one school — the other departs, but cultural influence concentrates
+	option = {
+		name = cc.artists.2.a
+		add_prestige = prestige_weak_bonus
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+
+	# Let competition run — random outcome
+	option = {
+		name = cc.artists.2.b
+		random_list = {
+			60 = {
+				# Competition produces a masterwork
+				add_prestige = prestige_mild_bonus
+				add_country_modifier = {
+					modifier = cc_artistic_patronage
+					years = 4
+					mode = add_and_extend
+				}
+			}
+			40 = {
+				# Rivalry sours into feud; commune loses productivity
+				add_prestige = prestige_weak_penalty
+				scope:ward = {
+					add_liberty_desire = liberty_desire_weak_plus
+				}
+			}
+		}
+	}
+}
+
+cc.199 = {
+	type = country_event
+	title = cc.artists.3.title
+	desc = cc.artists.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = artists_commune
+			NOT = { has_variable = cc_artists_commune_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = artists_commune
+				NOT = { has_variable = cc_artists_commune_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_artists_commune_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Encourage the cultural export — spreads soft power abroad
+	option = {
+		name = cc.artists.3.a
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_cabinet_diplomatic_influence
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	# Keep the art exclusive — cultural influence concentrates at home
+	option = {
+		name = cc.artists.3.b
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_artistic_patronage
+			years = 4
+			mode = add_and_extend
+		}
+	}
+}
+
+###############################################################################
+# PALATINATE EVENTS (DIP Age 4)
+# cc.210 — The Palatinate Demands Recognition
+# cc.211 — The Palatinate Tournament
+###############################################################################
+
+cc.210 = {
+	type = country_event
+	title = cc.palatinate.1.title
+	desc = cc.palatinate.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = discussing
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 7 }
+		}
+	}
+
+	# Grant dynastic recognition — prestige and a claim
+	option = {
+		name = cc.palatinate.1.a
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_cultural_ally_modifier
+			years = 5
+			mode = add_and_extend
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Refuse — subject's pride is wounded
+	option = {
+		name = cc.palatinate.1.b
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}
+
+cc.211 = {
+	type = country_event
+	title = cc.palatinate.2.title
+	desc = cc.palatinate.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 7 }
+		}
+	}
+
+	# Attend and sponsor the tournament
+	option = {
+		name = cc.palatinate.2.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -3 }
+		add_country_modifier = {
+			modifier = cc_palatinate_tournament
+			years = 4
+			mode = add_and_extend
+		}
+	}
+
+	# Send a delegation — modest benefit at no cost
+	option = {
+		name = cc.palatinate.2.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+###############################################################################
+# PROTECTORATE UPGRADE EVENT (MIL Age 3 → Age 5)
+# cc.212 — Subject Requests March Status
+# Fires when a protectorate has high opinion and has matured
+###############################################################################
+
+cc.212 = {
+	type = country_event
+	title = cc.protectorate.march.1.title
+	desc = cc.protectorate.march.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = protectorate
+			NOT = { has_variable = cc_protectorate_march_cooldown }
+		}
+		OR = {
+			has_estate_privilege = estate_privilege:ep_nobles_march_charter
+			has_reform = government_reform:cc_march_charter_reform
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = protectorate
+				NOT = { has_variable = cc_protectorate_march_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_protectorate_march_cooldown value = yes years = 15 }
+		}
+	}
+
+	# Accept — subject becomes a military march
+	option = {
+		name = cc.protectorate.march.1.a
+		trigger = {
+			OR = {
+				has_estate_privilege = estate_privilege:ep_nobles_march_charter
+				has_reform = government_reform:cc_march_charter_reform
+			}
+		}
+		scope:ward = {
+			change_subject_type = subject_type:military_march
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Decline — relationship maintained, subject disappointed
+	option = {
+		name = cc.protectorate.march.1.b
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}
