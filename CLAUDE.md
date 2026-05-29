@@ -63,6 +63,8 @@ python tools/wiki_search.py on_action on_game_start
 python tools/wiki_search.py all declare_war
 ```
 
+**Reading docs files directly:** If you want to load some document reference excerpts into context directly, filter the file during read to exlude any lines starting with |, as there are some very long md formatted tables in the docs (defines, modifier_types, effect, scope_link, trigger, gui_script, action_modding).
+
 **Refreshing the docs:** Run `python tools/wiki_scraper.py` to re-download all wiki pages. Requires `beautifulsoup4` and `requests` (`pip install beautifulsoup4 requests`).
 
 ## Development Environment

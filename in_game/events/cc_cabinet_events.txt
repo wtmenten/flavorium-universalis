@@ -105,13 +105,86 @@ cc_cabinet.2 = {
 
 	option = {
 		name = cc_cabinet.2.b
-		add_opinion = {
-			target = scope:minister
-			modifier = cc_refused_funds_opinion
-		}
+		set_variable = { name = cc_2b_minister  value = scope:minister }
+		trigger_event_silently = { id = cc_cabinet.5  months = { 6 12 } }
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_weak_penalty
+		}
+	}
+}
+
+# "The Minister Responds to Refusal" (silent follow-up to cc_cabinet.2 option B)
+# Pre-rolls one of three outcomes: grudging acceptance, quiet extraction, or political manoeuvring.
+cc_cabinet.5 = {
+	type = country_event
+	title = cc_cabinet.5.title
+	desc = cc_cabinet.5.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		var:cc_2b_minister ?= { save_scope_as = minister }
+		if = {
+			limit = {
+				scope:minister ?= {
+					OR = { adm > 50  has_trait = loyal_steward  has_trait = learned_counselor }
+				}
+			}
+			random_list = {
+				50 = { set_variable = { name = cc_5_outcome  value = 1 } }
+				30 = { set_variable = { name = cc_5_outcome  value = 2 } }
+				20 = { set_variable = { name = cc_5_outcome  value = 3 } }
+			}
+		}
+		else = {
+			random_list = {
+				25 = { set_variable = { name = cc_5_outcome  value = 1 } }
+				40 = { set_variable = { name = cc_5_outcome  value = 2 } }
+				35 = { set_variable = { name = cc_5_outcome  value = 3 } }
+			}
+		}
+	}
+
+	after = {
+		remove_variable = cc_2b_minister
+		remove_variable = cc_5_outcome
+	}
+
+	# Outcome 1: Minister sulks — prestige dent, minor modifier
+	option = {
+		name = cc_cabinet.5.a
+		trigger = { var:cc_5_outcome = 1 }
+		add_prestige = prestige_weak_penalty
+		add_country_modifier = {
+			modifier = cc_cabinet_revoke_difficulty
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	# Outcome 2: Minister quietly taps the treasury
+	option = {
+		name = cc_cabinet.5.b
+		trigger = { var:cc_5_outcome = 2 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3 }
+	}
+
+	# Outcome 3: Minister lobbies nobles for private backing
+	option = {
+		name = cc_cabinet.5.c
+		trigger = { var:cc_5_outcome = 3 }
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
 		}
 	}
 }

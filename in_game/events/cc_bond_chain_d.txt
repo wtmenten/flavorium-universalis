@@ -45,12 +45,17 @@ cc_bonds.130 = {
 			culture = scope:bond_subj.culture
 			religion = scope:bond_subj.religion
 			add_trait = trait:learned_counselor
+			artist = writer
 			adm = { integer_range = { min = 45  max = 75 } }
 			dip = { integer_range = { min = 40  max = 65 } }
 			mil = { integer_range = { min = 10  max = 35 } }
 			save_scope_as = target_character
 		}
-		
+		# Store reference so cc_bonds.131 and 132 can retrieve the scholar
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_scholar_char  value = scope:target_character }
+		}
+
 	}
 
 	# Bring to overlord's court — cul-1, per+2
@@ -68,8 +73,8 @@ cc_bonds.130 = {
 		scope:target_character = {
 			move_country = ROOT
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:target_character  quality = { 55 75 }  key = cc_scholar_early_notes } } }
 		trigger_event_silently = { id = cc_bonds.131  years = 10 }
-
 	}
 
 	# Fund education at home, let publish freely — cul+2, pol+1
@@ -89,12 +94,12 @@ cc_bonds.130 = {
 				change_variable = { name = cc_bond_eco  add = 1 }
 				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 				add_opinion = { target = ROOT modifier = cc_intl_scholarly_bond scale = 1.5 }
-			} 
+			}
 			else = {
 				add_opinion = { target = ROOT modifier = cc_intl_scholarly_bond }
 			}
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:target_character  quality = { 60 80 }  key = cc_scholar_early_notes } }
 		}
-		
 		scope:target_character = {
 			move_country = scope:bond_subj
 		}
@@ -112,12 +117,13 @@ cc_bonds.130 = {
 			if = { # Overlord's institutional culture already permeating — scholars departure is prestigious
 				limit = { has_variable = cc_bond_insti_to_subject }
 				change_variable = { name = cc_bond_cul  add = 1 }
-			} 
+			}
 			change_variable = { name = cc_bond_cul  add = -2 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:target_character  quality = { 45 65 }  key = cc_scholar_early_notes } } }
 		trigger_event_silently = { id = cc_bonds.131  years = 8 }
 		capital.continent = {
 			random_location_in_continent = {
@@ -148,6 +154,16 @@ cc_bonds.130 = {
 cc_bonds.131 = {
 	type = country_event
 	title = cc_bonds.131.title
+
+	immediate = {
+		# Retrieve scholar from stored reference; fall back to subject ruler as artistic proxy
+		scope:bond_subj = { var:cc_bond_scholar_char ?= { save_scope_as = scholar_char } }
+		if = {
+			limit = { NOT = { exists = scope:scholar_char } }
+			scope:bond_subj = { ruler ?= { save_scope_as = scholar_char } }
+		}
+	}
+
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -182,6 +198,7 @@ cc_bonds.131 = {
 			change_variable = { name = cc_bond_per  add = -1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 65 80 }  key = cc_scholar_imperial_chronicle } } }
 		trigger_event_silently = { id = cc_bonds.132  years = 25 }
 	}
 
@@ -198,6 +215,7 @@ cc_bonds.131 = {
 			change_variable = { name = cc_bond_per  add = 2 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 75 90 }  key = cc_scholar_imperial_chronicle } } }
 		trigger_event_silently = { id = cc_bonds.132  years = 25 }
 	}
 
@@ -217,6 +235,7 @@ cc_bonds.131 = {
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 70 85 }  key = cc_scholar_homeland_chronicle } }
 		}
 		trigger_event_silently = { id = cc_bonds.132  years = 22 }
 	}
@@ -233,6 +252,7 @@ cc_bonds.131 = {
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_pol  add = -1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 65 80 }  key = cc_scholar_homeland_chronicle } }
 		}
 		trigger_event_silently = { id = cc_bonds.132  years = 22 }
 	}
@@ -268,6 +288,7 @@ cc_bonds.131 = {
 			change_variable = { name = cc_bond_pol  add = -1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 40 60 }  key = cc_scholar_propaganda_work } } }
 		trigger_event_silently = { id = cc_bonds.132  years = 20 }
 	}
 
@@ -312,6 +333,16 @@ cc_bonds.131 = {
 cc_bonds.132 = {
 	type = country_event
 	title = cc_bonds.132.title
+
+	immediate = {
+		# Retrieve scholar; fall back to overlord ruler as patron proxy
+		scope:bond_subj = { var:cc_bond_scholar_char ?= { save_scope_as = scholar_char } }
+		if = {
+			limit = { NOT = { exists = scope:scholar_char } }
+			ROOT = { ruler ?= { save_scope_as = scholar_char } }
+		}
+	}
+
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -344,6 +375,7 @@ cc_bonds.132 = {
 			change_variable = { name = cc_bond_cul  add = 2 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 		}
+		ROOT = { capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 80 95 }  key = cc_scholar_legacy_work } } }
 	}
 
 	# Contested — school of thought emphasizing subject's distinct identity
@@ -356,6 +388,7 @@ cc_bonds.132 = {
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_cul  add = 3 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 65 80 }  key = cc_scholar_homeland_chronicle } }
 		}
 	}
 
@@ -383,6 +416,7 @@ cc_bonds.132 = {
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			change_variable = { name = cc_bond_pol  add = -2 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 55 75 }  key = cc_scholar_forbidden_work } }
 		}
 	}
 

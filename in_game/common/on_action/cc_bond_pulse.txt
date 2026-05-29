@@ -156,8 +156,61 @@ cc_bonds_narrative_pulse = {
 on_dependency_gained = {
 	on_actions = {
 		cc_bonds_on_dependency_gained
+		cc_bonds_first_subject_on_action
 	}
 }
+
+# Fires a major event the first time each broad subject category appears in the game.
+# Uses global variables so the event fires at most once per game per subject group.
+# root = new subject, scope:overlord = new overlord.
+cc_bonds_first_subject_on_action = {
+	effect = {
+		# First colonial nation in this game
+		if = {
+			limit = {
+				root = { is_subject_type = colonial_nation }
+				NOT = { has_global_variable = cc_first_colonial_nation_seen }
+			}
+			set_global_variable = cc_first_colonial_nation_seen
+			scope:overlord = {
+				set_variable = { name = cc_first_subject_ref  value = root }
+				trigger_event_silently = { id = cc_bonds.2 }
+			}
+		}
+		# First military march in this game
+		else_if = {
+			limit = {
+				root = { is_subject_type = military_march }
+				NOT = { has_global_variable = cc_first_military_march_seen }
+			}
+			set_global_variable = cc_first_military_march_seen
+			scope:overlord = {
+				set_variable = { name = cc_first_subject_ref  value = root }
+				trigger_event_silently = { id = cc_bonds.3 }
+			}
+		}
+		# First palatinate, puppet, crown dependency, or provincial governorate in this game
+		else_if = {
+			limit = {
+				root = {
+					OR = {
+						is_subject_type = palatinate
+						is_subject_type = puppet_state
+						is_subject_type = crown_dependency
+						is_subject_type = provincial_governorate
+					}
+				}
+				NOT = { has_global_variable = cc_first_formal_subject_seen }
+			}
+			set_global_variable = cc_first_formal_subject_seen
+			scope:overlord = {
+				set_variable = { name = cc_first_subject_ref  value = root }
+				trigger_event_silently = { id = cc_bonds.4 }
+			}
+		}
+	}
+}
+
 cc_bonds_on_dependency_gained = {
 	effect = {
 		if = {

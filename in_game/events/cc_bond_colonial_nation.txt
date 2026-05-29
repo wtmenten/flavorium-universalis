@@ -5,6 +5,7 @@ namespace = cc_bonds
 # Colonial Nation Chain — cc_bonds.10–16
 # Root = overlord. scope:bond_subj = the colonial nation subject.
 # Primary dimensions affected: Economic, Cultural. Secondary: Political, Personal.
+# cc_bond_col_gen_cd: 5-yr per-subject gate shared across all colonial events.
 ###############################################################################
 
 # cc_bonds.10 — "The Colony's First Harvest" (one-shot)
@@ -24,6 +25,7 @@ cc_bonds.10 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_10_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 		}
 	}
 
@@ -34,11 +36,13 @@ cc_bonds.10 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_10_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 			}
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_10_cd  value = yes }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
@@ -64,13 +68,14 @@ cc_bonds.10 = {
 		trigger_event_silently = { id = cc_bonds.71  months = 3 }
 	}
 
-	# Hands-off — no change
+	# Hands-off — prestige loss for visible neglect
 	option = {
 		name = cc_bonds.10.c
+		add_prestige = prestige_weak_penalty
 	}
 }
 
-# cc_bonds.11 — "Colonial Conscription" (cooldown 12 yrs)
+# cc_bonds.11 — "Colonial Conscription" (cooldown 18 yrs)
 cc_bonds.11 = {
 	type = country_event
 	title = cc_bonds.11.title
@@ -84,6 +89,7 @@ cc_bonds.11 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_11_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 		}
 	}
 
@@ -94,11 +100,13 @@ cc_bonds.11 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_11_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 			}
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_11_cd  value = yes  years = 12 }
+			set_variable = { name = cc_bond_11_cd  value = yes  years = 18 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
@@ -122,9 +130,10 @@ cc_bonds.11 = {
 		}
 	}
 
-	# Decline to raise troops — mil bond improves
+	# Decline to raise troops — prestige bonus for restraint, mil bond improves
 	option = {
 		name = cc_bonds.11.c
+		add_prestige = prestige_weak_bonus
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_mil  add = 1 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
@@ -132,7 +141,7 @@ cc_bonds.11 = {
 	}
 }
 
-# cc_bonds.12 — "The Governor Reports Unrest" (cooldown 10 yrs)
+# cc_bonds.12 — "The Governor Reports Unrest" (cooldown 15 yrs)
 # Option A looks decisive but hits 4 dimensions. Option B costs gold but is
 # the only genuinely good choice. Option C triggers a false positive.
 cc_bonds.12 = {
@@ -148,6 +157,7 @@ cc_bonds.12 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_12_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 		}
 	}
 
@@ -158,11 +168,13 @@ cc_bonds.12 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_12_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 			}
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_12_cd  value = yes  years = 10 }
+			set_variable = { name = cc_bond_12_cd  value = yes  years = 15 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
@@ -208,7 +220,7 @@ cc_bonds.12 = {
 	}
 }
 
-# cc_bonds.13 — "Colonial Trade Monopoly Dispute" (cooldown 15 yrs)
+# cc_bonds.13 — "Colonial Trade Monopoly Dispute" (cooldown 20 yrs)
 # Option A looks profitable, harms eco and pol. Option C looks costly (gold hit)
 # but gives the best long-term eco and cul gains.
 cc_bonds.13 = {
@@ -224,6 +236,7 @@ cc_bonds.13 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_13_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 		}
 	}
 
@@ -234,11 +247,13 @@ cc_bonds.13 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_13_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 			}
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_13_cd  value = yes  years = 15 }
+			set_variable = { name = cc_bond_13_cd  value = yes  years = 20 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
@@ -289,6 +304,7 @@ cc_bonds.14 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_14_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 			OR = {
 				var:cc_bond_eco >= -1
 				var:cc_bond_pol >= -1
@@ -303,6 +319,7 @@ cc_bonds.14 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_14_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 				OR = {
 					var:cc_bond_eco >= -1
 					var:cc_bond_pol >= -1
@@ -312,13 +329,15 @@ cc_bonds.14 = {
 		}
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_14_cd  value = yes  years = 20 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
-	# Grant representation — prestige cost, strong pol/cul/per gains
+	# Grant representation — prestige cost, strong pol/cul/per gains, 200yr colonial legitimacy era
 	option = {
 		name = cc_bonds.14.a
 		add_prestige = prestige_mild_penalty
+		add_country_modifier = { modifier = cc_colonial_legitimacy_era  years = 200  mode = set_to_largest_and_extend }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_voice_granted  value = yes }
 			change_variable = { name = cc_bond_pol  add = 3 }
@@ -330,9 +349,10 @@ cc_bonds.14 = {
 		}
 	}
 
-	# Symbolic recognition — modest pol/per gains
+	# Symbolic recognition — small gold cost for gifts and ceremonies, modest pol/per gains
 	option = {
 		name = cc_bonds.14.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -50  max = -10 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
@@ -356,7 +376,7 @@ cc_bonds.14 = {
 	}
 }
 
-# cc_bonds.15 — "Cultural Assimilation Pressure" (cooldown 15 yrs)
+# cc_bonds.15 — "Cultural Assimilation Pressure" (cooldown 20 yrs)
 # Option A looks like cultural consolidation, inflicts severe cul damage.
 # Option B looks "weak" to advisors but gives the best cul outcome.
 cc_bonds.15 = {
@@ -372,6 +392,7 @@ cc_bonds.15 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_15_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 		}
 	}
 
@@ -382,11 +403,13 @@ cc_bonds.15 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_15_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 			}
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_15_cd  value = yes  years = 15 }
+			set_variable = { name = cc_bond_15_cd  value = yes  years = 20 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 
@@ -400,9 +423,10 @@ cc_bonds.15 = {
 		}
 	}
 
-	# Support local customs — pol and strong cul gain
+	# Support local customs — prestige bonus, pol and strong cul gain
 	option = {
 		name = cc_bonds.15.b
+		add_prestige = prestige_weak_bonus
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
@@ -411,13 +435,14 @@ cc_bonds.15 = {
 		}
 	}
 
-	# Ignore — no change
+	# Ignore — prestige loss for visible indifference
 	option = {
 		name = cc_bonds.15.c
+		add_prestige = prestige_weak_penalty
 	}
 }
 
-# cc_bonds.16 — "Colonial Militia Incident" (cooldown 10 yrs)
+# cc_bonds.16 — "Colonial Militia Incident" (cooldown 15 yrs)
 # Requires relationship already showing strain (pol or mil ≤ -2).
 # Option A "ends" the incident publicly but accelerates the spiral.
 # Option C triggers a false positive making it look resolved.
@@ -434,6 +459,7 @@ cc_bonds.16 = {
 			num_locations >= 15
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_16_cd }
+			NOT = { has_variable = cc_bond_col_gen_cd }
 			OR = {
 				var:cc_bond_pol <= -2
 				var:cc_bond_mil <= -2
@@ -448,6 +474,7 @@ cc_bonds.16 = {
 				num_locations >= 15
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_16_cd }
+				NOT = { has_variable = cc_bond_col_gen_cd }
 				OR = {
 					var:cc_bond_pol <= -2
 					var:cc_bond_mil <= -2
@@ -456,7 +483,8 @@ cc_bonds.16 = {
 			save_scope_as = bond_subj
 		}
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_16_cd  value = yes  years = 10 }
+			set_variable = { name = cc_bond_16_cd  value = yes  years = 15 }
+			set_variable = { name = cc_bond_col_gen_cd  value = yes  years = 5 }
 		}
 	}
 

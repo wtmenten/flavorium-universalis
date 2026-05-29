@@ -2,6 +2,92 @@
 namespace = cc_bonds
 
 ###############################################################################
+# First-Subject Major Events — cc_bonds.2–4
+# Each fires exactly once per game (gated by global variables) the first time a
+# broad subject category appears anywhere in the world.
+# major = yes / major_trigger = { is_human = yes } sends a visible notification
+# to all human players.
+###############################################################################
+
+# cc_bonds.2 — "A Colonial Horizon" (first colonial nation in the game)
+cc_bonds.2 = {
+	type = country_event
+	title = cc_bonds.2.title
+	desc = cc_bonds.2.desc
+	outcome = positive
+	major = yes
+	major_trigger = { is_human = yes }
+
+	illustration_tags = { 10 = exterior }
+
+	immediate = {
+		var:cc_first_subject_ref ?= { save_scope_as = bond_subj }
+		remove_variable = cc_first_subject_ref
+	}
+
+	option = {
+		name = cc_bonds.2.a
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_bonds.2.b
+	}
+}
+
+# cc_bonds.3 — "The First March" (first military march in the game)
+cc_bonds.3 = {
+	type = country_event
+	title = cc_bonds.3.title
+	desc = cc_bonds.3.desc
+	outcome = positive
+	major = yes
+	major_trigger = { is_human = yes }
+
+	illustration_tags = { 10 = military }
+
+	immediate = {
+		var:cc_first_subject_ref ?= { save_scope_as = bond_subj }
+		remove_variable = cc_first_subject_ref
+	}
+
+	option = {
+		name = cc_bonds.3.a
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_bonds.3.b
+	}
+}
+
+# cc_bonds.4 — "A Formal Compact" (first palatinate / puppet / dependency / governorate)
+cc_bonds.4 = {
+	type = country_event
+	title = cc_bonds.4.title
+	desc = cc_bonds.4.desc
+	outcome = positive
+	major = yes
+	major_trigger = { is_human = yes }
+
+	illustration_tags = { 10 = interior }
+
+	immediate = {
+		var:cc_first_subject_ref ?= { save_scope_as = bond_subj }
+		remove_variable = cc_first_subject_ref
+	}
+
+	option = {
+		name = cc_bonds.4.a
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_bonds.4.b
+	}
+}
+
+###############################################################################
 # Status Reveal Events — cc_bonds.5–9
 # Rare player-visible windows into relationship health.
 # Each has its own 15-year cooldown. Desc varies by current bond scores.
@@ -73,29 +159,19 @@ cc_bonds.5 = {
 
 # cc_bonds.6 — "The Diplomat's Report"
 # Colonial nation bond reveal. Flavor based on economic dimension.
+# desc triggers use scope:bond_subj (set in immediate) to avoid mismatches
+# when multiple colonial nations exist.
 cc_bonds.6 = {
 	type = country_event
 	title = cc_bonds.6.title
 	desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = {
-					any_subject = {
-						is_subject_type = colonial_nation
-						has_variable = cc_bond_initialized
-						var:cc_bond_eco >= 2
-					}
-				}
+				trigger = { scope:bond_subj = { var:cc_bond_eco >= 2 } }
 				desc = cc_bonds.6.desc.content
 			}
 			triggered_desc = {
-				trigger = {
-					any_subject = {
-						is_subject_type = colonial_nation
-						has_variable = cc_bond_initialized
-						var:cc_bond_eco <= -2
-					}
-				}
+				trigger = { scope:bond_subj = { var:cc_bond_eco <= -2 } }
 				desc = cc_bonds.6.desc.discontent
 			}
 			desc = cc_bonds.6.desc.neutral
@@ -124,6 +200,8 @@ cc_bonds.6 = {
 
 	option = {
 		name = cc_bonds.6.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -100  max = -20 }
+		add_prestige = prestige_weak_bonus
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
