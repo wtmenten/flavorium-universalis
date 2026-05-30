@@ -1,0 +1,456 @@
+﻿namespace = cc_wc
+
+###############################################################################
+# CABINETS AND CHOICES — WAR COUNCIL EVENTS (Pillar 04)
+#
+# Section A — Active-war council events:
+#   cc_wc.1  The Council of War       (yearly while at war; military traits shape options)
+#   cc_wc.2  Financing the War        (yearly while at war and treasury is strained)
+#   cc_wc.3  The General's Request    (yearly while at war; supreme_commander or outdated_general)
+#
+# Section B — Post-war military reform proposals (require cc_military_reform_opportunity):
+#   cc_wc.10 Standing Army Reform     (standing_army_advocate present)
+#   cc_wc.11 Supply Reform            (commissariat_officer present)
+#   cc_wc.12 Fortification Doctrine   (siege_engineer present)
+#
+# Section C — Outdated general resolution:
+#   cc_wc.20 Formal Council Retirement (outdated_general present, at war)
+#
+# Pulse hooks: cc_cabinet_yearly_war_council (A events) and
+#              cc_cabinet_yearly_war_reform (B events) in cc_cabinet_pulse.txt.
+# On-action hook: cc_wc_on_winning_war in cc_war_on_actions.txt sets the reform flag.
+###############################################################################
+
+
+###############################################################################
+# SECTION A — ACTIVE-WAR COUNCIL EVENTS
+###############################################################################
+
+# "The Council of War" — fires yearly while at war when a military minister is present.
+# Ministers with standing_army_advocate, defensive_commander, or hawk_minister shape the options.
+cc_wc.1 = {
+	type = country_event
+	title = cc_wc.1.title
+	desc = cc_wc.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = discussing
+		10 = armed
+	}
+
+	trigger = {
+		at_war = yes
+		NOT = { has_variable = cc_wc_council_cooldown }
+		any_cabinet_character = {
+			OR = {
+				has_trait = standing_army_advocate
+				has_trait = defensive_commander
+				has_trait = hawk_minister
+				has_trait = tactical_advisor
+				has_trait = commissariat_officer
+				has_trait = siege_engineer
+				has_trait = supreme_commander
+				has_trait = offensive_strategist
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_wc_council_cooldown value = yes months = 18 }
+		random_cabinet_character = {
+			limit = {
+				OR = {
+					has_trait = standing_army_advocate
+					has_trait = defensive_commander
+					has_trait = hawk_minister
+					has_trait = tactical_advisor
+					has_trait = commissariat_officer
+					has_trait = siege_engineer
+					has_trait = supreme_commander
+					has_trait = offensive_strategist
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — standing_army_advocate or offensive_strategist: push for aggressive campaign
+	option = {
+		name = cc_wc.1.a
+		trigger = {
+			scope:minister = {
+				OR = {
+					has_trait = standing_army_advocate
+					has_trait = offensive_strategist
+				}
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_wc_offensive_surge
+			years = 4
+			mode = set_to_largest_and_extend
+		}
+		add_stability = stability_weak_penalty
+	}
+
+	# Option B — defensive_commander: counsel patience and dig in
+	option = {
+		name = cc_wc.1.b
+		trigger = {
+			scope:minister = { has_trait = defensive_commander }
+		}
+		add_country_modifier = {
+			modifier = cc_wc_defensive_posture
+			years = 4
+			mode = set_to_largest_and_extend
+		}
+	}
+
+	# Option C — hawk_minister: pledge no peace short of total victory
+	option = {
+		name = cc_wc.1.c
+		trigger = {
+			scope:minister = { has_trait = hawk_minister }
+		}
+		add_prestige = prestige_mild_bonus
+		set_variable = { name = cc_hawk_war_pledge value = yes months = 24 }
+	}
+
+	# Option D — tactical_advisor, commissariat_officer, siege_engineer, or supreme_commander: competent counsel
+	option = {
+		name = cc_wc.1.d
+		trigger = {
+			scope:minister = {
+				NOT = { has_trait = standing_army_advocate }
+				NOT = { has_trait = offensive_strategist }
+				NOT = { has_trait = defensive_commander }
+				NOT = { has_trait = hawk_minister }
+			}
+		}
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_mil = 1 }
+	}
+}
+
+# "Financing the War" — fires yearly while at war and treasury is under pressure.
+# Ministers with treasury expertise offer spending strategies; without them only painful defaults remain.
+cc_wc.2 = {
+	type = country_event
+	title = cc_wc.2.title
+	desc = cc_wc.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = bank
+		10 = discussing
+		10 = economy
+	}
+
+	trigger = {
+		at_war = yes
+		NOT = { has_variable = cc_wc_finance_cooldown }
+		OR = {
+			gold < 200
+			NOT = { gold >= 0 }
+		}
+		any_cabinet_character = {
+			OR = {
+				has_trait = efficiency_administrator
+				has_trait = treasury_enforcer
+				has_trait = prosperity_planner
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_wc_finance_cooldown value = yes months = 24 }
+		random_cabinet_character = {
+			limit = {
+				OR = {
+					has_trait = efficiency_administrator
+					has_trait = treasury_enforcer
+					has_trait = prosperity_planner
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — efficiency_administrator: squeeze the population (manpower at cost of loyalty)
+	option = {
+		name = cc_wc.2.a
+		trigger = {
+			scope:minister = {
+				OR = {
+					has_trait = efficiency_administrator
+					has_trait = treasury_enforcer
+				}
+			}
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 3  min = 60 }
+		add_estate_satisfaction = { type = estate_type:peasants_estate value = estate_satisfaction_mild_penalty }
+		add_stability = stability_weak_penalty
+	}
+
+	# Option B — prosperity_planner: take war loans (gold now, inflation later)
+	option = {
+		name = cc_wc.2.b
+		trigger = {
+			scope:minister = { has_trait = prosperity_planner }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 5  min = 100 }
+		add_inflation = inflation_mild_penalty
+	}
+
+	# Option C — weather the shortage (always available)
+	option = {
+		name = cc_wc.2.c
+		add_stability = stability_weak_penalty
+	}
+}
+
+# "The General's Request" — fires when a supreme_commander or outdated_general is in cabinet during war.
+# Granting resources boosts morale; refusing sours the relationship.
+cc_wc.3 = {
+	type = country_event
+	title = cc_wc.3.title
+	desc = cc_wc.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+		10 = discussing
+	}
+
+	trigger = {
+		at_war = yes
+		NOT = { has_variable = cc_wc_general_request_cooldown }
+		any_cabinet_character = {
+			OR = {
+				has_trait = supreme_commander
+				has_trait = outdated_general
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_wc_general_request_cooldown value = yes months = 30 }
+		random_cabinet_character = {
+			limit = {
+				OR = {
+					has_trait = supreme_commander
+					has_trait = outdated_general
+				}
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — grant resources (costs gold, awards morale surge)
+	option = {
+		name = cc_wc.3.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -50 }
+		add_country_modifier = {
+			modifier = cc_wc_offensive_surge
+			years = 3
+			mode = set_to_largest_and_extend
+		}
+		scope:minister = { add_mil = 1 }
+	}
+
+	# Option B — refuse (minister relationship sours)
+	option = {
+		name = cc_wc.3.b
+		scope:minister = {
+			add_opinion = { target = root modifier = cc_wc_general_defied }
+		}
+	}
+}
+
+
+###############################################################################
+# SECTION B — POST-WAR MILITARY REFORM PROPOSALS
+###############################################################################
+
+# "The Standing Army Proposal" — fires after a victorious war if a standing_army_advocate is present.
+# Nobles resist the loss of levy influence; the reform grants lasting discipline.
+cc_wc.10 = {
+	type = country_event
+	title = cc_wc.10.title
+	desc = cc_wc.10.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	trigger = {
+		has_variable = cc_military_reform_opportunity
+		NOT = { has_country_modifier = cc_standing_army_reform }
+		any_cabinet_character = { has_trait = standing_army_advocate }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_trait = standing_army_advocate }
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — enact standing army reform (nobles displeasure, lasting discipline)
+	option = {
+		name = cc_wc.10.a
+		add_country_modifier = {
+			modifier = cc_standing_army_reform
+			years = 15
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+		remove_variable = cc_military_reform_opportunity
+	}
+
+	# Option B — decline for now
+	option = {
+		name = cc_wc.10.b
+		remove_variable = cc_military_reform_opportunity
+	}
+}
+
+# "The Supply Reform Proposal" — fires after a victorious war if a commissariat_officer is present.
+# Costs treasury; provides lasting attrition and manpower improvements.
+cc_wc.11 = {
+	type = country_event
+	title = cc_wc.11.title
+	desc = cc_wc.11.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	trigger = {
+		has_variable = cc_military_reform_opportunity
+		NOT = { has_country_modifier = cc_supply_reform }
+		any_cabinet_character = { has_trait = commissariat_officer }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_trait = commissariat_officer }
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — fund the commissariat reform
+	option = {
+		name = cc_wc.11.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6  max = -120 }
+		add_country_modifier = {
+			modifier = cc_supply_reform
+			years = 15
+		}
+		remove_variable = cc_military_reform_opportunity
+	}
+
+	# Option B — decline the expense
+	option = {
+		name = cc_wc.11.b
+		remove_variable = cc_military_reform_opportunity
+	}
+}
+
+# "The Fortification Doctrine Proposal" — fires after a victorious war if a siege_engineer is present.
+# Substantial gold investment; grants lasting fort maintenance savings and hostile attrition.
+cc_wc.12 = {
+	type = country_event
+	title = cc_wc.12.title
+	desc = cc_wc.12.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	trigger = {
+		has_variable = cc_military_reform_opportunity
+		NOT = { has_country_modifier = cc_fortification_doctrine }
+		any_cabinet_character = { has_trait = siege_engineer }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_trait = siege_engineer }
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — invest in fortification doctrine
+	option = {
+		name = cc_wc.12.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8  max = -200 }
+		add_country_modifier = {
+			modifier = cc_fortification_doctrine
+			years = 20
+		}
+		remove_variable = cc_military_reform_opportunity
+	}
+
+	# Option B — too expensive, decline
+	option = {
+		name = cc_wc.12.b
+		remove_variable = cc_military_reform_opportunity
+	}
+}
+
+
+###############################################################################
+# SECTION C — OUTDATED GENERAL RESOLUTION
+###############################################################################
+
+# "A Council Decision on the Old General" — fires during war when an outdated_general is present.
+# The council can formally retire him with dignity, clearing the negative trait.
+cc_wc.20 = {
+	type = country_event
+	title = cc_wc.20.title
+	desc = cc_wc.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = discussing
+	}
+
+	trigger = {
+		at_war = yes
+		NOT = { has_variable = cc_wc_outdated_general_cooldown }
+		any_cabinet_character = { has_trait = outdated_general }
+	}
+
+	immediate = {
+		set_variable = { name = cc_wc_outdated_general_cooldown value = yes months = 36 }
+		random_cabinet_character = {
+			limit = { has_trait = outdated_general }
+			save_scope_as = minister
+		}
+	}
+
+	# Option A — formal council retirement (clear the trait; costs prestige)
+	option = {
+		name = cc_wc.20.a
+		add_prestige = prestige_mild_penalty
+		scope:minister = {
+			remove_trait = trait:outdated_general
+		}
+	}
+
+	# Option B — let the old soldier serve out the campaign
+	option = {
+		name = cc_wc.20.b
+		add_prestige = prestige_weak_bonus
+	}
+}

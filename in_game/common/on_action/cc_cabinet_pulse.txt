@@ -15,6 +15,8 @@ yearly_country_pulse = {
 		cc_cabinet_yearly_intl
 		cc_cabinet_yearly_progression
 		cc_cabinet_yearly_prog_progress
+		cc_cabinet_yearly_war_council
+		cc_cabinet_yearly_war_reform
 	}
 }
 
@@ -415,5 +417,38 @@ cc_cabinet_biyearly_wealth = {
 	events = {
 		cc_wealth.9     # Inflation stack (33% chance when hoarding)
 		cc_wealth.10    # Corruption stack (33% chance when hoarding)
+	}
+}
+
+###############################################################################
+# WAR COUNCIL SUB-PULSES (Pillar 04)
+###############################################################################
+
+# Active-war council events — one picked per year while at war.
+# Events carry internal cooldown variables; ministers on cc_duty_war_council
+# already gain a passive country modifier that signals the war-footing.
+cc_cabinet_yearly_war_council = {
+	trigger = { at_war = yes }
+	random_events = {
+		4 = cc_wc.1    # The Council of War
+		3 = cc_wc.2    # Financing the War
+		3 = cc_wc.3    # The General's Request
+		4 = cc_wc.20   # A Council Decision on the Old General
+
+		chance_to_happen = 55
+
+		chance_of_no_event = {
+			value = 25
+		}
+	}
+}
+
+# Post-war military reform sweeps — all evaluated yearly against reform flag.
+cc_cabinet_yearly_war_reform = {
+	trigger = { has_variable = cc_military_reform_opportunity }
+	events = {
+		cc_wc.10   # Standing Army Reform proposal
+		cc_wc.11   # Supply Reform proposal
+		cc_wc.12   # Fortification Doctrine proposal
 	}
 }
