@@ -1,0 +1,57 @@
+﻿## Cabinet Duty: Religious Oversight
+# Minister is focused on confessional affairs — managing religious conformity,
+# inter-faith relations, or theological policy. Boosts Reformation cabinet events.
+
+cc_duty_religious_oversight = {
+	ability = adm
+	allow_multiple = no
+
+	potential = {
+		exists = root
+	}
+
+	country_modifier = {
+		monthly_prestige = 0.03
+		stability_cost = -0.03
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_religious_oversight_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = { remove_variable = cc_duty_religious_oversight_invalid }
+	}
+
+	is_finished = {
+		scope:actor = { has_variable = cc_duty_religious_oversight_invalid }
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					root = {
+						OR = {
+							has_trait = ecumenist
+							has_trait = zealous_inquisitor
+							# has_trait = court_prelate # TODO re-enable when implemented in v2 pillar 2 or pillar 5
+							has_trait = reformist_theologian
+							has_trait = orthodox_defender
+							has_trait = reformation_preacher
+							has_trait = reformation_inquisitor
+							has_trait = dogmatic_zealot
+							has_trait = theological_statesman
+							has_trait = crown_theologian
+						}
+					}
+				}
+				value = 8
+			}
+		}
+	}
+}

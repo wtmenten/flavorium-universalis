@@ -1,0 +1,56 @@
+﻿## Cabinet Duty: Domestic Reform
+# Minister is focused on internal governance — law drafting, reform proposals,
+# bureaucratic restructuring. Distinct from vanilla appease_estate (which targets
+# distressed estate satisfaction) — this is a sustained reform agenda.
+# Boosts stepping stone trait progression events at 2x rate.
+
+cc_duty_domestic_reform = {
+	ability = adm
+	allow_multiple = no
+
+	potential = {
+		exists = root
+	}
+
+	country_modifier = {
+		stability_cost = -0.05
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_domestic_reform_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = { remove_variable = cc_duty_domestic_reform_invalid }
+	}
+
+	is_finished = {
+		scope:actor = { has_variable = cc_duty_domestic_reform_invalid }
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					scope:actor = { NOT = { at_war = yes } }
+					root = {
+						OR = {
+							has_trait = law_reformer
+							has_trait = progressive_reformist
+							has_trait = absolute_administrator
+							has_trait = national_reformer
+							has_trait = privilege_reformer
+							has_trait = efficiency_administrator
+							has_trait = parliamentary_broker
+						}
+					}
+				}
+				value = 8
+			}
+		}
+	}
+}

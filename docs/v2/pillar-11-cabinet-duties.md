@@ -24,6 +24,7 @@ Existing cabinet actions (develop_province, integrate_area, etc.) remain unchang
 ### `cc_duty_free_hands` — Free Hands (Default)
 
 The catch-all assignment. All event systems fire at their *baseline* rates. A tiny country modifier represents the well-rounded generalist doing whatever is needed.
+Note: existing idle cabinet member (has_cabinet_action = no) events need to be found and the triggers adjusted to allow for them to fire while this action is assigned.
 
 | Property | Value |
 |----------|-------|

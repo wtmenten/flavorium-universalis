@@ -1,0 +1,111 @@
+﻿## Cabinet Duty: Colonial Posting
+# Minister is posted overseas to manage a colonial subject.
+# Applies the minister's traits to colonial governance.
+# Enables colonial experience events and the frontier_administrator progression.
+
+cc_duty_colonial_posting = {
+	ability = adm
+	allow_multiple = no
+
+	potential = {
+		exists = root
+	}
+
+	allow = {
+		scope:actor = {
+			any_subject = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = chartered_company
+					is_subject_type = provincial_governorate
+				}
+				count > 0
+			}
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		target_flag = target
+		interaction_source_list = {
+			scope:actor = {
+				every_subject = {
+					limit = {
+						OR = {
+							is_subject_type = colonial_nation
+							is_subject_type = chartered_company
+							is_subject_type = provincial_governorate
+						}
+					}
+					add_to_list = source
+				}
+			}
+		}
+		cache_targets = yes
+		name = "cc_duty_colonial_posting_select_colony"
+		column = { data = name }
+		visible = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	country_modifier = {
+		import_efficiency = 0.03
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_colonial_posting_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = { remove_variable = cc_duty_colonial_posting_invalid }
+	}
+
+	is_finished = {
+		OR = {
+			scope:actor = { has_variable = cc_duty_colonial_posting_invalid }
+			NOT = { exists = scope:target }
+			NOT = {
+				scope:target = {
+					is_subject_of = scope:actor
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					root = {
+						OR = {
+							has_trait = restless_pioneer
+							has_trait = capable_explorer
+							has_trait = frontier_administrator
+							has_trait = age_of_discovery_pioneer
+						}
+					}
+					scope:actor = {
+						any_subject = {
+							OR = {
+								is_subject_type = colonial_nation
+								is_subject_type = chartered_company
+								is_subject_type = provincial_governorate
+							}
+							count > 0
+						}
+					}
+				}
+				value = 8
+			}
+		}
+	}
+}

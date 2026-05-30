@@ -1,0 +1,44 @@
+﻿## Cabinet Duty: Free Hands
+# The default duty — minister attends to whatever the court requires.
+# All idle cabinet events fire at their baseline rate while on this duty.
+# Multiple ministers may be on Free Hands simultaneously.
+# NOTE: idle events must check cc_minister_is_available = yes, not has_cabinet_action = no,
+# so that ministers on this duty are still reached by those events.
+
+cc_duty_free_hands = {
+	ability = adm
+	allow_multiple = yes
+
+	on_activate = {
+		# root = cabinet seat; root.cabinet_member = the character (nil if slot is empty)
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			root = {
+				remove_variable = cc_cabinet_character
+				stop_cabinet_action = {}
+			}
+			# scope:actor = { set_variable = { name = cc_duty_free_hands_invalid value = yes } }
+		} 
+		else = {
+			set_variable = { name = cc_cabinet_character value = root.cabinet_member }
+		}
+	}
+
+	on_deactivate = {
+		# scope:actor = { remove_variable = cc_duty_free_hands_invalid }
+	}
+
+	is_finished = {
+			NOR = {
+				has_variable = cc_cabinet_character
+				exists = var:cc_cabinet_character
+			}
+		# Self-cancel if assigned to an empty cabinet seat
+		# scope:actor = { has_variable = cc_duty_free_hands_invalid }
+	}
+
+	ai_will_do = {
+		# AI defaults here when no specialised duty applies
+		add = { value = 1 }
+	}
+}

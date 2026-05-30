@@ -1,0 +1,53 @@
+﻿## Cabinet Duty: Scholarly Inquiry
+# Minister is engaged in intellectual work — correspondence with scholars,
+# patronage of learning, empirical investigation. Boosts Scholar's Court events.
+
+cc_duty_scholarly_inquiry = {
+	ability = adm
+	allow_multiple = no
+
+	potential = {
+		exists = root
+	}
+
+	country_modifier = {
+		research_speed = 0.03
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_scholarly_inquiry_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = { remove_variable = cc_duty_scholarly_inquiry_invalid }
+	}
+
+	is_finished = {
+		scope:actor = { has_variable = cc_duty_scholarly_inquiry_invalid }
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					root = {
+						OR = {
+							has_trait = empiricist_counselor
+							has_trait = humanist_philosopher
+							has_trait = renaissance_humanist
+							has_trait = progressive_rationalist
+							has_trait = enlightenment_herald
+							has_trait = chief_cartographer
+							has_trait = sufi_scholar
+						}
+					}
+				}
+				value = 8
+			}
+		}
+	}
+}

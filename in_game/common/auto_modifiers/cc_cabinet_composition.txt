@@ -1,0 +1,220 @@
+﻿## Cabinets and Choices — Cabinet Composition Auto-Modifiers
+# Aggregate modifiers that reflect the overall character of the cabinet.
+# All use potential_trigger so they activate/deactivate live as traits change.
+
+# Two or more military specialists in the cabinet — a court that speaks of war.
+warlord_court = {
+	requires_real = yes
+
+	potential_trigger = {
+		# Group A: strategic/command military traits
+		any_cabinet_character = {
+			OR = {
+				has_trait = standing_army_advocate
+				has_trait = supreme_commander
+				has_trait = siege_engineer
+				has_trait = outdated_general
+			}
+		}
+		# Group B: specialist military traits (mutually exclusive with group A by cabinet slot)
+		any_cabinet_character = {
+			OR = {
+				has_trait = cavalry_marshal
+				has_trait = commissariat_officer
+				has_trait = offensive_strategist
+				has_trait = defensive_commander
+				has_trait = elite_trainer
+				has_trait = mass_levy_commander
+			}
+		}
+	}
+
+	discipline = 0.025
+	land_morale_recovery = 0.02
+	monthly_prestige = 0.03
+	diplomatic_reputation = -0.1
+	stability_cost = 0.1
+}
+
+# Two or more commercial or financial specialists — a court that counts its coins.
+merchant_republic_spirit = {
+	requires_real = yes
+
+	potential_trigger = {
+		# Group A: trade/market traits
+		any_cabinet_character = {
+			OR = {
+				has_trait = merchant_syndic
+				has_trait = trade_consortium_minister
+				has_trait = capitalist_minister
+				has_trait = grand_architect
+			}
+		}
+		# Group B: fiscal/prosperity traits (mutually exclusive cabinet slot)
+		any_cabinet_character = {
+			OR = {
+				has_trait = free_market_advocate
+				has_trait = mercantilist_official
+				has_trait = prosperity_herald
+				has_trait = prosperity_planner
+				has_trait = loyal_steward
+			}
+		}
+	}
+
+	selling_efficiency = 0.05
+	import_efficiency = 0.03
+	diplomatic_reputation = 0.05
+	global_manpower_modifier = -0.05
+}
+
+# Two or more empiricist or rationalist ministers — a court that questions everything.
+enlightened_court = {
+	requires_real = yes
+
+	potential_trigger = {
+		any_cabinet_character = {
+			has_trait = empiricist_counselor
+		}
+		any_cabinet_character = {
+			OR = {
+				has_trait = humanist_philosopher
+				has_trait = renaissance_humanist
+				has_trait = progressive_rationalist
+				has_trait = enlightenment_herald
+				has_trait = chief_cartographer
+			}
+		}
+	}
+
+	research_speed = 0.05
+	stability_cost = -0.05
+	monthly_prestige = -0.02
+}
+
+# Two cabinet members representing directly opposing ideological poles — a paralysed court.
+court_paralysis = {
+	requires_real = yes
+
+	potential_trigger = {
+		OR = {
+			AND = {
+				any_cabinet_character = { has_trait = royal_absolutist }
+				any_cabinet_character = { has_trait = liberal_reformer }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = hawk_minister }
+				any_cabinet_character = { has_trait = peacemaker_counselor }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = efficiency_administrator }
+				any_cabinet_character = { has_trait = regional_magnate }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = noble_champion }
+				any_cabinet_character = { has_trait = merchant_prince }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = expansionist_advisor }
+				any_cabinet_character = { has_trait = consolidation_minister }
+			}
+		}
+	}
+
+	stability_cost = 0.15
+	monthly_prestige = -0.05
+	diplomatic_reputation = -0.1
+}
+
+# All cabinet members are long-established veterans — an ossified but stable court.
+entrenched_court = {
+	requires_real = yes
+
+	potential_trigger = {
+		# At least one minister must exist
+		any_cabinet_character = { in_cabinet = yes }
+		# No minister under 55 — a court of grey heads
+		NOT = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				character_age < 55
+			}
+		}
+	}
+
+	stability_cost = -0.05
+	monthly_prestige = 0.03
+	research_speed = -0.05
+	diplomatic_reputation = 0.05
+}
+
+# No extreme ideological skew and no opposing pair — a court in equipoise.
+balanced_court = {
+	requires_real = yes
+
+	potential_trigger = {
+		any_cabinet_character = { in_cabinet = yes }
+		# Not military-dominated
+		NOT = {
+			AND = {
+				any_cabinet_character = {
+					OR = {
+						has_trait = standing_army_advocate
+						has_trait = supreme_commander
+						has_trait = siege_engineer
+					}
+				}
+				any_cabinet_character = {
+					OR = {
+						has_trait = cavalry_marshal
+						has_trait = commissariat_officer
+						has_trait = offensive_strategist
+						has_trait = defensive_commander
+						has_trait = elite_trainer
+						has_trait = mass_levy_commander
+					}
+				}
+			}
+		}
+		# Not commercially captured
+		NOT = {
+			AND = {
+				any_cabinet_character = {
+					OR = {
+						has_trait = merchant_syndic
+						has_trait = trade_consortium_minister
+						has_trait = capitalist_minister
+					}
+				}
+				any_cabinet_character = {
+					OR = {
+						has_trait = free_market_advocate
+						has_trait = mercantilist_official
+						has_trait = prosperity_herald
+					}
+				}
+			}
+		}
+		# Not paralysed by factional opposition
+		NOT = {
+			OR = {
+				AND = {
+					any_cabinet_character = { has_trait = royal_absolutist }
+					any_cabinet_character = { has_trait = liberal_reformer }
+				}
+				AND = {
+					any_cabinet_character = { has_trait = hawk_minister }
+					any_cabinet_character = { has_trait = peacemaker_counselor }
+				}
+				AND = {
+					any_cabinet_character = { has_trait = noble_champion }
+					any_cabinet_character = { has_trait = merchant_prince }
+				}
+			}
+		}
+	}
+
+	monthly_prestige = 0.03
+	stability_cost = -0.03
+	diplomatic_reputation = 0.1
+}

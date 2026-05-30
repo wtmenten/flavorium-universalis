@@ -1,0 +1,66 @@
+﻿## Cabinet Duty: War Council
+# Minister is formally tasked with prosecuting a war.
+# Boosts War Council event rates and provides a modest combat edge.
+# Auto-cancels when the country makes peace.
+
+cc_duty_war_council = {
+	ability = mil
+	allow_multiple = no
+
+	potential = { }
+
+	allow = {
+		scope:actor = { at_war = yes }
+	}
+
+	country_modifier = {
+		land_morale_recovery = 0.01
+		discipline = 0.01
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			root = {
+				stop_cabinet_action = {}
+			}
+			# scope:actor = { set_variable = { name = cc_duty_war_council_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		# scope:actor = { remove_variable = cc_duty_war_council_invalid }
+	}
+
+	is_finished = {
+		OR = {
+			# scope:actor = { has_variable = cc_duty_war_council_invalid }
+			scope:actor = { NOT = { at_war = yes } }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					scope:actor = { at_war = yes }
+					root.cabinet_member ?= {
+						OR = {
+							has_trait = standing_army_advocate
+							has_trait = tactical_advisor
+							has_trait = cavalry_marshal
+							has_trait = siege_engineer
+							has_trait = commissariat_officer
+							has_trait = offensive_strategist
+							has_trait = defensive_commander
+							has_trait = supreme_commander
+							has_trait = hawk_minister
+						}
+					}
+				}
+				value = 10
+			}
+		}
+	}
+}

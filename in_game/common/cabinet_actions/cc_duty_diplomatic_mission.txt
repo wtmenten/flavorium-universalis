@@ -1,0 +1,79 @@
+﻿## Cabinet Duty: Diplomatic Mission
+# Minister is formally posted to a foreign court.
+# Boosts international synergy events with the target country.
+# Records the mission target for use by event triggers.
+
+cc_duty_diplomatic_mission = {
+	ability = dip
+	allow_multiple = no
+
+	potential = {
+		exists = root
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		target_flag = target
+		interaction_source_list = {
+			scope:actor = {
+				every_country = {
+					limit = {
+						NOT = { this = scope:actor }
+						NOT = { is_at_war_with = scope:actor }
+					}
+					add_to_list = source
+				}
+			}
+		}
+		cache_targets = yes
+		name = "cc_duty_diplomatic_mission_select_target"
+		column = { data = name }
+		visible = {
+			NOT = { this = scope:actor }
+		}
+	}
+
+	country_modifier = {
+		diplomatic_reputation = 0.1
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_diplomatic_mission_invalid value = yes } }
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = { remove_variable = cc_duty_diplomatic_mission_invalid }
+	}
+
+	is_finished = {
+		OR = {
+			scope:actor = { has_variable = cc_duty_diplomatic_mission_invalid }
+			NOT = { exists = scope:target }
+			scope:actor = { is_at_war_with = scope:target }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					scope:actor = { NOT = { at_war = yes } }
+					root = {
+						OR = {
+							has_trait = tactful_envoy
+							has_trait = master_statesman
+							has_trait = diplomatic_attache
+							has_trait = grand_chancellor
+							has_trait = peacemaker_counselor
+						}
+					}
+				}
+				value = 8
+			}
+		}
+	}
+}
