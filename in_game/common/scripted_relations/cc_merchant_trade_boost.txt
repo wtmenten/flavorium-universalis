@@ -1,0 +1,36 @@
+﻿
+# Merchant Trade Boost — granted by cc_bonds.113 (Chain B terminal event)
+# A "mini" version of vanilla forced_divert_trade: 15% of merchant trade
+# from the second country flows to the first (overlord).
+# Type = diplomacy allows establishment between any country pair (not restricted to overlord-subject).
+# Auto-expires when cc_bond_trade_link_active variable on scope:first lapses (20–40 years).
+
+cc_merchant_trade_boost = {
+	type = diplomacy
+	relation_type = oneway
+	break_on_war = yes
+	merchant_fraction_to_first = 0.15
+
+	# Required by engine even for hidden relations
+	category = {
+		offer = CATEGORY_ECONOMY_ACTIONS
+		request = CATEGORY_ECONOMY_ACTIONS
+		cancellation = CATEGORY_ECONOMY_ACTIONS
+		break = CATEGORY_ECONOMY_ACTIONS
+	}
+
+	# Hidden — granted by event, not player-accessible through diplomacy UI
+	visible = { always = no }
+	offer_visible = { always = no }
+	request_visible = { always = no }
+	break_visible = { always = no }
+
+	# Auto-expire when the timed variable on the overlord (scope:first) lapses.
+	# set_variable = { name = cc_bond_trade_link_active value = yes years = { 20 40 } }
+	# is applied in cc_bonds.113 at the same time as create_relation.
+	will_expire_trigger = {
+		scope:first = {
+			NOT = { has_variable = cc_bond_trade_link_active }
+		}
+	}
+}

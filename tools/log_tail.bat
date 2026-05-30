@@ -118,7 +118,8 @@ $exclusions = @(
     "PdxDataFetchLocalizedData",
     "Promote 'INTERNATIONAL_ORGANIZATION' returned nullptr",
     "FetchData failed for 'INTERNATIONAL_ORGANIZATION.GetName'",
-    "NOT_HAS_SPECIAL_STATUS_IN_INTERNATIONAL_ORGANIZATION_TRIGGER"
+    "NOT_HAS_SPECIAL_STATUS_IN_INTERNATIONAL_ORGANIZATION_TRIGGER",
+    "flavor_brapru.txt:883"
 )
 
 if (Test-Path $logFile) {

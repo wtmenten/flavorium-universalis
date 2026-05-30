@@ -2,13 +2,32 @@
 namespace = cc_bonds
 
 ###############################################################################
-# Chain B: "The Merchant and the Sea" — cc_bonds.110–112
-# A single ambitious trader becomes a dynasty. Spans 25–40 years.
-# Applies to: colonial_nation, puppet_state, crown_dependency.
-# Root = overlord. scope:bond_subj = the subject.
+# Chain B: "The Merchant and the Sea" — cc_bonds.110–113
+# A merchant from a colonial subject expands into a dynasty spanning multiple
+# trading partners, potentially including foreign colonial nations.
+# Spans ~32–50 years. Root = overlord throughout.
+#
+# State storage (on ROOT/overlord):
+#   cc_bond_chain_b_active           — chain is in progress
+#   cc_bond_chain_b_subj             — country-ref to primary subject
+#   cc_bond_chain_b_secondary_map    — map of all secondary trading targets
+#   cc_bond_merchant_rep             — reputation score 0–6
+#   cc_bond_mem_merchant_patronized  — 110 option A chosen
+#   cc_bond_mem_merchant_allowed     — 110 option B chosen
+#   cc_bond_mem_merchant_denied      — 110 option C chosen
+#   cc_bond_mem_merchant_backed      — 111 option A chosen (funded)
+#   cc_bond_mem_merchant_rival       — 111 option C chosen (obstructed)
+#   cc_bond_mem_crisis_managed       — 112 good option taken
+#   cc_bond_mem_second_is_foreign    — secondary map contains a foreign nation
+#   cc_bond_trade_link_active        — timed; keeps cc_merchant_trade_boost alive
+#
+# Per-secondary-target variables (stored on each target country):
+#   cc_bond_secondary_is_foreign     — this country is not a subject of ROOT
+#   cc_bond_merchant_interaction     — +1 backed, 0 neutral, -1 rival
 ###############################################################################
 
-# cc_bonds.110 — "A Merchant Seeks Passage" (fires 5–10 yrs into relationship, one-shot)
+# cc_bonds.110 — "A Merchant Seeks Passage"
+# Fires from cc_bonds_narrative_pulse (one-shot via cc_bond_110_cd).
 cc_bonds.110 = {
 	type = country_event
 	title = cc_bonds.110.title
@@ -31,7 +50,7 @@ cc_bonds.110 = {
 	}
 
 	immediate = {
-		set_variable = { name = cc_bond_110_cd_overlord  value = yes years = { 30 80 }}
+		set_variable = { name = cc_bond_110_cd_overlord  value = yes  years = { 30 80 } }
 		random_subject = {
 			limit = {
 				OR = {
@@ -48,62 +67,73 @@ cc_bonds.110 = {
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_110_cd  value = yes }
 		}
+		# Initialize chain state on overlord
+		set_variable = { name = cc_bond_chain_b_subj    value = scope:bond_subj }
+		set_variable = { name = cc_bond_merchant_rep    value = 0 }
+		set_variable = { name = cc_bond_chain_b_active  value = yes }
 	}
 
-	# Grant full passage rights and a trade monopoly — eco+1, pol-1
+	# Option A: Grant full passage rights and a trade monopoly — eco+1, pol-1, rep+2
 	option = {
 		name = cc_bonds.110.a
 		ai_chance = { base = 45 }
+		set_variable = { name = cc_bond_mem_merchant_patronized  value = yes }
+		change_variable = { name = cc_bond_merchant_rep  add = 2 }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_patronized  value = yes }
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 			change_variable = { name = cc_bond_pol  add = -1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.111  years = 12 }
+		trigger_event_silently = { id = cc_bonds.111  years = 10 }
 	}
 
-	# Grant passage only, no monopoly — eco+1
+	# Option B: Grant passage only, no monopoly — eco+1, rep+1
 	option = {
 		name = cc_bonds.110.b
 		ai_chance = { base = 45 }
+		set_variable = { name = cc_bond_mem_merchant_allowed  value = yes }
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_allowed  value = yes }
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 		}
 		trigger_event_silently = { id = cc_bonds.111  years = 12 }
 	}
 
-	# Deny passage — eco-1, per-1
-	# He found another route; fires in 15 years
+	# Option C: Deny passage — eco-1, per-1; he finds another route (slower chain)
 	option = {
 		name = cc_bonds.110.c
 		ai_chance = { base = 10 }
+		set_variable = { name = cc_bond_mem_merchant_denied  value = yes }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_denied  value = yes }
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 			change_variable = { name = cc_bond_per  add = -1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.111  years = 15 }
+		trigger_event_silently = { id = cc_bonds.111  years = 14 }
 	}
 }
 
-# cc_bonds.111 — "The Merchant's Fortune" (fires 12–15 years after cc_bonds.110)
+###############################################################################
+
+# cc_bonds.111 — "The Merchant's Expansion"
+# The merchant has grown and is reaching beyond the primary subject's borders.
+# Secondary trading partners (own subjects and/or a foreign colonial nation) are
+# identified and added to cc_bond_chain_b_secondary_map.
+# Overlord decides how to engage with this expansion.
 cc_bonds.111 = {
 	type = country_event
 	title = cc_bonds.111.title
 	desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized } }
+				trigger = { has_variable = cc_bond_mem_merchant_patronized }
 				desc = cc_bonds.111.desc_patronized
 			}
 			triggered_desc = {
-				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed } }
+				trigger = { has_variable = cc_bond_mem_merchant_allowed }
 				desc = cc_bonds.111.desc_allowed
 			}
 			desc = cc_bonds.111.desc_denied
@@ -111,167 +141,625 @@ cc_bonds.111 = {
 	}
 	illustration_tags = { 10 = bank }
 
-	# Patronized: He's extremely powerful. Options: tax him, appoint him, or ignore
-	option = {
-		name = cc_bonds.111.a_tax
-		ai_chance = { base = 35 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
+	immediate = {
+		# Recover primary subject
+		var:cc_bond_chain_b_subj = { save_scope_as = bond_subj }
+
+		# Build secondary target map — all qualifying own subjects (excluding primary)
+		every_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = puppet_state
+					is_subject_type = crown_dependency
+				}
+				NOT = { this = scope:bond_subj }
+				num_locations >= 15
+				has_variable = cc_bond_initialized
+			}
+			# Add to overlord's secondary map; own subjects get value = 1
+			ROOT = { add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = PREV  value = 1 } }
+			set_variable = { name = cc_bond_merchant_interaction  value = 0 }
 		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_tapped  value = yes }
-			change_variable = { name = cc_bond_eco  add = 2 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-			change_variable = { name = cc_bond_pol  add = -1 }
-			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+
+		# Also try to add one foreign colonial nation to the map (value = 2)
+		random_country = {
+			limit = {
+				is_subject_type = colonial_nation
+				NOT = { is_subject_of = ROOT }
+				NOT = { this = scope:bond_subj }
+				num_locations >= 15
+				NOT = { is_at_war_with = ROOT }
+			}
+			ROOT = { add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = PREV  value = 2 } }
+			set_variable = { name = cc_bond_secondary_is_foreign  value = yes }
+			set_variable = { name = cc_bond_merchant_interaction  value = 0 }
+			# Flag on ROOT that the map contains a foreign target (for desc/outcome logic)
+			ROOT = { set_variable = { name = cc_bond_mem_second_is_foreign  value = yes } }
 		}
-		trigger_event_silently = { id = cc_bonds.112  years = 18 }
 	}
 
+	# Option A: Fund the expansion — gold cost; per-target 75% backed, 25% neutral
 	option = {
-		name = cc_bonds.111.a_appoint
-		ai_chance = { base = 50 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
-			change_variable = { name = cc_bond_eco  add = 1 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-			change_variable = { name = cc_bond_per  add = 2 }
-			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
-		}
-		trigger_event_silently = { id = cc_bonds.112  years = 15 }
-	}
-
-	# Ignore growing influence — schedules terminal event
-	option = {
-		name = cc_bonds.111.a_ignore
-		ai_chance = { base = 15 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_patronized }
-		}
-		trigger_event_silently = { id = cc_bonds.112  years = 18 }
-	}
-
-	# Allowed: He's done well but not dominant. Options: offer monopoly now, or let him continue
-	option = {
-		name = cc_bonds.111.b_monopoly
-		ai_chance = { base = 50 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed }
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
-			change_variable = { name = cc_bond_eco  add = 1 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-			change_variable = { name = cc_bond_pol  add = -1 }
-			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
-		}
-		trigger_event_silently = { id = cc_bonds.112  years = 15 }
-	}
-
-	option = {
-		name = cc_bonds.111.b_continue
-		ai_chance = { base = 50 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allowed }
-		}
-		scope:bond_subj = {
-			change_variable = { name = cc_bond_eco  add = 1 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-		}
-		trigger_event_silently = { id = cc_bonds.112  years = 18 }
-	}
-
-	# Denied: He routed around us. Offer retroactive deal or accept the loss
-	option = {
-		name = cc_bonds.111.c_deal
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_denied }
+		name = cc_bonds.111.a_back
+		ai_chance = {
+			base = 45
+			modifier = {
+				factor = 1.5
+				has_variable = cc_bond_mem_merchant_patronized
+			}
 		}
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.25  min = -50 }
+		set_variable = { name = cc_bond_mem_merchant_backed  value = yes }
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_merchant_allied  value = yes }
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.112  years = 15 }
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			random_list = {
+				75 = {
+					set_variable = { name = cc_bond_merchant_interaction  value = 1 }
+					# Only adjust bond dims for own subjects (not foreign nations)
+					if = {
+						limit = { NOT = { has_variable = cc_bond_secondary_is_foreign } }
+						change_variable = { name = cc_bond_eco  add = 1 }
+						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					}
+				}
+				25 = { }	# Funding spent but this target didn't convert
+			}
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 12 }
 	}
 
+	# Option B: Observe — no cost; per-target 40% backed, 20% rival, 40% neutral
 	option = {
-		name = cc_bonds.111.c_ignore
-		ai_chance = { base = 30 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_denied }
+		name = cc_bonds.111.b_observe
+		ai_chance = { base = 35 }
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			random_list = {
+				40 = {
+					# Merchant succeeds independently — acts as backed without our credit
+					set_variable = { name = cc_bond_merchant_interaction  value = 1 }
+					if = {
+						limit = { NOT = { has_variable = cc_bond_secondary_is_foreign } }
+						change_variable = { name = cc_bond_eco  add = 1 }
+						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					}
+				}
+				20 = {
+					# Merchant cuts us out of this route
+					set_variable = { name = cc_bond_merchant_interaction  value = -1 }
+					if = {
+						limit = { NOT = { has_variable = cc_bond_secondary_is_foreign } }
+						change_variable = { name = cc_bond_eco  add = -1 }
+						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					}
+				}
+				40 = { }	# Stalemate — no movement on this target
+			}
 		}
+		trigger_event_silently = { id = cc_bonds.112  years = 14 }
+	}
+
+	# Option C: Clip his ambitions — per-target 50% rival (obstruction lands), 50% neutral
+	option = {
+		name = cc_bonds.111.c_discourage
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 2.0
+				has_variable = cc_bond_mem_merchant_denied
+			}
+		}
+		set_variable = { name = cc_bond_mem_merchant_rival  value = yes }
+		change_variable = { name = cc_bond_merchant_rep  add = -1 }
+		# Local political interests satisfied; primary subject feels the squeeze
+		change_variable = { name = cc_bond_pol  add = 1 }
+		clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 		scope:bond_subj = {
-			change_variable = { name = cc_bond_eco  add = -1 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.112  years = 18 }
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			random_list = {
+				50 = {
+					# Obstruction works: own subjects shrink, foreign targets fill the gap
+					set_variable = { name = cc_bond_merchant_interaction  value = -1 }
+					if = {
+						limit = { has_variable = cc_bond_secondary_is_foreign }
+						# Foreign nation fills the gap left by our obstruction
+						change_variable = { name = cc_bond_merchant_interaction  add = 2 }	# flip to +1
+					}
+					if = {
+						limit = { NOT = { has_variable = cc_bond_secondary_is_foreign } }
+						change_variable = { name = cc_bond_eco  add = -1 }
+						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+					}
+				}
+				50 = { }	# Merchant rerouted — obstruction had no lasting effect
+			}
+		}
+		trigger_event_silently = { id = cc_bonds.112  years = 12 }
 	}
 }
 
-# cc_bonds.112 — "The Merchant Dynasty" (terminal — fires 15–20 years after cc_bonds.111)
-# The merchant is dead; his family now controls the economic backbone of the subject.
+###############################################################################
+
+# cc_bonds.112 — "Fortune and Tempest"
+# A crisis strikes the merchant's network. Five randomised scenarios, each with
+# two options (one costly-good, one cheap-bad). Crisis is picked in immediate.
 cc_bonds.112 = {
 	type = country_event
 	title = cc_bonds.112.title
 	desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied } }
-				desc = cc_bonds.112.desc_aligned
+				trigger = { var:cc_bond_112_crisis = 1 }
+				desc = cc_bonds.112.desc_piracy
 			}
-			desc = cc_bonds.112.desc_hostile
+			triggered_desc = {
+				trigger = { var:cc_bond_112_crisis = 2 }
+				desc = cc_bonds.112.desc_rival
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_112_crisis = 3 }
+				desc = cc_bonds.112.desc_succession
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_112_crisis = 4 }
+				desc = cc_bonds.112.desc_drought
+			}
+			desc = cc_bonds.112.desc_blockade
 		}
 	}
 	illustration_tags = { 10 = bank }
 
-	# Family is loyal — they fund defense works
-	option = {
-		name = cc_bonds.112.a_charter
-		ai_chance = { base = 60 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied }
+	immediate = {
+		var:cc_bond_chain_b_subj = { save_scope_as = bond_subj }
+		if = {
+			limit = { has_variable = cc_bond_mem_merchant_backed }
+			# Backed merchants are more exposed — piracy and rivals more likely
+			random_list = {
+				30 = { set_variable = { name = cc_bond_112_crisis  value = 1 } }	# piracy
+				30 = { set_variable = { name = cc_bond_112_crisis  value = 2 } }	# rival house
+				20 = { set_variable = { name = cc_bond_112_crisis  value = 3 } }	# succession
+				10 = { set_variable = { name = cc_bond_112_crisis  value = 4 } }	# drought
+				10 = { set_variable = { name = cc_bond_112_crisis  value = 5 } }	# port blockade
+			}
 		}
+		else = {
+			random_list = {
+				20 = { set_variable = { name = cc_bond_112_crisis  value = 1 } }
+				15 = { set_variable = { name = cc_bond_112_crisis  value = 2 } }
+				25 = { set_variable = { name = cc_bond_112_crisis  value = 3 } }
+				25 = { set_variable = { name = cc_bond_112_crisis  value = 4 } }
+				15 = { set_variable = { name = cc_bond_112_crisis  value = 5 } }
+			}
+		}
+	}
+
+	after = { remove_variable = cc_bond_112_crisis }
+
+	############################################################
+	# Crisis 1: Piracy on the trade lanes
+	############################################################
+
+	# Good: Fund escort fleet — gold cost; bond_subj mil+1
+	option = {
+		name = cc_bonds.112.a_1_escort
+		ai_chance = { base = 55 }
+		trigger = { var:cc_bond_112_crisis = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40 }
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_dynasty_aligned  value = yes }
-			change_variable = { name = cc_bond_eco  add = 2 }
-			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 			change_variable = { name = cc_bond_mil  add = 1 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
 		}
+		trigger_event_silently = { id = cc_bonds.113  years = 10 }
 	}
 
+	# Bad: Demand the subject handle its own security — bond_subj eco-1
 	option = {
-		name = cc_bonds.112.a_accept
-		ai_chance = { base = 40 }
-		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_merchant_allied }
-		}
+		name = cc_bonds.112.b_1_demand
+		ai_chance = { base = 45 }
+		trigger = { var:cc_bond_112_crisis = 1 }
+		change_variable = { name = cc_bond_merchant_rep  add = -1 }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_dynasty_aligned  value = yes }
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 12 }
+	}
+
+	############################################################
+	# Crisis 2: A rival merchant house threatens the network
+	############################################################
+
+	# Good: Buy out the rival — gold cost; bond_subj eco+1
+	option = {
+		name = cc_bonds.112.a_2_buyout
+		ai_chance = { base = 50 }
+		trigger = { var:cc_bond_112_crisis = 2 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -60 }
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 		}
+		trigger_event_silently = { id = cc_bonds.113  years = 10 }
 	}
 
-	# Family is hostile — they have rival connections
-	# No good options: this is the consequence of poor earlier choices
+	# Bad: Let the houses compete — random outcome (60% eco-1, 40% no change)
 	option = {
-		name = cc_bonds.112.b_accept
-		trigger = {
-			scope:bond_subj = {
-				NOT = { has_variable = cc_bond_mem_merchant_allied }
+		name = cc_bonds.112.b_2_let
+		ai_chance = { base = 50 }
+		trigger = { var:cc_bond_112_crisis = 2 }
+		random_list = {
+			60 = {
+				change_variable = { name = cc_bond_merchant_rep  add = -1 }
+				scope:bond_subj = {
+					change_variable = { name = cc_bond_eco  add = -1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
 			}
+			40 = { }	# Houses reach their own truce
 		}
+		trigger_event_silently = { id = cc_bonds.113  years = 13 }
+	}
+
+	############################################################
+	# Crisis 3: Succession crisis in the merchant family
+	############################################################
+
+	# Good: Back the favorable heir — prestige cost; bond_subj per+1
+	option = {
+		name = cc_bonds.112.a_3_heir
+		ai_chance = { base = 55 }
+		trigger = { var:cc_bond_112_crisis = 3 }
+		add_prestige = prestige_mild_penalty
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
 		scope:bond_subj = {
-			set_variable = { name = cc_bond_mem_dynasty_hostile  value = yes }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 10 }
+	}
+
+	# Bad: Stay out of a merchant's family affairs — no change, slower chain
+	option = {
+		name = cc_bonds.112.b_3_neutral
+		ai_chance = { base = 45 }
+		trigger = { var:cc_bond_112_crisis = 3 }
+		trigger_event_silently = { id = cc_bonds.113  years = 13 }
+	}
+
+	############################################################
+	# Crisis 4: Drought in the primary market
+	############################################################
+
+	# Good: Issue emergency credit — gold cost; bond_subj eco+1, per+1
+	option = {
+		name = cc_bonds.112.a_4_relief
+		ai_chance = { base = 55 }
+		trigger = { var:cc_bond_112_crisis = 4 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40 }
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 10 }
+	}
+
+	# Bad: Reduce expectations — bond_subj eco-1
+	option = {
+		name = cc_bonds.112.b_4_reduce
+		ai_chance = { base = 45 }
+		trigger = { var:cc_bond_112_crisis = 4 }
+		change_variable = { name = cc_bond_merchant_rep  add = -1 }
+		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-			add_liberty_desire = liberty_desire_mild_plus
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 12 }
+	}
+
+	############################################################
+	# Crisis 5: A port blockade cuts off the main trade route
+	############################################################
+
+	# Good: Apply diplomatic pressure — prestige cost; bond_subj pol+1
+	option = {
+		name = cc_bonds.112.a_5_pressure
+		ai_chance = { base = 55 }
+		trigger = { var:cc_bond_112_crisis = 5 }
+		add_prestige = prestige_mild_penalty
+		change_variable = { name = cc_bond_merchant_rep  add = 1 }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 10 }
+	}
+
+	# Bad: Accept the delay — bond_subj eco-1, per-1
+	option = {
+		name = cc_bonds.112.b_5_wait
+		ai_chance = { base = 45 }
+		trigger = { var:cc_bond_112_crisis = 5 }
+		change_variable = { name = cc_bond_merchant_rep  add = -1 }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		trigger_event_silently = { id = cc_bonds.113  years = 13 }
+	}
+}
+
+###############################################################################
+
+# cc_bonds.113 — "The Merchant's Legacy"
+# Terminal event. Reputation score determines outcome tier (1/2/3).
+# Grants cc_merchant_trade_boost (scripted relation) to bond_subj,
+# and per-target modifiers to secondary targets based on stored interaction data.
+cc_bonds.113 = {
+	type = country_event
+	title = cc_bonds.113.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_113_outcome = 3 }
+				desc = cc_bonds.113.desc_flourish
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_113_outcome = 2 }
+				desc = cc_bonds.113.desc_modest
+			}
+			desc = cc_bonds.113.desc_collapse
 		}
 	}
+	illustration_tags = { 10 = bank }
+
+	immediate = {
+		var:cc_bond_chain_b_subj = { save_scope_as = bond_subj }
+		if = {
+			limit = { var:cc_bond_merchant_rep >= 4 }
+			set_variable = { name = cc_bond_113_outcome  value = 3 }
+		}
+		else_if = {
+			limit = { var:cc_bond_merchant_rep >= 2 }
+			set_variable = { name = cc_bond_113_outcome  value = 2 }
+		}
+		else = {
+			set_variable = { name = cc_bond_113_outcome  value = 1 }
+		}
+	}
+
+	after = {
+		# Clean up chain state
+		remove_variable = cc_bond_chain_b_active
+		remove_variable = cc_bond_chain_b_subj
+		remove_variable = cc_bond_merchant_rep
+		remove_variable = cc_bond_113_outcome
+		remove_variable = cc_bond_mem_merchant_patronized
+		remove_variable = cc_bond_mem_merchant_allowed
+		remove_variable = cc_bond_mem_merchant_denied
+		remove_variable = cc_bond_mem_merchant_backed
+		remove_variable = cc_bond_mem_merchant_rival
+		remove_variable = cc_bond_mem_crisis_managed
+		remove_variable = cc_bond_mem_second_is_foreign
+		# Clean up per-country variables on each secondary target, then clear the map
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			remove_variable = cc_bond_secondary_is_foreign
+			remove_variable = cc_bond_merchant_interaction
+		}
+		remove_variable = cc_bond_chain_b_secondary_map
+	}
+
+	############################################################
+	# Option A: Grant the house a formal trading charter (outcome >= 2)
+	# Grants cc_merchant_trade_boost to primary subject.
+	# Iterates secondary map: own subjects get relation, foreign nations get modifiers.
+	############################################################
+	option = {
+		name = cc_bonds.113.a_charter
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 0
+				var:cc_bond_113_outcome = 1
+			}
+		}
+		trigger = { var:cc_bond_113_outcome >= 2 }
+
+		# Primary subject — grant trade boost relation
+		create_relation = {
+			type = relation_type:cc_merchant_trade_boost
+			first = ROOT
+			second = scope:bond_subj
+		}
+		# Timed variable that keeps the relation alive (will_expire_trigger watches this)
+		set_variable = { name = cc_bond_trade_link_active  value = yes  years = { 20 40 } }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 2 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+
+		# Secondary targets — iterate map for per-target effects
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			save_scope_as = secondary_target
+
+			# Own subject with positive interaction → trade boost relation
+			if = {
+				limit = {
+					var:cc_bond_merchant_interaction >= 1
+					NOT = { has_variable = cc_bond_secondary_is_foreign }
+				}
+				ROOT = {
+					create_relation = {
+						type = relation_type:cc_merchant_trade_boost
+						first = ROOT
+						second = scope:secondary_target
+					}
+				}
+			}
+
+			# Foreign target with positive interaction — overlord DID fund it
+			# Overlord places a merchant trade post in the foreign nation's market center.
+			# The building's foreign_country_modifier provides ongoing trade benefits to ROOT.
+			if = {
+				limit = {
+					var:cc_bond_merchant_interaction >= 1
+					has_variable = cc_bond_secondary_is_foreign
+					ROOT = { has_variable = cc_bond_mem_merchant_backed }
+				}
+				# Foreign nation gets preferential trading access
+				add_country_modifier = { modifier = cc_merchant_trading_rights  years = { 20 35 } }
+				# Place the trade post in the market center of this nation's capital market
+				capital = {
+					market = {
+						random_location_in_market = {
+							limit = { is_market_center = yes }
+							change_building_level_in_location = {
+								building = building_type:cc_merchant_trade_post
+								value = 1
+								owner = root
+							}
+						}
+					}
+				}
+				# Track this target so the cleanup event can find and remove the building
+				ROOT = {
+					set_variable = { name = cc_bond_trade_post_target  value = scope:secondary_target }
+					trigger_event_silently = { id = cc_bonds.115  years = { 20 40 } }
+				}
+			}
+
+			# Foreign target with positive interaction — overlord did NOT fund it
+			# Only the foreign nation benefits from the organic merchant connection
+			if = {
+				limit = {
+					var:cc_bond_merchant_interaction >= 1
+					has_variable = cc_bond_secondary_is_foreign
+					ROOT = { NOT = { has_variable = cc_bond_mem_merchant_backed } }
+				}
+				add_country_modifier = { modifier = cc_merchant_trading_rights  years = { 15 25 } }
+			}
+		}
+	}
+
+	############################################################
+	# Option B: Accept the legacy as it stands (outcome >= 2)
+	# Simpler — trade boost to primary only; secondary targets get trading rights.
+	############################################################
+	option = {
+		name = cc_bonds.113.b_accept
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 0
+				var:cc_bond_113_outcome = 1
+			}
+		}
+		trigger = { var:cc_bond_113_outcome >= 2 }
+
+		create_relation = {
+			type = relation_type:cc_merchant_trade_boost
+			first = ROOT
+			second = scope:bond_subj
+		}
+		set_variable = { name = cc_bond_trade_link_active  value = yes  years = { 20 25 } }
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+
+		# Secondary targets with any positive interaction get trading rights
+		every_key_in_variable_map = {
+			variable = cc_bond_chain_b_secondary_map
+			if = {
+				limit = { var:cc_bond_merchant_interaction >= 1 }
+				add_country_modifier = { modifier = cc_merchant_trading_rights  years = { 15 20 } }
+			}
+		}
+	}
+
+	############################################################
+	# Option C: The house stands alone (any outcome; only option when outcome = 1)
+	############################################################
+	option = {
+		name = cc_bonds.113.c_decline
+		ai_chance = {
+			base = 0
+			modifier = {
+				add = 100
+				var:cc_bond_113_outcome = 1
+			}
+		}
+		if = {
+			limit = { var:cc_bond_113_outcome = 1 }
+			scope:bond_subj = {
+				change_variable = { name = cc_bond_eco  add = -1 }
+				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				change_variable = { name = cc_bond_per  add = -1 }
+				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+				add_liberty_desire = liberty_desire_mild_plus
+			}
+		}
+	}
+}
+
+###############################################################################
+
+# cc_bonds.115 — Merchant Trade Post Cleanup (hidden)
+# Fires on ROOT (overlord) after 20–40 years, scheduled by event 113 option A.
+# Removes all cc_merchant_trade_post buildings ROOT placed in foreign nations.
+# Uses every_owned_foreign_building_location to find them without needing to
+# know exactly which country's market center holds the building today.
+cc_bonds.115 = {
+	type = country_event
+	hidden = yes
+	title = cc_bonds.115.title
+
+	immediate = {
+		# Remove any cc_merchant_trade_post buildings owned by ROOT in foreign locations
+		every_owned_foreign_building_location = {
+			limit = {
+				any_foreign_buildings_in_location = {
+					building_type = building_type:cc_merchant_trade_post
+					owner = root
+				}
+			}
+			every_foreign_buildings_in_location = {
+				limit = {
+					building_type = building_type:cc_merchant_trade_post
+					owner = root
+				}
+				location = {
+					destroy_building = prev
+				}
+			}
+		}
+		remove_variable = cc_bond_trade_post_target
+	}
+
+	option = { name = cc_bonds.115.a }
 }

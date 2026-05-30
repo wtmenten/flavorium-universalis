@@ -1,0 +1,52 @@
+﻿
+# cc_merchant_trade_post
+# Placed by event cc_bonds.113 option A when the overlord backs a foreign colonial
+# nation's expansion and it pays off. Represents the overlord's merchant dynasty
+# establishing a physical trade presence in that nation's market center.
+#
+# Placement: change_building_level_in_location from within the foreign nation's
+#   capital.market random_location_in_market { limit = { is_market_center = yes } }
+# Owner: ROOT (the overlord), set via owner = root in the placement effect.
+# Removal: cc_bonds.115 fires after 20–40 years and destroys all instances via
+#   every_owned_foreign_building_location + every_foreign_buildings_in_location.
+
+cc_merchant_trade_post = {
+	is_foreign = yes
+	stronger_power_projection = yes
+	max_levels = 1
+	want_foreign_pop_created = no
+
+	category = trade_category
+
+	rural_settlement = yes
+	town = yes
+	city = yes
+	megalopolis = yes
+
+	# Event-only — cannot be constructed through the diplomacy UI
+	country_potential = { always = no }
+	allow = { always = no }
+
+	# Logically restricted to market centers (the event targets this anyway)
+	location_potential = {
+		is_market_center = yes
+	}
+
+	unique_production_methods = {
+		cc_merchant_trade_post_maintenance = {
+			category = building_maintenance
+		}
+	}
+
+	# Benefit to the market center location (host nation)
+	modifier = {
+		local_trade_center_power = 0.1
+		merchant_power_from_building = 0.1
+	}
+
+	# Ongoing benefit to the building owner (the overlord) while the post stands
+	foreign_country_modifier = {
+		merchant_capacity_from_building = 0.2
+		merchant_power_from_building = 0.2
+	}
+}
