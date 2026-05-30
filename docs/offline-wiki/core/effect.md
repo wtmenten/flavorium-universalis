@@ -1119,7 +1119,7 @@ The following tables list effects by their required scope. Iterators are exclude
 |stop_tutorial|Stops the tutorial.|||
 |test_log|Log a string to the test log when this effect executes, test_log = message, the message can be a localization string with ROOT, SCOPE and PREV available.|test_log = { name = <test_key> text = <custom_log_message> }||
 |trigger_event_non_silently|triggers an event or on_action, but shows the name of the event|trigger_event_non_silently = { id = X days/months/years = Y } (for events)||
-|trigger_event_silently|triggers an event or on_action|trigger_event = { id = X days/months/years = Y } (for events) or trigger_event = { on_action = X days/months/years = Y } (for on_actions) Days/months/years are optional and equal to 0 if not specified. If specified, Y can be a value or an inclusive interval "{ A B }" from which the duration will be picked randomly.||
+|trigger_event_silently|triggers an event or on_action|trigger_event_silently = { id = X days/months/years = Y } (for events) or trigger_event_silently = { on_action = X days/months/years = Y } (for on_actions) Days/months/years are optional and equal to 0 if not specified. If specified, Y can be a value or an inclusive interval "{ A B }" from which the duration will be picked randomly.||
 |update_leadership|Update the leadership panel of the target international organization.||international_organization|
 |white_peace|forces a white peace in the target war||war|
 
