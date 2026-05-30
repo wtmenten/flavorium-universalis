@@ -16,14 +16,15 @@ As European powers expanded overseas, their cabinets didn't stay home — they w
 
 ### A. The Colonial Posting Mechanic
 
-A new country interaction: `cc_post_minister_overseas`. A cabinet member can be posted to a colonial nation or chartered company subject. While posted:
+A new/reworked cabinet action: `cc_post_minister_overseas`. A cabinet member can be posted to a colonial nation or chartered company subject. While posted:
 
-- The minister's traits apply to the colonial subject (e.g., `capable_explorer` accelerates colonial range; `efficiency_administrator` boosts subject income)
+- The depending on the  minister's trait,  apply a country modifier to the colonial subject (e.g., `capable_explorer` accelerates reduces exploration cost ; `efficiency_administrator` boosts subject income, pop growth, etc.) use a small handful of semi generic modifiers mapped to traits
 - Yearly event fires: *"The Governor's Dispatch"* — flavor report from the colony with choices
 - Risk events may fire: corruption, native revolt, or disease (which can grant negative traits)
 - After 10 years of posting, the minister may return with a *colonial experience* trait:
   - `frontier_administrator` (already exists in v0.1) — earned through administrative success
   - `returned_colonial_governor` *(new)* — strong colonial modifiers, earned through any completed posting
+  - set this duration in the cabinet action.
 
 See [Chain E in Pillar 12](pillar-12-stepping-stone-traits.md) for the full `restless_pioneer → frontier_administrator → returned_colonial_governor` progression.
 

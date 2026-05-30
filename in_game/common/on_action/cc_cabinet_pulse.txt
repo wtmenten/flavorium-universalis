@@ -17,6 +17,8 @@ yearly_country_pulse = {
 		cc_cabinet_yearly_prog_progress
 		cc_cabinet_yearly_war_council
 		cc_cabinet_yearly_war_reform
+		cc_cabinet_yearly_colonial
+		cc_cabinet_yearly_colonial_posting
 	}
 }
 
@@ -41,6 +43,7 @@ biyearly_country_pulse = {
 		cc_cabinet_biyearly_rivalry_events
 		cc_cabinet_biyearly_cabal
 		cc_cabinet_biyearly_estate_faction
+		cc_cabinet_biyearly_colonial
 	}
 }
 
@@ -531,6 +534,68 @@ cc_cabinet_biyearly_estate_faction = {
 
 		chance_of_no_event = {
 			value = 20
+		}
+	}
+}
+
+###############################################################################
+# COLONIAL DIVAN SUB-PULSES (Pillar 07)
+###############################################################################
+
+# Charter company + Governor's Letter events — yearly, requires colonial subject.
+cc_cabinet_yearly_colonial = {
+	trigger = {
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+	random_events = {
+		3 = cc_colonial.1    # The Company's Accounts
+		3 = cc_colonial.3    # The Governor's Letter
+
+		chance_to_happen = 50
+
+		chance_of_no_event = {
+			value = 25
+		}
+	}
+}
+
+# Governor's Dispatch and risk events — yearly, requires minister on colonial posting.
+cc_cabinet_yearly_colonial_posting = {
+	trigger = {
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+	}
+	random_events = {
+		5 = cc_posting.1    # The Governor's Dispatch
+		2 = cc_posting.2    # Corruption in the Colony
+		2 = cc_posting.3    # A Native Uprising
+		1 = cc_posting.4    # Fever in the Colony
+
+		chance_to_happen = 70
+
+		chance_of_no_event = {
+			value = 15
+		}
+	}
+}
+
+# Colonial Monopoly Dispute and Decolonization Crisis — biyearly.
+cc_cabinet_biyearly_colonial = {
+	random_events = {
+		3 = cc_colonial.2    # A Monopoly Dispute
+		2 = cc_colonial.10   # The Colonial Petition (Age 6 decolonization chain)
+
+		chance_to_happen = 40
+
+		chance_of_no_event = {
+			value = 30
 		}
 	}
 }

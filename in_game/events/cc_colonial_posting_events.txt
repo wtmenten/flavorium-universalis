@@ -1,0 +1,372 @@
+﻿namespace = cc_posting
+
+###############################################################################
+# CABINETS AND CHOICES — COLONIAL POSTING EVENTS (Pillar 07)
+#
+# Fire when a minister is assigned to cc_duty_colonial_posting.
+#
+# cc_posting.1  The Governor's Dispatch    (yearly flavor; 18-month cooldown)
+# cc_posting.2  Corruption in the Colony  (risk event; 36-month cooldown)
+# cc_posting.3  A Native Uprising         (risk event; 48-month cooldown)
+# cc_posting.4  Fever in the Colony       (risk event; 48-month cooldown)
+#
+# Pulse: cc_cabinet_yearly_colonial_posting in cc_cabinet_pulse.txt.
+###############################################################################
+
+
+###############################################################################
+# cc_posting.1 — The Governor's Dispatch
+###############################################################################
+
+# Yearly flavor report from the posted minister. The crown decides how to respond:
+# invest in the colony, take satisfaction in the minister's progress, or extract tribute.
+cc_posting.1 = {
+	type = country_event
+	title = cc_posting.1.title
+	desc = cc_posting.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = discussing
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_posting_dispatch_cd }
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_posting_dispatch_cd value = yes months = 18 }
+		random_cabinet_character = {
+			limit = {
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = chartered_company
+					is_subject_type = provincial_governorate
+				}
+			}
+			save_scope_as = colony
+		}
+	}
+
+	# Invest crown resources — gold cost, colony prosperity rises, eco bond improves
+	option = {
+		name = cc_posting.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -50 max = -300 }
+		scope:colony = {
+			add_country_modifier = {
+				modifier = cc_col_colonial_investment
+				years = 5
+				mode = set_to_largest_and_extend
+			}
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = 1 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+		}
+		scope:minister = { add_adm = 1 }
+	}
+
+	# Read the dispatch with satisfaction — prestige, minister gains diplomatic experience
+	option = {
+		name = cc_posting.1.b
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_dip = 1 }
+	}
+
+	# Demand more tribute — gold extracted from the colony, relations suffer
+	option = {
+		name = cc_posting.1.c
+		add_gold = { value = scope:colony.monthly_income_trade_and_tax multiply = 2 min = 30 max = 200 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = -1 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = -1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# cc_posting.2 — Corruption in the Colony
+###############################################################################
+
+# The posted minister discovers financial irregularities among colonial officials.
+# An efficiency_administrator can clean house; others face an unpleasant trade-off.
+cc_posting.2 = {
+	type = country_event
+	title = cc_posting.2.title
+	desc = cc_posting.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_posting_corruption_cd }
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_posting_corruption_cd value = yes months = 36 }
+		random_cabinet_character = {
+			limit = {
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = chartered_company
+					is_subject_type = provincial_governorate
+				}
+			}
+			save_scope_as = colony
+		}
+	}
+
+	# Root out the corruption — efficiency_administrator excels; others pay in gold
+	option = {
+		name = cc_posting.2.a
+		if = {
+			limit = { scope:minister = { has_trait = efficiency_administrator } }
+			add_prestige = prestige_weak_bonus
+			scope:colony = {
+				if = {
+					limit = { has_variable = cc_bond_eco }
+					change_variable = { name = cc_bond_eco add = 1 }
+					clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+				}
+			}
+			scope:minister = { add_adm = 1 }
+		}
+		else = {
+			add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -50 max = -200 }
+			scope:colony = {
+				if = {
+					limit = { has_variable = cc_bond_eco }
+					change_variable = { name = cc_bond_eco add = -1 }
+					clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+				}
+			}
+		}
+	}
+
+	# Extract a personal cut — gold gain, eco bond damage, minister risks corrupted_official
+	option = {
+		name = cc_posting.2.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = 3 min = 40 max = 250 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = -2 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+		}
+		scope:minister = {
+			if = {
+				limit = {
+					NOT = { has_trait = corrupted_official }
+					NOT = { has_trait_category = cabinet }
+				}
+				set_variable = { name = cc_granting_trait value = yes }
+				add_trait = trait:corrupted_official
+				remove_variable = cc_granting_trait
+			}
+		}
+	}
+
+	# Report but do not intervene — prestige loss, stability suffers
+	option = {
+		name = cc_posting.2.c
+		add_prestige = prestige_weak_penalty
+		add_stability = stability_weak_penalty
+	}
+}
+
+
+###############################################################################
+# cc_posting.3 — A Native Uprising
+###############################################################################
+
+# Indigenous communities near the settlement have risen in resistance.
+# The posted minister advises the crown on how to respond.
+cc_posting.3 = {
+	type = country_event
+	title = cc_posting.3.title
+	desc = cc_posting.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = army
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_posting_uprising_cd }
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_posting_uprising_cd value = yes months = 48 }
+		random_cabinet_character = {
+			limit = {
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = chartered_company
+					is_subject_type = provincial_governorate
+				}
+			}
+			save_scope_as = colony
+		}
+	}
+
+	# Send colonial forces to suppress — manpower cost, mil bond suffers, minister gains experience
+	option = {
+		name = cc_posting.3.a
+		add_manpower = { value = monthly_manpower multiply = -3 min = -5 max = -30 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_mil }
+				change_variable = { name = cc_bond_mil add = -2 }
+				clamp_variable = { name = cc_bond_mil max = 5 min = -5 }
+			}
+		}
+		scope:minister = { add_mil = 1 }
+	}
+
+	# Negotiate a settlement — gold cost, prestige, pol bond improves
+	option = {
+		name = cc_posting.3.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -50 max = -200 }
+		add_prestige = prestige_weak_bonus
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+		scope:minister = { add_dip = 1 }
+	}
+
+	# Expand military presence — heavy manpower cost, stability cost, minister hardens
+	option = {
+		name = cc_posting.3.c
+		add_manpower = { value = monthly_manpower multiply = -5 min = -10 max = -50 }
+		add_stability = stability_weak_penalty
+		scope:minister = { add_mil = 2 }
+	}
+}
+
+
+###############################################################################
+# cc_posting.4 — Fever in the Colony
+###############################################################################
+
+# Tropical illness has swept through the settlement where the minister is posted.
+# Persevering costs their health; withdrawing costs the country's prestige.
+cc_posting.4 = {
+	type = country_event
+	title = cc_posting.4.title
+	desc = cc_posting.4.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_posting_fever_cd }
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_posting_fever_cd value = yes months = 48 }
+		random_cabinet_character = {
+			limit = {
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Push through the illness — stat loss, prestige reward for dedication
+	option = {
+		name = cc_posting.4.a
+		scope:minister = {
+			add_adm = -2
+			add_dip = -1
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Order rest and recovery — reduced stat loss, modest stability cost
+	option = {
+		name = cc_posting.4.b
+		scope:minister = { add_adm = -1 }
+		add_stability = stability_weak_penalty
+	}
+}

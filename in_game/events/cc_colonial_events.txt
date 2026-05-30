@@ -1,0 +1,451 @@
+﻿namespace = cc_colonial
+
+###############################################################################
+# CABINETS AND CHOICES — COLONIAL DIVAN EVENTS (Pillar 07)
+#
+# Section B — Charter Company Events:
+#   cc_colonial.1  The Company's Accounts   (yearly; chartered_company + minister)
+#   cc_colonial.2  A Monopoly Dispute       (biyearly; merchant_of_the_crown + chartered_company)
+#   cc_colonial.3  The Governor's Letter    (yearly; minister on cc_duty_colonial_posting)
+#
+# Section C — Decolonization Crisis (Age 6):
+#   cc_colonial.10 The Colonial Petition    (yearly sweep; starts the crisis chain)
+#   cc_colonial.11 The Defection            (triggered from cc_colonial.10 option B after 12 months)
+#   cc_colonial.12 The Compromise           (triggered from cc_colonial.10 option A after 6 months)
+#
+# Pulse: cc_cabinet_yearly_colonial and cc_cabinet_biyearly_colonial
+#        in cc_cabinet_pulse.txt.
+###############################################################################
+
+
+###############################################################################
+# SECTION B — CHARTER COMPANY EVENTS
+###############################################################################
+
+# cc_colonial.1 — The Company's Accounts
+# The minister reviews the chartered company's ledgers. Options range from
+# mercantile windfall to administrative audit.
+cc_colonial.1 = {
+	type = country_event
+	title = cc_colonial.1.title
+	desc = cc_colonial.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = bank
+		10 = economy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_colonial_accounts_cd }
+		any_subject = {
+			is_subject_type = chartered_company
+		}
+		any_cabinet_character = {
+			OR = {
+				has_trait = merchant_of_the_crown
+				has_trait = efficiency_administrator
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_accounts_cd value = yes months = 12 }
+		random_cabinet_character = {
+			limit = {
+				OR = {
+					has_trait = merchant_of_the_crown
+					has_trait = efficiency_administrator
+				}
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = { is_subject_type = chartered_company }
+			save_scope_as = colony
+		}
+	}
+
+	# Approve the returns in full — gold windfall via the merchant's contacts
+	option = {
+		name = cc_colonial.1.a
+		trigger = {
+			scope:minister = { has_trait = merchant_of_the_crown }
+		}
+		add_gold = { value = scope:colony.monthly_income_trade_and_tax multiply = 4 min = 60 max = 400 }
+		scope:minister = { add_adm = 1 }
+	}
+
+	# Order a thorough audit — smaller gain, prestige reward for accountability
+	option = {
+		name = cc_colonial.1.b
+		trigger = {
+			scope:minister = { has_trait = efficiency_administrator }
+		}
+		add_gold = { value = scope:colony.monthly_income_trade_and_tax multiply = 2 min = 30 max = 200 }
+		add_prestige = prestige_weak_bonus
+		scope:minister = { add_adm = 2 }
+	}
+
+	# Standard review — prestige for diligent administration
+	option = {
+		name = cc_colonial.1.c
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+
+# cc_colonial.2 — A Monopoly Dispute
+# The burgher estate—through a merchant_of_the_crown minister—petitions to expand
+# chartered trading rights. Noble-aligned ministers resist. The ruler must arbitrate.
+cc_colonial.2 = {
+	type = country_event
+	title = cc_colonial.2.title
+	desc = cc_colonial.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = burghers
+		10 = discussing
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_colonial_monopoly_cd }
+		any_subject = {
+			is_subject_type = chartered_company
+		}
+		any_cabinet_character = {
+			has_trait = merchant_of_the_crown
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_monopoly_cd value = yes months = 18 }
+		random_cabinet_character = {
+			limit = { has_trait = merchant_of_the_crown }
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = { is_subject_type = chartered_company }
+			save_scope_as = colony
+		}
+	}
+
+	# Expand trading rights — gold gain, nobles displeasure, burghers satisfied
+	option = {
+		name = cc_colonial.2.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = 3 min = 50 max = 300 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		scope:minister = { add_dip = 1 }
+	}
+
+	# Restrict monopoly expansion — prestige gain, burghers dissatisfied
+	option = {
+		name = cc_colonial.2.b
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_penalty }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+	}
+
+	# Crown mediation — modest gains, both sides partially satisfied
+	option = {
+		name = cc_colonial.2.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = 1 min = 20 max = 100 }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_bonus }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+		scope:minister = { add_dip = 1 }
+	}
+}
+
+
+# cc_colonial.3 — The Governor's Letter
+# The posted minister writes requesting crown support. The crown's response shapes
+# the colonial bond and the minister's standing at court.
+cc_colonial.3 = {
+	type = country_event
+	title = cc_colonial.3.title
+	desc = cc_colonial.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = discussing
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_colonial_letter_cd }
+		any_cabinet_character = {
+			cabinet_action = cabinet_action:cc_duty_colonial_posting
+		}
+		any_subject = {
+			OR = {
+				is_subject_type = colonial_nation
+				is_subject_type = chartered_company
+				is_subject_type = provincial_governorate
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_letter_cd value = yes months = 12 }
+		random_cabinet_character = {
+			limit = {
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+			}
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = colonial_nation
+					is_subject_type = chartered_company
+					is_subject_type = provincial_governorate
+				}
+			}
+			save_scope_as = colony
+		}
+	}
+
+	# Send troop reinforcements — manpower cost, mil bond improves, minister earns military respect
+	option = {
+		name = cc_colonial.3.a
+		add_manpower = { value = monthly_manpower multiply = -3 min = -5 max = -30 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_mil }
+				change_variable = { name = cc_bond_mil add = 1 }
+				clamp_variable = { name = cc_bond_mil max = 5 min = -5 }
+			}
+		}
+		scope:minister = { add_mil = 1 }
+	}
+
+	# Send financial support — gold cost, eco bond improves, minister earns administrative experience
+	option = {
+		name = cc_colonial.3.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -40 max = -250 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = 1 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+		}
+		scope:minister = { add_adm = 1 }
+	}
+
+	# Decline the request — minister loses standing, pol bond suffers
+	option = {
+		name = cc_colonial.3.c
+		scope:minister = { add_dip = -1 }
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = -1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# SECTION C — DECOLONIZATION CRISIS (AGE 6)
+###############################################################################
+
+# cc_colonial.10 — The Colonial Petition
+# A revolutionary_agitator in the cabinet has given voice to a restless colonial
+# nation's independence aspirations. The crown must act — three paths forward:
+# grant autonomy (The Compromise follows), reject (The Defection looms), or
+# remove the agitator from the cabinet.
+cc_colonial.10 = {
+	type = country_event
+	title = cc_colonial.10.title
+	desc = cc_colonial.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = angry
+		10 = discussing
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_colonial_petition_cd }
+		current_age = age_6_revolutions
+		any_subject = {
+			is_subject_type = colonial_nation
+			liberty_desire > 60
+		}
+		any_cabinet_character = {
+			has_trait = revolutionary_agitator
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_petition_cd value = yes years = 10 }
+		random_cabinet_character = {
+			limit = { has_trait = revolutionary_agitator }
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				liberty_desire > 60
+			}
+			save_scope_as = colony
+		}
+	}
+
+	# Grant greater autonomy — stability cost, pol bond improves; The Compromise follows
+	option = {
+		name = cc_colonial.10.a
+		add_stability = stability_mild_penalty
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 2 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+		trigger_event = { id = cc_colonial.12 months = 6 }
+	}
+
+	# Reject the petition — prestige held; The Defection is now possible in a year
+	option = {
+		name = cc_colonial.10.b
+		add_prestige = prestige_mild_bonus
+		trigger_event = { id = cc_colonial.11 months = 12 }
+	}
+
+	# Remove the agitator from the cabinet — crisis contained, but at a cost to the crown's image
+	option = {
+		name = cc_colonial.10.c
+		add_prestige = prestige_weak_penalty
+		remove_from_cabinet = scope:minister
+	}
+}
+
+
+# cc_colonial.11 — The Defection
+# The revolutionary minister, enraged by the crown's rejection, slips away from court
+# to join the colonial independence movement. The damage must be contained.
+cc_colonial.11 = {
+	type = country_event
+	title = cc_colonial.11.title
+	desc = cc_colonial.11.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = angry
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_trait = revolutionary_agitator }
+			save_scope_as = minister
+		}
+		random_subject = {
+			limit = { is_subject_type = colonial_nation }
+			save_scope_as = colony
+		}
+	}
+
+	# Let the minister go — diplomatic fallout modifier, colony bond gains as movement grows
+	option = {
+		name = cc_colonial.11.a
+		if = {
+			limit = { exists = scope:minister }
+			remove_from_cabinet = scope:minister
+		}
+		add_country_modifier = {
+			modifier = cc_col_defection_fallout
+			years = 10
+			mode = set_to_largest_and_extend
+		}
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+
+	# Arrest the minister before they flee — stability cost, pol bond damaged but defection averted
+	option = {
+		name = cc_colonial.11.b
+		add_stability = stability_mild_penalty
+		if = {
+			limit = { exists = scope:minister }
+			remove_from_cabinet = scope:minister
+		}
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = -2 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+# cc_colonial.12 — The Compromise
+# Having promised greater autonomy, the crown must now formalise the arrangement.
+# The colonial nation receives a lasting autonomy compact — or the promise is broken.
+cc_colonial.12 = {
+	type = country_event
+	title = cc_colonial.12.title
+	desc = cc_colonial.12.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = happy
+	}
+
+	immediate = {
+		random_subject = {
+			limit = { is_subject_type = colonial_nation }
+			save_scope_as = colony
+		}
+	}
+
+	# Formalise the autonomy compact — colony flourishes, bonds strengthen
+	option = {
+		name = cc_colonial.12.a
+		scope:colony = {
+			add_country_modifier = {
+				modifier = cc_col_colonial_autonomy
+				years = 30
+				mode = set_to_largest_and_extend
+			}
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 2 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Rescind the offer — the broken promise fractures the bond
+	option = {
+		name = cc_colonial.12.b
+		add_prestige = prestige_mild_penalty
+		scope:colony = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = -3 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+}
