@@ -17,19 +17,21 @@ cc_bonds.110 = {
 
 	trigger = {
 		has_game_rule = cc_subject_bonds_on
+		NOT = { has_variable = cc_bond_110_cd_overlord }
 		any_subject = {
 			OR = {
 				is_subject_type = colonial_nation
 				is_subject_type = puppet_state
 				is_subject_type = crown_dependency
 			}
-			num_locations >= 10
+			num_locations >= 20
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_110_cd }
 		}
 	}
 
 	immediate = {
+		set_variable = { name = cc_bond_110_cd_overlord  value = yes years = { 30 80 }}
 		random_subject = {
 			limit = {
 				OR = {
@@ -37,7 +39,7 @@ cc_bonds.110 = {
 					is_subject_type = puppet_state
 					is_subject_type = crown_dependency
 				}
-				num_locations >= 10
+				num_locations >= 20
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_110_cd }
 			}

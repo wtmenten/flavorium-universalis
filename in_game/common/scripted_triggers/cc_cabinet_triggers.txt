@@ -1,0 +1,15 @@
+﻿## Cabinets and Choices — Cabinet Scripted Triggers
+
+# True if a cabinet member is "available" for idle events:
+# either genuinely idle (no action at all) or formally on Free Hands duty.
+# Use this everywhere has_cabinet_action = no previously appeared in
+# idle-event trigger and random_cabinet_character limit blocks.
+cc_minister_is_available = {
+	OR = {
+		has_cabinet_action = no
+		AND = {
+			has_cabinet_action = yes
+			cabinet_action = cabinet_action:cc_duty_free_hands
+		}
+	}
+}

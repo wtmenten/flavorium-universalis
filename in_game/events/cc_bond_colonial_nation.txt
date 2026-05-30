@@ -23,6 +23,7 @@ cc_bonds.10 = {
 		any_subject = {
 			is_subject_type = colonial_nation
 			num_locations >= 15
+			total_population > 60000
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_10_cd }
 			NOT = { has_variable = cc_bond_col_gen_cd }
@@ -34,6 +35,7 @@ cc_bonds.10 = {
 			limit = {
 				is_subject_type = colonial_nation
 				num_locations >= 15
+				total_population > 60000
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_10_cd }
 				NOT = { has_variable = cc_bond_col_gen_cd }
@@ -49,7 +51,7 @@ cc_bonds.10 = {
 	# Heavy extraction — gold gain, eco bond damage (false positive fires)
 	option = {
 		name = cc_bonds.10.a
-		add_gold = { value = scope:bond_subj.monthly_income_trade_and_tax  multiply = 0.40  min = 100 }
+		add_gold = { value = scope:bond_subj.monthly_income_trade_and_tax  multiply = 3  min = 100 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -2 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -60,10 +62,18 @@ cc_bonds.10 = {
 	# Invest in infrastructure — gold cost, eco bond gain (false negative fires)
 	option = {
 		name = cc_bonds.10.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -65  max = -1000 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -65  max = -300 }
 		scope:bond_subj = {
-			change_variable = { name = cc_bond_eco  add = 2 }
+			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			random_province = {
+				add_province_modifier = {
+					modifier = cc_infrastructure_investment
+					years = 20
+					mode = set_to_largest
+
+				}
+			}
 		}
 		trigger_event_silently = { id = cc_bonds.71  months = 3 }
 	}
@@ -87,6 +97,7 @@ cc_bonds.11 = {
 		any_subject = {
 			is_subject_type = colonial_nation
 			num_locations >= 15
+			country_total_army_levy_size > 5000
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_11_cd }
 			NOT = { has_variable = cc_bond_col_gen_cd }
@@ -98,6 +109,7 @@ cc_bonds.11 = {
 			limit = {
 				is_subject_type = colonial_nation
 				num_locations >= 15
+				country_total_army_levy_size > 5000
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_11_cd }
 				NOT = { has_variable = cc_bond_col_gen_cd }
@@ -337,14 +349,14 @@ cc_bonds.14 = {
 	option = {
 		name = cc_bonds.14.a
 		add_prestige = prestige_mild_penalty
-		add_country_modifier = { modifier = cc_colonial_legitimacy_era  years = 200  mode = set_to_largest_and_extend }
+		add_country_modifier = { modifier = cc_colonial_legitimacy_era  years = 200  mode = add_and_extend }
 		scope:bond_subj = {
 			set_variable = { name = cc_bond_mem_voice_granted  value = yes }
-			change_variable = { name = cc_bond_pol  add = 3 }
+			change_variable = { name = cc_bond_pol  add = 2 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 			change_variable = { name = cc_bond_cul  add = 1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
-			change_variable = { name = cc_bond_per  add = 2 }
+			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
 	}
@@ -364,12 +376,13 @@ cc_bonds.14 = {
 	# Deny — significant pol/cul/per damage, false positive fires
 	option = {
 		name = cc_bonds.14.c
+		add_country_modifier = { modifier = cc_colonial_supremecy_era  years = 200  mode = add_and_extend }
 		scope:bond_subj = {
-			change_variable = { name = cc_bond_pol  add = -3 }
+			change_variable = { name = cc_bond_pol  add = -2 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 			change_variable = { name = cc_bond_cul  add = -1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
-			change_variable = { name = cc_bond_per  add = -2 }
+			change_variable = { name = cc_bond_per  add = -1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
 		trigger_event_silently = { id = cc_bonds.73  months = 6 }

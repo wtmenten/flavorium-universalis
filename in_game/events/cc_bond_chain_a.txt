@@ -4,11 +4,10 @@ namespace = cc_bonds
 ###############################################################################
 # Chain A: "The Young Heir" — cc_bonds.100–102
 # A multi-generational story spanning 30–45 years.
-# Applies to: palatinate, crown_dependency, military_march, provincial_governorate.
 # Root = overlord. scope:bond_subj = the subject.
 ###############################################################################
 
-# cc_bonds.100 — "The Young Heir" (one-shot intro, fires within first 5 yrs of relationship)
+# cc_bonds.100 — "The Young Heir" 
 # Overlord learns the subject's current ruler has a young heir.
 cc_bonds.100 = {
 	type = country_event
@@ -19,13 +18,20 @@ cc_bonds.100 = {
 	trigger = {
 		has_game_rule = cc_subject_bonds_on
 		any_subject = {
-			OR = {
-				is_subject_type = palatinate
-				is_subject_type = crown_dependency
-				is_subject_type = military_march
+			government_type = goverment_type:monarchy
+			NOT = { ruler = ROOT.ruler }
+			heir ?= {
+				is_child = yes
+				character_age > 6
+			}
+			NOR = {
+				is_subject_type = tax_farm
 				is_subject_type = provincial_governorate
 			}
-			num_locations >= 10
+			OR = {
+				num_locations >= 25
+				total_development >= 100
+			}
 			has_variable = cc_bond_initialized
 			NOT = { has_variable = cc_bond_100_cd }
 		}
@@ -34,13 +40,19 @@ cc_bonds.100 = {
 	immediate = {
 		random_subject = {
 			limit = {
-				OR = {
-					is_subject_type = palatinate
-					is_subject_type = crown_dependency
-					is_subject_type = military_march
+				government_type = goverment_type:monarchy
+				NOT = { ruler = ROOT.ruler }
+				heir ?= {
+					is_child = yes
+				}
+				NOR = {
+					is_subject_type = tax_farm
 					is_subject_type = provincial_governorate
 				}
-				num_locations >= 10
+				OR = {
+					num_locations >= 25
+					total_development >= 100
+				}
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_100_cd }
 			}
@@ -65,7 +77,7 @@ cc_bonds.100 = {
 			change_variable = { name = cc_bond_cul  add = -1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+		trigger_event_silently = { id = cc_bonds.101  years = 12 }
 	}
 
 	# Send tutors and gifts to his home court — per+1, cul+1
@@ -80,18 +92,18 @@ cc_bonds.100 = {
 			change_variable = { name = cc_bond_cul  add = 1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 		}
-		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+		trigger_event_silently = { id = cc_bonds.101  years = 12 }
 	}
 
 	# Ignore the dispatch — no bond change
 	option = {
 		name = cc_bonds.100.c
 		ai_chance = { base = 10 }
-		trigger_event_silently = { id = cc_bonds.101  years = 15 }
+		trigger_event_silently = { id = cc_bonds.101  years = 12 }
 	}
 }
 
-# cc_bonds.101 — "The Heir Comes of Age" (fires 15 years after cc_bonds.100)
+# cc_bonds.101 — "The Heir Comes of Age" (fires 12 years after cc_bonds.100)
 # Three branches based on memory flags from the earlier choice.
 cc_bonds.101 = {
 	type = country_event
