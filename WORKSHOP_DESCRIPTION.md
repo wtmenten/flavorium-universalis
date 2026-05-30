@@ -6,41 +6,47 @@
 
 ## Overview
 
-Cabinets and Choices enhances the vanilla EUV experience across multiple areas: 
+Cabinets and Choices enhances the vanilla EUV experience across multiple areas:
 * Improved AI personality system with dynamic logic and historical changes.
-    * let the AI adjust its personality logically instead of randomly. it might react immediatly to events or due to a build up of circumstances.
-    * Watch the great nations of history make historic shifts in their foreign policy. 
-        * 
-* transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows. 
+    * Let the AI adjust its personality logically instead of randomly — it might react immediately to events or due to a build-up of circumstances.
+    * Watch the great nations of history make historic shifts in their foreign policy.
+* Transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows.
     * Develop powerful traits over time through events.
-    * Clash or collaborate (with you/each-other/foreigners) based on their ideological leanings.
+    * Clash or collaborate (with you/each other/foreigners) based on their ideological leanings.
     * Leave lasting legacies when they retire or die.
-* A system of new subject types - gives you access to subject-meta like you never though possible: 
-    * Small OPMs for powerful modifiers like cultural influence and naval govenor capacity.
-    * Low antagonism and control subjects for exerting progressively expanding influence on foriegn states (akin to Victoria 3 protectorate->puppet progression)
-    * Powerful late-game subjects for organizing large empires and defining/solidifying your sphere of influence.
-* Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more meaningful choices - catchup opportunies, balance, and playstyle specialization as you play through the ages.
-    * Many unlocks are sprinkled into the existing tech tree.
-    * New micro-tech trees are unlocked in the age of discovery and after. 
-        * Currently these require no new institutions but many of the advances are branch and/or region locked. Some are hidden conditional associated with the adm/dip/mil branches that do not appear in the age branch selector ui
+    * **NEW:** Ministers now scheme against each other — rivalries escalate through a three-stage event chain, while ideologically aligned ministers may form cabals and push joint agendas.
+    * **NEW:** Assign explicit duties to ministers — war council, domestic reform, diplomatic mission, colonial posting, and more — boosting related events and providing ongoing country modifiers.
+    * **NEW:** Cabinet composition now has aggregate effects — a court dominated by militarists, merchants, or clergy activates distinct auto-modifiers that reflect the character of your advisors as a whole.
+    * **NEW:** Ministers grow through stepping stone trait chains — starting as fumbling reformists or green adjutants and advancing through events into masters of their craft.
+    * **NEW:** Your war cabinet matters — military ministers drive war council events during conflicts, unlocking post-war reform proposals when you win.
+    * **NEW:** Post a minister overseas as a colonial governor — drive charter company events, navigate native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.
+* A system of new subject types — gives you access to subject-meta like you never thought possible.
+    * Small OPMs for powerful modifiers like cultural influence and naval governor capacity.
+    * Low antagonism and control subjects for exerting progressively expanding influence on foreign states.
+    * Powerful late-game subjects for organizing large empires and defining your sphere of influence.
+    * **NEW:** Long-term subjects now remember how you treated them. A multi-dimensional bond system tracks economic, military, political, cultural, and personal relationships across the Ages — and determines how your subjects behave in the Age of Revolutions.
+* Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more meaningful choices — catch-up opportunities, balance, and playstyle specialization as you play through the ages.
+* Historical flavor for the Hundred Years War, Hussite Wars, and more.
 
 ### Balance & Compatibility Disclosure
 
-The mod is fully additive — it adds no replace_paths and does not overwrite vanilla content. It can be enabled mid-campaign without risk, however, you would not recieve the country specific starting balance modifiers, and may have missed out on early age dynamic events.
+The mod is fully additive — it adds no replace_paths and does not overwrite vanilla content. It can be enabled mid-campaign without risk; however, you would not receive the country-specific starting balance modifiers, and may have missed out on early-age dynamic events.
 
-This mod adds tons of new sources of modifiers from:
-* cabinet members, 
-* permanent and temporary country modifiers, 
-* new advances, 
-* subject type bonuses, 
-* government reforms 
-* and likely more in the future. 
+This mod adds new sources of modifiers from:
+* Cabinet members and their trait compositions,
+* Permanent and temporary country modifiers,
+* New advances,
+* Subject type bonuses,
+* Government reforms,
+* Cabinet duty assignments,
+* Auto-modifiers from cabinet composition profiles,
+* Subject bond payoff events.
 
-It will change game balance significantly and to that end may not play nicely with other balance mods.
+It will change game balance significantly and may not play nicely with other balance mods.
 
-Otherwise, it should be broadly compatible with mods. I've personally been playtesting it with the existing country flavor mods and many more.
+Otherwise, it should be broadly compatible with most mods. I've personally been playtesting it with the existing country flavor mods and many more.
 
-see the bottom for my complete test mod list.
+See the bottom for my complete test mod list.
 
 ---
 
@@ -69,7 +75,13 @@ Dynamic traits that spawn based on your realm's development level, societal valu
 **Negative Traits (9)**
 Acquired through underperformance events; each has a dedicated rehabilitation chain that removes the trait when you address the underlying problem.
 
-*Total: 143+ traits*
+**Stepping Stone Traits (6+)**
+Tier 0 entry traits — the starting point for progressive character growth chains. Ministers begin as fumbling_reformist, tentative_envoy, green_adjutant, or clumsy_accountant and advance through events into skilled specialists.
+
+**Estate Faction Traits (7)**
+Family G overlay traits (category = health) that mark ministers as aligned with the Nobles, Burghers, or Clergy. Stack on top of a minister's cabinet trait. The real gameplay impact comes from the faction events and auto-modifiers they unlock when a single estate dominates the cabinet.
+
+*Total: 156+ traits*
 
 **Notable traits:**
 
@@ -110,13 +122,129 @@ Ministers who underperform acquire negative traits through yearly events. Each n
 
 ---
 
-### New Subject Types
-There are many new subject types to diversive and enhance subject-based gameplay:
-* Progressively tighten your control on loosely aligned states, although they can sometimes be more troublesome then they are worth...
-* Release special opm states for specific benefits - cultural, research, prestige, naval govenor cap.
-* powerful marcher and govenorate subjects during the imperial era paving the way for napoleon-era-like consolidation, rebelions, and breakaways regions etc. 
+### Stepping Stone Traits & Progression
 
-Some subject types require you to have the matching estate privilege or government reform (at least one when there are options) to use them: 
+Ministers can now enter **progressive trait chains** — starting from a Tier 0 entry trait and advancing into genuine specialists over the course of a campaign:
+
+- **Chain A — The Reformer's Path:** `fumbling_reformist` → ... → `master_reformer` (driven by `cc_duty_domestic_reform`)
+- **Chain C — The Diplomat's Ascent:** `tentative_envoy` → ... → `master_statesman`
+- **Chain D — Military Hardening:** `green_adjutant` → ... → `standing_army_advocate` or `defensive_commander`
+- **Chain F — The Fiscal Path:** `clumsy_accountant` → ... → treasury/prosperity specialist
+- **Chain E — Colonial Pioneer:** `frontier_administrator` → `returned_colonial_governor` (driven by `cc_duty_colonial_posting`)
+
+Entry traits are mild negatives — they are the starting point, not the destination. Progress is tracked per minister via event variables and advances every 24 months. Assigning a minister to the matching duty doubles their progression rate.
+
+---
+
+### Court Rivalry & Cabal
+
+Ministers with opposing ideological traits build **court tension** over time. When court tension reaches its threshold, a three-stage rivalry chain fires:
+
+1. **The Minister's Complaint** — the rival ministers clash and the ruler must take sides
+2. **A Letter Unsealed** — whispers turn to written evidence; the feud becomes harder to contain
+3. **The Faction Hardens** — the court fractures along factional lines, forcing a resolution
+
+Conversely, ideologically aligned ministers can form **cabals** — political compacts that let them push joint agendas. Cabinet alliances grant temporary bonus modifiers but create factions the ruler may eventually need to manage.
+
+The **Purge Rival** character interaction lets rulers act before tensions escalate, at the cost of minister loyalty.
+
+---
+
+### Cabinet Duties
+
+Assign ministers to explicit roles to boost related event systems and gain ongoing country modifiers:
+
+- **War Council** — improves discipline and morale recovery; drives war council events during conflicts
+- **Domestic Reform** — reduces stability cost; doubles stepping stone progression rate
+- **Diplomatic Mission** — diplomatic effect; gates diplomatic interaction events
+- **Scholarly Inquiry** — research effect; boosts scholarly events (Age 5–6)
+- **Religious Oversight** — religious influence effect; gates confessional tension events
+- **Colonial Posting** — sends a minister overseas; unlocks colonial dispatch, corruption, and crisis events
+- **Free Hands** — the default; minister attends to whatever the court requires, all idle events fire at baseline rate
+
+Multiple ministers may share Free Hands. Other duties are exclusive.
+
+---
+
+### Cabinet Composition Auto-Modifiers
+
+Your cabinet now speaks as a whole, not just as individual ministers. When the cabinet matches a composition profile, an **aggregate auto-modifier** activates and persists until the profile no longer holds:
+
+- **Warlord Court** — two or more military specialists; your court thinks and breathes war
+- **Merchant Republic Spirit** — two or more commercial/fiscal specialists; a court that counts its coins
+- **Enlightened Court** — two or more scholarly or empiricist ministers; ideas flourish
+- **Court Paralysis** — opposing ideologues deadlock the cabinet; efficiency suffers
+- **Entrenched Court** — three or more conservative ministers; reform slows, stability holds
+- **Balanced Court** — no single trait category dominates; modest bonuses across the board
+- **Nobles / Burghers / Clergy Court Captured** — one estate holds a majority in the cabinet; estate power and influence modifiers follow
+
+---
+
+### War Council
+
+Your military ministers now drive outcomes during wars:
+
+- **The Council of War** — fires annually while at war; military traits shape whether you push for offensive action, defensive consolidation, or emergency resupply
+- **Financing the War** — when the treasury is strained during a conflict, ministers debate emergency measures
+- **The General's Request** — a supreme commander or outdated general pushes for authority or retirement
+- **Post-war reform proposals** — winning a war unlocks a short window for standing army reform, supply reform, or fortification doctrine proposals, driven by which military traits are present
+- **The Outdated General** — veterans past their prime can be formally retired with honor during a conflict
+
+---
+
+### Estate Faction Capture
+
+When a single estate dominates the cabinet — two or more ministers bearing Noble, Burgher, or Clergy affiliation traits — the captured-court auto-modifier activates and faction events begin firing:
+
+- **The Nobles Demand** — the noble faction pushes for sweeping privilege; refusal risks minister loyalty
+- **The Merchant Compact** — burgher ministers push a trade agenda; compliance or friction
+- **The Prelates Move** — clergy ministers press for religious influence; you decide how much power the church gets
+
+Balancing your cabinet composition is now a genuine strategic concern.
+
+---
+
+### Colonial Cabinet
+
+Post a minister overseas as a **Colonial Posting** to unlock a dedicated colonial event chain:
+
+- **The Governor's Dispatch** — regular flavor reports from the posted minister; invest, extract, or acknowledge their work
+- **Corruption in the Colony** — risk events when the minister's character interacts with colonial wealth
+- **A Native Uprising** — the posted minister must manage colonial resistance
+- **Fever in the Colony** — the minister faces tropical disease; their traits and your choices shape the outcome
+
+Charter company owners also receive dedicated events:
+- **The Company's Accounts** — the minister audits the company ledgers; windfall or investigation
+- **A Monopoly Dispute** — merchant-aligned ministers clash over company privileges
+- **The Colonial Petition** — late-game decolonization pressure chain (Ages 5–6) that can lead to a **Defection** or a negotiated **Compromise**
+
+---
+
+### Overlord-Subject Bonds
+
+Long-term subjects now have **living relationship histories**. A five-dimensional bond system tracks your relationship with each significant subject across the game:
+
+- **Economic** — how you tax and invest in the subject
+- **Military** — whether you use them as cannon fodder or shield them
+- **Political** — how much autonomy you grant or revoke
+- **Cultural** — integration vs. preservation of local identity
+- **Personal** — how your rulers and their court interact over generations
+
+Bond scores accumulate silently through event chains specific to each subject type (colonial nations, governorates, palatinates, puppets, dependencies, marches, federal subjects). Periodic **status reveal events** surface what your subjects actually think of you.
+
+In the **Age of Revolutions**, accumulated bond scores resolve into **one-shot payoff events** — subjects whose bonds are high become stalwart partners; those with poor bonds may push for independence, defect to rivals, or demand constitutional concessions.
+
+Gated by the **C&C: Overlord-Subject Bonds** game rule (default: on).
+
+---
+
+### New Subject Types
+There are many new subject types to diversify and enhance subject-based gameplay:
+* Progressively tighten your control on loosely aligned states, although they can sometimes be more troublesome than they are worth...
+* Release special OPM states for specific benefits — cultural, research, prestige, naval governor cap.
+* Powerful marcher and governorate subjects during the imperial era paving the way for Napoleon-era-like consolidation, rebellions, and breakaway regions.
+
+Some subject types require you to have the matching estate privilege or government reform to use them:
 * Elite Enclave
 * Scientific College
 * Naval Administration
@@ -157,11 +285,11 @@ Some subject types require you to have the matching estate privilege or governme
 ---
 
 ### Era Advances
-New advances have been added across the ages to unlock new subject types and reforms, enhance regional flavor, add gameplay variability, and maybe a little balancing (1.2 diseases).
-Some of these are age-branch (Adm/Dip/Mil) specific - others cultural, regional, or country based. 
+New advances have been added across the ages to unlock new subject types and reforms, enhance regional flavor, add gameplay variability, and provide some balancing.
+Some are age-branch (Adm/Dip/Mil) specific — others cultural, regional, or country-based.
 
-Many are mixed into exising tech trees, but there are also new micro-trees in each age past the renaissance. 
-    - The mini-trees also have age-branch based advances, some have follow-on advances which are not listed in the age picker UI. 
+Many are mixed into existing tech trees, but there are also new micro-trees in each age past the Renaissance.
+    - The mini-trees also have age-branch advances, some with follow-on advances not listed in the age picker UI.
 
 <!-- GEN:advances -->
 **Age of Renaissance** (6 advances)
@@ -289,8 +417,17 @@ Many are mixed into exising tech trees, but there are also new micro-trees in ea
 | `cc_legend` | 6 | Legendary minister quest chains |
 | `cc_hyw` | 11 | Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure |
 | `cc_personality` | 18 | Dynamic AI personality inflection events — key historical turning points |
+| `cc_bonds` | 98 | Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs |
+| `cc_rival` | 3 | Court rivalry escalation: minister complaint → letter unsealed → faction hardens |
+| `cc_cabal` | 2 | Cabinet alliance formation: alliance forms → joint reform proposal |
+| `cc_wc` | 7 | War council: active-war events, post-war reform proposals, outdated general retirement |
+| `cc_fac` | 3 | Estate faction capture events |
+| `cc_prog` | 19 | Stepping stone trait progression chains (Paths A/C/D/F/E) |
+| `cc_colonial` | 6 | Colonial divan: charter company events + decolonization crisis chain |
+| `cc_posting` | 4 | Colonial posting duty: dispatch, corruption, native uprising, fever |
+| `cc_hus` | 1 | Hussite Wars — papal loan event |
 
-*~172 events total*
+*~315 events total*
 <!-- /GEN:event-categories -->
 
 ---
@@ -303,11 +440,22 @@ A system of historical events and starting modifiers for the Hundred Years War s
 - **War outcome events** fire when either side wins or loses major wars, stacking levy and estate effects over time to reflect the shifting fortunes of the conflict.
 - **Observer power reactions** — Burgundy, Castile, and Aragon witness western European wars and may choose sides or demand concessions (cc_hyw.12/13).
 - **Vassal defection pressure** — French and English vassals face events when their suzerain suffers defeat, with opportunities to renegotiate terms or waver in loyalty (cc_hyw.20–23).
-- **Lowlands incursion events** — when France or England take land in the lowlands during the HYW, Their Lowlands subjects or the people themselves may demand the land be transfered to them, lest political crises emerge (cc_hyw.30/31).
+- **Lowlands incursion events** — when France or England take land in the lowlands during the HYW, their Lowlands subjects or the people themselves may demand the land be transferred to them, lest political crises emerge (cc_hyw.30/31).
 - **The Auld Alliance** (cc_hyw.1) — France can formally guarantee Scottish independence, binding England's northern flank and setting up the FRA–SCO–ENG triangle.
-- **Replace Appanage Ruler decision** — France can 'replace' disloyal appanage lords to consolidate control at the cost of their other vassals opinions.
+- **Replace Appanage Ruler decision** — France can 'replace' disloyal appanage lords to consolidate control at the cost of their other vassals' opinions.
 
 ~11 events spanning France, England, Scotland, Burgundy, and observer powers.
+
+---
+
+### Hussite Wars Flavor
+
+When the Hussite Wars situation fires and Bohemia fights the Papacy, the **C&C: Hussites — One Small Loan** game rule (default: on) enables a flavored papal outreach event:
+
+- **The Pope Calls for Aid** — the Pope approaches the strongest Catholic power with coin, asking them to enter the crusade on Rome's side.
+- Catholic countries that are already in the war can accept or demand more; those on the opposing side can defect for gold; neutral powers can weigh in diplomatically.
+
+A lighthearted event — described by the mod as "slightly silly" — but it gives every major Catholic power a meaningful choice during the Hussite Wars situation.
 
 ---
 
@@ -318,7 +466,7 @@ AI countries now evolve their strategic personality across the ages — shifting
 **27 countries** have historically-informed personality arcs covering all six ages:
 *TUR, FRA, ENG, MOS, CAS, HAB, POR, SWE, POL, LIT, DAN, BUR, VEN, PAP, GEN, BYZ, HUN, MAM, ETH, MNG, SHO, KOR, NOG/GLH, NAP, SCO, MLO, MLI/SON*
 
-**Key inflection events** fire at historical turning points and give ai-controlled countries a choice between the historical personality and an alternative :
+**Key inflection events** fire at historical turning points and give AI-controlled countries a choice between the historical personality and an alternative:
 - **The Conquering Sultan** (TUR, Age 3) — peak Selim/Suleiman era aggressive expansion
 - **The Long Stagnation** (TUR, Age 4) — early Ottoman institutional decline begins
 - **The Sun King Rises** (FRA, Age 5) — Louis XIV's absolutist ambition
@@ -359,7 +507,7 @@ Gives the Mamluks starting penalties reflecting their status as a foreign milita
 - **Enabled** *(default)* — The Mamluks begin with a permanent peasant levy penalty and decaying military strain, easing over 200 years.
 - **Disabled** — The Mamluks start with no historical penalties.
 
-**C&C: Ottomans — Colonization **
+**C&C: Ottomans — Colonization**
 Prevent the Ottomans from colonizing.
 - **Prevent Colonization** *(default)* — The Ottomans are permanently prevented from colonizing.
 - **Allow Colonization** — The Ottomans may still colonize as normal.
@@ -375,6 +523,16 @@ Controls whether AI countries evolve their grand strategies across ages and shif
 Enables historical flavor for the Hundred Years War: starting levy and estate modifiers for France and England, war outcome stacking, vassal defection pressure events, observer power reactions, and the Replace Appanage Ruler decision.
 - **Enabled** *(default)* — France and England start with historical modifiers; war outcomes stack levy and estate effects over time; Burgundy, Brittany, and other vassals may waver when their suzerain suffers defeat.
 - **Disabled** — No HYW-specific starting modifiers, stacking events, or vassal defection pressure will fire.
+
+**C&C: Overlord-Subject Bonds**
+Tracks five relationship dimensions (economic, military, political, cultural, personal) for each major long-term subject. Player choices across Ages 1–4 determine how subjects behave in the Age of Revolutions. Most tracking is hidden; consequences appear decades later.
+- **Enabled** *(default)* — Detailed multi-dimensional run-spanning subject event chains, sentiment tracking, and Age of Revolutions payoff events.
+- **Disabled** — Normal subject relationships; bond tracking and event chains disabled.
+
+**C&C: Hussites — One Small Loan Events**
+Enables a flavored papal outreach event during the Hussite Wars situation — the Pope approaches the strongest Catholic power with coin in exchange for military support.
+- **Enabled** *(default)* — Papal loan events fire depending on your stance during Hussite crusades.
+- **Disabled** — No Papal loan events will fire.
 <!-- /GEN:game-rules -->
 
 ---
@@ -397,18 +555,30 @@ The Ottomans are permanently prevented from colonizing overseas. This reflects t
 
 ---
 
+### Coming in Future Updates
+
+Several expansion pillars are designed and planned for future releases:
+
+- **The Scholar's Court** — Age 5–6 empiricism events; the Royal Academy building; Scholasticism vs. Empiricism cabinet tensions
+- **Succession Crisis Cabinet** — Regency events, dynastic drama, cabinet behavior during interregna and heir disputes
+- **Religious Cabinet Tensions** — Reformation splits courts; confessional traits; inquisitorial pressure events
+- **The Congress System** — Multi-country diplomatic theater; congress events where great power ministers interact directly
+- **More Historical Flavor** — Ottoman, Italian, Spanish, Mughal, and French court event chains
+
+---
+
 ## Compatibility
 
 - No `replace_paths` — fully additive, compatible with other mods that don't replace the same files
 - Safe to enable on existing saves (new content will start appearing as events fire)
 - Multiplayer synchronized
 - May break balance as cabinet members and new subjects provide a lot of bonuses.
-- Generally mod compatible so long as they dont modify traits heavily like i have. 
-    - Not tested with other subject mods as i found them unstable.
+- Generally mod compatible so long as they don't modify traits heavily.
+    - Not tested with other subject mods as I found them unstable.
     - Tested with:
-        * Hussite, Austria, Brandenburg (the 'country pack' one), Timur, and Ottoman flavor packs. 
+        * Hussite, Austria, Brandenburg (the 'country pack' one), Timur, and Ottoman flavor packs.
         * Community Flavor Pack
-        * Overseas Naval Govenors
+        * Overseas Naval Governors
         * Logical Advances Trees
         * Improved Subject Management
         * Nobles Auto Marry
@@ -428,7 +598,7 @@ The Ottomans are permanently prevented from colonizing overseas. This reflects t
 ## AI Use Disclosure
 
 Numerous AI agents were used in the creation of this project: Claude, Gemini, Qwen.
-Currently there is no AI art or music in the project, but only because I havn't added any yet. 
+Currently there is no AI art or music in the project, but only because I haven't added any yet.
 
 
 ---

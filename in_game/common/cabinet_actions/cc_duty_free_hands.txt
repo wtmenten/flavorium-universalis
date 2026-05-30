@@ -9,32 +9,26 @@ cc_duty_free_hands = {
 	ability = adm
 	allow_multiple = yes
 
+	# NOTE: is_finished cannot reliably detect per-seat empty state for allow_multiple = yes
+	# without a select_trigger target providing per-instance scope. The on_activate guard
+	# covers activation-time empty seats (via stop_cabinet_action); mid-action departures
+	# are handled in events via cc_minister_is_available.
+
 	on_activate = {
 		# root = cabinet seat; root.cabinet_member = the character (nil if slot is empty)
 		if = {
 			limit = { NOT = { exists = root.cabinet_member } }
-			root = {
-				remove_variable = cc_cabinet_character
-				stop_cabinet_action = {}
-			}
-			# scope:actor = { set_variable = { name = cc_duty_free_hands_invalid value = yes } }
-		} 
+			root = { stop_cabinet_action = {} }
+		}
 		else = {
-			set_variable = { name = cc_cabinet_character value = root.cabinet_member }
+			root = {
+				set_variable = { name = cc_cabinet_character value = cabinet_member }
+			}
 		}
 	}
 
 	on_deactivate = {
-		# scope:actor = { remove_variable = cc_duty_free_hands_invalid }
-	}
-
-	is_finished = {
-			NOR = {
-				has_variable = cc_cabinet_character
-				exists = var:cc_cabinet_character
-			}
-		# Self-cancel if assigned to an empty cabinet seat
-		# scope:actor = { has_variable = cc_duty_free_hands_invalid }
+		root = { remove_variable = cc_cabinet_character }
 	}
 
 	ai_will_do = {

@@ -21,20 +21,17 @@ cc_duty_war_council = {
 	on_activate = {
 		if = {
 			limit = { NOT = { exists = root.cabinet_member } }
-			root = {
-				stop_cabinet_action = {}
-			}
-			# scope:actor = { set_variable = { name = cc_duty_war_council_invalid value = yes } }
+			scope:actor = { set_variable = { name = cc_duty_war_council_invalid value = yes } }
 		}
 	}
 
 	on_deactivate = {
-		# scope:actor = { remove_variable = cc_duty_war_council_invalid }
+		scope:actor = { remove_variable = cc_duty_war_council_invalid }
 	}
 
 	is_finished = {
 		OR = {
-			# scope:actor = { has_variable = cc_duty_war_council_invalid }
+			scope:actor = { has_variable = cc_duty_war_council_invalid }
 			scope:actor = { NOT = { at_war = yes } }
 		}
 	}

@@ -111,7 +111,14 @@ $exclusions = @(
     "decline_of_empire.9",
     "audio2_wwise.cpp:757",
     "audio2_wwise.cpp:1970",
-    "state_event.h:391"
+    "state_event.h:391",
+    "Trying to reshape data model with negative count -1",
+    "No context supplied (Use SetDataContext),",
+    "FetchData failed for 'RowList.GetTitle'",
+    "PdxDataFetchLocalizedData",
+    "Promote 'INTERNATIONAL_ORGANIZATION' returned nullptr",
+    "FetchData failed for 'INTERNATIONAL_ORGANIZATION.GetName'",
+    "NOT_HAS_SPECIAL_STATUS_IN_INTERNATIONAL_ORGANIZATION_TRIGGER"
 )
 
 if (Test-Path $logFile) {

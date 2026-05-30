@@ -40,7 +40,17 @@ cc_bonds.130 = {
 		set_variable = { name = cc_bond_130_cd_overlord  value = yes years = { 30 80 } }
 		random_subject = {
 			limit = {
-				num_locations >= 10
+				OR = {
+					AND = {
+						capital.development > 10
+						num_locations >= 20
+					}
+					AND = {
+						capital.development > 15
+						num_locations >= 10
+					}
+					capital.development > 25
+				}
 				has_variable = cc_bond_initialized
 				NOT = { has_variable = cc_bond_130_cd }
 			}
