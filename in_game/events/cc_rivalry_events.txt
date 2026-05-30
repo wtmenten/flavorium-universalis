@@ -1,0 +1,298 @@
+﻿namespace = cc_rival
+
+###############################################################################
+# CABINETS AND CHOICES — COURT RIVALRY EVENTS (Pillar 01)
+#
+# Rivalry accumulation and the three-event escalation chain:
+#   cc_rival.1  The Minister's Complaint      (biyearly, when court_tension active)
+#   cc_rival.2  A Letter Unsealed             (triggered from cc_rival.1 option D)
+#   cc_rival.3  The Faction Hardens           (triggered from cc_rival.2 option B)
+#
+# Pulse hook: cc_cabinet_biyearly_rivalry in cc_cabinet_pulse.txt drives
+# the rivalry variable and applies/removes court_tension.
+###############################################################################
+
+
+###############################################################################
+# cc_rival.1 — THE MINISTER'S COMPLAINT
+# Fires biyearly when court_tension is active and a live opposing pair exists.
+# Two rival ministers are picked and the ruler must act.
+###############################################################################
+
+cc_rival.1 = {
+	type = country_event
+	title = cc_rival.1.title
+	desc = cc_rival.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+		10 = angry
+	}
+
+	trigger = {
+		has_country_modifier = court_tension
+		NOT = { has_variable = cc_rival_event_cooldown }
+		OR = {
+			AND = {
+				any_cabinet_character = { has_trait = royal_absolutist }
+				any_cabinet_character = { has_trait = liberal_reformer }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = hawk_minister }
+				any_cabinet_character = { has_trait = peacemaker_counselor }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = efficiency_administrator }
+				any_cabinet_character = { has_trait = regional_magnate }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = noble_champion }
+				any_cabinet_character = { has_trait = merchant_prince }
+			}
+			AND = {
+				any_cabinet_character = { has_trait = expansionist_advisor }
+				any_cabinet_character = { has_trait = consolidation_minister }
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_rival_event_cooldown value = yes months = 30 }
+		# Find the first matching opposing pair and save both to scope
+		if = {
+			limit = {
+				any_cabinet_character = { has_trait = royal_absolutist }
+				any_cabinet_character = { has_trait = liberal_reformer }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = royal_absolutist }
+				save_scope_as = rival_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = liberal_reformer }
+				save_scope_as = rival_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = hawk_minister }
+				any_cabinet_character = { has_trait = peacemaker_counselor }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = hawk_minister }
+				save_scope_as = rival_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = peacemaker_counselor }
+				save_scope_as = rival_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = efficiency_administrator }
+				any_cabinet_character = { has_trait = regional_magnate }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = efficiency_administrator }
+				save_scope_as = rival_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = regional_magnate }
+				save_scope_as = rival_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = noble_champion }
+				any_cabinet_character = { has_trait = merchant_prince }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = noble_champion }
+				save_scope_as = rival_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = merchant_prince }
+				save_scope_as = rival_b
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = { has_trait = expansionist_advisor }
+				save_scope_as = rival_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = consolidation_minister }
+				save_scope_as = rival_b
+			}
+		}
+	}
+
+	# Option A — Side with rival_a (the harder-edged minister)
+	option = {
+		name = cc_rival.1.a
+		add_prestige = prestige_weak_penalty
+		remove_country_modifier = court_tension
+		set_variable = { name = cc_court_rivalry value = 0 }
+		scope:rival_a = {
+			add_opinion = { target = root modifier = cc_court_favored }
+		}
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+
+	# Option B — Side with rival_b (the more conciliatory minister)
+	option = {
+		name = cc_rival.1.b
+		add_prestige = prestige_weak_penalty
+		remove_country_modifier = court_tension
+		set_variable = { name = cc_court_rivalry value = 0 }
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_court_favored }
+		}
+		scope:rival_a = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+
+	# Option C — Broker a reconciliation (costs money and prestige but keeps both)
+	option = {
+		name = cc_rival.1.c
+		add_prestige = prestige_mild_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -60 }
+		if = {
+			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry > 1 }
+			change_variable = { name = cc_court_rivalry add = -2 }
+		}
+		else = {
+			set_variable = { name = cc_court_rivalry value = 0 }
+		}
+		scope:rival_a = {
+			add_opinion = { target = root modifier = cc_court_reconciliation }
+		}
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_court_reconciliation }
+		}
+	}
+
+	# Option D — Exploit the tension (open "A Letter Unsealed" chain)
+	option = {
+		name = cc_rival.1.d
+		trigger_event = { id = cc_rival.2 months = 3 }
+	}
+}
+
+
+###############################################################################
+# cc_rival.2 — A LETTER UNSEALED
+# Triggered from cc_rival.1 option D ("exploit the tension").
+# Evidence of scheming surfaces: ruler can purge, reconcile, or weaponize it.
+###############################################################################
+
+cc_rival.2 = {
+	type = country_event
+	title = cc_rival.2.title
+	desc = cc_rival.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	# No trigger — this is always triggered from cc_rival.1 option D.
+	# Scopes rival_a and rival_b are preserved from cc_rival.1.
+
+	# Option A — Use it to purge rival_b (remove court tension, small prestige cost)
+	option = {
+		name = cc_rival.2.a
+		add_prestige = prestige_mild_penalty
+		remove_country_modifier = court_tension
+		set_variable = { name = cc_court_rivalry value = 0 }
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+		add_country_modifier = {
+			modifier = cc_faction_purge_fallout
+			years = 5
+		}
+	}
+
+	# Option B — Pass it to rival_a as leverage, then let them clash (chain escalates)
+	option = {
+		name = cc_rival.2.b
+		add_prestige = prestige_weak_bonus
+		scope:rival_a = { add_mil = 1 }
+		trigger_event = { id = cc_rival.3 months = 6 }
+	}
+
+	# Option C — Suppress it (the evidence vanishes, tension stays but drops)
+	option = {
+		name = cc_rival.2.c
+		if = {
+			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry > 0 }
+			change_variable = { name = cc_court_rivalry add = -1 }
+		}
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+###############################################################################
+# cc_rival.3 — THE FACTION HARDENS
+# Triggered from cc_rival.2 option B (passed the letter as leverage).
+# The rivalry crystallises into a factional confrontation.
+###############################################################################
+
+cc_rival.3 = {
+	type = country_event
+	title = cc_rival.3.title
+	desc = cc_rival.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+		10 = armed
+	}
+
+	# Option A — Crack down on the faction (heavy prestige cost, clears tension)
+	option = {
+		name = cc_rival.3.a
+		add_prestige = prestige_severe_penalty
+		remove_country_modifier = court_tension
+		set_variable = { name = cc_court_rivalry value = 0 }
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+		add_stability = stability_weak_penalty
+	}
+
+	# Option B — Allow the faction to exhaust itself (tension lingers, but no immediate cost)
+	option = {
+		name = cc_rival.3.b
+		add_stability = stability_mild_penalty
+		add_country_modifier = {
+			modifier = court_tension
+			years = 5
+			mode = set_to_largest_and_extend
+		}
+	}
+
+	# Option C — Elevate one faction publicly (declares a winner, huge prestige hit)
+	option = {
+		name = cc_rival.3.c
+		add_prestige = prestige_mild_penalty
+		remove_country_modifier = court_tension
+		set_variable = { name = cc_court_rivalry value = 0 }
+		scope:rival_a = {
+			add_adm = 1
+			add_opinion = { target = root modifier = cc_court_favored }
+		}
+		scope:rival_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+}

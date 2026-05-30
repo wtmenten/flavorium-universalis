@@ -37,6 +37,10 @@ biyearly_country_pulse = {
 		cc_cabinet_biyearly_cabinet
 		cc_cabinet_biyearly_feudal
 		cc_cabinet_biyearly_wealth
+		cc_cabinet_biyearly_rivalry
+		cc_cabinet_biyearly_rivalry_events
+		cc_cabinet_biyearly_cabal
+		cc_cabinet_biyearly_estate_faction
 	}
 }
 
@@ -417,6 +421,117 @@ cc_cabinet_biyearly_wealth = {
 	events = {
 		cc_wealth.9     # Inflation stack (33% chance when hoarding)
 		cc_wealth.10    # Corruption stack (33% chance when hoarding)
+	}
+}
+
+###############################################################################
+# COURT RIVALRY SUB-PULSES (Pillar 01)
+###############################################################################
+
+# Biyearly rivalry accumulation — builds or decays cc_court_rivalry variable;
+# applies court_tension modifier when threshold is crossed.
+cc_cabinet_biyearly_rivalry = {
+	trigger = {
+		any_cabinet_character = { in_cabinet = yes }
+	}
+	effect = {
+		if = {
+			limit = {
+				OR = {
+					AND = {
+						any_cabinet_character = { has_trait = royal_absolutist }
+						any_cabinet_character = { has_trait = liberal_reformer }
+					}
+					AND = {
+						any_cabinet_character = { has_trait = hawk_minister }
+						any_cabinet_character = { has_trait = peacemaker_counselor }
+					}
+					AND = {
+						any_cabinet_character = { has_trait = efficiency_administrator }
+						any_cabinet_character = { has_trait = regional_magnate }
+					}
+					AND = {
+						any_cabinet_character = { has_trait = noble_champion }
+						any_cabinet_character = { has_trait = merchant_prince }
+					}
+					AND = {
+						any_cabinet_character = { has_trait = expansionist_advisor }
+						any_cabinet_character = { has_trait = consolidation_minister }
+					}
+				}
+			}
+			# Opposing pair present — accumulate rivalry score
+			if = {
+				limit = { NOT = { has_variable = cc_court_rivalry } }
+				set_variable = { name = cc_court_rivalry value = 1 }
+			}
+			else_if = {
+				limit = { var:cc_court_rivalry < 5 }
+				change_variable = { name = cc_court_rivalry add = 1 }
+			}
+			# Apply court_tension when score reaches 3+
+			if = {
+				limit = { var:cc_court_rivalry >= 3 }
+				add_country_modifier = {
+					modifier = court_tension
+					years = 3
+					mode = set_to_largest_and_extend
+				}
+			}
+		}
+		else = {
+			# No opposing pair — rivalry decays
+			if = {
+				limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry > 0 }
+				change_variable = { name = cc_court_rivalry add = -1 }
+			}
+		}
+	}
+}
+
+# Rivalry event chain — fires when court_tension is active (random pick)
+cc_cabinet_biyearly_rivalry_events = {
+	trigger = { has_country_modifier = court_tension }
+	random_events = {
+		3 = cc_rival.1    # The Minister's Complaint
+
+		chance_to_happen = 50
+
+		chance_of_no_event = {
+			value = 30
+		}
+	}
+}
+
+# Cabal formation — fires periodically regardless of tension
+cc_cabinet_biyearly_cabal = {
+	random_events = {
+		3 = cc_cabal.1    # The Alliance Forms
+
+		chance_to_happen = 25
+
+		chance_of_no_event = {
+			value = 50
+		}
+	}
+}
+
+###############################################################################
+# ESTATE FACTION SUB-PULSES (Pillar 02)
+###############################################################################
+
+# Estate capture event sweep — all three evaluated, one fires if condition met.
+cc_cabinet_biyearly_estate_faction = {
+	random_events = {
+		3 = cc_fac.1    # The Nobles Demand
+		3 = cc_fac.2    # The Merchant Compact
+		3 = cc_fac.3    # The Prelates Move
+
+		chance_to_happen = 40
+
+		chance_of_no_event = {
+			value = 20
+		}
 	}
 }
 

@@ -1051,3 +1051,65 @@ cc_fortification_doctrine = {
 	fort_maintenance_cost = -0.15
 	global_hostile_attrition = 0.5
 }
+
+########################
+# Court Rivalry Modifiers (Pillar 01)
+########################
+
+# Applied when opposing cabinet pair rivalry hits threshold — marks a fractured court.
+court_tension = {
+	game_data = { category = country decaying = yes }
+	stability_cost = 0.10
+	monthly_prestige = -0.05
+	diplomatic_reputation = -0.1
+}
+
+# Applied when a cabal compact is formalized between complementary ministers.
+cc_cabal_compact = {
+	game_data = { category = country decaying = yes }
+	country_cabinet_efficiency = 0.05
+	stability_cost = -0.05
+	monthly_prestige = 0.03
+}
+
+# Applied after a faction purge — the dismissed minister's network retaliates.
+cc_faction_purge_fallout = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = -0.05
+	diplomatic_reputation = -0.15
+}
+
+########################
+# Estate Faction Modifiers (Pillar 02)
+########################
+
+# Applied when 2+ noble-aligned ministers dominate the cabinet.
+cc_nobles_court_captured = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = 0.05
+	nobles_estate_agenda_impact = 0.12
+	burghers_estate_agenda_impact = -0.05
+	clergy_estate_agenda_impact = -0.05
+	stability_cost = 0.10
+}
+
+# Applied when 2+ burgher-aligned ministers dominate the cabinet.
+cc_burghers_court_captured = {
+	game_data = { category = country decaying = yes }
+	selling_efficiency = 0.05
+	burghers_estate_agenda_impact = 0.12
+	nobles_estate_agenda_impact = -0.05
+	clergy_estate_agenda_impact = -0.05
+	stability_cost = 0.08
+}
+
+# Applied when 2+ clergy-aligned ministers dominate the cabinet.
+cc_clergy_court_captured = {
+	game_data = { category = country decaying = yes }
+	monthly_religious_influence = 0.08
+	clergy_estate_agenda_impact = 0.12
+	burghers_estate_agenda_impact = -0.05
+	nobles_estate_agenda_impact = -0.05
+	tolerance_heretic = -1
+	stability_cost = 0.08
+}

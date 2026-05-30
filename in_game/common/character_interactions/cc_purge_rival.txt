@@ -1,0 +1,97 @@
+﻿
+# Cabinets and Choices — Pillar 01: Court Rivalry
+# "Dismiss the Rival Minister"
+#
+# Available when the court_tension modifier is active on the country.
+# The ruler selects a cabinet minister to dismiss, removing the immediate
+# source of factional conflict. Costs prestige; triggers estate displeasure
+# if the dismissed minister carries an estate affiliation trait (Family G).
+
+dismiss_rival_minister = {
+	on_own_nation = yes
+	message = yes
+
+	potential = {
+		scope:actor = {
+			has_country_modifier = court_tension
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_country_modifier = court_tension
+		}
+	}
+
+	cooldown = {
+		type = dismiss_rival_minister
+		years = 5
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "choose_minister_to_dismiss"
+		column = {
+			data = name
+		}
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+		enabled = {
+			in_cabinet = yes
+			is_ruler = no
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			add_prestige = prestige_mild_penalty
+			remove_country_modifier = court_tension
+			set_variable = { name = cc_court_rivalry value = 0 }
+		}
+		scope:recipient = {
+			# Estate satisfaction hit if minister had an estate affiliation trait
+			if = {
+				limit = { has_trait = noble_champion_of_court }
+				scope:actor = {
+					add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+				}
+			}
+			else_if = {
+				limit = { has_trait = merchant_of_the_crown }
+				scope:actor = {
+					add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_penalty }
+				}
+			}
+			else_if = {
+				limit = { has_trait = court_prelate }
+				scope:actor = {
+					add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_penalty }
+				}
+			}
+			# The dismissed minister harbours resentment
+			add_opinion = { target = scope:actor modifier = cc_rival_dismissed }
+		}
+		# Remove the minister from cabinet
+		scope:actor = {
+			remove_from_cabinet = scope:recipient
+		}
+	}
+
+	ai_will_do = {
+		add = -10
+		add = {
+			value = 20
+			desc = "court_tension_active"
+			if = {
+				limit = {
+					scope:actor = { has_country_modifier = court_tension }
+					scope:recipient = { NOT = { has_trait_category = cabinet } }
+				}
+			}
+		}
+	}
+}

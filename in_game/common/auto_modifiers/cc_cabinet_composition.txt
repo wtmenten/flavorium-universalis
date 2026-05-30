@@ -1,6 +1,10 @@
 ﻿## Cabinets and Choices — Cabinet Composition Auto-Modifiers
 # Aggregate modifiers that reflect the overall character of the cabinet.
 # All use potential_trigger so they activate/deactivate live as traits change.
+#
+# Sections:
+#   1. Ideological composition modifiers (original)
+#   2. Estate-captured modifiers (Pillar 02 — requires 2+ same-estate Family G traits)
 
 # Two or more military specialists in the cabinet — a court that speaks of war.
 warlord_court = {
@@ -229,9 +233,65 @@ balanced_court = {
 				}
 			}
 		}
+		# Not estate-captured (Pillar 02: no single estate holds 2+ aligned ministers)
+		NOT = { any_cabinet_character = { has_trait = noble_champion_of_court count >= 2 } }
+		NOT = { any_cabinet_character = { has_trait = merchant_of_the_crown count >= 2 } }
+		NOT = { any_cabinet_character = { has_trait = court_prelate count >= 2 } }
 	}
 
 	monthly_prestige = 0.03
 	stability_cost = -0.03
 	diplomatic_reputation = 0.1
+}
+
+###############################################################################
+# PILLAR 02 — ESTATE-CAPTURED CABINET AUTO-MODIFIERS
+# Fire when 2+ ministers share the same estate affiliation trait (Family G).
+# Use static modifiers from cc_event_modifiers.txt for display names and descs.
+###############################################################################
+
+# The nobles dominate the cabinet — prestige and noble power surge, others suffer.
+nobles_court_captured = {
+	requires_real = yes
+
+	potential_trigger = {
+		any_cabinet_character = { has_trait = noble_champion_of_court count >= 2 }
+	}
+
+	monthly_prestige = 0.05
+	nobles_estate_agenda_impact = 0.12
+	burghers_estate_agenda_impact = -0.05
+	clergy_estate_agenda_impact = -0.05
+	stability_cost = 0.10
+}
+
+# The merchants dominate the cabinet — trade booms, but military and clergy resent it.
+burghers_court_captured = {
+	requires_real = yes
+
+	potential_trigger = {
+		any_cabinet_character = { has_trait = merchant_of_the_crown count >= 2 }
+	}
+
+	selling_efficiency = 0.05
+	burghers_estate_agenda_impact = 0.12
+	nobles_estate_agenda_impact = -0.05
+	clergy_estate_agenda_impact = -0.05
+	stability_cost = 0.08
+}
+
+# The clergy dominate the cabinet — religious influence rises, tolerance falls.
+clergy_court_captured = {
+	requires_real = yes
+
+	potential_trigger = {
+		any_cabinet_character = { has_trait = court_prelate count >= 2 }
+	}
+
+	monthly_religious_influence = 0.08
+	clergy_estate_agenda_impact = 0.12
+	burghers_estate_agenda_impact = -0.05
+	nobles_estate_agenda_impact = -0.05
+	tolerance_heretic = -1
+	stability_cost = 0.08
 }

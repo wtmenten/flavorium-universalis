@@ -1,0 +1,201 @@
+﻿namespace = cc_fac
+
+###############################################################################
+# CABINETS AND CHOICES — ESTATE FACTION EVENTS (Pillar 02)
+#
+# Events that fire when a single estate dominates the cabinet (2+ ministers
+# with the same estate affiliation trait from Family G).
+#
+#   cc_fac.1  The Nobles Demand         (noble_champion_of_court x2+ present)
+#   cc_fac.2  The Merchant Compact      (merchant_of_the_crown x2+ present)
+#   cc_fac.3  The Prelates Move         (court_prelate x2+ present)
+#
+# Auto-modifiers cc_nobles_court_captured / cc_burghers_court_captured /
+# cc_clergy_court_captured fire from cc_cabinet_composition.txt when the
+# capture condition holds; events fire from cc_cabinet_biyearly_estate_faction.
+###############################################################################
+
+
+###############################################################################
+# cc_fac.1 — THE NOBLES DEMAND
+# Fires when 2+ noble-aligned ministers are in the cabinet.
+# The noble faction pushes for sweeping privilege; refusal risks minister loyalty.
+###############################################################################
+
+cc_fac.1 = {
+	type = country_event
+	title = cc_fac.1.title
+	desc = cc_fac.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+		10 = armed
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_fac_nobles_cooldown }
+		any_cabinet_character = { has_trait = noble_champion_of_court count >= 2 }
+	}
+
+	immediate = {
+		set_variable = { name = cc_fac_nobles_cooldown value = yes months = 48 }
+		random_cabinet_character = {
+			limit = { has_trait = noble_champion_of_court }
+			save_scope_as = noble_minister
+		}
+	}
+
+	# Option A — Grant the privilege: nobles gain power, but treasury suffers
+	option = {
+		name = cc_fac.1.a
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_bonus }
+		add_prestige = prestige_weak_penalty
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3  min = -100 }
+	}
+
+	# Option B — Refuse: nobles retaliate, one minister's loyalty is tested
+	option = {
+		name = cc_fac.1.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
+		add_prestige = prestige_weak_bonus
+		scope:noble_minister = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+		add_stability = stability_weak_penalty
+	}
+
+	# Option C — Compromise: grant partial concession, estates settle down
+	option = {
+		name = cc_fac.1.c
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  min = -30 }
+	}
+}
+
+
+###############################################################################
+# cc_fac.2 — THE MERCHANT COMPACT
+# Fires when 2+ burgher-aligned ministers are in the cabinet.
+# The burgher faction proposes a commercial arrangement that enriches the crown.
+###############################################################################
+
+cc_fac.2 = {
+	type = country_event
+	title = cc_fac.2.title
+	desc = cc_fac.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = bank
+		10 = discussing
+		10 = economy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_fac_burghers_cooldown }
+		any_cabinet_character = { has_trait = merchant_of_the_crown count >= 2 }
+	}
+
+	immediate = {
+		set_variable = { name = cc_fac_burghers_cooldown value = yes months = 48 }
+		random_cabinet_character = {
+			limit = { has_trait = merchant_of_the_crown }
+			save_scope_as = merchant_minister
+		}
+	}
+
+	# Option A — Embrace the compact: treasury income, nobles resentful
+	option = {
+		name = cc_fac.2.a
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 4  min = 80 }
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Option B — Reject the compact: burghers fume, stability holds
+	option = {
+		name = cc_fac.2.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_penalty }
+		add_prestige = prestige_weak_bonus
+		scope:merchant_minister = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+
+	# Option C — Accept a scaled-down version: modest gold gain, moderate satisfaction
+	option = {
+		name = cc_fac.2.c
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_bonus }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 2  min = 40 }
+		add_inflation = inflation_weak_penalty
+	}
+}
+
+
+###############################################################################
+# cc_fac.3 — THE PRELATES MOVE
+# Fires when 2+ clergy-aligned ministers are in the cabinet.
+# The clergy faction pressures the ruler to enforce confessional conformity.
+###############################################################################
+
+cc_fac.3 = {
+	type = country_event
+	title = cc_fac.3.title
+	desc = cc_fac.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+		10 = happy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_fac_clergy_cooldown }
+		any_cabinet_character = { has_trait = court_prelate count >= 2 }
+	}
+
+	immediate = {
+		set_variable = { name = cc_fac_clergy_cooldown value = yes months = 48 }
+		random_cabinet_character = {
+			limit = { has_trait = court_prelate }
+			save_scope_as = clergy_minister
+		}
+	}
+
+	# Option A — Back the clergy: conversion push, burghers and peasants suffer
+	option = {
+		name = cc_fac.3.a
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty }
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_cabinet_pop_conversion
+			years = 8
+		}
+	}
+
+	# Option B — Resist the clergy faction: stability preserved, clergy unimpressed
+	option = {
+		name = cc_fac.3.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_penalty }
+		add_prestige = prestige_weak_bonus
+		add_stability = stability_weak_bonus
+		scope:clergy_minister = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+
+	# Option C — Allow clergy more influence in return for peace
+	option = {
+		name = cc_fac.3.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_weak_bonus }
+		add_country_modifier = {
+			modifier = cc_cabinet_parliamentary_guidance
+			years = 5
+		}
+	}
+}

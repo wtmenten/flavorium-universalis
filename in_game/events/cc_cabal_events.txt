@@ -1,0 +1,250 @@
+﻿namespace = cc_cabal
+
+###############################################################################
+# CABINETS AND CHOICES — CABAL EVENTS (Pillar 01)
+#
+# Cabinet alliances — complementary ministers who develop a political compact:
+#   cc_cabal.1  The Alliance Forms            (biyearly, no rivalry tension needed)
+#   cc_cabal.2  The Joint Reform Proposal     (triggered from cc_cabal.1 option A)
+###############################################################################
+
+
+###############################################################################
+# cc_cabal.1 — THE ALLIANCE FORMS
+# Fires when two complementary cabinet ministers are present and no cabal
+# cooldown is active. Ruler can formalize or discourage the partnership.
+###############################################################################
+
+cc_cabal.1 = {
+	type = country_event
+	title = cc_cabal.1.title
+	desc = cc_cabal.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+		10 = happy
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_cabal_cooldown }
+		NOT = { has_country_modifier = cc_cabal_compact }
+		OR = {
+			# Diplomatic-administrative alliance
+			AND = {
+				any_cabinet_character = { has_trait = parliamentary_broker }
+				any_cabinet_character = { has_trait = master_statesman }
+			}
+			# Scholarly alliance
+			AND = {
+				any_cabinet_character = { has_trait = empiricist_counselor }
+				any_cabinet_character = {
+					OR = {
+						has_trait = humanist_philosopher
+						has_trait = progressive_rationalist
+					}
+				}
+			}
+			# Military alliance
+			AND = {
+				any_cabinet_character = { has_trait = hawk_minister }
+				any_cabinet_character = { has_trait = standing_army_advocate }
+			}
+			# Economic-administrative alliance
+			AND = {
+				any_cabinet_character = { has_trait = prosperity_planner }
+				any_cabinet_character = {
+					OR = {
+						has_trait = efficiency_administrator
+						has_trait = trade_consortium_minister
+					}
+				}
+			}
+			# Diplomatic-military alliance
+			AND = {
+				any_cabinet_character = { has_trait = grand_chancellor }
+				any_cabinet_character = { has_trait = supreme_commander }
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_cabal_cooldown value = yes months = 48 }
+		# Find the matching pair
+		if = {
+			limit = {
+				any_cabinet_character = { has_trait = parliamentary_broker }
+				any_cabinet_character = { has_trait = master_statesman }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = parliamentary_broker }
+				save_scope_as = cabal_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = master_statesman }
+				save_scope_as = cabal_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = empiricist_counselor }
+				any_cabinet_character = {
+					OR = {
+						has_trait = humanist_philosopher
+						has_trait = progressive_rationalist
+					}
+				}
+			}
+			random_cabinet_character = {
+				limit = { has_trait = empiricist_counselor }
+				save_scope_as = cabal_a
+			}
+			random_cabinet_character = {
+				limit = {
+					OR = {
+						has_trait = humanist_philosopher
+						has_trait = progressive_rationalist
+					}
+				}
+				save_scope_as = cabal_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = hawk_minister }
+				any_cabinet_character = { has_trait = standing_army_advocate }
+			}
+			random_cabinet_character = {
+				limit = { has_trait = hawk_minister }
+				save_scope_as = cabal_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = standing_army_advocate }
+				save_scope_as = cabal_b
+			}
+		}
+		else_if = {
+			limit = {
+				any_cabinet_character = { has_trait = prosperity_planner }
+				any_cabinet_character = {
+					OR = {
+						has_trait = efficiency_administrator
+						has_trait = trade_consortium_minister
+					}
+				}
+			}
+			random_cabinet_character = {
+				limit = { has_trait = prosperity_planner }
+				save_scope_as = cabal_a
+			}
+			random_cabinet_character = {
+				limit = {
+					OR = {
+						has_trait = efficiency_administrator
+						has_trait = trade_consortium_minister
+					}
+				}
+				save_scope_as = cabal_b
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = { has_trait = grand_chancellor }
+				save_scope_as = cabal_a
+			}
+			random_cabinet_character = {
+				limit = { has_trait = supreme_commander }
+				save_scope_as = cabal_b
+			}
+		}
+	}
+
+	# Option A — Formalize the alliance (unlock Joint Reform Proposal)
+	option = {
+		name = cc_cabal.1.a
+		add_prestige = prestige_weak_bonus
+		scope:cabal_a = {
+			add_opinion = { target = root modifier = cc_cabal_bond }
+			add_opinion = { target = scope:cabal_b modifier = cc_cabal_bond }
+		}
+		scope:cabal_b = {
+			add_opinion = { target = root modifier = cc_cabal_bond }
+			add_opinion = { target = scope:cabal_a modifier = cc_cabal_bond }
+		}
+		trigger_event = { id = cc_cabal.2 months = 6 }
+	}
+
+	# Option B — Let them work together informally (no compact modifier, but cabal bond forms)
+	option = {
+		name = cc_cabal.1.b
+		scope:cabal_a = {
+			add_opinion = { target = scope:cabal_b modifier = cc_cabal_bond }
+		}
+		scope:cabal_b = {
+			add_opinion = { target = scope:cabal_a modifier = cc_cabal_bond }
+		}
+	}
+
+	# Option C — Discourage the partnership (ruler asserts control)
+	option = {
+		name = cc_cabal.1.c
+		add_prestige = prestige_weak_bonus
+		scope:cabal_a = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+		scope:cabal_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+}
+
+
+###############################################################################
+# cc_cabal.2 — THE JOINT REFORM PROPOSAL
+# Triggered from cc_cabal.1 option A.
+# The allied ministers present a joint proposal to the ruler.
+###############################################################################
+
+cc_cabal.2 = {
+	type = country_event
+	title = cc_cabal.2.title
+	desc = cc_cabal.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+		10 = professional
+	}
+
+	# Option A — Support the joint proposal (compact modifier, reform bonus)
+	option = {
+		name = cc_cabal.2.a
+		add_country_modifier = {
+			modifier = cc_cabal_compact
+			years = 10
+		}
+		add_prestige = prestige_mild_bonus
+		add_stability = stability_weak_bonus
+		scope:cabal_a = {
+			add_adm = 1
+			add_opinion = { target = root modifier = cc_court_favored }
+		}
+		scope:cabal_b = {
+			add_adm = 1
+			add_opinion = { target = root modifier = cc_court_favored }
+		}
+	}
+
+	# Option B — Decline the proposal (compact never forms, ministers slightly disappointed)
+	option = {
+		name = cc_cabal.2.b
+		scope:cabal_a = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+		scope:cabal_b = {
+			add_opinion = { target = root modifier = cc_rival_dismissed }
+		}
+	}
+}
