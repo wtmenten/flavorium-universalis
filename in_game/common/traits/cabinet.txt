@@ -51,8 +51,11 @@ tactical_advisor = {
 	flavor = personality
 
 	allow = {
-		mil > 66
 		NOT = { has_trait_category = cabinet }
+		OR = {
+			mil > 66
+			has_variable = cc_chain_d_graduated
+		}
 	}
 
 	modifier = {
@@ -218,6 +221,10 @@ able_integrator = {
 	allow = {
 		in_cabinet = yes
 		NOT = { has_trait_category = cabinet }
+		OR = {
+			has_variable = cc_cond_30_done          # Completed an integration cabinet action
+			years_of_service_in_cabinet >= 5        # Long-service bypass
+		}
 	}
 
 	modifier = {
@@ -284,13 +291,18 @@ tactful_envoy = {
 
 	allow = {
 		NOT = { has_trait_category = cabinet }
-		adm > 33
-		mil > 33
-		dip > 33
 		OR = {
-			NOT = { adm > 66 }
-			NOT = { mil > 66 }
-			NOT = { dip > 66 }
+			AND = {
+				adm > 33
+				mil > 33
+				dip > 33
+				OR = {
+					NOT = { adm > 66 }
+					NOT = { mil > 66 }
+					NOT = { dip > 66 }
+				}
+			}
+			has_variable = cc_chain_c_graduated
 		}
 	}
 
@@ -306,9 +318,10 @@ master_statesman = {
 
 	allow = {
 		NOT = { has_trait_category = cabinet }
-		adm > 66
-		mil > 66
-		dip > 66
+		OR = {
+			AND = { adm > 66 mil > 66 dip > 66 }
+			has_variable = cc_chain_c_mastered
+		}
 	}
 
 	modifier = {

@@ -1,0 +1,715 @@
+﻿namespace = cc_prog
+
+###############################################################################
+# CABINETS AND CHOICES — STEPPING STONE PROGRESSION EVENTS (Pillar 12)
+#
+# Chain A (Reformer's Path):     cc_prog.1–4   fumbling_reformist → master_reformer
+# Chain C (Diplomat's Ascent):   cc_prog.10–12 tentative_envoy → master_statesman
+# Chain D (Military Hardening):  cc_prog.20–22 green_adjutant → standing_army/defensive
+# Chain F (Fiscal Path):         cc_prog.30–32 clumsy_accountant → prosperity/treasury
+# Chain E (Colonial Pioneer):    cc_prog.40    frontier_administrator → returned_colonial_governor
+#
+# Progress events (cc_prog.1/.10/.20/.30) fire via cc_cabinet_yearly_prog_progress.
+# Advance events (cc_prog.2–4/.11–12/.21–22/.31–32/.40) sweep yearly.
+###############################################################################
+
+
+###############################################################################
+# CHAIN A — THE REFORMER'S PATH
+###############################################################################
+
+# Fires randomly when a minister holds fumbling_reformist.
+# Increments cc_prog_a_count; awards a skill bump.
+cc_prog.1 = {
+	type = country_event
+	title = cc_prog.1.title
+	desc = cc_prog.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = fumbling_reformist
+			NOT = { has_variable = cc_prog_a_cooldown }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = fumbling_reformist
+				NOT = { has_variable = cc_prog_a_cooldown }
+			}
+			if = {
+				limit = { NOT = { has_variable = cc_prog_a_count } }
+				set_variable = { name = cc_prog_a_count value = 0 }
+			}
+			set_variable = { name = cc_prog_a_cooldown value = yes months = 24 }
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.1.a
+		scope:minister = {
+			add_adm = 3
+			change_variable = { name = cc_prog_a_count add = 1 }
+		}
+	}
+
+	option = {
+		name = cc_prog.1.b
+		add_stability = stability_weak_penalty
+		scope:minister = {
+			add_adm = 1
+			change_variable = { name = cc_prog_a_count add = 1 }
+		}
+	}
+}
+
+# Sweep: fires when fumbling_reformist count >= 3. Advances to law_reformer.
+cc_prog.2 = {
+	type = country_event
+	title = cc_prog.2.title
+	desc = cc_prog.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = fumbling_reformist
+			var:cc_prog_a_count >= 3
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = fumbling_reformist
+				var:cc_prog_a_count >= 3
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.2.a
+		scope:minister = {
+			add_adm = 3
+			set_variable = { name = cc_prog_a_graduated value = yes }
+			remove_trait = trait:fumbling_reformist
+			add_trait = trait:law_reformer
+		}
+	}
+}
+
+# Sweep: fires when law_reformer + graduated + 7 years service. Advances to progressive_reformist.
+cc_prog.3 = {
+	type = country_event
+	title = cc_prog.3.title
+	desc = cc_prog.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = law_reformer
+			has_variable = cc_prog_a_graduated
+			years_of_service_in_cabinet >= 7
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = law_reformer
+				has_variable = cc_prog_a_graduated
+				years_of_service_in_cabinet >= 7
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.3.a
+		scope:minister = {
+			add_adm = 2
+			remove_trait = trait:law_reformer
+			add_trait = trait:progressive_reformist
+		}
+	}
+}
+
+# Sweep: fires when progressive_reformist + graduated + 12 years service. Awards master_reformer.
+cc_prog.4 = {
+	type = country_event
+	title = cc_prog.4.title
+	desc = cc_prog.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = progressive_reformist
+			has_variable = cc_prog_a_graduated
+			years_of_service_in_cabinet >= 12
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = progressive_reformist
+				has_variable = cc_prog_a_graduated
+				years_of_service_in_cabinet >= 12
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.4.a
+		scope:minister = {
+			add_adm = 4
+			set_variable = { name = cc_chain_a_mastered value = yes }
+			remove_trait = trait:progressive_reformist
+			add_trait = trait:master_reformer
+		}
+	}
+}
+
+
+###############################################################################
+# CHAIN C — THE DIPLOMAT'S ASCENT
+###############################################################################
+
+# Fires randomly when a minister holds tentative_envoy.
+cc_prog.10 = {
+	type = country_event
+	title = cc_prog.10.title
+	desc = cc_prog.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = tentative_envoy
+			NOT = { has_variable = cc_prog_c_cooldown }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = tentative_envoy
+				NOT = { has_variable = cc_prog_c_cooldown }
+			}
+			if = {
+				limit = { NOT = { has_variable = cc_prog_c_count } }
+				set_variable = { name = cc_prog_c_count value = 0 }
+			}
+			set_variable = { name = cc_prog_c_cooldown value = yes months = 24 }
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.10.a
+		scope:minister = {
+			add_dip = 3
+			change_variable = { name = cc_prog_c_count add = 1 }
+		}
+	}
+
+	option = {
+		name = cc_prog.10.b
+		add_prestige = prestige_weak_penalty
+		scope:minister = {
+			add_dip = 1
+			change_variable = { name = cc_prog_c_count add = 1 }
+		}
+	}
+}
+
+# Sweep: fires when tentative_envoy count >= 3. Advances to tactful_envoy.
+cc_prog.11 = {
+	type = country_event
+	title = cc_prog.11.title
+	desc = cc_prog.11.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = tentative_envoy
+			var:cc_prog_c_count >= 3
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = tentative_envoy
+				var:cc_prog_c_count >= 3
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.11.a
+		scope:minister = {
+			add_dip = 3
+			set_variable = { name = cc_chain_c_graduated value = yes }
+			remove_trait = trait:tentative_envoy
+			add_trait = trait:tactful_envoy
+		}
+	}
+
+	option = {
+		name = cc_prog.11.b
+		trigger = {
+			scope:minister = {
+				cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+			}
+		}
+		scope:minister = {
+			add_dip = 4
+			set_variable = { name = cc_chain_c_graduated value = yes }
+			remove_trait = trait:tentative_envoy
+			add_trait = trait:diplomatic_attache
+		}
+	}
+}
+
+# Sweep: fires when tactful_envoy + graduated + 7 years service. Advances to master_statesman.
+cc_prog.12 = {
+	type = country_event
+	title = cc_prog.12.title
+	desc = cc_prog.12.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = discussing
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = tactful_envoy
+			has_variable = cc_chain_c_graduated
+			years_of_service_in_cabinet >= 7
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = tactful_envoy
+				has_variable = cc_chain_c_graduated
+				years_of_service_in_cabinet >= 7
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.12.a
+		scope:minister = {
+			add_dip = 4
+			set_variable = { name = cc_chain_c_mastered value = yes }
+			remove_trait = trait:tactful_envoy
+			add_trait = trait:master_statesman
+		}
+	}
+}
+
+
+###############################################################################
+# CHAIN D — THE MILITARY HARDENING
+###############################################################################
+
+# Fires randomly when a minister holds green_adjutant.
+cc_prog.20 = {
+	type = country_event
+	title = cc_prog.20.title
+	desc = cc_prog.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = green_adjutant
+			NOT = { has_variable = cc_prog_d_cooldown }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = green_adjutant
+				NOT = { has_variable = cc_prog_d_cooldown }
+			}
+			if = {
+				limit = { NOT = { has_variable = cc_prog_d_count } }
+				set_variable = { name = cc_prog_d_count value = 0 }
+			}
+			set_variable = { name = cc_prog_d_cooldown value = yes months = 24 }
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.20.a
+		trigger = { at_war = yes }
+		scope:minister = {
+			add_mil = 4
+			change_variable = { name = cc_prog_d_count add = 1 }
+		}
+	}
+
+	option = {
+		name = cc_prog.20.b
+		scope:minister = {
+			add_mil = 2
+			change_variable = { name = cc_prog_d_count add = 1 }
+		}
+	}
+}
+
+# Sweep: fires when green_adjutant count >= 3. Advances to tactical_advisor.
+cc_prog.21 = {
+	type = country_event
+	title = cc_prog.21.title
+	desc = cc_prog.21.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = green_adjutant
+			var:cc_prog_d_count >= 3
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = green_adjutant
+				var:cc_prog_d_count >= 3
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.21.a
+		scope:minister = {
+			add_mil = 3
+			set_variable = { name = cc_chain_d_graduated value = yes }
+			remove_trait = trait:green_adjutant
+			add_trait = trait:tactical_advisor
+		}
+	}
+}
+
+# Sweep: fires when tactical_advisor + graduated + 5 years service.
+# Branching advance: standing_army_advocate (Age 5+, mil > 60), offensive_strategist, or defensive_commander.
+cc_prog.22 = {
+	type = country_event
+	title = cc_prog.22.title
+	desc = cc_prog.22.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = tactical_advisor
+			has_variable = cc_chain_d_graduated
+			years_of_service_in_cabinet >= 5
+			mil > 50
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = tactical_advisor
+				has_variable = cc_chain_d_graduated
+				years_of_service_in_cabinet >= 5
+				mil > 50
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.22.a
+		trigger = {
+			scope:minister = {
+				mil > 60
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
+		}
+		scope:minister = {
+			add_mil = 3
+			remove_trait = trait:tactical_advisor
+			add_trait = trait:standing_army_advocate
+		}
+	}
+
+	option = {
+		name = cc_prog.22.b
+		scope:minister = {
+			add_mil = 2
+			remove_trait = trait:tactical_advisor
+			add_trait = trait:offensive_strategist
+		}
+	}
+
+	option = {
+		name = cc_prog.22.c
+		scope:minister = {
+			add_mil = 2
+			remove_trait = trait:tactical_advisor
+			add_trait = trait:defensive_commander
+		}
+	}
+}
+
+
+###############################################################################
+# CHAIN F — THE FISCAL PATH
+###############################################################################
+
+# Fires randomly when a minister holds clumsy_accountant.
+cc_prog.30 = {
+	type = country_event
+	title = cc_prog.30.title
+	desc = cc_prog.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = clumsy_accountant
+			NOT = { has_variable = cc_prog_f_cooldown }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = clumsy_accountant
+				NOT = { has_variable = cc_prog_f_cooldown }
+			}
+			if = {
+				limit = { NOT = { has_variable = cc_prog_f_count } }
+				set_variable = { name = cc_prog_f_count value = 0 }
+			}
+			set_variable = { name = cc_prog_f_cooldown value = yes months = 24 }
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.30.a
+		add_prestige = prestige_weak_bonus
+		scope:minister = {
+			add_adm = 3
+			change_variable = { name = cc_prog_f_count add = 1 }
+		}
+	}
+
+	option = {
+		name = cc_prog.30.b
+		add_prestige = prestige_weak_penalty
+		scope:minister = {
+			add_adm = 1
+			change_variable = { name = cc_prog_f_count add = 1 }
+		}
+	}
+}
+
+# Sweep: fires when clumsy_accountant count >= 3. Advances to loyal_steward.
+cc_prog.31 = {
+	type = country_event
+	title = cc_prog.31.title
+	desc = cc_prog.31.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = clumsy_accountant
+			var:cc_prog_f_count >= 3
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = clumsy_accountant
+				var:cc_prog_f_count >= 3
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.31.a
+		scope:minister = {
+			add_adm = 3
+			set_variable = { name = cc_chain_f_graduated value = yes }
+			remove_trait = trait:clumsy_accountant
+			add_trait = trait:loyal_steward
+		}
+	}
+}
+
+# Sweep: fires when loyal_steward + graduated + 7 years service.
+# Branching: prosperity_planner (broad growth) or treasury_enforcer (strict discipline).
+cc_prog.32 = {
+	type = country_event
+	title = cc_prog.32.title
+	desc = cc_prog.32.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = loyal_steward
+			has_variable = cc_chain_f_graduated
+			years_of_service_in_cabinet >= 7
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = loyal_steward
+				has_variable = cc_chain_f_graduated
+				years_of_service_in_cabinet >= 7
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.32.a
+		scope:minister = {
+			add_adm = 2
+			remove_trait = trait:loyal_steward
+			add_trait = trait:prosperity_planner
+		}
+	}
+
+	option = {
+		name = cc_prog.32.b
+		scope:minister = {
+			add_adm = 2
+			set_variable = { name = cc_granting_trait value = yes }
+			remove_trait = trait:loyal_steward
+			add_trait = trait:treasury_enforcer
+			remove_variable = cc_granting_trait
+		}
+	}
+}
+
+
+###############################################################################
+# CHAIN E — THE COLONIAL PIONEER
+###############################################################################
+
+# Sweep: fires when frontier_administrator + 10 years service.
+# Awards returned_colonial_governor — the culmination of an overseas career.
+cc_prog.40 = {
+	type = country_event
+	title = cc_prog.40.title
+	desc = cc_prog.40.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = exterior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			has_trait = frontier_administrator
+			years_of_service_in_cabinet >= 10
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				has_trait = frontier_administrator
+				years_of_service_in_cabinet >= 10
+			}
+			save_scope_as = minister
+		}
+	}
+
+	option = {
+		name = cc_prog.40.a
+		scope:minister = {
+			add_adm = 2
+			add_dip = 3
+			set_variable = { name = cc_chain_e_mastered value = yes }
+			remove_trait = trait:frontier_administrator
+			add_trait = trait:returned_colonial_governor
+		}
+	}
+}

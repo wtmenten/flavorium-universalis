@@ -1,7 +1,10 @@
 ﻿
-# Cabinets and Choices — HYW Flavor On-Actions
-# Hooks into on_war_declared and on_winning_war for Hundred Years War flavor events.
-# All effects are gated on the cc_hyw_flavor_on game rule.
+# Cabinets and Choices — On-Actions
+# Hooks into vanilla on_actions for HYW flavor and Age 2 military cabinet grant.
+
+on_new_age = {
+	on_actions = { cc_on_age_2_military }
+}
 
 on_war_declared = {
 	on_actions = { cc_on_war_declared }
@@ -346,6 +349,36 @@ cc_on_hussite_war_declared = {
 				id = cc_hus.1
 				months = 2
 			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
+# cc_on_age_2_military
+# Fires when any country enters Age 2.
+# Military-priority countries (strong army tradition OR at war) grant green_adjutant
+# to one cabinet member who doesn't already have a cabinet trait.
+# Scope: this = country entering the new age
+# ---------------------------------------------------------------------------
+cc_on_age_2_military = {
+	trigger = {
+		current_age = age_2_renaissance
+		OR = {
+			army_tradition > 30
+			at_war = yes
+		}
+		any_cabinet_character = {
+			in_cabinet = yes
+			NOT = { has_trait_category = cabinet }
+		}
+	}
+	effect = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait_category = cabinet }
+			}
+			add_trait = trait:green_adjutant
 		}
 	}
 }
