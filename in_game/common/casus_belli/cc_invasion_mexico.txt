@@ -1,0 +1,109 @@
+﻿
+# Cabinets and Choices — Invasion of Mexico CBs
+# These CBs are only visible while the cc_invasion_mexico situation is active.
+
+# CB 1: Colonial conquest of native Mesoamerican nations
+# No antagonism cost; represents the European legal doctrine of discovery/conquest.
+cc_seize_mexico_native = {
+	create_visible = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		NOT = { is_capital_mesoamerica = yes }
+	}
+
+	create_enabled = {
+		NOT = { is_capital_mesoamerica = yes }
+		scope:target = {
+			is_capital_mesoamerica = yes
+			is_neighbor_of = root
+		}
+	}
+
+	declare_enabled = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		NOT = { is_capital_mesoamerica = yes }
+		scope:target = { is_capital_mesoamerica = yes }
+	}
+
+	# Full antagonism reduction — colonizers treated this conquest as legitimate
+	antagonism_reduction_per_warworth_defender = {
+		add = 100
+	}
+
+	speed = 12
+	war_goal_type = superiority
+
+	ai_will_do = {
+		add = {
+			desc = "BASE"
+			value = 50
+		}
+		add = {
+			desc = "RELATIVE_STRENGTH"
+			value = 100
+			multiply = "scope:actor.relative_strength(scope:target)"
+		}
+		if = {
+			limit = { scope:actor = { at_war = yes } }
+			add = { desc = "AT_WAR_PENALTY" value = -50 }
+		}
+	}
+}
+
+# CB 2: Competing colonial powers contest regional dominance
+# No antagonism cost; +25% subjugation cost applied via a country modifier on the actor.
+cc_seize_mexico_colonial = {
+	create_visible = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		NOT = { is_capital_mesoamerica = yes }
+	}
+
+	create_enabled = {
+		NOT = { is_capital_mesoamerica = yes }
+		OR = {
+			has_presence_in = region:mesoamerica_region
+			has_presence_in = region:central_america_region
+			has_presence_in = region:caribbean_region
+		}
+		scope:target = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+				has_presence_in = region:caribbean_region
+			}
+			is_neighbor_of = root
+		}
+	}
+
+	declare_enabled = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		NOT = { is_capital_mesoamerica = yes }
+		scope:target = { NOT = { is_capital_mesoamerica = yes } }
+	}
+
+	antagonism_reduction_per_warworth_defender = {
+		add = 100
+	}
+
+	speed = 8
+	war_goal_type = take_capital_subjugation
+
+	ai_subjugation_desire = {
+		add = {
+			desc = "BASE"
+			value = 20
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			desc = "BASE"
+			value = 20
+		}
+		add = {
+			desc = "RELATIVE_STRENGTH"
+			value = 50
+			multiply = "scope:actor.relative_strength(scope:target)"
+		}
+	}
+}

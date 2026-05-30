@@ -1,0 +1,655 @@
+﻿
+# Cabinets and Choices — Invasion of Mexico Events
+# Namespace matches the situation key so the situation icon appears in event windows.
+
+namespace = cc_invasion_mexico
+
+################################################################################
+# EVENT 1 — Situation Announcement
+# Fires to all countries with presence in Mesoamerica / Caribbean / Central America.
+################################################################################
+cc_invasion_mexico.1 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { is_capital_mesoamerica = yes }
+				desc = cc_invasion_mexico.1.desc_native
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_invasion_mexico.1.desc_colonial
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	immediate = {
+		save_scope_as = ccim_announcement_country
+	}
+
+	option = {
+		name = cc_invasion_mexico.1.a
+		custom_tooltip = ccim_situation_explanation_tt
+	}
+}
+
+################################################################################
+# EVENTS 2–4 — Federation Request
+# Fires to the three largest native powers. Options: form/join the confederation or stand alone.
+################################################################################
+cc_invasion_mexico.2 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.2.title
+	desc = cc_invasion_mexico.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.2.a
+		trigger = { is_capital_mesoamerica = yes }
+		ai_chance = { base = 70 }
+		if = {
+			limit = {
+				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+			}
+			create_international_organization = {
+				type = international_organization_type:cc_mesoamerican_confederation
+				add_country_to_international_organization = root
+				set_leader_country = root
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_invasion_mexico.2.b
+		trigger = { is_capital_mesoamerica = yes }
+		ai_chance = { base = 30 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# Same structure as .2 — for the second-largest native power
+cc_invasion_mexico.3 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.3.title
+	desc = cc_invasion_mexico.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.3.a
+		ai_chance = { base = 60 }
+		if = {
+			limit = {
+				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+			}
+			create_international_organization = {
+				type = international_organization_type:cc_mesoamerican_confederation
+				add_country_to_international_organization = root
+				set_leader_country = root
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.3.b
+		ai_chance = { base = 40 }
+	}
+}
+
+# Same structure as .2 — for the third-largest native power
+cc_invasion_mexico.4 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.4.title
+	desc = cc_invasion_mexico.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.4.a
+		ai_chance = { base = 50 }
+		if = {
+			limit = {
+				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+			}
+			create_international_organization = {
+				type = international_organization_type:cc_mesoamerican_confederation
+				add_country_to_international_organization = root
+				set_leader_country = root
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.4.b
+		ai_chance = { base = 50 }
+	}
+}
+
+################################################################################
+# EVENT 5 — Defensive Preparation
+# Fires to native countries that directly border colonial locations.
+################################################################################
+cc_invasion_mexico.5 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.5.title
+	desc = cc_invasion_mexico.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.5.a
+		ai_chance = { base = 60 }
+		add_country_modifier = {
+			modifier = ccim_defensive_preparations
+			years = 5
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.5.b
+		ai_chance = { base = 40 }
+		if = {
+			limit = {
+				exists = international_organization:cc_mesoamerican_confederation
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+		else = {
+			custom_tooltip = ccim_no_confederation_exists_tt
+			add_country_modifier = {
+				modifier = ccim_defensive_preparations
+				years = 3
+				mode = add_and_extend
+			}
+		}
+	}
+}
+
+################################################################################
+# EVENTS 10–12 — Monthly Confederation Events
+# Fires to Confederation members; solidarity, internal friction, tribute pressure.
+################################################################################
+cc_invasion_mexico.10 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.10.title
+	desc = cc_invasion_mexico.10.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.10.a
+		add_country_modifier = {
+			modifier = ccim_confederation_solidarity
+			years = 3
+			mode = add_and_extend
+		}
+	}
+}
+
+cc_invasion_mexico.11 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.11.title
+	desc = cc_invasion_mexico.11.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		NOT = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.11.a
+		add_prestige = prestige_weak_penalty
+	}
+
+	option = {
+		name = cc_invasion_mexico.11.b
+		international_organization:cc_mesoamerican_confederation = {
+			remove_country_from_international_organization = root
+		}
+		add_prestige = prestige_mild_penalty
+	}
+}
+
+cc_invasion_mexico.12 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.12.title
+	desc = cc_invasion_mexico.12.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = interior
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+		any_neighbor_country = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+			}
+		}
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = {
+				NOT = { is_capital_mesoamerica = yes }
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+				}
+			}
+			save_scope_as = ccim_tribute_target
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.12.a
+		trigger = { gold >= 30 }
+		ai_chance = { base = 60 }
+		add_gold = -30
+		scope:ccim_tribute_target = {
+			add_gold = 30
+			add_opinion = {
+				modifier = opinion_ccim_tribute_paid
+				target = root
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.12.b
+		ai_chance = { base = 40 }
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+################################################################################
+# EVENT 20 — Colonial Neighbor Interaction
+# Fires to colonial powers adjacent to native provinces. Diplomacy or CB.
+################################################################################
+cc_invasion_mexico.20 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.20.title
+	desc = cc_invasion_mexico.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	trigger = {
+		NOT = { is_capital_mesoamerica = yes }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_neighbor_country = { is_capital_mesoamerica = yes }
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = { is_capital_mesoamerica = yes }
+			save_scope_as = ccim_native_target
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.20.a
+		ai_chance = { base = 35 }
+		scope:ccim_native_target = {
+			add_opinion = {
+				modifier = opinion_ccim_diplomatic_approach
+				target = root
+			}
+		}
+		trigger_event_non_silently = { id = cc_invasion_mexico.21 days = 7 }
+	}
+
+	option = {
+		name = cc_invasion_mexico.20.b
+		ai_chance = { base = 65 }
+		add_casus_belli = {
+			type = casus_belli:cc_seize_mexico_native
+			target = scope:ccim_native_target
+			years = 5
+		}
+	}
+}
+
+# EVENT 21 — Native Response to Colonial Envoy (chained from .20 option A)
+cc_invasion_mexico.21 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.21.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_neighbor_country = {
+						is_capital_mesoamerica = yes
+						is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+					}
+				}
+				desc = cc_invasion_mexico.21.desc_conf
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_invasion_mexico.21.desc_default
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	option = {
+		name = cc_invasion_mexico.21.a
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 25 — Colonial Monthly Opportunity: Commission Expedition
+################################################################################
+cc_invasion_mexico.25 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.25.title
+	desc = cc_invasion_mexico.25.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		NOT = { is_capital_mesoamerica = yes }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_neighbor_country = { is_capital_mesoamerica = yes }
+		NOT = { has_variable = ccim_expedition_cooldown }
+	}
+
+	immediate = {
+		random_neighbor_country = {
+			limit = { is_capital_mesoamerica = yes }
+			save_scope_as = ccim_expedition_target
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.25.a
+		trigger = { gold >= 75 }
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0
+				NOT = { gold >= 75 }
+			}
+		}
+		add_gold = -75
+		add_casus_belli = {
+			type = casus_belli:cc_seize_mexico_native
+			target = scope:ccim_expedition_target
+			years = 8
+		}
+		set_variable = { name = ccim_expedition_cooldown value = yes years = 5 }
+	}
+
+	option = {
+		name = cc_invasion_mexico.25.b
+		ai_chance = { base = 50 }
+	}
+}
+
+################################################################################
+# EVENT 26 — Protectorate Offer Response
+# Fires to a native country from ccim_negotiate_protectorate action.
+################################################################################
+cc_invasion_mexico.26 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.26.title
+	desc = cc_invasion_mexico.26.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		# scope:ccim_protectorate_actor is saved by the generic action before firing this event
+		exists = scope:ccim_protectorate_actor
+	}
+
+	option = {
+		name = cc_invasion_mexico.26.a
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 2
+				scope:ccim_protectorate_actor = { is_great_power = yes }
+			}
+		}
+		make_subject_of = {
+			target = scope:ccim_protectorate_actor
+			type = subject_type:vassal
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.26.b
+		ai_chance = { base = 60 }
+		add_prestige = prestige_weak_bonus
+		scope:ccim_protectorate_actor = {
+			add_prestige = prestige_weak_penalty
+		}
+	}
+}
+
+################################################################################
+# EVENT 30 — Expedition Departs Flavor (chained from Commission Expedition action)
+################################################################################
+cc_invasion_mexico.30 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.30.title
+	desc = cc_invasion_mexico.30.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	option = {
+		name = cc_invasion_mexico.30.a
+		add_country_modifier = {
+			modifier = ccim_expedition_morale
+			years = 3
+		}
+	}
+}
+
+################################################################################
+# EVENTS 35–36 — End Events
+################################################################################
+# Fires to remaining native countries when the situation ends
+cc_invasion_mexico.35 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.35.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { is_subject = no }
+				desc = cc_invasion_mexico.35.desc_free
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_invasion_mexico.35.desc_subject
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_invasion_mexico.35.a
+	}
+}
+
+# Fires to colonial powers when the situation ends
+cc_invasion_mexico.36 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.36.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = {
+						is_capital_mesoamerica = yes
+					}
+				}
+				desc = cc_invasion_mexico.36.desc_conqueror
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_invasion_mexico.36.desc_observer
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	option = {
+		name = cc_invasion_mexico.36.a
+	}
+}
