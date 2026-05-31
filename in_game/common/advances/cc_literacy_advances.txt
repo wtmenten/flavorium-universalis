@@ -1,0 +1,98 @@
+﻿############################################
+# Cabinets and Choices — Regional Literacy Catch-Up Advances
+#
+# Follow-on advances that restore lower-class literacy for specific
+# world regions, partially offsetting the global -15 baseline nerf.
+#
+# Western Europe (age 2 + age 4): +5 burghers peasants laborers soldiers each.
+# Colonial powers (age 4):        +5 burghers (colonial administration).
+# East Asia / Japan (age 4):      +5 nobles & burghers.
+############################################
+
+# -------------------------------------------------------
+# Age 2: Western European mass literacy (follows Innovativeness)
+# -------------------------------------------------------
+cc_western_literacy_age2 = {
+	age = age_2_renaissance
+	icon = scholasticism
+	for = adm
+
+	requires = innovativeness
+
+	potential = {
+		original_capital ?= { sub_continent = sub_continent:western_europe }
+	}
+
+	global_peasants_max_literacy = 2
+	global_laborers_max_literacy = 2
+	global_soldiers_max_literacy = 5
+}
+
+# -------------------------------------------------------
+# Age 4: Western European mass literacy (follows Printing Press)
+# Cross-age: printing_press_advance is age_3
+# -------------------------------------------------------
+cc_western_literacy_age4 = {
+	age = age_4_reformation
+	icon = printing_press_advance
+	for = adm
+
+	potential = {
+		has_advance = printing_press_advance
+		original_capital ?= { sub_continent = sub_continent:western_europe }
+	}
+	allow = {
+		has_advance = printing_press_advance
+	}
+
+	global_burghers_max_literacy = 5
+	global_soldiers_max_literacy = 5
+	global_peasants_max_literacy = 3
+	global_laborers_max_literacy = 3
+}
+
+# -------------------------------------------------------
+# Age 4: Colonial ecclesiastical literacy
+# Represents printing presses, parish schools, and mission
+# networks spreading literacy through colonial burgher classes.
+# -------------------------------------------------------
+cc_colonial_literacy_age4 = {
+	age = age_4_reformation
+	icon = diplomatic_range_age_1
+	for = adm
+
+	potential = {
+		has_advance = printing_press_advance
+		original_capital ?= { continent = continent:europe }
+		any_subject = { is_subject_type = colonial_nation }
+	}
+	allow = {
+		has_advance = printing_press_advance
+		any_subject = { is_subject_type = colonial_nation }
+	}
+
+	global_burghers_max_literacy = 2
+	global_soldiers_max_literacy = 2
+}
+
+# -------------------------------------------------------
+# Age 4: East Asian classical & commercial literacy
+# Represents Japan and China's long examination tradition
+# and the rise of commercial publishing culture.
+# -------------------------------------------------------
+cc_east_asian_literacy_age4 = {
+	age = age_4_reformation
+	icon = diplomatic_influence
+	for = adm
+
+	potential = {
+		has_advance = printing_press_advance
+		original_capital ?= { sub_continent = sub_continent:east_asia }
+	}
+	allow = {
+		has_advance = printing_press_advance
+	}
+
+	global_nobles_max_literacy = 5
+	global_burghers_max_literacy = 5
+}

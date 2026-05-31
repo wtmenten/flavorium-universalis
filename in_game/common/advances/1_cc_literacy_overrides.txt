@@ -1,0 +1,54 @@
+﻿############################################
+# Cabinets and Choices — Literacy System Overrides
+#
+# Three vanilla advance overrides:
+#   written_alphabet   — net -15 to global max literacy baseline
+#   innovativeness     — upper-class only (+5 nobles/clergy/burghers)
+#   printing_press_advance — upper-class only (+10 nobles/clergy/burghers)
+#
+# Since mod files load after vanilla, these definitions win.
+# All fields from the originals are preserved; only the literacy
+# modifiers change.
+############################################
+
+# Original: global_max_literacy = 5, global_monthly_literacy = 0.01
+# Change: global_max_literacy = 2  →  net shift vs vanilla = -3
+REPLACE:written_alphabet = {
+	age = age_1_traditions
+	icon = abacus_advance
+	depth = 0
+	research_cost = 2.0
+
+	global_max_literacy = 2
+	global_monthly_literacy = 0.01
+
+	starting_technology_level = 2
+}
+
+# Original: global_max_literacy = 10
+# Change: upper classes only (+5 nobles / clergy / burghers)
+REPLACE:printing_press_advance = {
+	age = age_3_discovery
+	icon = printing_press_advance
+
+	global_nobles_max_literacy = 5
+	global_clergy_max_literacy = 5
+	global_burghers_max_literacy = 5
+
+	depth = 0
+	allow = { has_embraced_institution = institution:printing_press }
+}
+
+# Original: global_max_literacy = 5  (advance display name: "Thirst for Knowledge")
+# Change: upper classes only (+5 nobles / clergy / burghers)
+REPLACE:innovativeness = {
+	age = age_2_renaissance
+	icon = scholasticism
+	for = adm
+
+	requires = pound_lock_canals_advance
+
+	global_nobles_max_literacy = 5
+	global_clergy_max_literacy = 5
+	global_burghers_max_literacy = 5
+}

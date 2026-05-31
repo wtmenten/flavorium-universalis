@@ -1,0 +1,98 @@
+﻿############################################
+# Cabinets and Choices — Library Building Override
+#
+# Replaces vanilla library's generic local_max_literacy = 5
+# with estate-specific bonuses (nobles / clergy / burghers only).
+# Peasants, soldiers, laborers, etc. do not benefit from
+# a library the way literate upper classes do.
+#
+# All other fields are identical to vanilla.
+############################################
+
+REPLACE_OR_CREATE:library = {
+	is_foreign = no
+	pop_type = burghers
+	max_levels = 1
+
+	category = cultural_category
+	employment_size = cultural_employment
+
+	AI_ignore_available_worker_flag = yes
+
+	town = yes
+	city = yes
+	megalopolis = yes
+
+	forbidden_for_estates = yes
+
+	graphical_tags = { medium_religious }
+
+	build_time = cultural_building_time
+
+	modifier = {
+		local_cultural_influence = 0.1
+		local_nobles_max_literacy = 3
+		local_clergy_max_literacy = 3
+		local_burghers_max_literacy = 2
+		local_monthly_literacy = 0.03
+		local_pop_promotion_speed = 0.001
+		local_institution_growth_modifier = 0.25
+	}
+
+	possible_production_methods = {
+		library_maintenance
+	}
+
+	construction_demand = library_construction
+}
+
+# retune of more buildings mod addition
+REPLACE_OR_CREATE:colonial_migration_center = {
+	is_special = yes
+	is_foreign = no
+	pop_type = burghers
+	max_levels = 1
+
+	employment_size = generic_burgher_employment
+	category = infrastructure_category
+	icon = embassy
+
+	rural_settlement = no
+	town = yes
+	city = yes
+	expensive = yes
+
+	country_potential = {
+		has_advance = colonial_charters
+	}
+
+	location_potential = {
+		is_overseas_for_owner = yes
+		OR = {
+			is_coastal = yes
+			is_port = yes
+			# local_market_access > 0
+		}
+	}
+
+	unique_production_methods = {
+		colonial_migration_center_maintenance = {
+			paper = 0.25
+			books = 0.10
+			cloth = 0.15
+			goods_gold = 0.10
+			tools = 0.05
+			category = building_maintenance
+		}
+	}
+
+	modifier = {
+		local_migration_attraction = 0.06
+		local_migration_speed = 0.05
+		local_population_growth = 0.002
+
+	}
+
+	build_time = 190
+	construction_demand = town_building_construction
+}
