@@ -185,21 +185,90 @@ cc_invasion_mexico = {
 	}
 
 	on_monthly = {
-		# Monthly confederation solidarity events for members
+		# Monthly events for confederation members
 		every_country = {
 			limit = {
 				is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
 				can_see_situation = root
 			}
 			random_list = {
-				3 = {
-					trigger_event_non_silently = cc_invasion_mexico.10
+				3 = { trigger_event_non_silently = cc_invasion_mexico.10 }
+				97 = { }
+			}
+		}
+		# Internal friction — non-leaders only
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+				NOT = { is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_see_situation = root
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_invasion_mexico.11 }
+				98 = { }
+			}
+		}
+		# Confederation member refugees from fallen lands
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+				can_see_situation = root
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
 				}
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_invasion_mexico.42 }
+				98 = { }
+			}
+		}
+
+		# Monthly demand tribute — unaffiliated native with colonial neighbor
+		every_country = {
+			limit = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+				}
+				can_see_situation = root
+			}
+			random_list = {
+				3 = { trigger_event_non_silently = cc_invasion_mexico.12 }
+				97 = { }
+			}
+		}
+		# High priest — unaffiliated native with colonial neighbor
+		every_country = {
+			limit = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+				}
+				can_see_situation = root
+			}
+			random_list = {
+				3 = { trigger_event_non_silently = cc_invasion_mexico.40 }
 				97 = { }
 			}
 		}
 
-		# Monthly opportunity events for colonizers with regional presence
+		# Monthly events for colonizers with regional presence and native neighbor
 		every_country = {
 			limit = {
 				NOT = { is_capital_mesoamerica = yes }
@@ -210,16 +279,126 @@ cc_invasion_mexico = {
 					has_presence_in = region:central_america_region
 					has_presence_in = region:caribbean_region
 				}
+				any_neighbor_country = { is_capital_mesoamerica = yes }
+				can_see_situation = root
+			}
+			random_list = {
+				3 = { trigger_event_non_silently = cc_invasion_mexico.25 }
+				97 = { }
+			}
+		}
+		every_country = {
+			limit = {
+				NOT = { is_capital_mesoamerica = yes }
+				NOT = { country_type = pop }
+				NOT = { country_type = building }
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+					has_presence_in = region:caribbean_region
+				}
+				any_neighbor_country = { is_capital_mesoamerica = yes }
+				can_see_situation = root
+				NOT = { has_variable = ccim_captain_chain_cooldown }
+			}
+			random_list = {
+				3 = { trigger_event_non_silently = cc_invasion_mexico.50 }
+				97 = { }
+			}
+		}
+		# Gold fever — colonizers who own mesoamerican locations
+		every_country = {
+			limit = {
+				NOT = { is_capital_mesoamerica = yes }
+				NOT = { country_type = pop }
+				NOT = { country_type = building }
+				any_owned_location = { region = region:mesoamerica_region }
+				can_see_situation = root
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_invasion_mexico.52 }
+				98 = { }
+			}
+		}
+		# War push — colonizer holds a CB but has not yet declared war
+		every_country = {
+			limit = {
+				NOT = { is_capital_mesoamerica = yes }
+				NOT = { country_type = pop }
+				NOT = { country_type = building }
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+					has_presence_in = region:caribbean_region
+				}
+				at_war = no
+				NOT = { has_variable = ccim_war_push_cooldown }
 				any_neighbor_country = {
 					is_capital_mesoamerica = yes
+					is_subject = no
 				}
 				can_see_situation = root
 			}
 			random_list = {
-				3 = {
-					trigger_event_non_silently = cc_invasion_mexico.25
+				5 = { trigger_event_non_silently = cc_invasion_mexico.70 }
+				95 = { }
+			}
+		}
+
+		# Fear cascade — non-members who witness a native neighbor be subjugated
+		every_country = {
+			limit = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_see_situation = root
+				NOT = { has_variable = ccim_fear_cascade_cooldown }
+				exists = international_organization:cc_mesoamerican_confederation
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+				any_neighbor_country = {
+					is_capital_mesoamerica = yes
+					is_subject = yes
 				}
-				97 = { }
+			}
+			random_list = {
+				10 = { trigger_event_non_silently = cc_invasion_mexico.64 }
+				90 = { }
+			}
+		}
+
+		# Confederation council — leader deliberates on strategic direction (when unity is healthy)
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+				can_see_situation = root
+				international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 40
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_invasion_mexico.60 }
+				98 = { }
+			}
+		}
+		# Unity crisis — fires more frequently when confederation is fracturing
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+				can_see_situation = root
+				international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity < 30
+			}
+			random_list = {
+				5 = { trigger_event_non_silently = cc_invasion_mexico.61 }
+				95 = { }
+			}
+		}
+		# High priest blessing — fires at any unity level
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+				can_see_situation = root
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_invasion_mexico.62 }
+				98 = { }
 			}
 		}
 	}

@@ -21,6 +21,8 @@ ccim_call_confederation = {
 			is_subject = no
 			NOT = { country_type = pop }
 			NOT = { country_type = building }
+			# Members use ccim_seek_tribal_alliance instead
+			NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
 		}
 	}
 
@@ -51,30 +53,33 @@ ccim_call_confederation = {
 				years = 10
 			}
 		}
-		if = {
-			limit = {
-				NOT = { exists = international_organization:cc_mesoamerican_confederation }
-			}
-			scope:actor = {
-				create_international_organization = {
-					type = international_organization_type:cc_mesoamerican_confederation
-					add_country_to_international_organization = root
-					set_leader_country = root
+		custom_tooltip = ccim_call_confederation_create_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { exists = international_organization:cc_mesoamerican_confederation }
 				}
-			}
-		}
-		else_if = {
-			limit = {
 				scope:actor = {
-					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
-					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+					create_international_organization = {
+						type = international_organization_type:cc_mesoamerican_confederation
+						add_country_to_international_organization = root
+						set_leader_country = root
+					}
 				}
 			}
-			international_organization:cc_mesoamerican_confederation = {
-				add_country_to_international_organization = scope:actor
+			else_if = {
+				limit = {
+					scope:actor = {
+						NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+						can_join_international_organization = international_organization:cc_mesoamerican_confederation
+					}
+				}
+				international_organization:cc_mesoamerican_confederation = {
+					add_country_to_international_organization = scope:actor
+				}
 			}
 		}
-		# Invite allied native neighbors to join via the federation request event
+		# Invite native neighbors — each neighbor only receives this once (2-year cooldown)
 		scope:actor = {
 			every_neighbor_country = {
 				limit = {
@@ -82,7 +87,9 @@ ccim_call_confederation = {
 					is_subject = no
 					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
 					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+					NOT = { has_variable = ccim_received_confederation_invite }
 				}
+				set_variable = { name = ccim_received_confederation_invite value = yes years = 2 }
 				trigger_event_non_silently = { id = cc_invasion_mexico.2 days = 3 }
 			}
 		}
@@ -93,8 +100,16 @@ ccim_call_confederation = {
 
 	ai_will_do = {
 		add = {
-			value = 10
+			value = -10
 			desc = BASE_VALUE
+		}
+		# Worth forming if the IO doesn't exist yet
+		if = {
+			limit = { NOT = { exists = international_organization:cc_mesoamerican_confederation } }
+			add = {
+				desc = "CCIM_IO_NOT_YET_FORMED"
+				value = 20
+			}
 		}
 		if = {
 			limit = {
@@ -110,7 +125,7 @@ ccim_call_confederation = {
 			}
 			add = {
 				desc = "ENEMY_ON_BORDER"
-				value = 40
+				value = 15
 			}
 		}
 	}
@@ -199,9 +214,6 @@ ccim_offer_tribute = {
 				}
 			}
 		}
-		else = {
-			custom_tooltip = ccim_offer_tribute_no_target_tt
-		}
 	}
 
 	ai_will_do = {
@@ -225,6 +237,175 @@ ccim_offer_tribute = {
 				desc = "ENEMY_HOLDS_CB"
 				value = 50
 			}
+		}
+	}
+}
+
+################################################################################
+# NATIVE ACTION 3 — Fortify Sacred Sites
+# Pays gold to apply a defensive modifier to self; also grants blessing to all
+# confederation members if the actor belongs to the confederation.
+################################################################################
+ccim_fortify_sacred_sites = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_fortified_sacred_sites }
+			gold >= 60
+		}
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_invasion_mexico = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = {
+				name = ccim_recently_fortified_sacred_sites
+				value = yes
+				years = 8
+			}
+			add_gold = -60
+			add_country_modifier = {
+				modifier = ccim_sacred_fortifications
+				years = 5
+				mode = add_and_extend
+			}
+			if = {
+				limit = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				international_organization:cc_mesoamerican_confederation = {
+					every_international_organization_member = {
+						add_country_modifier = {
+							modifier = ccim_divine_blessing
+							years = 3
+							mode = add_and_extend
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 10
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				scope:actor = {
+					any_neighbor_country = {
+						NOT = { is_capital_mesoamerica = yes }
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+					}
+				}
+			}
+			add = {
+				desc = "ENEMY_ON_BORDER"
+				value = 30
+			}
+		}
+	}
+}
+
+################################################################################
+# NATIVE ACTION 4 — Seek Tribal Alliance
+# Sends a federation invite event to a random independent non-confederation
+# native neighbor, trying to pull them into the Mesoamerican Confederation.
+################################################################################
+ccim_seek_tribal_alliance = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+			is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+			any_neighbor_country = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+			}
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_sought_tribal_alliance }
+			at_war = no
+		}
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_invasion_mexico = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = {
+				name = ccim_recently_sought_tribal_alliance
+				value = yes
+				years = 10
+			}
+			random_neighbor_country = {
+				limit = {
+					is_capital_mesoamerica = yes
+					is_subject = no
+					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+				}
+				save_scope_as = ccim_tribal_target
+				trigger_event_non_silently = { id = cc_invasion_mexico.43 days = 3 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
 		}
 	}
 }
@@ -304,9 +485,6 @@ ccim_commission_expedition = {
 				}
 				trigger_event_non_silently = { id = cc_invasion_mexico.30 days = 5 }
 			}
-		}
-		else = {
-			custom_tooltip = ccim_commission_expedition_no_target_tt
 		}
 	}
 
@@ -411,9 +589,6 @@ ccim_negotiate_protectorate = {
 				trigger_event_non_silently = { id = cc_invasion_mexico.26 days = 3 }
 			}
 		}
-		else = {
-			custom_tooltip = ccim_negotiate_protectorate_no_target_tt
-		}
 	}
 
 	ai_will_do = {
@@ -436,6 +611,661 @@ ccim_negotiate_protectorate = {
 			add = {
 				desc = "AT_WAR_PENALTY"
 				value = -30
+			}
+		}
+	}
+}
+
+################################################################################
+# COLONIAL ACTION 3 — Extract Tribute
+# Collects gold from owned Mesoamerican locations (15g each) and applies a
+# brief income windfall modifier.
+################################################################################
+ccim_extract_tribute = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			NOT = { is_capital_mesoamerica = yes }
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			any_owned_location = { region = region:mesoamerica_region }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_extracted_tribute }
+		}
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_invasion_mexico = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = {
+				name = ccim_recently_extracted_tribute
+				value = yes
+				years = 8
+			}
+			# 15 gold per owned mesoamerican location
+			every_owned_location = {
+				limit = { region = region:mesoamerica_region }
+				scope:actor = { add_gold = 15 }
+			}
+			add_prestige = prestige_weak_bonus
+			add_country_modifier = {
+				modifier = ccim_tribute_windfall
+				years = 3
+				mode = add_and_extend
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 30
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# COLONIAL ACTION 4 — Bribe Noble Faction
+# Spends gold to apply ccim_native_weakness to a chosen native power for 4 years
+# and adds a favorable opinion modifier toward the bribing country.
+################################################################################
+ccim_bribe_noble_faction = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			NOT = { is_capital_mesoamerica = yes }
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+				has_presence_in = region:caribbean_region
+			}
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_bribed_nobles }
+			at_war = no
+			gold >= 80
+		}
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_invasion_mexico = this
+			situation_is_active = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		target_flag = target
+		name = "ccim_choose_bribe_target"
+		column = { data = name }
+		column = { data = population }
+		visible = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+			NOT = { is_at_war_with = scope:actor }
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:target }
+			scope:actor = {
+				set_variable = {
+					name = ccim_recently_bribed_nobles
+					value = yes
+					years = 10
+				}
+				add_gold = -80
+			}
+			scope:target = {
+				add_country_modifier = {
+					modifier = ccim_native_weakness
+					years = 4
+					mode = add_and_extend
+				}
+				add_opinion = {
+					modifier = opinion_ccim_bribed_noble
+					target = scope:actor
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 5
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				exists = scope:target
+				scope:target = { total_population > 2000 }
+			}
+			add = {
+				desc = "LARGE_TARGET"
+				value = 25
+			}
+		}
+		if = {
+			limit = { scope:actor = { at_war = yes } }
+			add = {
+				desc = "AT_WAR_PENALTY"
+				value = -40
+			}
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 1 — Call War Council
+# Confederation leader calls all members to a war council, granting a military
+# boost at the cost of prestige and 15 confederation unity.
+################################################################################
+ccim_io_war_council = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_called_war_council }
+			at_war = yes
+		}
+		international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 15
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_mesoamerican_confederation
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = {
+				name = ccim_recently_called_war_council
+				value = yes
+				years = 5
+			}
+			add_prestige = prestige_mild_penalty
+		}
+		international_organization:cc_mesoamerican_confederation = {
+			change_variable = { name = ccim_confederation_unity add = -15 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_war_council_boost
+					years = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 20
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 2 — Tribute Levy
+# Confederation leader levies 20 gold from each non-leader member. Costs 10
+# confederation unity — extracting tribute strains member goodwill.
+################################################################################
+ccim_io_tribute_levy = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_levied_tribute }
+			at_war = no
+		}
+		international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 10
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_mesoamerican_confederation
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = {
+				name = ccim_recently_levied_tribute
+				value = yes
+				years = 8
+			}
+		}
+		international_organization:cc_mesoamerican_confederation = {
+			change_variable = { name = ccim_confederation_unity add = -10 }
+			every_international_organization_member = {
+				limit = { NOT = { this = scope:actor } }
+				add_gold = -20
+				scope:actor = { add_gold = 20 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 3 — Send Envoys
+# Confederation leader pays gold to dispatch envoys to a specific independent
+# native neighbor. Costs 50 gold and 10 confederation unity.
+################################################################################
+ccim_io_send_envoys = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			at_war = no
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_sent_envoys }
+			gold >= 50
+		}
+		international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 10
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_mesoamerican_confederation
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		source = actor
+		target_flag = target
+		name = "ccim_choose_envoy_target"
+		column = { data = name }
+		column = { data = population }
+		visible = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+			NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+			can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			is_neighbor_of = scope:actor
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:target }
+			scope:actor = {
+				set_variable = {
+					name = ccim_recently_sent_envoys
+					value = yes
+					years = 3
+				}
+				add_gold = -50
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				change_variable = { name = ccim_confederation_unity add = -10 }
+			}
+			scope:target = {
+				trigger_event_non_silently = { id = cc_invasion_mexico.63 days = 3 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 20
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				exists = scope:target
+				scope:target = {
+					any_neighbor_country = {
+						NOT = { is_capital_mesoamerica = yes }
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+					}
+				}
+			}
+			add = {
+				desc = "TARGET_HAS_COLONIAL_NEIGHBOR"
+				value = 20
+			}
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 4 — Strike Against the Invaders
+# Confederation leader selects a neighboring colonial power. If the leader holds
+# cc_repel_invaders against them, declares war immediately and boosts all members.
+# If not, grants the CB to use at will. Either way gains 20 confederation unity.
+################################################################################
+ccim_io_strike_invaders = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_struck_invaders }
+			at_war = no
+		}
+		international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 15
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_mesoamerican_confederation
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		source = actor
+		target_flag = target
+		name = "ccim_choose_strike_target"
+		column = { data = name }
+		column = { data = population }
+		visible = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+				has_presence_in = region:caribbean_region
+			}
+			is_neighbor_of = scope:actor
+			NOT = { is_at_war_with = scope:actor }
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:target }
+			scope:actor = {
+				set_variable = {
+					name = ccim_recently_struck_invaders
+					value = yes
+					years = 10
+				}
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				change_variable = { name = ccim_confederation_unity add = 20 }
+				every_international_organization_member = {
+					add_country_modifier = {
+						modifier = ccim_war_council_boost
+						years = 3
+						mode = add_and_extend
+					}
+				}
+			}
+			# Declare war if CB already held; otherwise grant it for later use
+			if = {
+				limit = {
+					scope:actor = {
+						has_casus_belli_of_type_on = {
+							type = casus_belli:cc_repel_invaders
+							target = scope:target
+						}
+					}
+				}
+				scope:actor = {
+					declare_war_with_cb = {
+						target = scope:target
+						type = casus_belli:cc_repel_invaders
+					}
+				}
+			}
+			else = {
+				scope:actor = {
+					add_casus_belli = {
+						type = casus_belli:cc_repel_invaders
+						target = scope:target
+						years = 5
+					}
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				exists = scope:target
+				scope:actor = {
+					has_casus_belli_of_type_on = {
+						type = casus_belli:cc_repel_invaders
+						target = scope:target
+					}
+				}
+			}
+			add = {
+				desc = "HAS_CB_READY"
+				value = 25
+			}
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 5 — Absorb a Neighboring Tribe
+# Confederation leader uses the confederation's prestige and authority to
+# diplomatically absorb a neighboring independent native nation (annex them).
+# Costs 25 confederation unity — expending political capital on expansion.
+################################################################################
+ccim_io_absorb_tribe = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = ccim_recently_absorbed_tribe }
+			at_war = no
+		}
+		international_organization:cc_mesoamerican_confederation.var:ccim_confederation_unity >= 30
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_mesoamerican_confederation
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		source = actor
+		target_flag = target
+		name = "ccim_choose_absorb_target"
+		column = { data = name }
+		column = { data = population }
+		visible = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+			NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+			is_neighbor_of = scope:actor
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:target }
+			scope:actor = {
+				set_variable = {
+					name = ccim_recently_absorbed_tribe
+					value = yes
+					years = 15
+				}
+				add_prestige = prestige_mild_bonus
+				annex_country = {
+					country = scope:target
+					reason = Diplomatic
+				}
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				change_variable = { name = ccim_confederation_unity add = -25 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 10
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				exists = scope:target
+				scope:target = { total_population > 500 }
+			}
+			add = {
+				desc = "LARGE_TARGET"
+				value = 20
 			}
 		}
 	}

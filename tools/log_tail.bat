@@ -78,7 +78,7 @@ $exclusions = @(
     "Trying to reshape data model with negative count -1", "No context supplied (Use SetDataContext),", "FetchData failed for 'RowList.GetTitle'", "PdxDataFetchLocalizedData",
     "Promote 'INTERNATIONAL_ORGANIZATION' returned nullptr", "FetchData failed for 'INTERNATIONAL_ORGANIZATION.GetName'", "NOT_HAS_SPECIAL_STATUS_IN_INTERNATIONAL_ORGANIZATION_TRIGGER",
     " FetchData failed for 'CanBuildOrExpandBuildingInfo(ConstructScoreRanking.GetBuildingType,", "FetchData failed for 'BuildingType.GetName'",
-    "invalid type for the country: iconographer",
+    "invalid type for the country: iconographer", "Ruler term has overlapping dates, please fix.", " Ruler term is active but there are subsequent ruler terms",
     "flavor_brapru.txt:883"
 )
 

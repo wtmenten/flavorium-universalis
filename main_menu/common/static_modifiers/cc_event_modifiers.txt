@@ -50,6 +50,59 @@ ccim_contested_claims = {
 	war_on_subject_cost_modifier = 0.25
 }
 
+# Added by ccim_fortify_sacred_sites action (self) and event 40 option A — religious ceremony
+ccim_divine_blessing = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	land_morale = 0.05
+	max_manpower = 0.05
+}
+
+# Added by ccim_fortify_sacred_sites action (self) — fortified sacred sites
+ccim_sacred_fortifications = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	land_morale = 0.03
+	global_garrison_size_modifier = 0.10
+}
+
+# Applied to native target by ccim_bribe_noble_faction action — internal strife
+ccim_native_weakness = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	land_morale = -0.05
+	max_manpower = -0.05
+}
+
+# Added by ccim_extract_tribute action — short-term income windfall
+ccim_tribute_windfall = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	monthly_gold_income = 5
+}
+
+# Added by cc_invasion_mexico.42 option A — influx of refugees bolsters manpower
+ccim_refugee_influx = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	max_manpower = 0.08
+}
+
 # Added by cc_cabinet.3 — minister turns investment into lasting benefit
 cc_cabinet_ministerial_investment = {
 	game_data = {
@@ -1197,4 +1250,43 @@ cc_clergy_court_captured = {
 	nobles_estate_agenda_impact = -0.05
 	tolerance_heretic = -1
 	stability_cost = 0.08
+}
+
+########################
+# Mesoamerican Confederation IO Unity Modifiers
+########################
+
+# Applied by IO monthly_effect at unity >= 70 (2-month refresh)
+ccim_high_unity_bonus = {
+	game_data = { category = country decaying = no }
+	land_morale = 0.08
+	max_manpower = 0.05
+}
+
+# Applied by IO monthly_effect at unity < 30 (2-month refresh)
+ccim_low_unity_penalty = {
+	game_data = { category = country decaying = no }
+	land_morale = -0.08
+	max_manpower = -0.05
+}
+
+# Applied to a country that joins the confederation (2 years)
+ccim_newly_joined_bonus = {
+	game_data = { category = country decaying = yes }
+	land_morale = 0.10
+	monthly_prestige = 0.02
+}
+
+# Applied to a country that voluntarily leaves the confederation (3 years)
+ccim_confederation_betrayer = {
+	game_data = { category = country decaying = yes }
+	land_morale = -0.10
+	monthly_prestige = -0.02
+}
+
+# Applied to all confederation members by the war council action and event 60 option A (2 years)
+ccim_war_council_boost = {
+	game_data = { category = country decaying = yes }
+	land_morale = 0.05
+	global_levy_size_modifier = 0.10
 }

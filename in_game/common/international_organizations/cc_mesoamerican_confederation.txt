@@ -70,9 +70,29 @@ cc_mesoamerican_confederation = {
 
 	disband_minimum_member_count = 1
 
-	on_joined = {}
+	on_joined = {
+		# root = joining country, scope:recipient = IO
+		scope:recipient = {
+			change_variable = { name = ccim_confederation_unity add = 5 }
+		}
+		add_country_modifier = {
+			modifier = ccim_newly_joined_bonus
+			years = 2
+			mode = add_and_extend
+		}
+	}
 
-	on_left = {}
+	on_left = {
+		# root = leaving country, scope:recipient = IO
+		scope:recipient = {
+			change_variable = { name = ccim_confederation_unity add = -10 }
+		}
+		add_country_modifier = {
+			modifier = ccim_confederation_betrayer
+			years = 3
+			mode = add_and_extend
+		}
+	}
 
 	leader_modifier = {
 		monthly_prestige = 0.03
@@ -82,13 +102,74 @@ cc_mesoamerican_confederation = {
 		land_morale = 0.05
 	}
 
+	monthly_effect = {
+		# Apply tiered unity bonuses/penalties to all members (2-month refresh; expires naturally when tier exits)
+		if = {
+			limit = { var:ccim_confederation_unity >= 70 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_high_unity_bonus
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+		else_if = {
+			limit = { var:ccim_confederation_unity < 30 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_low_unity_penalty
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	variables = {
+		ccim_confederation_unity = {
+			format = "CCIM_UNITY_FORMAT"
+			change_format = "VARIABLE_CHANGE_FORMAT"
+			min = 0
+			max = 100
+			start = 50
+			monthly_change = {
+				add = {
+					desc = "CCIM_UNITY_NATURAL"
+					value = 0.2
+				}
+				add = {
+					desc = "CCIM_UNITY_MEMBER_SIZE"
+					value = total_members
+					multiply = 0.1
+				}
+				add = {
+					desc = "CCIM_UNITY_COMMON_THREAT"
+					if = {
+						limit = {
+							leader_country = {
+								at_war = yes
+							}
+						}
+						value = 0.5
+					}
+					else = { value = 0 }
+				}
+				every_international_organization_member = {
+					limit = { at_war = yes }
+					add = -0.3
+				}
+			}
+		}
+	}
+
 	#(root = potential joiner, actor = potential leader, recipient = existing organization if it already exists)
 	ai_desire_to_join = {
 		add = {
-			value = -20
+			value = -40
 			desc = BASE_VALUE
 		}
-		# Strongly want to join if a colonizer is on the border
+		# Urgency: colonizer directly borders our territory
 		if = {
 			limit = {
 				any_neighbor_country = {
@@ -101,8 +182,44 @@ cc_mesoamerican_confederation = {
 				}
 			}
 			add = {
-				desc = "ENEMY_ON_BORDER"
-				value = 60
+				desc = "CCIM_COLONIAL_BORDER"
+				value = 30
+			}
+		}
+		# War urgency — already under attack, seek allies desperately
+		if = {
+			limit = { at_war = yes }
+			add = {
+				desc = "CCIM_WAR_URGENCY"
+				value = 50
+			}
+		}
+		# Bribed nobles counsel neutrality and appeasement
+		if = {
+			limit = { has_country_modifier = ccim_native_weakness }
+			add = {
+				desc = "CCIM_BRIBED_NOBLES"
+				value = -40
+			}
+		}
+		# Relations with existing members — old grudges still matter
+		if = {
+			limit = {
+				exists = scope:recipient
+				scope:recipient = { total_members > 0 }
+			}
+			add = {
+				desc = "CCIM_MEMBER_RELATIONS"
+				scope:recipient = {
+					every_international_organization_member = {
+						root = {
+							add = {
+								value = this_opinion_of_prev
+								multiply = 0.15
+							}
+						}
+					}
+				}
 			}
 		}
 	}

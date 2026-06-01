@@ -45,6 +45,11 @@ cc_invasion_mexico.1 = {
 # EVENTS 2–4 — Federation Request
 # Fires to the three largest native powers. Options: form/join the confederation or stand alone.
 ################################################################################
+################################################################################
+# EVENT 2 — The Empire at the Crossroads
+# Fires to the largest native power. They are proud — default is to stand alone
+# unless the colonizers are directly at their border.
+################################################################################
 cc_invasion_mexico.2 = {
 	type = country_event
 	category = situation_event
@@ -63,41 +68,81 @@ cc_invasion_mexico.2 = {
 		situation:cc_invasion_mexico = { situation_is_active = yes }
 	}
 
+	# "We shall forge and lead this alliance."
+	# Default ~20%. Border raises to ~23%. Only war pushes above 40%.
 	option = {
 		name = cc_invasion_mexico.2.a
-		trigger = { is_capital_mesoamerica = yes }
-		ai_chance = { base = 70 }
-		if = {
-			limit = {
-				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+		ai_chance = {
+			factor = 1
+			modifier = {
+				# Foreigners at the border nudge pride, but don't override it
+				factor = 1.2
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
 			}
-			create_international_organization = {
-				type = international_organization_type:cc_mesoamerican_confederation
-				add_country_to_international_organization = root
-				set_leader_country = root
+			modifier = {
+				# Active war breaks through pride
+				factor = 2
+				at_war = yes
+			}
+			modifier = {
+				# Bribed nobles suppress any willingness
+				factor = 0.1
+				has_country_modifier = ccim_native_weakness
 			}
 		}
-		else_if = {
-			limit = {
-				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
-				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+		custom_tooltip = ccim_call_confederation_create_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { exists = international_organization:cc_mesoamerican_confederation }
+				}
+				create_international_organization = {
+					type = international_organization_type:cc_mesoamerican_confederation
+					add_country_to_international_organization = root
+					set_leader_country = root
+				}
 			}
-			international_organization:cc_mesoamerican_confederation = {
-				add_country_to_international_organization = root
+			else_if = {
+				limit = {
+					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+				}
+				international_organization:cc_mesoamerican_confederation = {
+					add_country_to_international_organization = root
+				}
 			}
 		}
 		add_prestige = prestige_weak_bonus
 	}
 
+	# "The empire stands by its own strength alone."
 	option = {
 		name = cc_invasion_mexico.2.b
-		trigger = { is_capital_mesoamerica = yes }
-		ai_chance = { base = 30 }
+		ai_chance = {
+			factor = 4
+			modifier = {
+				# Bribed nobles strongly reinforce isolationism
+				factor = 2
+				has_country_modifier = ccim_native_weakness
+			}
+		}
 		add_prestige = prestige_weak_bonus
 	}
 }
 
-# Same structure as .2 — for the second-largest native power
+################################################################################
+# EVENT 3 — Old Rivals, New Threats
+# Fires to the second-largest native power. They have a complicated history with
+# the power that may have just formed the confederation — pride and old rivalries
+# pull against the logic of unity.
+################################################################################
 cc_invasion_mexico.3 = {
 	type = country_event
 	category = situation_event
@@ -107,7 +152,7 @@ cc_invasion_mexico.3 = {
 
 	illustration_tags = {
 		10 = interior
-		10 = professional
+		10 = angry
 	}
 
 	trigger = {
@@ -116,37 +161,83 @@ cc_invasion_mexico.3 = {
 		situation:cc_invasion_mexico = { situation_is_active = yes }
 	}
 
+	# "Set aside old rivalries. We join."
+	# Default ~25%. Border raises to ~38%. War pushes above 55%.
 	option = {
 		name = cc_invasion_mexico.3.a
-		ai_chance = { base = 60 }
-		if = {
-			limit = {
-				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+		ai_chance = {
+			factor = 1
+			modifier = {
+				# Border threat chips away at old grudges
+				factor = 1.8
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
 			}
-			create_international_organization = {
-				type = international_organization_type:cc_mesoamerican_confederation
-				add_country_to_international_organization = root
-				set_leader_country = root
+			modifier = {
+				# Joining an existing structure feels less like submission
+				factor = 1.3
+				exists = international_organization:cc_mesoamerican_confederation
+			}
+			modifier = {
+				# Survival overcomes rivalry
+				factor = 2
+				at_war = yes
+			}
+			modifier = {
+				factor = 0.1
+				has_country_modifier = ccim_native_weakness
 			}
 		}
-		else_if = {
-			limit = {
-				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
-				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+		custom_tooltip = ccim_call_confederation_create_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { exists = international_organization:cc_mesoamerican_confederation }
+				}
+				create_international_organization = {
+					type = international_organization_type:cc_mesoamerican_confederation
+					add_country_to_international_organization = root
+					set_leader_country = root
+				}
 			}
-			international_organization:cc_mesoamerican_confederation = {
-				add_country_to_international_organization = root
+			else_if = {
+				limit = {
+					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+				}
+				international_organization:cc_mesoamerican_confederation = {
+					add_country_to_international_organization = root
+				}
 			}
 		}
 	}
 
+	# "We trust no alliance built by our old rivals."
 	option = {
 		name = cc_invasion_mexico.3.b
-		ai_chance = { base = 40 }
+		ai_chance = {
+			factor = 3
+			modifier = {
+				factor = 2
+				has_country_modifier = ccim_native_weakness
+			}
+		}
+		add_prestige = prestige_weak_bonus
 	}
 }
 
-# Same structure as .2 — for the third-largest native power
+################################################################################
+# EVENT 4 — The Council Deliberates
+# Fires to the third-largest native power. A smaller, more pragmatic nation.
+# Their elders weigh protection against sovereignty — and remember the last time
+# they entrusted their fate to a greater power.
+################################################################################
 cc_invasion_mexico.4 = {
 	type = country_event
 	category = situation_event
@@ -165,33 +256,69 @@ cc_invasion_mexico.4 = {
 		situation:cc_invasion_mexico = { situation_is_active = yes }
 	}
 
+	# "The numbers speak for themselves. We join."
+	# Default ~33%. Border raises to ~50%. War pushes to ~67%.
 	option = {
 		name = cc_invasion_mexico.4.a
-		ai_chance = { base = 50 }
-		if = {
-			limit = {
-				NOT = { exists = international_organization:cc_mesoamerican_confederation }
+		ai_chance = {
+			factor = 1
+			modifier = {
+				# Pragmatism responds to border pressure more readily than pride
+				factor = 2
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
 			}
-			create_international_organization = {
-				type = international_organization_type:cc_mesoamerican_confederation
-				add_country_to_international_organization = root
-				set_leader_country = root
+			modifier = {
+				factor = 2
+				at_war = yes
+			}
+			modifier = {
+				# Nobles have been bought — the council is divided
+				factor = 0.05
+				has_country_modifier = ccim_native_weakness
 			}
 		}
-		else_if = {
-			limit = {
-				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
-				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+		custom_tooltip = ccim_call_confederation_create_tt
+		hidden_effect = {
+			if = {
+				limit = {
+					NOT = { exists = international_organization:cc_mesoamerican_confederation }
+				}
+				create_international_organization = {
+					type = international_organization_type:cc_mesoamerican_confederation
+					add_country_to_international_organization = root
+					set_leader_country = root
+				}
 			}
-			international_organization:cc_mesoamerican_confederation = {
-				add_country_to_international_organization = root
+			else_if = {
+				limit = {
+					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					can_join_international_organization = international_organization:cc_mesoamerican_confederation
+				}
+				international_organization:cc_mesoamerican_confederation = {
+					add_country_to_international_organization = root
+				}
 			}
 		}
 	}
 
+	# "Our destiny lies in our own hands."
 	option = {
 		name = cc_invasion_mexico.4.b
-		ai_chance = { base = 50 }
+		ai_chance = {
+			factor = 2
+			modifier = {
+				factor = 2
+				has_country_modifier = ccim_native_weakness
+			}
+		}
+		add_prestige = prestige_weak_bonus
 	}
 }
 
@@ -621,6 +748,201 @@ cc_invasion_mexico.35 = {
 	}
 }
 
+################################################################################
+# NATIVE EVENTS 40–43
+################################################################################
+
+################################################################################
+# EVENT 40 — The High Priest Urges Action (Native Monthly Chain Start)
+# Monthly for unaffiliated native nations that border colonial territory.
+# Option A chains into event 41; Option B gives a small manpower boost instead.
+################################################################################
+cc_invasion_mexico.40 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.40.title
+	desc = cc_invasion_mexico.40.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_neighbor_country = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.40.a
+		ai_chance = { base = 65 }
+		add_country_modifier = {
+			modifier = ccim_divine_blessing
+			years = 3
+			mode = add_and_extend
+		}
+		trigger_event_non_silently = { id = cc_invasion_mexico.41 days = 20 }
+	}
+
+	option = {
+		name = cc_invasion_mexico.40.b
+		ai_chance = { base = 35 }
+		add_manpower = { value = 1 }
+	}
+}
+
+################################################################################
+# EVENT 41 — Signs in the Sacred Smoke (Chained from Event 40 Option A)
+################################################################################
+cc_invasion_mexico.41 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.41.title
+	desc = cc_invasion_mexico.41.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	option = {
+		name = cc_invasion_mexico.41.a
+		ai_chance = { base = 70 }
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+			add_country_modifier = {
+				modifier = ccim_confederation_solidarity
+				years = 3
+				mode = add_and_extend
+			}
+		}
+		else_if = {
+			limit = {
+				exists = international_organization:cc_mesoamerican_confederation
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.41.b
+		ai_chance = { base = 30 }
+		add_country_modifier = {
+			modifier = ccim_defensive_preparations
+			years = 3
+			mode = add_and_extend
+		}
+	}
+}
+
+################################################################################
+# EVENT 42 — Refugees from Fallen Lands (Monthly for confederation members)
+# Fires to confederation members with a colonial neighbor.
+################################################################################
+cc_invasion_mexico.42 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.42.title
+	desc = cc_invasion_mexico.42.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = angry
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_neighbor_country = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.42.a
+		ai_chance = { base = 50 }
+		add_country_modifier = {
+			modifier = ccim_refugee_influx
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.42.b
+		ai_chance = { base = 50 }
+		add_country_modifier = {
+			modifier = ccim_expedition_morale
+			years = 2
+			mode = add_and_extend
+		}
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 43 — Tribal Alliance Request (Triggered by ccim_seek_tribal_alliance)
+# Fires to a neighboring native country; they may join the confederation.
+################################################################################
+cc_invasion_mexico.43 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.43.title
+	desc = cc_invasion_mexico.43.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_invasion_mexico.43.a
+		ai_chance = { base = 55 }
+		if = {
+			limit = { can_join_international_organization = international_organization:cc_mesoamerican_confederation }
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	option = {
+		name = cc_invasion_mexico.43.b
+		ai_chance = { base = 45 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
 # Fires to colonial powers when the situation ends
 cc_invasion_mexico.36 = {
 	type = country_event
@@ -651,5 +973,517 @@ cc_invasion_mexico.36 = {
 
 	option = {
 		name = cc_invasion_mexico.36.a
+	}
+}
+
+################################################################################
+# COLONIAL EVENTS 50–52
+################################################################################
+
+################################################################################
+# EVENT 50 — A Bold Captain Steps Forward (Colonial Monthly Chain Start)
+# Monthly for colonizers with native neighbors and no active captain cooldown.
+# Option A costs 50 gold and chains into event 51 after 15 days.
+################################################################################
+cc_invasion_mexico.50 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.50.title
+	desc = cc_invasion_mexico.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		NOT = { is_capital_mesoamerica = yes }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_neighbor_country = { is_capital_mesoamerica = yes }
+		NOT = { has_variable = ccim_captain_chain_cooldown }
+	}
+
+	option = {
+		name = cc_invasion_mexico.50.a
+		trigger = { gold >= 50 }
+		ai_chance = {
+			base = 55
+			modifier = {
+				factor = 0
+				NOT = { gold >= 50 }
+			}
+		}
+		add_gold = -50
+		set_variable = { name = ccim_captain_chain_cooldown value = yes years = 8 }
+		trigger_event_non_silently = { id = cc_invasion_mexico.51 days = 15 }
+	}
+
+	option = {
+		name = cc_invasion_mexico.50.b
+		ai_chance = { base = 45 }
+	}
+}
+
+################################################################################
+# EVENT 51 — The Captain's Report (Chained from Event 50 Option A)
+# Random outcome: 60% success (CB + morale), 40% failure (prestige + manpower loss).
+################################################################################
+cc_invasion_mexico.51 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.51.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = ccim_captain_success }
+				desc = cc_invasion_mexico.51.desc_success
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_invasion_mexico.51.desc_failure
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	immediate = {
+		random_list = {
+			60 = { set_variable = { name = ccim_captain_success value = yes } }
+			40 = { }
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.51.a_success
+		trigger = { has_variable = ccim_captain_success }
+		remove_variable = ccim_captain_success
+		random_neighbor_country = {
+			limit = { is_capital_mesoamerica = yes }
+			save_scope_as = ccim_captain_report_target
+		}
+		scope:ccim_captain_report_target ?= {
+			root = {
+				add_casus_belli = {
+					type = casus_belli:cc_seize_mexico_native
+					target = scope:ccim_captain_report_target
+					years = 6
+				}
+			}
+		}
+		add_country_modifier = {
+			modifier = ccim_expedition_morale
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.51.b_failure
+		trigger = { NOT = { has_variable = ccim_captain_success } }
+		add_prestige = prestige_weak_penalty
+		add_manpower = { value = -1 }
+	}
+}
+
+################################################################################
+# EVENT 52 — Gold Fever Grips the Camp (Colonial Standalone Monthly)
+# Monthly for colonizers who own locations in mesoamerica_region.
+################################################################################
+cc_invasion_mexico.52 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.52.title
+	desc = cc_invasion_mexico.52.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { is_capital_mesoamerica = yes }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		any_owned_location = { region = region:mesoamerica_region }
+	}
+
+	option = {
+		name = cc_invasion_mexico.52.a
+		ai_chance = { base = 60 }
+		add_gold = 20
+		add_country_modifier = {
+			modifier = ccim_expedition_morale
+			years = 2
+			mode = add_and_extend
+		}
+		add_prestige = prestige_weak_penalty
+	}
+
+	option = {
+		name = cc_invasion_mexico.52.b
+		ai_chance = { base = 40 }
+		add_prestige = prestige_weak_bonus
+		add_manpower = { value = 1 }
+	}
+}
+
+################################################################################
+# EVENT 60 — The Confederation Council Deliberates
+# Monthly (2%) for the confederation leader when unity >= 40. Leader chooses
+# the confederation's strategic direction this season.
+################################################################################
+cc_invasion_mexico.60 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.60.title
+	desc = cc_invasion_mexico.60.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	option = {
+		name = cc_invasion_mexico.60.a
+		ai_chance = { base = 40 }
+		international_organization:cc_mesoamerican_confederation = {
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_war_council_boost
+					years = 2
+					mode = add_and_extend
+				}
+			}
+			change_variable = { name = ccim_confederation_unity add = -5 }
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.60.b
+		ai_chance = { base = 40 }
+		add_gold = -40
+		international_organization:cc_mesoamerican_confederation = {
+			change_variable = { name = ccim_confederation_unity add = 10 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_confederation_solidarity
+					years = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.60.c
+		ai_chance = { base = 20 }
+		random_neighbor_country = {
+			limit = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				can_join_international_organization = international_organization:cc_mesoamerican_confederation
+			}
+			trigger_event_non_silently = { id = cc_invasion_mexico.63 days = 3 }
+		}
+	}
+}
+
+################################################################################
+# EVENT 61 — The Confederation is Fracturing
+# Monthly (5%) for the confederation leader when unity < 30. Internal tensions
+# threaten to tear the alliance apart.
+################################################################################
+cc_invasion_mexico.61 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.61.title
+	desc = cc_invasion_mexico.61.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	option = {
+		name = cc_invasion_mexico.61.a
+		ai_chance = { base = 60 }
+		add_gold = -60
+		add_prestige = prestige_mild_penalty
+		international_organization:cc_mesoamerican_confederation = {
+			change_variable = { name = ccim_confederation_unity add = 20 }
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.61.b
+		ai_chance = { base = 40 }
+	}
+}
+
+################################################################################
+# EVENT 62 — The High Priest Blesses the Confederation
+# Monthly (2%) for the confederation leader at any unity level. Sacred ceremony
+# to strengthen the bonds between member peoples.
+################################################################################
+cc_invasion_mexico.62 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.62.title
+	desc = cc_invasion_mexico.62.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	option = {
+		name = cc_invasion_mexico.62.a
+		ai_chance = { base = 70 }
+		international_organization:cc_mesoamerican_confederation = {
+			change_variable = { name = ccim_confederation_unity add = 8 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = ccim_divine_blessing
+					years = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.62.b
+		ai_chance = { base = 30 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 63 — Envoys from the Mesoamerican Confederation
+# Fired by the ccim_io_send_envoys action or event 60 option C. Offers the
+# target native country a chance to join the confederation.
+################################################################################
+cc_invasion_mexico.63 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.63.title
+	desc = cc_invasion_mexico.63.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = happy
+	}
+
+	option = {
+		name = cc_invasion_mexico.63.a
+		ai_will_select = {
+			value = 30
+			if = {
+				limit = {
+					any_neighbor_country = {
+						NOT = { is_capital_mesoamerica = yes }
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+					}
+				}
+				add = 35
+			}
+		}
+		if = {
+			limit = { can_join_international_organization = international_organization:cc_mesoamerican_confederation }
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+	}
+
+	option = {
+		name = cc_invasion_mexico.63.b
+		ai_will_select = { value = 35 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 64 — The Fall of Our Neighbors
+# Fires monthly to independent non-member natives who have a subjugated native
+# neighbor — the fear cascade that pushes wavering nations toward the confederation.
+################################################################################
+cc_invasion_mexico.64 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.64.title
+	desc = cc_invasion_mexico.64.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = angry
+	}
+
+	trigger = {
+		is_capital_mesoamerica = yes
+		is_subject = no
+		NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		exists = international_organization:cc_mesoamerican_confederation
+		any_neighbor_country = {
+			is_capital_mesoamerica = yes
+			is_subject = yes
+		}
+	}
+
+	# "Their fate has decided us. We join the confederation."
+	option = {
+		name = cc_invasion_mexico.64.a
+		ai_chance = {
+			factor = 2
+			modifier = {
+				# Direct colonial border raises urgency
+				factor = 2
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
+			}
+			modifier = {
+				# Bribed nobles still resist even this stark lesson
+				factor = 0.2
+				has_country_modifier = ccim_native_weakness
+			}
+		}
+		set_variable = { name = ccim_fear_cascade_cooldown value = yes years = 10 }
+		if = {
+			limit = { can_join_international_organization = international_organization:cc_mesoamerican_confederation }
+			international_organization:cc_mesoamerican_confederation = {
+				add_country_to_international_organization = root
+			}
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# "We shall negotiate our own terms with the invaders."
+	option = {
+		name = cc_invasion_mexico.64.b
+		ai_chance = {
+			factor = 3
+			modifier = {
+				factor = 0.4
+				any_neighbor_country = {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
+			}
+			modifier = {
+				factor = 2
+				has_country_modifier = ccim_native_weakness
+			}
+		}
+		set_variable = { name = ccim_fear_cascade_cooldown value = yes years = 10 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 70 — The Hour of Conquest
+# Monthly (5%) push for colonizers holding cc_seize_mexico_native against a
+# native neighbor but not yet at war. Fires declare_war_with_cb directly;
+# prefers unaffiliated natives over confederation members as easier first targets.
+################################################################################
+cc_invasion_mexico.70 = {
+	type = country_event
+	category = situation_event
+	title = cc_invasion_mexico.70.title
+	desc = cc_invasion_mexico.70.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	trigger = {
+		NOT = { is_capital_mesoamerica = yes }
+		NOT = { country_type = pop }
+		NOT = { country_type = building }
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		at_war = no
+		NOT = { has_variable = ccim_war_push_cooldown }
+		any_neighbor_country = {
+			is_capital_mesoamerica = yes
+			is_subject = no
+		}
+	}
+
+	immediate = {
+		# Prefer unaffiliated natives — easier targets that won't drag in the whole confederation
+		random_neighbor_country = {
+			limit = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+			}
+			save_scope_as = ccim_conquest_target
+		}
+		# Fall back to confederation members if no unaffiliated target is available
+		if = {
+			limit = { NOT = { exists = scope:ccim_conquest_target } }
+			random_neighbor_country = {
+				limit = {
+					is_capital_mesoamerica = yes
+					is_subject = no
+				}
+				save_scope_as = ccim_conquest_target
+			}
+		}
+	}
+
+	# "Give the order. Begin the campaign."
+	option = {
+		name = cc_invasion_mexico.70.a
+		trigger = { exists = scope:ccim_conquest_target }
+		ai_chance = {
+			base = 70
+			modifier = {
+				# More hesitant when target is sheltered by the confederation
+				factor = 0.4
+				scope:ccim_conquest_target = {
+					is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
+				}
+			}
+		}
+		set_variable = { name = ccim_war_push_cooldown value = yes years = 8 }
+		declare_war_with_cb = {
+			target = scope:ccim_conquest_target
+			type = casus_belli:cc_seize_mexico_native
+		}
+	}
+
+	# "We must consolidate our position first."
+	option = {
+		name = cc_invasion_mexico.70.b
+		ai_chance = { base = 30 }
+		set_variable = { name = ccim_war_push_cooldown value = yes years = 3 }
 	}
 }

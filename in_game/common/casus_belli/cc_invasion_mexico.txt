@@ -35,7 +35,68 @@ cc_seize_mexico_native = {
 	ai_will_do = {
 		add = {
 			desc = "BASE"
-			value = 50
+			value = 100
+		}
+		add = {
+			desc = "RELATIVE_STRENGTH"
+			value = 100
+			multiply = "scope:actor.relative_strength(scope:target)"
+		}
+		# Unaffiliated natives are much softer targets — no confederation pile-on
+		if = {
+			limit = {
+				scope:target = {
+					NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+				}
+			}
+			add = { desc = "UNAFFILIATED_TARGET" value = 75 }
+		}
+		if = {
+			limit = { scope:actor = { at_war = yes } }
+			add = { desc = "AT_WAR_PENALTY" value = -100 }
+		}
+	}
+}
+
+# CB 3: Mesoamerican Confederation leader repels colonial invaders
+# Granted by the ccim_io_strike_invaders IO action; no government-type gate.
+cc_repel_invaders = {
+	create_visible = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		is_capital_mesoamerica = yes
+		is_leader_of_international_organization = international_organization:cc_mesoamerican_confederation
+	}
+
+	create_enabled = {
+		is_capital_mesoamerica = yes
+		scope:target = {
+			NOT = { is_capital_mesoamerica = yes }
+			OR = {
+				has_presence_in = region:mesoamerica_region
+				has_presence_in = region:central_america_region
+				has_presence_in = region:caribbean_region
+			}
+			is_neighbor_of = root
+		}
+	}
+
+	declare_enabled = {
+		situation:cc_invasion_mexico = { situation_is_active = yes }
+		is_capital_mesoamerica = yes
+		scope:target = { NOT = { is_capital_mesoamerica = yes } }
+	}
+
+	antagonism_reduction_per_warworth_defender = {
+		add = 100
+	}
+
+	speed = 10
+	war_goal_type = superiority
+
+	ai_will_do = {
+		add = {
+			desc = "BASE"
+			value = 30
 		}
 		add = {
 			desc = "RELATIVE_STRENGTH"
