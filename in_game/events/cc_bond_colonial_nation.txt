@@ -190,10 +190,11 @@ cc_bonds.12 = {
 		}
 	}
 
-	# Send troops to suppress — prestige gain, 4-dimension damage
+	# Send troops to suppress — prestige gain, 4-dimension damage, manpower drain scaled to subject size
 	option = {
 		name = cc_bonds.12.a
 		add_prestige = prestige_mild_bonus
+		add_manpower = { value = -5  multiply = { value = scope:bond_subj.num_locations  divide = 15 }  max = -5  min = -50 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = -1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -206,10 +207,11 @@ cc_bonds.12 = {
 		}
 	}
 
-	# Investigate and reform tax code — gold cost, eco+pol improvement
+	# Investigate and reform tax code — reduced gold cost, eco+pol improvement, short admin penalty
 	option = {
 		name = cc_bonds.12.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -100  max = -1500 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -50  max = -750 }
+		add_country_modifier = { modifier = cc_governor_unrest_reform  years = 10  mode = add_and_extend }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 2 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -218,10 +220,12 @@ cc_bonds.12 = {
 		}
 	}
 
-	# Replace the governor — prestige loss, small pol/per damage, false positive fires
+	# Replace the governor — prestige loss, small pol/per damage, legitimacy, opinion hit, false positive fires
 	option = {
 		name = cc_bonds.12.c
 		add_prestige = prestige_weak_penalty
+		add_legitimacy = legitimacy_weak_bonus
+		add_opinion = { target = scope:bond_subj  modifier = cc_overlord_unrest_response }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = -1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
@@ -229,6 +233,14 @@ cc_bonds.12 = {
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
 		trigger_event_silently = { id = cc_bonds.72  months = 6 }
+	}
+
+	# Appease with promises — no immediate bond change, but seeds future unrest in the colony
+	option = {
+		name = cc_bonds.12.d
+		scope:bond_subj = {
+			add_country_modifier = { modifier = cc_governor_unrest_appeasement  years = 15  mode = add_and_extend }
+		}
 	}
 }
 
@@ -362,9 +374,11 @@ cc_bonds.14 = {
 	}
 
 	# Symbolic recognition — small gold cost for gifts and ceremonies, modest pol/per gains
+	# Administrative strain from setting up colonial representation bodies decays over 25 years
 	option = {
 		name = cc_bonds.14.b
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -50  max = -10 }
+		add_country_modifier = { modifier = cc_colonial_representative_strain  years = 25  mode = add_and_extend }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }

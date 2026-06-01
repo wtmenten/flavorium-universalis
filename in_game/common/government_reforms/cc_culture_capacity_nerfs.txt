@@ -1,0 +1,197 @@
+﻿
+# CC override: cultural capacity nerfs for government reforms
+# Each entry is a full copy of the vanilla reform with cultures_capacity reduced (+3→2, +2→1).
+# legacy_of_the_ottomans: replaces cultures_capacity_modifier=0.25 with cultures_capacity=2 (flat).
+
+REPLACE:french_feudal_nobility = { # French Feudalism
+	unique = yes
+	content_priority = 900
+	potential = {
+		has_or_had_tag = FRA
+		government_type = government_type:monarchy
+		NOT = { has_reform = government_reform:feudal_nobility }
+		NOT = { has_reform = government_reform:french_centralized_monarchy }
+		NOT = { has_variable = enable_centralized_fra_reform }
+	}
+	allow = {
+		has_or_had_tag = FRA
+		NOT = { has_reform = government_reform:french_centralized_monarchy }
+		NOT = { has_variable = enable_centralized_fra_reform }
+	}
+	locked = {
+		custom_tooltip = {
+			text = fra_removed_when_no_appanages_tt
+			is_locked_mechanic = {
+				mechanic = government_reform
+				type = french_feudal_nobility
+			}
+		}
+	}
+	country_modifier = {
+		has_appanages_subjects = yes
+		diplomatic_capacity = 1
+		cultures_capacity = 1
+		monthly_towards_serfdom = societal_value_large_monthly_move
+		monthly_towards_aristocracy = societal_value_monthly_move
+	}
+	years = 2
+}
+
+REPLACE:legacy_of_the_ottomans = {
+	unique = yes
+	potential = {
+		has_unlocked_government_reform_trigger = { type = legacy_of_the_ottomans }
+	}
+
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = legacy_of_the_ottomans
+		}
+	}
+	country_modifier = {
+		cultures_capacity = 2
+		auto_slave_raid_different_religion = yes
+		government_reform_slots = 1
+	}
+	years = 2
+}
+
+REPLACE:mug_mughal_diwan = {
+	age = age_1_traditions
+	potential = {
+		has_or_had_tag = MUG
+	}
+	country_modifier = {
+		add_accepted_culture_cost_modifier = -1
+		cultures_capacity = 2
+		tolerance_heathen = 2
+	}
+	major = yes
+	unique = yes
+	years = 2
+}
+
+REPLACE:legacy_of_kublai_khan = {
+	unique = yes
+	major = yes
+	potential = {
+		has_or_had_tag = CHI
+		culture = culture:mongolian_culture
+		is_leader_of_international_organization = international_organization:middle_kingdom
+	}
+	allow = {
+		has_or_had_tag = CHI
+		culture = culture:mongolian_culture
+		is_leader_of_international_organization = international_organization:middle_kingdom
+	}
+	country_modifier = {
+		cultures_capacity = 2
+	}
+}
+
+REPLACE:bohemian_commonwealth_reform = {
+	unique = yes
+	government = monarchy
+	potential = {
+		has_or_had_tag = BOH
+		has_variable = bohemian_commonwealth_variable
+	}
+	country_modifier = {
+		add_accepted_culture_cost_modifier = -0.5
+		cultures_capacity = 2
+		government_size = 1
+		government_reform_slots = 1
+	}
+	years = 2
+}
+
+REPLACE:mandala_system = {
+	major = yes
+	potential = {
+		capital.sub_continent = sub_continent:south_east_asia
+		OR = {
+			religion.group = religion_group:dharmic
+			religion = religion:theravada
+			religion = religion:mahayana
+			religion = religion:satsana_phi
+		}
+	}
+	allow = {
+	}
+
+	country_modifier = {
+		cultures_capacity = 2
+		monthly_towards_decentralization = societal_value_minor_monthly_move
+		allow_tributary_subject = yes
+	}
+
+	years = 4
+}
+
+REPLACE:iro_reforged_law_of_peace = {
+	unique = yes
+	potential = {
+		has_unlocked_government_reform_trigger = { type = iro_reforged_law_of_peace }
+	}
+
+	country_modifier = {
+		government_reform_slots = 1
+		monthly_tribal_cohesion = 0.10
+		government_size = 1
+		cultures_capacity = 1
+		stability_investment = large_stability_investment
+	}
+
+	years = 2
+}
+
+REPLACE:partitio_reform = {
+	unique = yes
+	content_priority = 800
+	potential = {
+		is_frankokratia_state = yes
+		NOT = { has_reform = government_reform:lat_restored_rule_of_the_latins }
+	}
+	allow = {
+		has_embraced_institution = institution:legalism
+		NOT = { has_reform = government_reform:lat_restored_rule_of_the_latins }
+	}
+	country_modifier = {
+		cultures_capacity = 1
+		wrong_culture_levy_size = 0.5
+		monthly_towards_defensive = societal_value_monthly_move
+		frankokratia_vassal_state_may_declare_war = yes
+		tax_income_efficiency = small_tax_income_efficiency_bonus
+	}
+	years = 2
+}
+
+REPLACE:lat_restored_rule_of_the_latins = {
+	major = yes
+	unique = yes
+	content_priority = 200
+	potential = { tag = LAT }
+	allow = {
+		tag = LAT
+		has_unlocked_government_reform_trigger = { type = lat_restored_rule_of_the_latins }
+	}
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = lat_restored_rule_of_the_latins
+		}
+	}
+	country_modifier = {
+		global_crown_estate_power = 0.25
+		tax_income_efficiency = large_tax_income_efficiency_bonus
+		cultures_capacity = 2
+		government_reform_slots = 1
+		government_size = 1
+		tolerance_own = 1
+		monthly_towards_quality = societal_value_monthly_move
+		lat_access_to_latin_reintegration_cabinet = yes
+		lat_access_to_reconquest_cb = yes
+	}
+	years = 1
+}

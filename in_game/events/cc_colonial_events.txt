@@ -128,10 +128,11 @@ cc_colonial.2 = {
 		}
 	}
 
-	# Expand trading rights — gold gain, nobles displeasure, burghers satisfied
+	# Expand trading rights — grants monopoly trade relation, nobles displeased, burghers satisfied
 	option = {
 		name = cc_colonial.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = 3 min = 50 max = 300 }
+		create_relation = { type = relation_type:cc_colonial_monopoly_boost  target = scope:colony }
+		set_variable = { name = cc_colonial_monopoly_active  value = yes  years = { 15 25 } }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
 		scope:minister = { add_dip = 1 }

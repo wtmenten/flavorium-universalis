@@ -1,0 +1,36 @@
+﻿
+# Colonial Monopoly Boost — granted by cc_colonial.2 option A (A Monopoly Dispute)
+# Represents the Crown granting a chartered company exclusive trading rights in its colony.
+# Distinct from cc_merchant_trade_boost: 20% fraction (vs 15%), survives war (break_on_war = no),
+# and uses its own expiry variable so the two relations can stack independently.
+# Auto-expires when cc_colonial_monopoly_active variable on scope:first lapses (15–25 years).
+
+cc_colonial_monopoly_boost = {
+	type = diplomacy
+	relation_type = oneway
+	break_on_war = no
+	merchant_fraction_to_first = 0.20
+
+	# Required by engine even for hidden relations
+	category = {
+		offer = CATEGORY_ECONOMY_ACTIONS
+		request = CATEGORY_ECONOMY_ACTIONS
+		cancellation = CATEGORY_ECONOMY_ACTIONS
+		break = CATEGORY_ECONOMY_ACTIONS
+	}
+
+	# Hidden — granted by event, not player-accessible through diplomacy UI
+	visible = { always = no }
+	offer_visible = { always = no }
+	request_visible = { always = no }
+	break_visible = { always = no }
+
+	# Auto-expire when the timed variable on the overlord (scope:first) lapses.
+	# set_variable = { name = cc_colonial_monopoly_active value = yes years = { 15 25 } }
+	# is applied in cc_colonial.2 option A at the same time as create_relation.
+	will_expire_trigger = {
+		scope:first = {
+			NOT = { has_variable = cc_colonial_monopoly_active }
+		}
+	}
+}
