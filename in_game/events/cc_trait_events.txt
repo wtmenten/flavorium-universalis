@@ -58,43 +58,53 @@ cc_traits.1 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				has_cabinet_action = yes
-				OR = {
-					cabinet_action = cabinet_action:integrate_area
-					cabinet_action = cabinet_action:integrate_province
-				}
-				OR = {
-					AND = {
-						NOT = { has_trait = fumbling_integrator }
-						adm < 33
-						dip < 33
-						mil < 33
-					}
-					AND = {
-						NOT = { has_trait = able_integrator }
-						adm > 33
-						dip > 33
-						mil > 33
-					}
-					AND = {
-						NOT = { has_trait = master_integrator }
-						adm > 66
-						dip > 66
-					}
-					AND = {
-						NOT = { has_trait = iron_integrator }
-						adm > 66
-						dip > 66
-						mil > 66
-					}
-				}
-				NOT = { has_variable = cc_integration_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					has_cabinet_action = yes
+					OR = {
+						cabinet_action = cabinet_action:integrate_area
+						cabinet_action = cabinet_action:integrate_province
+					}
+					OR = {
+						AND = {
+							NOT = { has_trait = fumbling_integrator }
+							adm < 33
+							dip < 33
+							mil < 33
+						}
+						AND = {
+							NOT = { has_trait = able_integrator }
+							adm > 33
+							dip > 33
+							mil > 33
+						}
+						AND = {
+							NOT = { has_trait = master_integrator }
+							adm > 66
+							dip > 66
+						}
+						AND = {
+							NOT = { has_trait = iron_integrator }
+							adm > 66
+							dip > 66
+							mil > 66
+						}
+					}
+					NOT = { has_variable = cc_integration_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -178,6 +188,9 @@ cc_traits.1 = {
 	}
 	option = {
 		name = cc_traits.1.e
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+		}
 		scope:minister = { set_variable = cc_integration_done }
 	}
 }
@@ -257,39 +270,49 @@ cc_traits.10 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_10_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_10_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
 
-				# Fire only when at least one cultural option would be visible
-				OR = {
-					AND = {
-						OR = {
-							scope:country.capital.sub_continent = sub_continent:western_europe
-							scope:country.capital.sub_continent = sub_continent:eastern_europe
+					# Fire only when at least one cultural option would be visible
+					OR = {
+						AND = {
+							OR = {
+								scope:country.capital.sub_continent = sub_continent:western_europe
+								scope:country.capital.sub_continent = sub_continent:eastern_europe
+							}
+							scope:country = { has_advance = renaissance_thought }
+							NOT = { has_trait = renaissance_humanist }
+							adm > 50
 						}
-						scope:country = { has_advance = renaissance_thought }
-						NOT = { has_trait = renaissance_humanist }
-						adm > 50
-					}
-					AND = {
-						OR = {
-							scope:country.capital.sub_continent = sub_continent:east_asia
-							scope:country.capital.sub_continent = sub_continent:south_east_asia
+						AND = {
+							OR = {
+								scope:country.capital.sub_continent = sub_continent:east_asia
+								scope:country.capital.sub_continent = sub_continent:south_east_asia
+							}
+							NOT = { has_trait = eastern_pragmatist }
+							adm > 50
 						}
-						NOT = { has_trait = eastern_pragmatist }
-						adm > 50
-					}
-					AND = {
-						religion.group = religion_group:muslim
-						NOT = { has_trait = sufi_scholar }
-						dip > 50
+						AND = {
+							religion.group = religion_group:muslim
+							NOT = { has_trait = sufi_scholar }
+							dip > 50
+						}
 					}
 				}
+				save_scope_as = minister
 			}
-			save_scope_as = minister
 		}
 	}
 
@@ -356,6 +379,9 @@ cc_traits.10 = {
 			50 = { add_country_modifier = { modifier = cc_temp_renaissance_observation years = 5 } }
 			50 = { }
 		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+		}
 	}
 }
 
@@ -421,30 +447,40 @@ cc_traits.11 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_11_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				OR = {
-					AND = {
-						NOT = { has_trait = age_of_discovery_pioneer }
-						scope:country = { has_advance = explorer_commisions_advance }
-						adm > 50
-						dip > 33
-						mil > 33
-					}
-					AND = {
-						NOT = { has_trait = age_of_discovery_skeptic }
-					}
-					AND = {
-						NOT = { has_trait = cautious_merchant }
-						has_estate = estate_type:burghers_estate
-						dip > 40
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_11_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					OR = {
+						AND = {
+							NOT = { has_trait = age_of_discovery_pioneer }
+							scope:country = { has_advance = explorer_commisions_advance }
+							adm > 50
+							dip > 33
+							mil > 33
+						}
+						AND = {
+							NOT = { has_trait = age_of_discovery_skeptic }
+						}
+						AND = {
+							NOT = { has_trait = cautious_merchant }
+							has_estate = estate_type:burghers_estate
+							dip > 40
+						}
 					}
 				}
+				save_scope_as = minister
 			}
-			save_scope_as = minister
 		}
 	}
 
@@ -505,6 +541,9 @@ cc_traits.11 = {
 			mode = set_to_largest_and_extend
 		}
 
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+		}
 	}
 }
 
@@ -593,128 +632,138 @@ cc_traits.12 = {
 	}
 
 	immediate = {
-		# Prefer clergy estate ministers; fall back to any qualifying minister
 		if = {
-			limit = {
-				any_cabinet_character = {
-					NOT = { has_variable = cc_age_trait_12_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					has_estate = estate_type:clergy_estate
-					OR = {
-						AND = {
-							NOT = { has_trait = reformation_preacher }
-							religion.group = religion_group:christian
-							has_estate = estate_type:clergy_estate
-							OR = {
-								dip > 60
-								AND = {
-									NOT = { religion = religion:catholic }
-									dip > 33
-								}
-							}
-						}
-						AND = {
-							NOT = { has_trait = reformation_inquisitor }
-							religion = religion:catholic
-						}
-						AND = {
-							NOT = { has_trait = reformist_theologian }
-							NOT = { religion.group = religion_group:christian }
-							has_estate = estate_type:clergy_estate
-						}
-						AND = {
-							NOT = { has_trait = orthodox_defender }
-							NOT = { religion.group = religion_group:christian }
-							mil > 66
-						}
-					}
-				}
-			}
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
 			random_cabinet_character = {
-				limit = {
-					NOT = { has_variable = cc_age_trait_12_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					has_estate = estate_type:clergy_estate
-					OR = {
-						AND = {
-							NOT = { has_trait = reformation_preacher }
-							religion.group = religion_group:christian
-							has_estate = estate_type:clergy_estate
-							OR = {
-								dip > 60
-								AND = {
-									NOT = { religion = religion:catholic }
-									dip > 33
-								}
-							}
-						}
-						AND = {
-							NOT = { has_trait = reformation_inquisitor }
-							religion = religion:catholic
-						}
-						AND = {
-							NOT = { has_trait = reformist_theologian }
-							NOT = { religion.group = religion_group:christian }
-							has_estate = estate_type:clergy_estate
-						}
-						AND = {
-							NOT = { has_trait = orthodox_defender }
-							NOT = { religion.group = religion_group:christian }
-							mil > 66
-						}
-					}
-				}
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
 				save_scope_as = minister
 			}
 		}
 		else = {
-			random_cabinet_character = {
+			# Prefer clergy estate ministers; fall back to any qualifying minister
+			if = {
 				limit = {
-					NOT = { has_variable = cc_age_trait_12_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					OR = {
-						AND = {
-							NOT = { has_trait = reformation_preacher }
-							religion.group = religion_group:christian
-							has_estate = estate_type:clergy_estate
-							OR = {
-								dip > 60
-								AND = {
-									NOT = { religion = religion:catholic }
-									dip > 33
+					any_cabinet_character = {
+						NOT = { has_variable = cc_age_trait_12_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						has_estate = estate_type:clergy_estate
+						OR = {
+							AND = {
+								NOT = { has_trait = reformation_preacher }
+								religion.group = religion_group:christian
+								has_estate = estate_type:clergy_estate
+								OR = {
+									dip > 60
+									AND = {
+										NOT = { religion = religion:catholic }
+										dip > 33
+									}
 								}
 							}
-						}
-						AND = {
-							NOT = { has_trait = reformation_inquisitor }
-							religion = religion:catholic
-						}
-						AND = {
-							NOT = { has_trait = reformist_theologian }
-							NOT = { religion.group = religion_group:christian }
-							has_estate = estate_type:clergy_estate
-						}
-						AND = {
-							NOT = { has_trait = orthodox_defender }
-							NOT = { religion.group = religion_group:christian }
-							mil > 66
-						}
-						# Universal: any minister without a reformation or dogmatic trait
-						AND = {
-							NOR = {
-								has_trait = reformation_preacher
-								has_trait = reformation_inquisitor
-								has_trait = reformist_theologian
-								has_trait = orthodox_defender
-								has_trait = dogmatic_zealot
+							AND = {
+								NOT = { has_trait = reformation_inquisitor }
+								religion = religion:catholic
+							}
+							AND = {
+								NOT = { has_trait = reformist_theologian }
+								NOT = { religion.group = religion_group:christian }
+								has_estate = estate_type:clergy_estate
+							}
+							AND = {
+								NOT = { has_trait = orthodox_defender }
+								NOT = { religion.group = religion_group:christian }
+								mil > 66
 							}
 						}
 					}
 				}
-				save_scope_as = minister
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_12_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						has_estate = estate_type:clergy_estate
+						OR = {
+							AND = {
+								NOT = { has_trait = reformation_preacher }
+								religion.group = religion_group:christian
+								has_estate = estate_type:clergy_estate
+								OR = {
+									dip > 60
+									AND = {
+										NOT = { religion = religion:catholic }
+										dip > 33
+									}
+								}
+							}
+							AND = {
+								NOT = { has_trait = reformation_inquisitor }
+								religion = religion:catholic
+							}
+							AND = {
+								NOT = { has_trait = reformist_theologian }
+								NOT = { religion.group = religion_group:christian }
+								has_estate = estate_type:clergy_estate
+							}
+							AND = {
+								NOT = { has_trait = orthodox_defender }
+								NOT = { religion.group = religion_group:christian }
+								mil > 66
+							}
+						}
+					}
+					save_scope_as = minister
+				}
+			}
+			else = {
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_12_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						OR = {
+							AND = {
+								NOT = { has_trait = reformation_preacher }
+								religion.group = religion_group:christian
+								has_estate = estate_type:clergy_estate
+								OR = {
+									dip > 60
+									AND = {
+										NOT = { religion = religion:catholic }
+										dip > 33
+									}
+								}
+							}
+							AND = {
+								NOT = { has_trait = reformation_inquisitor }
+								religion = religion:catholic
+							}
+							AND = {
+								NOT = { has_trait = reformist_theologian }
+								NOT = { religion.group = religion_group:christian }
+								has_estate = estate_type:clergy_estate
+							}
+							AND = {
+								NOT = { has_trait = orthodox_defender }
+								NOT = { religion.group = religion_group:christian }
+								mil > 66
+							}
+							# Universal: any minister without a reformation or dogmatic trait
+							AND = {
+								NOR = {
+									has_trait = reformation_preacher
+									has_trait = reformation_inquisitor
+									has_trait = reformist_theologian
+									has_trait = orthodox_defender
+									has_trait = dogmatic_zealot
+								}
+							}
+						}
+					}
+					save_scope_as = minister
+				}
 			}
 		}
 	}
@@ -858,37 +907,47 @@ cc_traits.13 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_13_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				OR = {
-					AND = {
-						NOT = { has_trait = absolute_administrator }
-					}
-					AND = {
-						NOT = { has_trait = noble_patron }
-						dip > 66
-						scope:country.government_type = government_type:monarchy
-						scope:country = { has_advance = noble_patronage_advance }
-					}
-					AND = {
-						NOT = { has_trait = parliamentarian }
-						scope:country.modifier:has_a_parliamentary_system = yes
-						dip > 66
-					}
-					AND = {
-						NOT = { has_trait = privilege_reformer }
-					}
-					AND = {
-						NOT = { has_trait = crown_theologian }
-						has_estate = estate_type:clergy_estate
-						adm > 66
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_13_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					OR = {
+						AND = {
+							NOT = { has_trait = absolute_administrator }
+						}
+						AND = {
+							NOT = { has_trait = noble_patron }
+							dip > 66
+							scope:country.government_type = government_type:monarchy
+							scope:country = { has_advance = noble_patronage_advance }
+						}
+						AND = {
+							NOT = { has_trait = parliamentarian }
+							scope:country.modifier:has_a_parliamentary_system = yes
+							dip > 66
+						}
+						AND = {
+							NOT = { has_trait = privilege_reformer }
+						}
+						AND = {
+							NOT = { has_trait = crown_theologian }
+							has_estate = estate_type:clergy_estate
+							adm > 66
+						}
 					}
 				}
+				save_scope_as = minister
 			}
-			save_scope_as = minister
 		}
 	}
 
@@ -1025,82 +1084,92 @@ cc_traits.14 = {
 	}
 
 	immediate = {
-		# Prefer burgher/peasant ministers; fall back to any qualifying minister
 		if = {
-			limit = {
-				any_cabinet_character = {
-					NOT = { has_variable = cc_age_trait_14_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					OR = {
-						has_estate = estate_type:burghers_estate
-						has_estate = estate_type:peasants_estate
-					}
-					OR = {
-						AND = {
-							NOT = { has_trait = revolutionary_agitator }
-							dip > 50
-						}
-						AND = {
-							NOT = { has_trait = counterrevolutionary }
-						}
-						AND = {
-							NOT = { has_trait = privilege_champion }
-							adm > 66
-							dip > 66
-						}
-					}
-				}
-			}
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
 			random_cabinet_character = {
-				limit = {
-					NOT = { has_variable = cc_age_trait_14_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					OR = {
-						has_estate = estate_type:burghers_estate
-						has_estate = estate_type:peasants_estate
-					}
-					OR = {
-						AND = {
-							NOT = { has_trait = revolutionary_agitator }
-							dip > 50
-						}
-						AND = {
-							NOT = { has_trait = counterrevolutionary }
-						}
-						AND = {
-							NOT = { has_trait = privilege_champion }
-							adm > 66
-							dip > 66
-						}
-					}
-				}
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
 				save_scope_as = minister
 			}
 		}
 		else = {
-			random_cabinet_character = {
+			# Prefer burgher/peasant ministers; fall back to any qualifying minister
+			if = {
 				limit = {
-					NOT = { has_variable = cc_age_trait_14_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					OR = {
-						AND = {
-							NOT = { has_trait = revolutionary_agitator }
-							dip > 50
+					any_cabinet_character = {
+						NOT = { has_variable = cc_age_trait_14_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						OR = {
+							has_estate = estate_type:burghers_estate
+							has_estate = estate_type:peasants_estate
 						}
-						AND = {
-							NOT = { has_trait = counterrevolutionary }
-						}
-						AND = {
-							NOT = { has_trait = privilege_champion }
-							adm > 66
-							dip > 66
+						OR = {
+							AND = {
+								NOT = { has_trait = revolutionary_agitator }
+								dip > 50
+							}
+							AND = {
+								NOT = { has_trait = counterrevolutionary }
+							}
+							AND = {
+								NOT = { has_trait = privilege_champion }
+								adm > 66
+								dip > 66
+							}
 						}
 					}
 				}
-				save_scope_as = minister
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_14_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						OR = {
+							has_estate = estate_type:burghers_estate
+							has_estate = estate_type:peasants_estate
+						}
+						OR = {
+							AND = {
+								NOT = { has_trait = revolutionary_agitator }
+								dip > 50
+							}
+							AND = {
+								NOT = { has_trait = counterrevolutionary }
+							}
+							AND = {
+								NOT = { has_trait = privilege_champion }
+								adm > 66
+								dip > 66
+							}
+						}
+					}
+					save_scope_as = minister
+				}
+			}
+			else = {
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_14_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						OR = {
+							AND = {
+								NOT = { has_trait = revolutionary_agitator }
+								dip > 50
+							}
+							AND = {
+								NOT = { has_trait = counterrevolutionary }
+							}
+							AND = {
+								NOT = { has_trait = privilege_champion }
+								adm > 66
+								dip > 66
+							}
+						}
+					}
+					save_scope_as = minister
+				}
 			}
 		}
 	}
@@ -1181,19 +1250,29 @@ cc_traits.20 = {
 
 	immediate = {
 		ruler ?= { save_scope_as = the_ruler }
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				character_age < 40
-				OR = {
-					adm > 50
-					dip > 50
-					mil > 50
-				}
-				NOT = { has_variable = cc_teach_20_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = student
 			}
-			save_scope_as = student
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					character_age < 40
+					OR = {
+						adm > 50
+						dip > 50
+						mil > 50
+					}
+					NOT = { has_variable = cc_teach_20_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+				}
+				save_scope_as = student
+			}
 		}
 	}
 
@@ -1258,6 +1337,9 @@ cc_traits.20 = {
 	option = {
 		name = cc_traits.20.d
 		scope:student = { set_variable = cc_teach_20_done }
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+		}
 	}
 }
 
@@ -1287,21 +1369,31 @@ cc_traits.21 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				cc_minister_is_available = yes
-				character_age < 35
-				OR = {
-					adm > 66
-					dip > 66
-					mil > 66
-				}
-				num_of_traits_of_category = { type = cabinet value < 1 }
-				NOT = { has_variable = cc_teach_21_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = learner
 			}
-			save_scope_as = learner
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					in_cabinet = yes
+					cc_minister_is_available = yes
+					character_age < 35
+					OR = {
+						adm > 66
+						dip > 66
+						mil > 66
+					}
+					num_of_traits_of_category = { type = cabinet value < 1 }
+					NOT = { has_variable = cc_teach_21_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+				}
+				save_scope_as = learner
+			}
 		}
 	}
 
@@ -1394,15 +1486,25 @@ cc_traits.30 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_30_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				adm > 55
-				NOT = { has_trait = empiricist_counselor }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_30_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					adm > 55
+					NOT = { has_trait = empiricist_counselor }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -1425,6 +1527,9 @@ cc_traits.30 = {
 			40 = { add_country_modifier = { modifier = cc_temp_renaissance_observation years = 5 } }
 			30 = { add_prestige = prestige_weak_bonus }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -1472,16 +1577,26 @@ cc_traits.31 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_31_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				has_estate = estate_type:burghers_estate
-				adm > 50
-				NOT = { has_trait = civic_chancellor }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_31_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					has_estate = estate_type:burghers_estate
+					adm > 50
+					NOT = { has_trait = civic_chancellor }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -1570,50 +1685,60 @@ cc_traits.32 = {
 	}
 
 	immediate = {
-		# Prefer a minister actively on a colonization or exploration action
 		if = {
-			limit = {
-				any_cabinet_character = {
-					NOT = { has_variable = cc_age_trait_32_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					dip > 50
-					NOT = { has_trait = chief_cartographer }
-					has_cabinet_action = yes
-					OR = {
-						cabinet_action = cabinet_action:send_people_to_the_colonies
-						cabinet_action = cabinet_action:send_people_to_colonial_charter
-						cabinet_action = cabinet_action:settle_the_frontier
-					}
-				}
-			}
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
 			random_cabinet_character = {
-				limit = {
-					NOT = { has_variable = cc_age_trait_32_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					dip > 50
-					NOT = { has_trait = chief_cartographer }
-					has_cabinet_action = yes
-					OR = {
-						cabinet_action = cabinet_action:send_people_to_the_colonies
-						cabinet_action = cabinet_action:send_people_to_colonial_charter
-						cabinet_action = cabinet_action:settle_the_frontier
-					}
-				}
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
 				save_scope_as = minister
 			}
 		}
 		else = {
-			random_cabinet_character = {
+			# Prefer a minister actively on a colonization or exploration action
+			if = {
 				limit = {
-					NOT = { has_variable = cc_age_trait_32_done }
-					NOT = { has_variable = cc_recent_trait_assignment }
-					in_cabinet = yes
-					dip > 50
-					NOT = { has_trait = chief_cartographer }
+					any_cabinet_character = {
+						NOT = { has_variable = cc_age_trait_32_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						dip > 50
+						NOT = { has_trait = chief_cartographer }
+						has_cabinet_action = yes
+						OR = {
+							cabinet_action = cabinet_action:send_people_to_the_colonies
+							cabinet_action = cabinet_action:send_people_to_colonial_charter
+							cabinet_action = cabinet_action:settle_the_frontier
+						}
+					}
 				}
-				save_scope_as = minister
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_32_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						dip > 50
+						NOT = { has_trait = chief_cartographer }
+						has_cabinet_action = yes
+						OR = {
+							cabinet_action = cabinet_action:send_people_to_the_colonies
+							cabinet_action = cabinet_action:send_people_to_colonial_charter
+							cabinet_action = cabinet_action:settle_the_frontier
+						}
+					}
+					save_scope_as = minister
+				}
+			}
+			else = {
+				random_cabinet_character = {
+					limit = {
+						NOT = { has_variable = cc_age_trait_32_done }
+						NOT = { has_variable = cc_recent_trait_assignment }
+						in_cabinet = yes
+						dip > 50
+						NOT = { has_trait = chief_cartographer }
+					}
+					save_scope_as = minister
+				}
 			}
 		}
 	}
@@ -1693,16 +1818,26 @@ cc_traits.33 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_33_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				has_estate = estate_type:burghers_estate
-				dip > 55
-				NOT = { has_trait = trade_consortium_minister }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_33_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					has_estate = estate_type:burghers_estate
+					dip > 55
+					NOT = { has_trait = trade_consortium_minister }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -1725,6 +1860,9 @@ cc_traits.33 = {
 			40 = { add_gold = 50 }
 			30 = { add_prestige = prestige_weak_bonus }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -1778,20 +1916,30 @@ cc_traits.34 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_34_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				dip > 55
-				NOR = {
-					has_trait = peace_commissioner
-					has_trait = dogmatic_zealot
-					has_trait = reformation_preacher
-					has_trait = reformation_inquisitor
-				}
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_34_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					dip > 55
+					NOR = {
+						has_trait = peace_commissioner
+						has_trait = dogmatic_zealot
+						has_trait = reformation_preacher
+						has_trait = reformation_inquisitor
+					}
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -1825,6 +1973,9 @@ cc_traits.34 = {
 			40 = { add_prestige = prestige_weak_bonus }
 			30 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.03 } }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -1880,16 +2031,26 @@ cc_traits.35 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_35_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				has_estate = estate_type:clergy_estate
-				adm > 55
-				NOT = { has_trait_category = religious_figure }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_35_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					has_estate = estate_type:clergy_estate
+					adm > 55
+					NOT = { has_trait_category = religious_figure }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -1928,6 +2089,9 @@ cc_traits.35 = {
 			40 = { add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 } }
 			30 = { add_prestige = prestige_weak_bonus }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -1972,15 +2136,25 @@ cc_traits.36 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_36_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				mil > 60
-				NOT = { has_trait = standing_army_advocate }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_36_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					mil > 60
+					NOT = { has_trait = standing_army_advocate }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -2003,6 +2177,9 @@ cc_traits.36 = {
 			40 = { add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.04 } }
 			30 = { add_prestige = prestige_weak_bonus }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -2047,16 +2224,26 @@ cc_traits.37 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_37_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				adm > 60
-				NOT = { has_trait = tax_inspector_general }
-				NOT = { has_trait = absolute_administrator }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_37_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					adm > 60
+					NOT = { has_trait = tax_inspector_general }
+					NOT = { has_trait = absolute_administrator }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -2079,6 +2266,9 @@ cc_traits.37 = {
 			40 = { add_gold = 50 }
 			30 = { add_prestige = prestige_weak_bonus }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -2114,15 +2304,25 @@ cc_traits.38 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_38_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				adm > 60
-				NOT = { has_trait = national_reformer }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_38_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					adm > 60
+					NOT = { has_trait = national_reformer }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -2145,6 +2345,9 @@ cc_traits.38 = {
 			40 = { add_prestige = prestige_weak_bonus }
 			30 = { add_country_modifier = { modifier = cc_synergy_governing_compact years = 5 } }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }
@@ -2183,16 +2386,26 @@ cc_traits.39 = {
 	}
 
 	immediate = {
-		random_cabinet_character = {
-			limit = {
-				NOT = { has_variable = cc_age_trait_39_done }
-				NOT = { has_variable = cc_recent_trait_assignment }
-				in_cabinet = yes
-				has_estate = estate_type:burghers_estate
-				adm > 55
-				NOT = { has_trait = industrial_visionary }
+		if = {
+			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
+			random_cabinet_character = {
+				limit = { has_variable = cc_trait_dispatch_selected }
+				remove_variable = cc_trait_dispatch_selected
+				save_scope_as = minister
 			}
-			save_scope_as = minister
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					NOT = { has_variable = cc_age_trait_39_done }
+					NOT = { has_variable = cc_recent_trait_assignment }
+					in_cabinet = yes
+					has_estate = estate_type:burghers_estate
+					adm > 55
+					NOT = { has_trait = industrial_visionary }
+				}
+				save_scope_as = minister
+			}
 		}
 	}
 
@@ -2218,6 +2431,9 @@ cc_traits.39 = {
 			40 = { add_gold = 75 }
 			30 = { add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 } }
 			30 = { }
+		}
+		scope:minister = {
+			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
 }

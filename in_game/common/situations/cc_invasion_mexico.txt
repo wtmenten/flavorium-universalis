@@ -176,8 +176,15 @@ cc_invasion_mexico = {
 					has_presence_in = region:central_america_region
 					has_presence_in = region:caribbean_region
 				}
-				any_neighbor_country = {
-					is_capital_mesoamerica = yes
+				OR = {
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+					any_subject = {
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+						any_neighbor_country = { is_capital_mesoamerica = yes }
+					}
 				}
 			}
 			trigger_event_non_silently = { id = cc_invasion_mexico.20 days = 25 }
@@ -279,7 +286,16 @@ cc_invasion_mexico = {
 					has_presence_in = region:central_america_region
 					has_presence_in = region:caribbean_region
 				}
-				any_neighbor_country = { is_capital_mesoamerica = yes }
+				OR = {
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+					any_subject = {
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+						any_neighbor_country = { is_capital_mesoamerica = yes }
+					}
+				}
 				can_see_situation = root
 			}
 			random_list = {
@@ -297,7 +313,16 @@ cc_invasion_mexico = {
 					has_presence_in = region:central_america_region
 					has_presence_in = region:caribbean_region
 				}
-				any_neighbor_country = { is_capital_mesoamerica = yes }
+				OR = {
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+					any_subject = {
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+						any_neighbor_country = { is_capital_mesoamerica = yes }
+					}
+				}
 				can_see_situation = root
 				NOT = { has_variable = ccim_captain_chain_cooldown }
 			}
@@ -333,9 +358,21 @@ cc_invasion_mexico = {
 				}
 				at_war = no
 				NOT = { has_variable = ccim_war_push_cooldown }
-				any_neighbor_country = {
-					is_capital_mesoamerica = yes
-					is_subject = no
+				OR = {
+					any_neighbor_country = {
+						is_capital_mesoamerica = yes
+						is_subject = no
+					}
+					any_subject = {
+						OR = {
+							has_presence_in = region:mesoamerica_region
+							has_presence_in = region:central_america_region
+						}
+						any_neighbor_country = {
+							is_capital_mesoamerica = yes
+							is_subject = no
+						}
+					}
 				}
 				can_see_situation = root
 			}

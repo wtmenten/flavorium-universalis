@@ -1,0 +1,786 @@
+﻿namespace = cc_trait_dispatch
+
+###############################################################################
+# CC TRAIT DISPATCH
+#
+# Single hidden country event replacing three independent monthly sub-pulses
+# (cc_cabinet_monthly_traits, cc_cabinet_monthly_social_traits,
+# cc_cabinet_monthly_age_traits). Fires every month via
+# cc_cabinet_monthly_trait_dispatch.
+#
+# For each cabinet character not on the 2-year trait cooldown, one random_list
+# pick gives that character at most one trait event per monthly tick.
+#
+# Character targeting: dispatcher sets cc_trait_dispatch_selected on the
+# chosen character, fires the event at country scope via root, and the event's
+# immediate block picks the character with that flag and removes it immediately
+# so subsequent iterations find a clean state.
+###############################################################################
+
+cc_trait_dispatch.1 = {
+	type = country_event
+	hidden = yes
+	title = cc_trait_dispatch.1.title
+	desc = cc_trait_dispatch.1.desc
+
+	immediate = {
+		every_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_recent_trait_assignment }
+			}
+			random_list = {
+
+				# ── No event ────────────────────────────────────────────────────
+				70 = { }
+
+				# ── Integration trait (cc_traits.1) ─────────────────────────────
+				13 = {
+					modifier = { factor = 0  has_variable = cc_integration_done }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0
+						NOR = {
+							cabinet_action = cabinet_action:integrate_area
+							cabinet_action = cabinet_action:integrate_province
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									has_advance = state_efficiency
+									has_advance = tolerance_idea
+									has_advance = experienced_diplomats
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  adm > 60 }
+					modifier = { factor = 1.5  dip > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.1 } }
+				}
+
+				# ── Ruler Teaches Cabinet Member (cc_traits.20) ─────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_teach_20_done }
+					modifier = { factor = 0  NOT = { character_age < 40 } }
+					modifier = { factor = 0  NOT = { OR = { adm > 50  dip > 50  mil > 50 } } }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								ruler ?= {
+									adm > 55  dip > 55  mil > 55
+									OR = {
+										has_trait = war_hawk
+										has_trait = iron_disciplinarian
+										has_trait = ecumenist
+										has_trait = progressive_reformist
+										has_trait = shadow_counselor
+										has_trait = loyal_steward
+									}
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  character_age < 25 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.20 } }
+				}
+
+				# ── Peer Learning (cc_traits.21) ─────────────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_teach_21_done }
+					modifier = { factor = 0  NOT = { character_age < 35 } }
+					modifier = { factor = 0  NOT = { OR = { adm > 66  dip > 66  mil > 66 } } }
+					modifier = { factor = 0  num_of_traits_of_category = { type = cabinet value >= 1 } }
+					modifier = { factor = 1.5  character_age < 25 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.21 } }
+				}
+
+				# ── Age of Renaissance (cc_traits.10) ────────────────────────────
+				10 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_10_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_2_renaissance
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { OR = { adm > 50  dip > 50 } } }
+					modifier = { factor = 1.5  OR = { adm > 65  dip > 65 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.10 } }
+				}
+
+				# ── Age of Discovery (cc_traits.11) ──────────────────────────────
+				10 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_11_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.11 } }
+				}
+
+				# ── Age of Reformation (cc_traits.12) ────────────────────────────
+				10 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_12_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  has_estate = estate_type:clergy_estate }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.12 } }
+				}
+
+				# ── Age of Absolutism (cc_traits.13) ─────────────────────────────
+				10 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_13_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 65  dip > 65 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.13 } }
+				}
+
+				# ── Age of Revolutions (cc_traits.14) ────────────────────────────
+				10 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_14_done }
+					modifier = { factor = 0  NOT = { root = { current_age = age_6_revolutions } } }
+					modifier = { factor = 1.5
+						OR = {
+							has_estate = estate_type:burghers_estate
+							has_estate = estate_type:peasants_estate
+						}
+					}
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.14 } }
+				}
+
+				# ── Empiricist's Method (cc_traits.30) ───────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_30_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_2_renaissance
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { adm > 55 } }
+					modifier = { factor = 0  NOT = { root = { has_advance = renaissance_thought } } }
+					modifier = { factor = 0  has_trait = empiricist_counselor }
+					modifier = { factor = 1.5  adm > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.30 } }
+				}
+
+				# ── Urban Reformer (cc_traits.31) ────────────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_31_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_2_renaissance
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { has_estate = estate_type:burghers_estate } }
+					modifier = { factor = 0  NOT = { adm > 50 } }
+					modifier = { factor = 0  NOT = { root = { capital.development > 30 } } }
+					modifier = { factor = 0  has_trait = civic_chancellor }
+					modifier = { factor = 1.5  adm > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.31 } }
+				}
+
+				# ── Cartographer's Commission (cc_traits.32) ─────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_32_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { dip > 50 } }
+					modifier = { factor = 0  NOT = { root = { has_advance = explorer_commisions_advance } } }
+					modifier = { factor = 0  has_trait = chief_cartographer }
+					modifier = { factor = 1.5  dip > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.32 } }
+				}
+
+				# ── Merchant's Grand Tour (cc_traits.33) ─────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_33_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_3_discovery
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { has_estate = estate_type:burghers_estate } }
+					modifier = { factor = 0  NOT = { dip > 55 } }
+					modifier = { factor = 0  NOT = { root = { num_subjects >= 1 } } }
+					modifier = { factor = 0  has_trait = trade_consortium_minister }
+					modifier = { factor = 1.5  dip > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.33 } }
+				}
+
+				# ── Peacemaker's Gambit (cc_traits.34) ───────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_34_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { dip > 55 } }
+					modifier = { factor = 0  root = { at_war = yes } }
+					modifier = { factor = 0  NOT = { root = { has_advance = tolerance_idea } } }
+					modifier = { factor = 0
+						OR = {
+							has_trait = peace_commissioner
+							has_trait = dogmatic_zealot
+							has_trait = reformation_preacher
+							has_trait = reformation_inquisitor
+						}
+					}
+					modifier = { factor = 1.5  dip > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.34 } }
+				}
+
+				# ── Theological Statesman (cc_traits.35) ─────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_35_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_4_reformation
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { has_estate = estate_type:clergy_estate } }
+					modifier = { factor = 0  NOT = { adm > 55 } }
+					modifier = { factor = 0  has_trait_category = religious_figure }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									modifier:has_a_parliamentary_system = yes
+									AND = {
+										country_has_estate = estate_type:clergy_estate
+										"estate_satisfaction(estate_type:clergy_estate)" >= 0.6
+									}
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  adm > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.35 } }
+				}
+
+				# ── Standing Army Advocate (cc_traits.36) ────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_36_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { mil > 60 } }
+					modifier = { factor = 0  NOT = { root = { government_type = government_type:monarchy } } }
+					modifier = { factor = 0  NOT = { root = { has_advance = military_revolution_advance } } }
+					modifier = { factor = 0  has_trait = standing_army_advocate }
+					modifier = { factor = 1.5  mil > 70 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.36 } }
+				}
+
+				# ── Tax Inspector (cc_traits.37) ─────────────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_37_done }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0  NOT = { adm > 60 } }
+					modifier = { factor = 0  NOT = { root = { has_advance = integrate_area_advance } } }
+					modifier = { factor = 0
+						OR = {
+							has_trait = tax_inspector_general
+							has_trait = absolute_administrator
+						}
+					}
+					modifier = { factor = 1.5  adm > 70 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.37 } }
+				}
+
+				# ── National Minister (cc_traits.38) ─────────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_38_done }
+					modifier = { factor = 0  NOT = { root = { current_age = age_6_revolutions } } }
+					modifier = { factor = 0  NOT = { adm > 60 } }
+					modifier = { factor = 0  NOT = { root = { modifier:has_a_parliamentary_system = yes } } }
+					modifier = { factor = 0  has_trait = national_reformer }
+					modifier = { factor = 1.5  adm > 70 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.38 } }
+				}
+
+				# ── Industrial Visionary (cc_traits.39) ──────────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_age_trait_39_done }
+					modifier = { factor = 0  NOT = { root = { current_age = age_6_revolutions } } }
+					modifier = { factor = 0  NOT = { has_estate = estate_type:burghers_estate } }
+					modifier = { factor = 0  NOT = { adm > 55 } }
+					modifier = { factor = 0  NOT = { root = { has_advance = printing_press_advance } } }
+					modifier = { factor = 0  NOT = { root = { capital.development > 40 } } }
+					modifier = { factor = 0  has_trait = industrial_visionary }
+					modifier = { factor = 1.5  adm > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_traits.39 } }
+				}
+
+				# ── Capital Development Traits (cc_cond.1) ───────────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_dev_trait_event }
+					modifier = { factor = 0  NOT = { root = { capital.development > 30 } } }
+					modifier = { factor = 0
+						OR = {
+							has_trait = urban_planner          has_trait = prosperity_herald
+							has_trait = merchant_syndic        has_trait = grand_architect
+							has_trait = arts_patron            has_trait = learned_courtier
+							has_trait = reform_minded_counselor  has_trait = master_urbanist
+							has_trait = enlightenment_herald   has_trait = progressive_rationalist
+							has_trait = revolutionary_herald
+						}
+					}
+					modifier = { factor = 1.5  root = { capital.development > 50 } }
+					modifier = { factor = 2.0  root = { capital.development > 70 } }
+					modifier = { factor = 1.5  adm > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.1 } }
+				}
+
+				# ── Societal values: Intellectual/Religious (cc_cond.20) ─────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_social_trait_event }
+					modifier = { factor = 0
+						OR = {
+							has_trait = innovative_counselor   has_trait = traditionalist_guardian
+							has_trait = mystical_patriarch     has_trait = humanist_philosopher
+							has_trait = mystical_counselor     has_trait = legal_scholar
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									societal_value:traditionalist_vs_innovative > 50
+									societal_value:traditionalist_vs_innovative < -50
+									societal_value:spiritualist_vs_humanist > 50
+									societal_value:spiritualist_vs_humanist < -50
+									societal_value:mysticism_vs_jurisprudence > 50
+									societal_value:mysticism_vs_jurisprudence < -50
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.20 } }
+				}
+
+				# ── Societal values: Social Order (cc_cond.21) ───────────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_social_trait_event }
+					modifier = { factor = 0
+						OR = {
+							has_trait = royal_absolutist     has_trait = liberal_reformer
+							has_trait = efficiency_administrator  has_trait = regional_magnate
+							has_trait = serf_overseer        has_trait = emancipation_minister
+							has_trait = free_spirit_counselor  has_trait = community_steward
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									societal_value:absolutism_vs_liberalism > 50
+									societal_value:absolutism_vs_liberalism < -50
+									societal_value:centralization_vs_decentralization > 50
+									societal_value:centralization_vs_decentralization < -50
+									societal_value:serfdom_vs_free_subjects > 50
+									societal_value:serfdom_vs_free_subjects < -50
+									societal_value:individualism_vs_communalism > 50
+									societal_value:individualism_vs_communalism < -50
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.21 } }
+				}
+
+				# ── Societal values: Military Doctrine (cc_cond.22) ──────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_social_trait_event }
+					modifier = { factor = 0
+						OR = {
+							has_trait = elite_trainer        has_trait = mass_levy_commander
+							has_trait = offensive_strategist  has_trait = defensive_commander
+							has_trait = continental_marshal   has_trait = admiral_counselor
+							has_trait = hawk_minister         has_trait = peacemaker_counselor
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									societal_value:quality_vs_quantity > 50
+									societal_value:quality_vs_quantity < -50
+									societal_value:offensive_vs_defensive > 50
+									societal_value:offensive_vs_defensive < -50
+									societal_value:land_vs_naval > 50
+									societal_value:land_vs_naval < -50
+									societal_value:belligerent_vs_conciliatory > 50
+									societal_value:belligerent_vs_conciliatory < -50
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  mil > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.22 } }
+				}
+
+				# ── Societal values: Economic Doctrine (cc_cond.23) ──────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_social_trait_event }
+					modifier = { factor = 0
+						OR = {
+							has_trait = noble_champion       has_trait = merchant_prince
+							has_trait = mercantilist_official  has_trait = free_market_advocate
+							has_trait = capitalist_minister   has_trait = estate_guardian
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									societal_value:aristocracy_vs_plutocracy > 50
+									societal_value:aristocracy_vs_plutocracy < -50
+									societal_value:mercantilism_vs_free_trade > 50
+									societal_value:mercantilism_vs_free_trade < -50
+									societal_value:capital_economy_vs_traditional_economy > 50
+									societal_value:capital_economy_vs_traditional_economy < -50
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.23 } }
+				}
+
+				# ── Societal values: Expansion/Culture (cc_cond.24) ──────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_recent_social_trait_event }
+					modifier = { factor = 0
+						OR = {
+							has_trait = expansionist_advisor  has_trait = consolidation_minister
+							has_trait = roman_administrator   has_trait = hellenistic_scholar
+							has_trait = confucian_mandarin    has_trait = steppe_warlord_advisor
+						}
+					}
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									societal_value:outward_vs_inward > 50
+									societal_value:outward_vs_inward < -50
+									societal_value:latinization_vs_hellenization > 50
+									societal_value:latinization_vs_hellenization < -50
+									societal_value:sinicized_vs_unsinicized > 50
+									societal_value:sinicized_vs_unsinicized < -50
+								}
+							}
+						}
+					}
+					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.24 } }
+				}
+
+				# ── Military Specialists early tier (cc_cond.3) ──────────────────
+				8 = {
+					modifier = { factor = 0  NOT = { mil > 33 } }
+					modifier = { factor = 0
+						root = {
+							OR = {
+								current_age = age_5_absolutism
+								current_age = age_6_revolutions
+							}
+						}
+					}
+					modifier = { factor = 0
+						OR = {
+							has_trait = infantry_drillmaster  has_trait = scout_captain
+							has_trait = military_engineer     has_trait = commissariat_officer
+							has_trait = cavalry_marshal       has_trait = siege_engineer
+							has_trait = supreme_commander
+						}
+					}
+					modifier = { factor = 1.5  mil > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.3 } }
+				}
+
+				# ── Regional / Religious Traits (cc_cond.4) ──────────────────────
+				8 = {
+					modifier = { factor = 0
+						OR = {
+							has_trait = christian_diplomat    has_trait = caliphate_diplomat
+							has_trait = brahmin_counselor     has_trait = dharma_minister
+							has_trait = renaissance_patron    has_trait = griot_diplomat
+							has_trait = steppe_strategos      has_trait = mughal_administrator
+							has_trait = maritime_champion     has_trait = ecumenical_patriarch_advisor
+							has_trait = new_world_pioneer
+						}
+					}
+					modifier = { factor = 1.5  dip > 60 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.4 } }
+				}
+
+				# ── Parliamentary / Diplomatic Specialists (cc_cond.5) ───────────
+				8 = {
+					modifier = { factor = 0  NOT = { dip > 50 } }
+					modifier = { factor = 0
+						OR = {
+							has_trait = parliamentary_broker
+							has_trait = diplomatic_attache
+							has_trait = grand_chancellor
+						}
+					}
+					modifier = { factor = 1.5  dip > 65 }
+					modifier = { factor = 2.0  dip > 80 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.5 } }
+				}
+
+				# ── Military Specialists strong tier (cc_cond.6) ─────────────────
+				8 = {
+					modifier = { factor = 0  NOT = { mil > 66 } }
+					modifier = { factor = 0
+						NOT = {
+							root = {
+								OR = {
+									current_age = age_5_absolutism
+									current_age = age_6_revolutions
+								}
+							}
+						}
+					}
+					modifier = { factor = 0
+						OR = {
+							has_trait = commissariat_officer  has_trait = cavalry_marshal
+							has_trait = siege_engineer        has_trait = supreme_commander
+						}
+					}
+					modifier = { factor = 1.5  mil > 75 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.6 } }
+				}
+
+				# ── Action-forged: Integration Specialist (cc_cond.30) ───────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_cond_30_done }
+					modifier = { factor = 0  NOT = { adm > 50 } }
+					modifier = { factor = 0  NOT = { dip > 33 } }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0
+						NOR = {
+							cabinet_action = cabinet_action:integrate_area
+							cabinet_action = cabinet_action:integrate_province
+						}
+					}
+					modifier = { factor = 0
+						OR = {
+							has_trait = seasoned_integrator  has_trait = able_integrator
+							has_trait = master_integrator    has_trait = iron_integrator
+						}
+					}
+					modifier = { factor = 1.5  adm > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.30 } }
+				}
+
+				# ── Action-forged: Colonial Strategist (cc_cond.31) ──────────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_cond_31_done }
+					modifier = { factor = 0  NOT = { dip > 50 } }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0
+						NOR = {
+							cabinet_action = cabinet_action:send_people_to_the_colonies
+							cabinet_action = cabinet_action:send_people_to_colonial_charter
+							cabinet_action = cabinet_action:settle_the_frontier
+						}
+					}
+					modifier = { factor = 0
+						OR = {
+							has_trait = frontier_administrator
+							has_trait = age_of_discovery_pioneer
+							has_trait = chief_cartographer
+						}
+					}
+					modifier = { factor = 1.5  dip > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.31 } }
+				}
+
+				# ── Action-forged: Development Commissioner (cc_cond.32) ─────────
+				8 = {
+					modifier = { factor = 0  has_variable = cc_cond_32_done }
+					modifier = { factor = 0  NOT = { adm > 50 } }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0  NOT = { cabinet_action = cabinet_action:develop_province } }
+					modifier = { factor = 0
+						OR = {
+							has_trait = development_patron  has_trait = urban_planner
+							has_trait = grand_architect     has_trait = master_urbanist
+						}
+					}
+					modifier = { factor = 1.5  adm > 65 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.32 } }
+				}
+
+				# ── Action-forged: Shadow Handler (cc_cond.33) ───────────────────
+				6 = {
+					modifier = { factor = 0  has_variable = cc_cond_33_done }
+					modifier = { factor = 0  NOT = { dip > 55 } }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0  NOT = { cabinet_action = cabinet_action:counter_espionage_action } }
+					modifier = { factor = 0  has_trait = espionage_director }
+					modifier = { factor = 1.5  dip > 70 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.33 } }
+				}
+
+				# ── Action-forged: Treasury Inspector (cc_cond.34) ───────────────
+				6 = {
+					modifier = { factor = 0  has_variable = cc_cond_34_done }
+					modifier = { factor = 0  NOT = { adm > 55 } }
+					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
+					modifier = { factor = 0
+						NOR = {
+							cabinet_action = cabinet_action:reform_taxation_system
+							cabinet_action = cabinet_action:reduce_inflation
+						}
+					}
+					modifier = { factor = 0
+						OR = {
+							has_trait = treasury_enforcer
+							has_trait = tax_inspector_general
+						}
+					}
+					modifier = { factor = 1.5  adm > 70 }
+					set_variable = { name = cc_trait_dispatch_selected value = yes }
+					root = { trigger_event_silently = { id = cc_cond.34 } }
+				}
+
+			}
+		}
+	}
+
+	option = { name = cc_trait_dispatch.1.a }
+}

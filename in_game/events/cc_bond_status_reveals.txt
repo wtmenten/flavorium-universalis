@@ -99,33 +99,6 @@ cc_bonds.4 = {
 cc_bonds.5 = {
 	type = country_event
 	title = cc_bonds.5.title
-	desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					any_subject = {
-						has_variable = cc_bond_initialized
-						var:cc_bond_eco >= 3
-						var:cc_bond_per >= 3
-					}
-				}
-				desc = cc_bonds.5.desc.thriving
-			}
-			triggered_desc = {
-				trigger = {
-					any_subject = {
-						has_variable = cc_bond_initialized
-						OR = {
-							var:cc_bond_eco <= -3
-							var:cc_bond_per <= -3
-						}
-					}
-				}
-				desc = cc_bonds.5.desc.strained
-			}
-			desc = cc_bonds.5.desc.neutral
-		}
-	}
 
 	trigger = {
 		has_game_rule = cc_subject_bonds_on
@@ -135,9 +108,31 @@ cc_bonds.5 = {
 
 	immediate = {
 		set_variable = { name = cc_bond_5_cd  value = yes  years = 15 }
-		random_subject = {
-			limit = { has_variable = cc_bond_initialized }
-			save_scope_as = bond_subj
+	}
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:bond_subj = {
+						var:cc_bond_eco >= 3
+						var:cc_bond_per >= 3
+					}
+				}
+				desc = cc_bonds.5.desc.thriving
+			}
+			triggered_desc = {
+				trigger = {
+					scope:bond_subj = {
+						OR = {
+							var:cc_bond_eco <= -3
+							var:cc_bond_per <= -3
+						}
+					}
+				}
+				desc = cc_bonds.5.desc.strained
+			}
+			desc = cc_bonds.5.desc.neutral
 		}
 	}
 
@@ -176,13 +171,6 @@ cc_bonds.6 = {
 
 	immediate = {
 		set_variable = { name = cc_bond_6_cd  value = yes  years = 15 }
-		random_subject = {
-			limit = {
-				is_subject_type = colonial_nation
-				has_variable = cc_bond_initialized
-			}
-			save_scope_as = bond_subj
-		}
 	}
 	
 	desc = {
@@ -222,12 +210,7 @@ cc_bonds.7 = {
 		first_valid = {
 			triggered_desc = {
 				trigger = {
-					any_subject = {
-						OR = {
-							is_subject_type = palatinate
-							is_subject_type = military_march
-						}
-						has_variable = cc_bond_initialized
+					scope:bond_subj = {
 						var:cc_bond_mil >= 2
 						var:cc_bond_per >= 2
 					}
@@ -236,12 +219,7 @@ cc_bonds.7 = {
 			}
 			triggered_desc = {
 				trigger = {
-					any_subject = {
-						OR = {
-							is_subject_type = palatinate
-							is_subject_type = military_march
-						}
-						has_variable = cc_bond_initialized
+					scope:bond_subj = {
 						OR = {
 							var:cc_bond_mil <= -2
 							var:cc_bond_per <= -2
@@ -268,16 +246,6 @@ cc_bonds.7 = {
 
 	immediate = {
 		set_variable = { name = cc_bond_7_cd  value = yes  years = 15 }
-		random_subject = {
-			limit = {
-				OR = {
-					is_subject_type = palatinate
-					is_subject_type = military_march
-				}
-				has_variable = cc_bond_initialized
-			}
-			save_scope_as = bond_subj
-		}
 	}
 
 	option = {
@@ -300,23 +268,11 @@ cc_bonds.8 = {
 	desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = {
-					any_subject = {
-						is_subject_type = crown_dependency
-						has_variable = cc_bond_initialized
-						var:cc_bond_per >= 3
-					}
-				}
+				trigger = { scope:bond_subj = { var:cc_bond_per >= 3 } }
 				desc = cc_bonds.8.desc.warm
 			}
 			triggered_desc = {
-				trigger = {
-					any_subject = {
-						is_subject_type = crown_dependency
-						has_variable = cc_bond_initialized
-						var:cc_bond_per <= -2
-					}
-				}
+				trigger = { scope:bond_subj = { var:cc_bond_per <= -2 } }
 				desc = cc_bonds.8.desc.cold
 			}
 			desc = cc_bonds.8.desc.formal
@@ -334,13 +290,6 @@ cc_bonds.8 = {
 
 	immediate = {
 		set_variable = { name = cc_bond_8_cd  value = yes  years = 15 }
-		random_subject = {
-			limit = {
-				is_subject_type = crown_dependency
-				has_variable = cc_bond_initialized
-			}
-			save_scope_as = bond_subj
-		}
 	}
 
 	option = {
@@ -364,9 +313,7 @@ cc_bonds.9 = {
 		first_valid = {
 			triggered_desc = {
 				trigger = {
-					any_subject = {
-						is_subject_type = provincial_governorate
-						has_variable = cc_bond_initialized
+					scope:bond_subj = {
 						var:cc_bond_eco >= 2
 						var:cc_bond_pol >= 2
 					}
@@ -375,9 +322,7 @@ cc_bonds.9 = {
 			}
 			triggered_desc = {
 				trigger = {
-					any_subject = {
-						is_subject_type = provincial_governorate
-						has_variable = cc_bond_initialized
+					scope:bond_subj = {
 						OR = {
 							var:cc_bond_eco <= -2
 							var:cc_bond_pol <= -2
@@ -401,13 +346,6 @@ cc_bonds.9 = {
 
 	immediate = {
 		set_variable = { name = cc_bond_9_cd  value = yes  years = 15 }
-		random_subject = {
-			limit = {
-				is_subject_type = provincial_governorate
-				has_variable = cc_bond_initialized
-			}
-			save_scope_as = bond_subj
-		}
 	}
 
 	option = {

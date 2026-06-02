@@ -521,13 +521,38 @@ cc_invasion_mexico.20 = {
 	trigger = {
 		NOT = { is_capital_mesoamerica = yes }
 		situation:cc_invasion_mexico = { situation_is_active = yes }
-		any_neighbor_country = { is_capital_mesoamerica = yes }
+		OR = {
+			any_neighbor_country = { is_capital_mesoamerica = yes }
+			any_subject = {
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+				}
+				any_neighbor_country = { is_capital_mesoamerica = yes }
+			}
+		}
 	}
 
 	immediate = {
 		random_neighbor_country = {
 			limit = { is_capital_mesoamerica = yes }
 			save_scope_as = ccim_native_target
+		}
+		if = {
+			limit = { NOT = { exists = scope:ccim_native_target } }
+			random_subject = {
+				limit = {
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+				}
+				random_neighbor_country = {
+					limit = { is_capital_mesoamerica = yes }
+					save_scope_as = ccim_native_target
+				}
+			}
 		}
 	}
 
@@ -607,7 +632,16 @@ cc_invasion_mexico.25 = {
 	trigger = {
 		NOT = { is_capital_mesoamerica = yes }
 		situation:cc_invasion_mexico = { situation_is_active = yes }
-		any_neighbor_country = { is_capital_mesoamerica = yes }
+		OR = {
+			any_neighbor_country = { is_capital_mesoamerica = yes }
+			any_subject = {
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+				}
+				any_neighbor_country = { is_capital_mesoamerica = yes }
+			}
+		}
 		NOT = { has_variable = ccim_expedition_cooldown }
 	}
 
@@ -615,6 +649,22 @@ cc_invasion_mexico.25 = {
 		random_neighbor_country = {
 			limit = { is_capital_mesoamerica = yes }
 			save_scope_as = ccim_expedition_target
+		}
+		if = {
+			limit = { NOT = { exists = scope:ccim_expedition_target } }
+			random_subject = {
+				limit = {
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+				}
+				random_neighbor_country = {
+					limit = { is_capital_mesoamerica = yes }
+					save_scope_as = ccim_expedition_target
+				}
+			}
 		}
 	}
 
@@ -1000,7 +1050,16 @@ cc_invasion_mexico.50 = {
 	trigger = {
 		NOT = { is_capital_mesoamerica = yes }
 		situation:cc_invasion_mexico = { situation_is_active = yes }
-		any_neighbor_country = { is_capital_mesoamerica = yes }
+		OR = {
+			any_neighbor_country = { is_capital_mesoamerica = yes }
+			any_subject = {
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+				}
+				any_neighbor_country = { is_capital_mesoamerica = yes }
+			}
+		}
 		NOT = { has_variable = ccim_captain_chain_cooldown }
 	}
 
@@ -1014,9 +1073,9 @@ cc_invasion_mexico.50 = {
 				NOT = { gold >= 50 }
 			}
 		}
-		add_gold = -50
+		add_gold = -500
 		set_variable = { name = ccim_captain_chain_cooldown value = yes years = 8 }
-		trigger_event_non_silently = { id = cc_invasion_mexico.51 days = 15 }
+		trigger_event_non_silently = { id = cc_invasion_mexico.51 months = { 8 20 } }
 	}
 
 	option = {
@@ -1066,6 +1125,22 @@ cc_invasion_mexico.51 = {
 		random_neighbor_country = {
 			limit = { is_capital_mesoamerica = yes }
 			save_scope_as = ccim_captain_report_target
+		}
+		if = {
+			limit = { NOT = { exists = scope:ccim_captain_report_target } }
+			random_subject = {
+				limit = {
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+					any_neighbor_country = { is_capital_mesoamerica = yes }
+				}
+				random_neighbor_country = {
+					limit = { is_capital_mesoamerica = yes }
+					save_scope_as = ccim_captain_report_target
+				}
+			}
 		}
 		scope:ccim_captain_report_target ?= {
 			root = {
@@ -1430,9 +1505,21 @@ cc_invasion_mexico.70 = {
 		situation:cc_invasion_mexico = { situation_is_active = yes }
 		at_war = no
 		NOT = { has_variable = ccim_war_push_cooldown }
-		any_neighbor_country = {
-			is_capital_mesoamerica = yes
-			is_subject = no
+		OR = {
+			any_neighbor_country = {
+				is_capital_mesoamerica = yes
+				is_subject = no
+			}
+			any_subject = {
+				OR = {
+					has_presence_in = region:mesoamerica_region
+					has_presence_in = region:central_america_region
+				}
+				any_neighbor_country = {
+					is_capital_mesoamerica = yes
+					is_subject = no
+				}
+			}
 		}
 	}
 
@@ -1446,6 +1533,31 @@ cc_invasion_mexico.70 = {
 			}
 			save_scope_as = ccim_conquest_target
 		}
+		# Check subjects' neighbors for unaffiliated natives
+		if = {
+			limit = { NOT = { exists = scope:ccim_conquest_target } }
+			random_subject = {
+				limit = {
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+					any_neighbor_country = {
+						is_capital_mesoamerica = yes
+						is_subject = no
+						NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					}
+				}
+				random_neighbor_country = {
+					limit = {
+						is_capital_mesoamerica = yes
+						is_subject = no
+						NOT = { is_member_of_international_organization = international_organization:cc_mesoamerican_confederation }
+					}
+					save_scope_as = ccim_conquest_target
+				}
+			}
+		}
 		# Fall back to confederation members if no unaffiliated target is available
 		if = {
 			limit = { NOT = { exists = scope:ccim_conquest_target } }
@@ -1455,6 +1567,29 @@ cc_invasion_mexico.70 = {
 					is_subject = no
 				}
 				save_scope_as = ccim_conquest_target
+			}
+		}
+		# Last resort: confederation members through subjects
+		if = {
+			limit = { NOT = { exists = scope:ccim_conquest_target } }
+			random_subject = {
+				limit = {
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+					}
+					any_neighbor_country = {
+						is_capital_mesoamerica = yes
+						is_subject = no
+					}
+				}
+				random_neighbor_country = {
+					limit = {
+						is_capital_mesoamerica = yes
+						is_subject = no
+					}
+					save_scope_as = ccim_conquest_target
+				}
 			}
 		}
 	}
@@ -1484,6 +1619,8 @@ cc_invasion_mexico.70 = {
 	option = {
 		name = cc_invasion_mexico.70.b
 		ai_chance = { base = 30 }
+		add_prestige = prestige_weak_penalty
+		add_gold = -50
 		set_variable = { name = ccim_war_push_cooldown value = yes years = 3 }
 	}
 }

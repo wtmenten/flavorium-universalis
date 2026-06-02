@@ -25,10 +25,8 @@ yearly_country_pulse = {
 monthly_country_pulse = {
 	on_actions = {
 		cc_cabinet_monthly_synergy
-		cc_cabinet_monthly_traits
+		cc_cabinet_monthly_trait_dispatch
 		cc_cabinet_monthly_cabinet
-		cc_cabinet_monthly_social_traits
-		cc_cabinet_monthly_age_traits
 		cc_cabinet_monthly_subjects
 		cc_cabinet_monthly_war_flag
 	}
@@ -160,6 +158,15 @@ cc_cabinet_yearly_prog_progress = {
 # MONTHLY SUB-PULSES
 ###############################################################################
 
+# Unified trait dispatcher — iterates each cabinet member once per month.
+# random_list inside cc_trait_dispatch.1 ensures at most one trait event
+# fires per character per monthly tick.
+cc_cabinet_monthly_trait_dispatch = {
+	events = {
+		cc_trait_dispatch.1
+	}
+}
+
 # Pair synergies and dual-layer synergy events — higher chance
 cc_cabinet_monthly_synergy = {
 	random_events = {
@@ -178,89 +185,6 @@ cc_cabinet_monthly_synergy = {
 
 		chance_of_no_event = {
 			value = 20
-		}
-	}
-}
-
-# Trait and conditional spawning events
-cc_cabinet_monthly_traits = {
-	random_events = {
-		# Integration trait grant
-		13 = cc_traits.1
-
-		# Teachable traits
-		8 = cc_traits.20     # Ruler Teaches Cabinet Member
-		8 = cc_traits.21     # Peer Learning
-
-
-		# Action-forged traits — Family F
-		8 = cc_cond.30    # The Integration Specialist
-		8 = cc_cond.31    # The Colonial Strategist
-		8 = cc_cond.32    # The Development Commissioner
-		6 = cc_cond.33    # The Shadow Handler
-		6 = cc_cond.34    # The Treasury Inspector
-
-		chance_to_happen = 6
-
-		chance_of_no_event = {
-			value = 80
-		}
-	}
-}
-
-
-# Social Value based spawning events
-cc_cabinet_monthly_social_traits = {
-	random_events = {
-		
-		# Conditional trait spawning — Family A/B
-		8 = cc_cond.1      # Family A: Capital Development
-		8 = cc_cond.20     # Family B: Intellectual/Religious cluster
-		8 = cc_cond.21     # Family B: Social Order cluster
-		8 = cc_cond.22     # Family B: Military Doctrine cluster
-		8 = cc_cond.23     # Family B: Economic Doctrine cluster
-		8 = cc_cond.24     # Family B: Expansion/Cultural cluster
-
-		# Conditional trait spawning — Family C/D/E
-		8 = cc_cond.3      # Family D: Military Cost early tier
-		8 = cc_cond.6      # Family D: Military Cost strong tier
-		8 = cc_cond.4      # Family C: Regional/Religious
-		8 = cc_cond.5      # Family E: Parliamentary/Diplomatic
-
-		chance_to_happen = 5
-
-		chance_of_no_event = {
-			value = 90
-		}
-	}
-}
-# Age spawning events
-cc_cabinet_monthly_age_traits = {
-	random_events = {
-
-		# Age-specific trait spawning — core
-		10 = cc_traits.10    # Renaissance Humanist
-		10 = cc_traits.11    # Age of Discovery (Pioneer / Skeptic)
-		10 = cc_traits.12    # Reformation (Preacher / Inquisitor)
-		10 = cc_traits.13    # Absolutism (4 choices)
-		10 = cc_traits.14    # Revolutions (3 choices)
-
-		# Age-specific trait spawning — extended
-		8 = cc_traits.30    # Empiricist's Method (Age 2+)
-		8 = cc_traits.31    # Urban Reformer (Age 2+, burgher)
-		8 = cc_traits.32    # Cartographer's Commission (Age 3+)
-		8 = cc_traits.33    # Merchant's Grand Tour (Age 3+, burgher)
-		8 = cc_traits.34    # Peacemaker's Gambit (Age 4+)
-		8 = cc_traits.35    # Theological Statesman (Age 4+, clergy)
-		8 = cc_traits.36    # Standing Army Advocate (Age 5+)
-		8 = cc_traits.37    # Tax Inspector (Age 5+)
-		8 = cc_traits.38    # National Minister (Age 6)
-		8 = cc_traits.39    # Industrial Visionary (Age 6, burgher)
-
-		chance_to_happen = 8
-
-		chance_of_no_event = {
-			value = 70
 		}
 	}
 }
@@ -595,7 +519,7 @@ cc_cabinet_biyearly_colonial = {
 		chance_to_happen = 40
 
 		chance_of_no_event = {
-			value = 30
+			value = 40
 		}
 	}
 }
