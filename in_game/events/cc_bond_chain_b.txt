@@ -189,7 +189,7 @@ cc_bonds.111 = {
 				has_variable = cc_bond_mem_merchant_patronized
 			}
 		}
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.25  min = -50 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.25  min = -500 max = -250 }
 		set_variable = { name = cc_bond_mem_merchant_backed  value = yes }
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
 		scope:bond_subj = {
@@ -207,8 +207,9 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = 1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
+					show_chance = no
 				}
-				25 = { }	# Funding spent but this target didn't convert
+				25 = { show_chance = no }	# Funding spent but this target didn't convert
 			}
 		}
 		trigger_event_silently = { id = cc_bonds.112  years = 12 }
@@ -229,6 +230,7 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = 1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
+					show_chance = no
 				}
 				20 = {
 					# Merchant cuts us out of this route
@@ -238,8 +240,9 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = -1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
+					show_chance = no
 				}
-				40 = { }	# Stalemate — no movement on this target
+				40 = { show_chance = no }	# Stalemate — no movement on this target
 			}
 		}
 		trigger_event_silently = { id = cc_bonds.112  years = 14 }
@@ -261,6 +264,7 @@ cc_bonds.111 = {
 		change_variable = { name = cc_bond_pol  add = 1 }
 		clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 		scope:bond_subj = {
+			add_liberty_desire = liberty_desire_mild_plus
 			change_variable = { name = cc_bond_per  add = -1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
@@ -280,8 +284,9 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = -1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
+					show_chance = no 
 				}
-				50 = { }	# Merchant rerouted — obstruction had no lasting effect
+				50 = { show_chance = no }	# Merchant rerouted — obstruction had no lasting effect
 			}
 		}
 		trigger_event_silently = { id = cc_bonds.112  years = 12 }
