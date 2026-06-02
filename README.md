@@ -1,4 +1,4 @@
-# Cabinets and Choices — Developer Guide
+# Flavorium Universalis — Developer Guide
 
 **Version:** 0.2.0 (dev: 0.3.0-pre) | **Game compatibility:** EU5 1.2.* | **Multiplayer:** synchronized
 

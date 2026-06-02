@@ -1,5 +1,5 @@
 """
-Release script for Cabinets and Choices.
+Release script for Flavorium Universalis.
 
 Stages a clean copy of the mod (game content only) into release/,
 then runs pdx-workshop-manager to upload it to Steam Workshop.
@@ -69,7 +69,7 @@ def run_workshop_manager():
 def main():
     version, name = read_version()
 
-    print(f"\n=== Cabinets and Choices — Release {version} ===")
+    print(f"\n=== Flavorium Universalis — Release {version} ===")
     print(f"Mod name : {name}")
     print(f"Staging  : {RELEASE_DIR}")
     print(f"Includes : {', '.join(INCLUDE)}")
