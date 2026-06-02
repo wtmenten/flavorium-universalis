@@ -120,12 +120,53 @@ cc_bonds.110 = {
 
 # cc_bonds.111 — "The Merchant's Expansion"
 # The merchant has grown and is reaching beyond the primary subject's borders.
-# Secondary trading partners (own subjects and/or a foreign colonial nation) are
-# identified and added to cc_bond_chain_b_secondary_map.
-# Overlord decides how to engage with this expansion.
+# One secondary trading partner is identified — an own qualifying subject or a
+# foreign colonial not at war with ROOT. Options act directly on this single
+# target. Options A and B persist the target in cc_bond_chain_b_secondary_map
+# for use in 113; Option C does not (obstruction severs the tie).
 cc_bonds.111 = {
 	type = country_event
 	title = cc_bonds.111.title
+	illustration_tags = { 10 = bank }
+
+	immediate = {
+		# Recover primary subject
+		var:cc_bond_chain_b_subj = { save_scope_as = bond_subj }
+
+		# Pick one secondary target: own qualifying subject OR foreign colonial
+		random_country = {
+			limit = {
+				OR = {
+					AND = {
+						is_subject_of = ROOT
+						OR = {
+							is_subject_type = colonial_nation
+							is_subject_type = puppet_state
+							is_subject_type = crown_dependency
+						}
+						NOT = { this = scope:bond_subj }
+						num_locations >= 15
+						has_variable = cc_bond_initialized
+					}
+					AND = {
+						is_subject_type = colonial_nation
+						NOT = { is_subject_of = ROOT }
+						NOT = { this = scope:bond_subj }
+						num_locations >= 15
+						NOT = { is_at_war_with = ROOT }
+					}
+				}
+			}
+			save_scope_as = bond_secondary
+			set_variable = { name = cc_bond_merchant_interaction  value = 0 }
+			if = {
+				limit = { NOT = { is_subject_of = ROOT } }
+				set_variable = { name = cc_bond_secondary_is_foreign  value = yes }
+				ROOT = { set_variable = { name = cc_bond_mem_second_is_foreign  value = yes } }
+			}
+		}
+	}
+
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -139,47 +180,7 @@ cc_bonds.111 = {
 			desc = cc_bonds.111.desc_denied
 		}
 	}
-	illustration_tags = { 10 = bank }
-
-	immediate = {
-		# Recover primary subject
-		var:cc_bond_chain_b_subj = { save_scope_as = bond_subj }
-
-		# Build secondary target map — all qualifying own subjects (excluding primary)
-		every_subject = {
-			limit = {
-				OR = {
-					is_subject_type = colonial_nation
-					is_subject_type = puppet_state
-					is_subject_type = crown_dependency
-				}
-				NOT = { this = scope:bond_subj }
-				num_locations >= 15
-				has_variable = cc_bond_initialized
-			}
-			# Add to overlord's secondary map; own subjects get value = 1
-			ROOT = { add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = PREV  value = 1 } }
-			set_variable = { name = cc_bond_merchant_interaction  value = 0 }
-		}
-
-		# Also try to add one foreign colonial nation to the map (value = 2)
-		random_country = {
-			limit = {
-				is_subject_type = colonial_nation
-				NOT = { is_subject_of = ROOT }
-				NOT = { this = scope:bond_subj }
-				num_locations >= 15
-				NOT = { is_at_war_with = ROOT }
-			}
-			ROOT = { add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = PREV  value = 2 } }
-			set_variable = { name = cc_bond_secondary_is_foreign  value = yes }
-			set_variable = { name = cc_bond_merchant_interaction  value = 0 }
-			# Flag on ROOT that the map contains a foreign target (for desc/outcome logic)
-			ROOT = { set_variable = { name = cc_bond_mem_second_is_foreign  value = yes } }
-		}
-	}
-
-	# Option A: Fund the expansion — gold cost; per-target 75% backed, 25% neutral
+	# Option A: Fund the expansion — gold cost; 75% backed, 25% neutral; persisted to map
 	option = {
 		name = cc_bonds.111.a_back
 		ai_chance = {
@@ -196,31 +197,35 @@ cc_bonds.111 = {
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 		}
-		every_key_in_variable_map = {
-			variable = cc_bond_chain_b_secondary_map
+		scope:bond_secondary = {
 			random_list = {
 				75 = {
 					set_variable = { name = cc_bond_merchant_interaction  value = 1 }
-					# Only adjust bond dims for own subjects (not foreign nations)
 					if = {
 						limit = { NOT = { has_variable = cc_bond_secondary_is_foreign } }
 						change_variable = { name = cc_bond_eco  add = 1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
-					show_chance = no
 				}
-				25 = { show_chance = no }	# Funding spent but this target didn't convert
+				25 = { }	# Funding spent but this target didn't convert
 			}
+		}
+		# Persist: we backed it, so this contact remains in the network
+		if = {
+			limit = { scope:bond_secondary = { has_variable = cc_bond_secondary_is_foreign } }
+			add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = scope:bond_secondary  value = 2 }
+		}
+		else = {
+			add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = scope:bond_secondary  value = 1 }
 		}
 		trigger_event_silently = { id = cc_bonds.112  years = 12 }
 	}
 
-	# Option B: Observe — no cost; per-target 40% backed, 20% rival, 40% neutral
+	# Option B: Observe — no cost; 40% backed, 20% rival, 40% neutral; persisted to map
 	option = {
 		name = cc_bonds.111.b_observe
 		ai_chance = { base = 35 }
-		every_key_in_variable_map = {
-			variable = cc_bond_chain_b_secondary_map
+		scope:bond_secondary = {
 			random_list = {
 				40 = {
 					# Merchant succeeds independently — acts as backed without our credit
@@ -230,7 +235,6 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = 1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
-					show_chance = no
 				}
 				20 = {
 					# Merchant cuts us out of this route
@@ -240,15 +244,22 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = -1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
-					show_chance = no
 				}
-				40 = { show_chance = no }	# Stalemate — no movement on this target
+				40 = { }	# Stalemate — no movement on this target
 			}
+		}
+		# Persist: we watched, so the relationship exists in the network regardless
+		if = {
+			limit = { scope:bond_secondary = { has_variable = cc_bond_secondary_is_foreign } }
+			add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = scope:bond_secondary  value = 2 }
+		}
+		else = {
+			add_to_variable_map = { name = cc_bond_chain_b_secondary_map  key = scope:bond_secondary  value = 1 }
 		}
 		trigger_event_silently = { id = cc_bonds.112  years = 14 }
 	}
 
-	# Option C: Clip his ambitions — per-target 50% rival (obstruction lands), 50% neutral
+	# Option C: Clip his ambitions — 50% rival, 50% neutral; NOT persisted (obstruction severs the tie)
 	option = {
 		name = cc_bonds.111.c_discourage
 		ai_chance = {
@@ -268,8 +279,7 @@ cc_bonds.111 = {
 			change_variable = { name = cc_bond_per  add = -1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 		}
-		every_key_in_variable_map = {
-			variable = cc_bond_chain_b_secondary_map
+		scope:bond_secondary = {
 			random_list = {
 				50 = {
 					# Obstruction works: own subjects shrink, foreign targets fill the gap
@@ -284,11 +294,14 @@ cc_bonds.111 = {
 						change_variable = { name = cc_bond_eco  add = -1 }
 						clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					}
-					show_chance = no 
 				}
-				50 = { show_chance = no }	# Merchant rerouted — obstruction had no lasting effect
+				50 = { }	# Merchant rerouted — obstruction had no lasting effect
 			}
+			# NOT persisted: clean up per-country vars since this target won't enter the map
+			remove_variable = cc_bond_secondary_is_foreign
+			remove_variable = cc_bond_merchant_interaction
 		}
+		remove_variable = cc_bond_mem_second_is_foreign
 		trigger_event_silently = { id = cc_bonds.112  years = 12 }
 	}
 }

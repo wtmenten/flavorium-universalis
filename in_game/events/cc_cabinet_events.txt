@@ -171,7 +171,7 @@ cc_cabinet.5 = {
 	option = {
 		name = cc_cabinet.5.b
 		trigger = { var:cc_5_outcome = 2 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40  max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  max = -40  min = -500 }
 	}
 
 	# Outcome 3: Minister lobbies nobles for private backing
@@ -209,7 +209,19 @@ cc_cabinet.3 = {
 				}
 			}
 			40 = {
-				add_gold = { value = monthly_income_trade_and_tax  multiply = 0.15  min = 30 }
+				add_gold = {
+					value = monthly_income_trade_and_tax
+					multiply = {
+						value = { random_integer = { max = 200 } }
+						modulo = 11		# → 0–10
+						subtract = 5	# → -5–5
+						multiply = 0.50	# scale variance relative to base
+						divide = 10		# → -0.075–0.075
+						add = 0.50		# → 0.075–0.225
+					}
+					min = 100
+					max = 2000
+				}
 			}
 		}
 	}
