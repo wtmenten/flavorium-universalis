@@ -72,20 +72,31 @@ TRAIT_FILES: list[tuple[str, str, str]] = [
      "that removes the trait when you address the underlying problem"),
 ]
 
+# Second element may be a filename string or a glob pattern (e.g. "cc_bond_*.txt").
 EVENT_INFO: list[tuple[str, str, str]] = [
-    ("cc_cabinet",      "cc_cabinet_events.txt",           "Minister counsel, estate relations, diplomatic situations, provincial affairs"),
-    ("cc_traits",       "cc_trait_events.txt",             "Age trait acquisition, ruler teaching, peer learning"),
-    ("cc_cond",         "cc_conditional_trait_events.txt", "Conditional trait spawning based on realm conditions and actions"),
-    ("cc_synergy",      "cc_synergy_events.txt",           "Trait pair synergies — temporary bonuses when ministers share trait families"),
-    ("cc_neg",          "cc_negative_trait_events.txt",    "Underperformance events and rehabilitation chains"),
-    ("cc_wealth",       "cc_wealth_events.txt",            "Wealth hoarding pressure and minister enrichment"),
-    ("cc_dual",         "cc_dual_synergy_events.txt",      "Cabinet × religious figure dual-role synergies"),
-    ("cc_intl",         "cc_intl_synergy_events.txt",      "Cross-country interactions between neighboring courts"),
-    ("cc_feudal",       "cc_feudal_events.txt",            "Feudal era court events"),
-    ("cc_legacy",       "cc_legacy_events.txt",            "Senior minister retirement and legacy transmission"),
-    ("cc_legend",       "cc_legend_events.txt",            "Legendary minister quest chains"),
-    ("cc_hyw",          "cc_hyw_events.txt",               "Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure"),
-    ("cc_personality",  "cc_ai_personality_events.txt",    "Dynamic AI personality inflection events — key historical turning points"),
+    ("cc_cabinet",          "cc_cabinet_events.txt",            "Minister counsel, estate relations, diplomatic situations, provincial affairs"),
+    ("cc_traits",           "cc_trait_events.txt",              "Age trait acquisition, ruler teaching, peer learning"),
+    ("cc_cond",             "cc_conditional_trait_events.txt",  "Conditional trait spawning based on realm conditions and actions"),
+    ("cc_synergy",          "cc_synergy_events.txt",            "Trait pair synergies — temporary bonuses when ministers share trait families"),
+    ("cc_neg",              "cc_negative_trait_events.txt",     "Underperformance events and rehabilitation chains"),
+    ("cc_wealth",           "cc_wealth_events.txt",             "Wealth hoarding pressure and minister enrichment"),
+    ("cc_dual",             "cc_dual_synergy_events.txt",       "Cabinet × religious figure dual-role synergies"),
+    ("cc_intl",             "cc_intl_synergy_events.txt",       "Cross-country interactions between neighboring courts"),
+    ("cc_feudal",           "cc_feudal_events.txt",             "Feudal era court events"),
+    ("cc_legacy",           "cc_legacy_events.txt",             "Senior minister retirement and legacy transmission"),
+    ("cc_legend",           "cc_legend_events.txt",             "Legendary minister quest chains"),
+    ("cc_hyw",              "cc_hyw_events.txt",                "Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure"),
+    ("cc_personality",      "cc_ai_personality_events.txt",     "Dynamic AI personality inflection events — key historical turning points"),
+    ("cc_bonds",            "cc_bond_*.txt",                    "Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs"),
+    ("cc_rival",            "cc_rivalry_events.txt",            "Court rivalry escalation: minister complaint → letter unsealed → faction hardens"),
+    ("cc_cabal",            "cc_cabal_events.txt",              "Cabinet alliance formation: alliance forms → joint reform proposal"),
+    ("cc_wc",               "cc_war_council_events.txt",        "War council: active-war events, post-war reform proposals, outdated general retirement"),
+    ("cc_fac",              "cc_estate_faction_events.txt",     "Estate faction capture events"),
+    ("cc_prog",             "cc_progression_events.txt",        "Stepping stone trait progression chains (Paths A/C/D/F/E)"),
+    ("cc_colonial",         "cc_colonial_events.txt",           "Colonial divan: charter company events + decolonization crisis chain"),
+    ("cc_posting",          "cc_colonial_posting_events.txt",   "Colonial posting duty: dispatch, corruption, native uprising, fever"),
+    ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars — papal loan event"),
+    ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
 ]
 
 HIGHLIGHTED_TRAITS: list[str] = [
@@ -211,11 +222,21 @@ def extract_top_blocks(path: Path) -> list[tuple[str, dict[str, list[str]]]]:
     return results
 
 
-def count_events(path: Path) -> int:
-    """Count country events in an EU5 event file (type = country_event pattern)."""
-    if not path.exists():
+def count_events(path_or_glob: "Path | str", base_dir: "Path | None" = None) -> int:
+    """Count country events. Accepts a Path, a filename string, or a glob pattern."""
+    if isinstance(path_or_glob, str) and ("*" in path_or_glob or "?" in path_or_glob):
+        search_dir = base_dir or Path(".")
+        total = 0
+        for p in sorted(search_dir.glob(path_or_glob)):
+            total += len(re.findall(r"\btype\s*=\s*country_event\b", read_bom(p)))
+        return total
+    if isinstance(path_or_glob, str):
+        p = (base_dir / path_or_glob) if base_dir else Path(path_or_glob)
+    else:
+        p = path_or_glob
+    if not p.exists():
         return 0
-    return len(re.findall(r"\btype\s*=\s*country_event\b", read_bom(path)))
+    return len(re.findall(r"\btype\s*=\s*country_event\b", read_bom(p)))
 
 
 # ---------------------------------------------------------------------------
@@ -324,8 +345,7 @@ def gen_event_categories(_loc: dict[str, str]) -> str:
     total = 0
     rows: list[list[str]] = []
     for ns, filename, desc in EVENT_INFO:
-        path = events_dir / filename
-        count = count_events(path)
+        count = count_events(filename, base_dir=events_dir)
         total += count
         rows.append([ns, str(count), desc])
 
@@ -358,7 +378,7 @@ def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
     by_age: dict[str, list[tuple[str, dict[str, list[str]]]]] = {}
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
@@ -379,17 +399,21 @@ def gen_advances(loc: dict[str, str]) -> str:
             desc = loc.get(f"{adv_id}_desc", "")
             short = first_sentence(desc) if desc else ""
 
+            branch_vals = d.get("for", [])
+            branch = branch_vals[0].upper() if branch_vals else "All"
+            branch_tag = italic(f"[{branch}]")
+
             unlocks = d.get("unlock_subject_type", [])
             if unlocks:
                 unlock_names = [
                     loc.get(u) or loc.get(f"AM_{u}") or id_to_title(u)
                     for u in unlocks
                 ]
-                entry = f"{bold(name)} — Unlocks: {bold(', '.join(unlock_names))}."
+                entry = f"{branch_tag} {bold(name)} — Unlocks: {bold(', '.join(unlock_names))}."
                 if short:
                     entry += f" {short}"
             else:
-                entry = bold(name)
+                entry = f"{branch_tag} {bold(name)}"
                 if short:
                     entry += f" — {short}"
             items.append(entry)
@@ -440,7 +464,7 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
     privileges: list[tuple[str, str]] = []
     reforms: list[tuple[str, str, str]] = []
 
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
