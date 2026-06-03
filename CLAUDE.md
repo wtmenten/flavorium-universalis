@@ -72,6 +72,7 @@ python tools/wiki_search.py all declare_war
 - **Game files location**: `F:\SteamLibrary\steamapps\common\Europa Universalis V\game` — reference these when checking vanilla definitions, scripting syntax, or effect/trigger scopes.
 - **No build step**: Paradox mods are plain text files loaded directly by the game engine. There is no compilation, linting tool, or test runner.
 - **Testing**: Load the mod in-game via the EU V launcher. The game logs errors to `%USERPROFILE%\Documents\Paradox Interactive\Europa Universalis V\logs\`.
+- **Submod setup**: EU5 only loads mods from the top-level `mod/` folder. After cloning (or adding a new submod), run `python tools/setup_junctions.py` to create Windows directory junctions from `mod/<submod name>/` → `submods/<folder>/`. Safe to re-run.
 
 ## Mod Structure
 

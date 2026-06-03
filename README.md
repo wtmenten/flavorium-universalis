@@ -11,6 +11,7 @@ A Europa Universalis V mod that expands cabinet gameplay with a dynamic minister
 ```
 in_game/          content loaded alongside vanilla (additive)
 main_menu/        content loaded on the main-menu screen only
+submods/          optional submods, each with their own .metadata/ and in_game/
 tools/            Python scripts for modding workflow
 docs/             reference documentation
 loading_screen/   loading screen graphics
@@ -376,6 +377,16 @@ python tools/fix_bom.py --check  # report only, exit 1 if any missing
 
 Run automatically by the git pre-commit hook. All `.txt` and `.yml` files need UTF-8 BOM or the game silently ignores them.
 
+### `tools/setup_junctions.py` — Submod junction setup (run once after cloning)
+
+EU5 only loads mods from the top-level `mod/` folder. This script creates Windows directory junctions there so the game can find each submod while its files stay under `submods/` in the repo.
+
+```bash
+python tools/setup_junctions.py
+```
+
+Run once after cloning and again whenever a new submod is added. It reads the `name` field from each submod's `.metadata/metadata.json` and creates `mod/<name>/` → `submods/<folder>/`. Safe to re-run — existing up-to-date junctions are skipped.
+
 ### `tools/generate_workshop.py` — Workshop description generator
 
 ```bash
@@ -399,21 +410,42 @@ Parses mod files and updates `<!-- GEN:name -->...<!-- /GEN:name -->` sections i
 
 ## Releasing to Steam Workshop
 
+All uploads are handled by `tools/upload.py`. Configure targets in `tools/config.toml`.
+
+### Common commands
+
 ```bash
-python tools/release.py
+# Upload everything: main mod + workshop pages + all submods + change notes
+python tools/upload.py -m -wp -s -cn
+
+# Main mod content only
+python tools/upload.py -m
+
+# Workshop description/title only (main mod + submod pages)
+python tools/upload.py -wp -s
+
+# Submods only
+python tools/upload.py -s
+
+# Change notes only
+python tools/upload.py -cn
 ```
 
-The script stages a clean copy of the mod into `release/` (game content only — no docs, tools, assets, .git, etc.) and then runs `tools/workshop_manager/pdx-workshop-manager.exe` to upload it.
+### Before each release
 
-**Before each release:**
-1. Bump `"version"` in `.metadata/metadata.json`
-2. Add `docs/change_notes/{version}.bbcode` with the update notes (no `v` prefix — e.g. `0.3.0.bbcode`)
-3. Update `WORKSHOP_DESCRIPTION_upload.bbcode` if the workshop page description has changed
-4. Run `python tools/release.py` and confirm the prompt
+1. Bump `"version"` in `.metadata/metadata.json` (and each submod's `.metadata/metadata.json`)
+2. Update `assets/workshop/change-notes.bbcode` with the new version entry
+3. Update `WORKSHOP_DESCRIPTION_steam.bbcode` if the page copy has changed
+4. For submods: update `submods/<name>/workshop/change-notes.bbcode` and `submods/<name>/WORKSHOP_DESCRIPTION_steam.bbcode` as needed
+5. Run `python tools/upload.py -m -wp -s -cn`
 
-**First upload (id = 0):** The workshop manager will create a new Workshop item and write the assigned item ID back into `tools/workshop_manager/manager-config.json`. Commit that file change to keep the ID tracked in git.
+### First upload (new item)
 
-**Workshop manager setup:** Requires `tools/workshop_manager/pdx-workshop-manager.exe` and `steam_api64.dll` — these are gitignored binaries. Download from the [pdx-workshop-manager releases](https://github.com/Hoi4Modder/pdx-workshop-manager) and extract into `tools/workshop_manager/`.
+Set `workshop_upload_item_id = 0` in `tools/config.toml`. The script will create a new Workshop item and write the assigned ID back into the config automatically. Commit that change to keep the ID tracked in git. Same applies to submods — set `workshop_id = 0` in the `[[submods]]` block.
+
+### Submod workshop pages
+
+Each submod can have its own `WORKSHOP_DESCRIPTION_steam.bbcode` at `submods/<name>/WORKSHOP_DESCRIPTION_steam.bbcode` and change notes at `submods/<name>/workshop/change-notes.bbcode`. These are uploaded when `-wp` and `-s` (pages) or `-cn` and `-s` (change notes) are passed together.
 
 ---
 

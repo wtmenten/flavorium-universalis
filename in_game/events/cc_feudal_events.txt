@@ -388,23 +388,36 @@ cc_feudal.6 = {
 	}
 
 	immediate = {
+		random_neighbor_country = {
+			culture = {
+				save_scope_as = neighbor_culture
+			}
+			religion = {
+				save_scope_as = neighbor_religion
+			}
+		}
+		create_character = {
+			trait_category = cabinet
+			religion = scope:neighbor_religion
+			culture = scope:neighbor_culture
+			age = { 25 45 }
+			adm = { 50 90 }
+			dip = { 40 80 }
+			mil = { 0 40 }
+			create_in_limbo = yes
+			add_trait = trait:learned_courtier
+			save_scope_as = foreigner
+		}
 		set_variable = { name = cc_feudal_foreigner_fired value = yes }
 	}
 
-	# Appoint the foreigner — gain a cabinet trait appropriate to their skills
+	# Appoint the foreigner — create a new character with the learned_courtier trait
 	option = {
 		name = cc_feudal.6.a
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				NOR = {
-					has_trait = learned_courtier
-					has_trait = urban_planner
-					has_trait = seneschal
-				}
-			}
-			add_trait = trait:learned_courtier
+		scope:foreigner = {
+			move_country = root
 		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
 	}
 
 	# If court_chaplain exists — scholarly debate unlocks early learning modifier
@@ -419,6 +432,9 @@ cc_feudal.6 = {
 				}
 			}
 		}
+		scope:foreigner = {
+			move_country = root
+		}
 		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 5 }
 		add_prestige = prestige_mild_bonus
 	}
@@ -427,6 +443,7 @@ cc_feudal.6 = {
 	option = {
 		name = cc_feudal.6.c
 		add_prestige = prestige_weak_bonus
+		hidden_effect = { kill_character_silently = scope:foreigner }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.03 }
 	}
 }
