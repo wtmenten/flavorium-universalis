@@ -13,8 +13,8 @@ Usage:
     --mod-only          only print combos that include at least one mod advance
     --combo FILTER      substring filter on combo label, e.g. "ADM,DIP,MIL,ADM,DIP,MIL"
     --json [FILE]       generate JS data file for advance_explorer.html
-                        (default: tools/advance_data.js)
-                        Open tools/advance_explorer.html in a browser to explore.
+                        (default: docs/advance_data.js)
+                        Open docs/index.html in a browser to explore.
 """
 
 import re
@@ -76,6 +76,125 @@ _COND_KEYS: set[str] = {
     "hidden", "map", "diplo_chance_accept", "visible_through_nation_designer",
     "combat", "maintenance_demand",
 }
+
+
+SUBCONT_LABELS: dict[str, str] = {
+    "western_europe":    "Western Europe",
+    "eastern_europe":    "Eastern Europe",
+    "middle_east":       "Middle East",
+    "east_asia":         "East Asia",
+    "south_asia":        "South Asia",
+    "central_asia":      "Central Asia",
+    "north_africa":      "North Africa",
+    "sub_saharan_africa":"Sub-Saharan Africa",
+    "north_america":     "North America",
+    "south_america":     "South America",
+    "central_america":   "Central America",
+    "southeast_asia":    "Southeast Asia",
+}
+
+RELIGION_LABELS: dict[str, str] = {
+    "catholic":"Catholic", "protestant":"Protestant", "reformed":"Reformed",
+    "orthodox":"Orthodox", "lutheran":"Lutheran", "calvinist":"Calvinist",
+    "anglican":"Anglican", "sunni":"Sunni", "shia":"Shia", "ibadi":"Ibadi",
+    "jewish":"Jewish", "hindu":"Hindu", "buddhism":"Buddhist", "animism":"Animist",
+}
+
+
+def parse_cond_block(raw_toks: list[str]) -> str:
+    """Convert raw Clausewitz condition tokens into a human-readable string."""
+    if not raw_toks:
+        return ""
+    # Normalise: remove '?' that precede '=' (handles optional-equality ?= operator)
+    toks: list[str] = []
+    ri = 0
+    while ri < len(raw_toks):
+        if raw_toks[ri] == "?" and ri + 1 < len(raw_toks) and raw_toks[ri + 1] == "=":
+            ri += 1  # drop '?'; the following '=' is kept
+        else:
+            toks.append(raw_toks[ri])
+            ri += 1
+
+    n = len(toks)
+
+    def _items(start: int) -> tuple[list, int]:
+        items: list = []
+        pos = start
+        while pos < n and toks[pos] != "}":
+            t = toks[pos]
+            if pos + 1 < n and toks[pos + 1] == "=":
+                key = t
+                pos += 2
+                if pos < n and toks[pos] == "{":
+                    pos += 1
+                    nested, pos = _items(pos)
+                    items.append((key, nested))
+                elif pos < n:
+                    items.append((key, toks[pos]))
+                    pos += 1
+            else:
+                pos += 1
+        return items, pos + 1 if pos < n else pos
+
+    def _fmt(key: str, val) -> str:
+        if isinstance(val, list):
+            if key == "OR":
+                parts = [_fmt(k, v) for k, v in val]
+                return " or ".join(p for p in parts if p)
+            if key in ("AND", "NOR"):
+                parts = [_fmt(k, v) for k, v in val]
+                return ", ".join(p for p in parts if p)
+            if key == "NOT":
+                parts = [_fmt(k, v) for k, v in val]
+                s = ", ".join(p for p in parts if p)
+                return f"not ({s})" if s else ""
+            if key in ("original_capital", "capital"):
+                for k, v in val:
+                    if isinstance(v, str):
+                        if k == "sub_continent":
+                            name = v.replace("sub_continent:", "")
+                            return SUBCONT_LABELS.get(name, name.replace("_", " ").title()) + " capital"
+                        if k == "continent":
+                            return v.replace("continent:", "").replace("_", " ").title() + " capital"
+                return ""
+            if key == "culture":
+                for k, v in val:
+                    if k == "has_culture_group" and isinstance(v, str):
+                        g = v.replace("culture_group:", "").replace("_group", "").replace("_", " ").title()
+                        return f"{g} culture"
+                return ""
+            if key == "any_subject":
+                for k, v in val:
+                    if k == "is_subject_type" and isinstance(v, str):
+                        return "has " + v.replace("_", " ").title() + " subject"
+                return ""
+            return ""
+        else:
+            if key == "religion":
+                rel = val.replace("religion:", "")
+                return RELIGION_LABELS.get(rel, rel.replace("_", " ").title())
+            if key == "government_type":
+                return val.replace("government_type:", "").replace("_", " ").title()
+            if key == "has_advance":
+                return "has " + val.replace("_advance", "").replace("_", " ").title()
+            if key == "has_advance_available":
+                return "can get " + val.replace("_advance", "").replace("_", " ").title()
+            return ""
+
+    items, _ = _items(0)
+    return ", ".join(p for p in (_fmt(k, v) for k, v in items) if p)
+
+
+def _cond_union(s1: str, s2: str) -> str:
+    """Merge two condition strings, deduplicating identical comma-separated parts."""
+    if not s1:
+        return s2
+    if not s2:
+        return s1
+    if s1 == s2:
+        return s1
+    seen: dict[str, None] = dict.fromkeys(s1.split(", ") + s2.split(", "))
+    return ", ".join(k for k in seen if k)
 
 
 def _parse_dict(tokens: list[str], start: int) -> tuple[dict, int]:
@@ -395,6 +514,20 @@ def parse_advances_from_file(path: Path, is_mod: bool) -> list[dict]:
                 depth -= 1
             i += 1
 
+    def capture_block() -> list[str]:
+        nonlocal i
+        toks: list[str] = []
+        depth = 1
+        while i < n and depth:
+            if tokens[i] == "{":
+                depth += 1
+            elif tokens[i] == "}":
+                depth -= 1
+            if depth > 0:
+                toks.append(tokens[i])
+            i += 1
+        return toks
+
     while i < n:
         if i + 2 < n and tokens[i + 1] == "=" and tokens[i + 2] == "{":
             adv_name = tokens[i]
@@ -418,7 +551,10 @@ def parse_advances_from_file(path: Path, is_mod: bool) -> list[dict]:
                     i += 2
                     if i < n and tokens[i] == "{":
                         i += 1
-                        skip_block()
+                        if key in ("potential", "allow"):
+                            adv.setdefault("_cond_toks", {})[key] = capture_block()
+                        else:
+                            skip_block()
                     else:
                         val = tokens[i] if i < n else ""
                         i += 1
@@ -429,6 +565,13 @@ def parse_advances_from_file(path: Path, is_mod: bool) -> list[dict]:
                 else:
                     i += 1
             if "age" in adv:
+                cond_toks = adv.pop("_cond_toks", {})
+                if cond_toks:
+                    p = parse_cond_block(cond_toks.get("potential", []))
+                    a = parse_cond_block(cond_toks.get("allow", []))
+                    merged = _cond_union(p, a)
+                    if merged:
+                        adv["_conditions"] = merged
                 advances.append(adv)
         else:
             i += 1
@@ -640,11 +783,14 @@ def render_combos(
 # -- data file generation ----------------------------------------------------
 
 def serialize_advance(adv: dict, mod_names: set[str]) -> dict:
-    return {
+    d: dict = {
         "name":    adv["_name"],
         "isMod":   adv["_name"] in mod_names,
         "effects": [[k, v] for k, v in adv.get("_effects", [])],
     }
+    if adv.get("_conditions"):
+        d["conditions"] = adv["_conditions"]
+    return d
 
 
 def build_data(groups: dict, mod_names: set[str], target_ages: list[str]) -> dict:
@@ -685,8 +831,8 @@ def main():
                         help="(CLI) only print combos with at least one mod advance")
     parser.add_argument("--combo", metavar="FILTER",
                         help='(CLI) substring filter on combo label')
-    parser.add_argument("--json", metavar="FILE", nargs="?", const="tools/advance_data.js",
-                        help="Generate JS data file for advance_explorer.html (default: tools/advance_data.js)")
+    parser.add_argument("--json", metavar="FILE", nargs="?", const="docs/advance_data.js",
+                        help="Generate JS data file for advance_explorer.html (default: docs/advance_data.js)")
     args = parser.parse_args()
 
     print("Loading advances...", file=sys.stderr)

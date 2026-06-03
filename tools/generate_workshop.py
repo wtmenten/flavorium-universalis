@@ -222,6 +222,54 @@ def extract_top_blocks(path: Path) -> list[tuple[str, dict[str, list[str]]]]:
     return results
 
 
+# ---------------------------------------------------------------------------
+# Deep block parser (retains nesting for modifier/condition extraction)
+# ---------------------------------------------------------------------------
+
+def _parse_deep_inner(tokens: list[str], i: int) -> tuple[list, int]:
+    items: list = []
+    while i < len(tokens) and tokens[i] != "}":
+        tok = tokens[i]
+        if i + 1 < len(tokens) and tokens[i + 1] == "=":
+            key = tok.strip('"')   # quoted keys e.g. "estate_power(...)"
+            i += 2
+            if i < len(tokens) and tokens[i] == "{":
+                nested, i = _parse_deep_inner(tokens, i + 1)
+                items.append((key, nested))
+            elif i < len(tokens):
+                items.append((key, tokens[i].strip('"')))
+                i += 1
+        else:
+            i += 1
+    return items, i + 1 if i < len(tokens) else i
+
+
+def extract_deep_blocks(path: Path) -> list[tuple[str, list]]:
+    """Return (id, deep_items) for each top-level Clausewitz block."""
+    tokens = tokenize(read_bom(path))
+    results: list[tuple[str, list]] = []
+    i = 0
+    while i < len(tokens):
+        if i + 2 < len(tokens) and tokens[i + 1] == "=" and tokens[i + 2] == "{":
+            block_id = tokens[i]
+            items, i = _parse_deep_inner(tokens, i + 3)
+            results.append((block_id, items))
+        else:
+            i += 1
+    return results
+
+
+def items_get(items: list, key: str) -> list:
+    return [v for k, v in items if k == key]
+
+
+def items_get_one(items: list, key: str, default=None):
+    for k, v in items:
+        if k == key:
+            return v
+    return default
+
+
 def count_events(path_or_glob: "Path | str", base_dir: "Path | None" = None) -> int:
     """Count country events. Accepts a Path, a filename string, or a glob pattern."""
     if isinstance(path_or_glob, str) and ("*" in path_or_glob or "?" in path_or_glob):
@@ -264,6 +312,230 @@ def table_block(headers: list[str], rows: list[list[str]]) -> str:
         lines.append(f"[tr]{cells}[/tr]")
     lines.append("[/table]")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Modifier / condition helpers
+# ---------------------------------------------------------------------------
+
+# Keys in advance blocks that are metadata, not country modifiers.
+ADVANCE_META_KEYS = frozenset({
+    "age", "icon", "for", "depth", "requires",
+    "unlock_subject_type", "unlock_estate_privilege", "unlock_government_reform",
+    "potential", "allow", "on_activate", "on_complete", "on_start",
+})
+
+# key → (label, fmt)  fmt: 'flat' | 'percent' (×100→%) | 'monthly' (/mo) | 'skip'
+MODIFIER_DISPLAY: dict[str, tuple[str, str]] = {
+    "global_max_literacy":                    ("max literacy",              "flat"),
+    "global_nobles_max_literacy":             ("noble literacy",            "flat"),
+    "global_burghers_max_literacy":           ("burgher literacy",          "flat"),
+    "global_clergy_max_literacy":             ("clergy literacy",           "flat"),
+    "global_peasants_max_literacy":           ("peasant literacy",          "flat"),
+    "global_soldiers_max_literacy":           ("soldier literacy",          "flat"),
+    "global_laborers_max_literacy":           ("laborer literacy",          "flat"),
+    "diplomatic_capacity":                    ("dip capacity",              "flat"),
+    "diplomatic_reputation":                  ("dip rep",                   "flat"),
+    "diplomatic_range_modifier":              ("dip range",                 "percent"),
+    "cultural_influence":                     ("cultural influence",        "flat"),
+    "cultural_influence_modifier":            ("cultural influence",        "percent"),
+    "cultural_tradition":                     ("cultural tradition",        "flat"),
+    "cultural_tradition_modifier":            ("cultural tradition",        "percent"),
+    "skill_of_new_artists":                   ("art skill",                 "percent"),
+    "power_projection":                       ("power projection",          "flat"),
+    "monthly_prestige":                       ("prestige",                  "monthly"),
+    "stability_cost":                         ("stability cost",            "percent"),
+    "country_cabinet_efficiency":             ("cabinet efficiency",        "percent"),
+    "legislative_efficiency":                 ("legislative efficiency",    "percent"),
+    "government_reform_slots":                ("reform slots",              "flat"),
+    "remove_government_reform_cost_modifier": ("reform removal cost",       "percent"),
+    "remove_bureaucracy_price_cost_modifier": ("bureaucracy removal cost",  "percent"),
+    "global_monthly_development":             ("dev",                       "monthly"),
+    "total_loan_capacity_modifier":           ("loan capacity",             "percent"),
+    "global_merchant_power":                  ("merchant power",            "percent"),
+    "merchant_power_from_maritime":           ("maritime merchant power",   "percent"),
+    "trade_range":                            ("trade range",               "flat"),
+    "trade_range_modifier":                   ("trade range",               "percent"),
+    "trade_sea_efficiency":                   ("sea trade efficiency",      "percent"),
+    "bank_interest":                          ("bank interest",             "percent"),
+    "global_trade_center_power":              ("trade center power",        "percent"),
+    "global_pop_conversion_speed_modifier":   ("pop conversion",            "percent"),
+    "global_institution_growth_modifier":     ("institution growth",        "percent"),
+    "embrace_institution_cost_modifier":      ("institution embrace cost",  "percent"),
+    "research_speed":                         ("research",                  "percent"),
+    "global_life_expectancy":                 ("life expectancy",           "flat"),
+    "global_disease_resistance":              ("disease resistance",        "percent"),
+    "tolerance_heretic":                      ("tolerance (heretic)",       "flat"),
+    "subject_loyalty":                        ("subject loyalty",           "flat"),
+    "global_integration_speed_modifier":      ("integration speed",         "percent"),
+    "discipline":                             ("discipline",                "percent"),
+    "monthly_army_tradition":                 ("army tradition",            "monthly"),
+    "army_light_cavalry_build_cost_modifier": ("light cav cost",            "percent"),
+    "army_heavy_cavalry_build_cost_modifier": ("heavy cav cost",            "percent"),
+    "antagonism_received_modifier":           ("antagonism received",       "percent"),
+    "military_tactics":                       ("tactics",                   "percent"),
+    "land_morale":                            ("land morale",               "percent"),
+    "army_logistics_distance":                ("logistics distance",        "flat"),
+    "naval_morale":                           ("naval morale",              "percent"),
+    "naval_range":                            ("naval range",               "flat"),
+    "global_sailors_modifier":                ("sailors",                   "percent"),
+    "num_naval_governors":                    ("naval governors",           "flat"),
+    "port_cost_distance_from_capital":        ("port distance cost",        "flat"),
+    "navy_heavy_ship_power":                  ("heavy ship power",          "percent"),
+    "colonial_range":                         ("colonial range",            "flat"),
+    "parliament_base_support":                ("parliament support",        "percent"),
+    "global_nobles_estate_power":             ("noble power",               "flat"),
+    "global_burghers_estate_power":           ("burgher power",             "flat"),
+    "global_clergy_estate_power":             ("clergy power",              "flat"),
+    "nobles_estate_target_satisfaction":      ("",                          "skip"),
+    "burghers_estate_target_satisfaction":    ("",                          "skip"),
+    "clergy_estate_target_satisfaction":      ("",                          "skip"),
+    "nobles_estate_agenda_impact":            ("noble agenda",              "percent"),
+    "burghers_estate_agenda_impact":          ("burgher agenda",            "percent"),
+    "monthly_towards_naval":                  ("",                          "skip"),
+    "monthly_towards_land":                   ("",                          "skip"),
+    "monthly_towards_trade":                  ("",                          "skip"),
+    "monthly_towards_religion":               ("",                          "skip"),
+}
+
+
+def format_modifier_pair(key: str, value: str) -> "str | None":
+    if key not in MODIFIER_DISPLAY:
+        return None
+    label, fmt = MODIFIER_DISPLAY[key]
+    if fmt == "skip" or not label:
+        return None
+    try:
+        n = float(value)
+    except (ValueError, TypeError):
+        return None
+    sign = "+" if n >= 0 else ""
+    if fmt == "percent":
+        p = n * 100
+        p_r = round(p, 1)
+        s = f"{int(p_r)}%" if p_r == int(p_r) else f"{p_r}%"
+        return f"{sign}{s} {label}"
+    elif fmt == "flat":
+        s = str(int(n)) if n == int(n) else str(n)
+        return f"{sign}{s} {label}"
+    elif fmt == "monthly":
+        s = f"{n:.3f}".rstrip("0").rstrip(".")
+        return f"{sign}{s}/mo {label}"
+    return None
+
+
+def format_modifiers_from_items(items: list) -> list[str]:
+    result = []
+    for key, val in items:
+        if isinstance(val, str):
+            m = format_modifier_pair(key, val)
+            if m:
+                result.append(m)
+    return result
+
+
+SUBCONT_LABELS: dict[str, str] = {
+    "western_europe": "Western Europe",
+    "eastern_europe": "Eastern Europe",
+    "middle_east":    "Middle East",
+    "east_asia":      "East Asia",
+    "south_asia":     "South Asia",
+    "central_asia":   "Central Asia",
+    "north_africa":   "North Africa",
+    "sub_saharan_africa": "Sub-Saharan Africa",
+    "north_america":  "North America",
+    "south_america":  "South America",
+    "central_america":"Central America",
+    "southeast_asia": "Southeast Asia",
+}
+
+RELIGION_LABELS: dict[str, str] = {
+    "catholic": "Catholic", "protestant": "Protestant", "reformed": "Reformed",
+    "orthodox": "Orthodox", "lutheran": "Lutheran", "calvinist": "Calvinist",
+    "anglican": "Anglican", "sunni": "Sunni", "shia": "Shia", "ibadi": "Ibadi",
+    "jewish": "Jewish", "hindu": "Hindu", "buddhism": "Buddhist", "animism": "Animist",
+}
+
+
+def _format_cond(key: str, val) -> "str | None":
+    if isinstance(val, list):
+        if key == "OR":
+            parts = [_format_cond(k, v) for k, v in val]
+            parts = [p for p in parts if p]
+            return " or ".join(parts) if parts else None
+        elif key == "AND":
+            parts = [_format_cond(k, v) for k, v in val]
+            parts = [p for p in parts if p]
+            return ", ".join(parts) if parts else None
+        elif key == "NOT":
+            parts = [_format_cond(k, v) for k, v in val]
+            parts = [p for p in parts if p]
+            return f"not ({', '.join(parts)})" if parts else None
+        elif key in ("original_capital", "capital"):
+            for k, v in val:
+                if isinstance(v, str):
+                    if k == "sub_continent":
+                        name = v.replace("sub_continent:", "")
+                        return SUBCONT_LABELS.get(name, name.replace("_", " ").title()) + " capital"
+                    if k == "continent":
+                        return v.replace("continent:", "").replace("_", " ").title() + " capital"
+            return None
+        elif key == "culture":
+            for k, v in val:
+                if k == "has_culture_group" and isinstance(v, str):
+                    g = v.replace("culture_group:", "").replace("_group", "").replace("_", " ").title()
+                    return f"{g} culture"
+            return None
+        elif key == "any_subject":
+            for k, v in val:
+                if k == "is_subject_type" and isinstance(v, str):
+                    return f"has {id_to_title(v)} subject"
+            return "has subject"
+        return None
+    else:
+        if key in ("has_advance", "has_advance_available"):
+            return None  # advance tree position — not shown
+        if key == "religion":
+            rel = val.replace("religion:", "")
+            return RELIGION_LABELS.get(rel, rel.replace("_", " ").title())
+        if key == "government_type":
+            return val.replace("government_type:", "").replace("_", " ").title()
+        if key.startswith("estate_power("):
+            m = re.search(r"estate_type:(\w+)_estate", key)
+            if m:
+                estate = m.group(1).title()
+                try:
+                    pct = int(round(float(val) * 100))
+                    return f"{estate} >={pct}%"
+                except ValueError:
+                    pass
+            return None
+        if key == "has_reform":
+            r = val.replace("government_reform:", "").replace("cc_", "").replace("_reform", "").replace("_", " ").title()
+            return f"has {r} reform"
+        if key == "has_parliament":
+            return "has parliament" if val == "yes" else None
+        return None
+
+
+def format_conditions(items: list, skip_advance_refs: bool = True) -> str:
+    parts = []
+    seen: set[str] = set()
+    for key, val in items:
+        p = _format_cond(key, val)
+        if p and p not in seen:
+            seen.add(p)
+            parts.append(p)
+    return ", ".join(parts)
+
+
+def _detail_line(mods: list[str], cond_str: str) -> str:
+    parts = []
+    if mods:
+        parts.append(", ".join(mods))
+    if cond_str:
+        parts.append(italic(f"({cond_str})"))
+    return "\n  " + " ".join(parts) if parts else ""
 
 
 # ---------------------------------------------------------------------------
@@ -377,15 +649,16 @@ def gen_subject_types(loc: dict[str, str]) -> str:
 def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
-    by_age: dict[str, list[tuple[str, dict[str, list[str]]]]] = {}
+    by_age: dict[str, list[tuple[str, list]]] = {}
     for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
-        for adv_id, d in extract_top_blocks(path):
-            age_vals = d.get("age", [])
-            age_key = age_vals[0] if age_vals else "unknown"
-            by_age.setdefault(age_key, []).append((adv_id, d))
+        for adv_id, deep_items in extract_deep_blocks(path):
+            age_key = items_get_one(deep_items, "age", "unknown")
+            if not isinstance(age_key, str):
+                continue
+            by_age.setdefault(age_key, []).append((adv_id, deep_items))
 
     blocks: list[str] = []
     for age_key, (age_label, _age_num) in AGE_NAMES.items():
@@ -394,16 +667,30 @@ def gen_advances(loc: dict[str, str]) -> str:
             continue
 
         items: list[str] = []
-        for adv_id, d in advances:
+        for adv_id, deep_items in advances:
             name = loc.get(adv_id, id_to_title(adv_id))
             desc = loc.get(f"{adv_id}_desc", "")
             short = first_sentence(desc) if desc else ""
 
-            branch_vals = d.get("for", [])
+            branch_vals = items_get(deep_items, "for")
             branch = branch_vals[0].upper() if branch_vals else "All"
             branch_tag = italic(f"[{branch}]")
 
-            unlocks = d.get("unlock_subject_type", [])
+            unlocks = items_get(deep_items, "unlock_subject_type")
+
+            # Direct modifiers (top-level key-value pairs that aren't metadata)
+            mod_items = [(k, v) for k, v in deep_items
+                         if isinstance(v, str) and k not in ADVANCE_META_KEYS]
+            mods = format_modifiers_from_items(mod_items)
+
+            # Conditions: union of potential + allow, skipping has_advance refs
+            cond_raw: list = []
+            for k, v in deep_items:
+                if k in ("potential", "allow") and isinstance(v, list):
+                    cond_raw.extend(v)
+            cond_str = format_conditions(cond_raw)
+
+            # Build main line
             if unlocks:
                 unlock_names = [
                     loc.get(u) or loc.get(f"AM_{u}") or id_to_title(u)
@@ -416,6 +703,8 @@ def gen_advances(loc: dict[str, str]) -> str:
                 entry = f"{branch_tag} {bold(name)}"
                 if short:
                     entry += f" — {short}"
+
+            entry += _detail_line(mods, cond_str)
             items.append(entry)
 
         blocks.append(
@@ -458,11 +747,50 @@ def gen_country_starts(_loc: dict[str, str]) -> str:
     return "\n\n".join(blocks)
 
 
+def _load_privilege_data() -> dict[str, dict]:
+    """Return {priv_id: {modifiers: [str], allow: [(k,v)]}} for all mod privileges."""
+    priv_dir = MOD_ROOT / "in_game" / "common" / "estate_privileges"
+    data: dict[str, dict] = {}
+    for fname in ["cc_nobles_privileges.txt", "cc_burghers_privileges.txt", "cc_clergy_privileges.txt"]:
+        path = priv_dir / fname
+        if not path.exists():
+            continue
+        for priv_id, deep_items in extract_deep_blocks(path):
+            mods: list[str] = []
+            allow_items: list = []
+            for k, v in deep_items:
+                if k == "country_modifier" and isinstance(v, list):
+                    mods = format_modifiers_from_items(v)
+                elif k == "allow" and isinstance(v, list):
+                    allow_items = v
+            data[priv_id] = {"modifiers": mods, "allow": allow_items}
+    return data
+
+
+def _load_reform_data() -> dict[str, dict]:
+    """Return {reform_id: {modifiers: [str]}} for all mod government reforms."""
+    reform_dir = MOD_ROOT / "in_game" / "common" / "government_reforms"
+    data: dict[str, dict] = {}
+    for fname in ["cc_subject_reforms.txt"]:
+        path = reform_dir / fname
+        if not path.exists():
+            continue
+        for reform_id, deep_items in extract_deep_blocks(path):
+            mods: list[str] = []
+            for k, v in deep_items:
+                if k == "country_modifier" and isinstance(v, list):
+                    mods = format_modifiers_from_items(v)
+            data[reform_id] = {"modifiers": mods}
+    return data
+
+
 def gen_privileges_reforms(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
+    priv_data = _load_privilege_data()
+    reform_data = _load_reform_data()
 
-    privileges: list[tuple[str, str]] = []
-    reforms: list[tuple[str, str, str]] = []
+    privileges: list[tuple[str, str, str]] = []   # (name, from_adv, priv_id)
+    reforms: list[tuple[str, str, str, str]] = []  # (name, desc, from_adv, reform_id)
 
     for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
         path = advance_dir / fname
@@ -472,28 +800,42 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
             adv_name = loc.get(adv_id, id_to_title(adv_id))
             for priv_id in d.get("unlock_estate_privilege", []):
                 priv_name = loc.get(priv_id, id_to_title(priv_id))
-                privileges.append((priv_name, adv_name))
+                privileges.append((priv_name, adv_name, priv_id))
             for reform_id in d.get("unlock_government_reform", []):
                 reform_name = loc.get(reform_id, id_to_title(reform_id))
                 reform_desc = loc.get(f"{reform_id}_desc", "")
-                reforms.append((reform_name, reform_desc, adv_name))
+                reforms.append((reform_name, reform_desc, adv_name, reform_id))
 
     if not privileges and not reforms:
         return italic("No estate privileges or government reforms detected.")
 
     blocks: list[str] = []
+
     if privileges:
-        priv_items = [f"{bold(name)} {italic(f'(via: {from_adv})')}" for name, from_adv in privileges]
+        priv_items: list[str] = []
+        for name, from_adv, priv_id in privileges:
+            entry = f"{bold(name)} {italic(f'(via: {from_adv})')}"
+            pd = priv_data.get(priv_id, {})
+            mods = pd.get("modifiers", [])
+            allow_items = pd.get("allow", [])
+            # Show allow conditions that aren't just the advance gate
+            cond_str = format_conditions(allow_items)
+            entry += _detail_line(mods, cond_str)
+            priv_items.append(entry)
         blocks.append(bold("Estate Privileges") + "\n" + list_block(priv_items))
 
     if reforms:
         reform_items: list[str] = []
-        for name, desc, from_adv in reforms:
+        for name, desc, from_adv, reform_id in reforms:
             short = first_sentence(desc) if desc else ""
             entry = bold(name)
             if short:
                 entry += f" — {short}"
             entry += f" {italic(f'(via: {from_adv})')}"
+            rd = reform_data.get(reform_id, {})
+            mods = rd.get("modifiers", [])
+            if mods:
+                entry += "\n  " + ", ".join(mods)
             reform_items.append(entry)
         blocks.append(bold("Government Reforms") + "\n" + list_block(reform_items))
 

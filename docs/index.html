@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flavorium Universalis</title>
+<style>
+:root{
+  --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
+  --hover-bg:#2d3040;--adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;
+  --gold:#d4a843;--text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --radius:7px;--sidebar-w:230px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
+
+/* layout */
+.app{display:grid;grid-template-rows:48px 1fr;height:100vh}
+.header{display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--panel-bg);border-bottom:1px solid var(--card-border);z-index:20}
+.header h1{font-size:15px;font-weight:700;white-space:nowrap;color:var(--gold)}
+.header .sub{font-size:11px;color:var(--text-dim)}
+.header .spacer{flex:1}
+.header a.tool-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:4px 10px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s}
+.header a.tool-link:hover{color:var(--text);border-color:var(--adm)}
+.body{display:grid;grid-template-columns:var(--sidebar-w) 1fr;overflow:hidden}
+
+/* sidebar */
+.sidebar{background:var(--panel-bg);border-right:1px solid var(--card-border);overflow-y:auto;padding:12px 0}
+.sidebar-section{padding:6px 14px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-top:6px}
+.sidebar a{display:block;padding:4px 14px 4px 18px;font-size:12px;color:var(--text-mid);text-decoration:none;border-left:2px solid transparent;transition:color .1s,background .1s,border-color .1s}
+.sidebar a:hover{color:var(--text);background:var(--hover-bg)}
+.sidebar a.lvl2{padding-left:18px;font-weight:600;color:var(--text-mid)}
+.sidebar a.lvl3{padding-left:30px;font-size:11px;border-left:2px solid transparent}
+.sidebar a.lvl3:hover{border-left-color:var(--adm)}
+.sidebar a.active{color:var(--text);border-left-color:var(--adm)}
+
+/* content */
+.content{overflow-y:auto;padding:28px 44px;max-width:820px}
+.content h1{font-size:26px;font-weight:700;color:var(--gold);margin-bottom:8px;margin-top:32px}
+.content h1:first-child{margin-top:0}
+.content h2{font-size:18px;font-weight:700;color:var(--text);margin-top:40px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--card-border)}
+.content h3{font-size:14px;font-weight:700;color:var(--adm);margin-top:26px;margin-bottom:8px}
+.content p{margin-bottom:10px;color:var(--text)}
+.content ul,.content ol{margin:6px 0 10px 22px}
+.content li{margin-bottom:3px}
+.content ul ul,.content ol ul{margin-top:4px}
+.content strong{color:var(--text);font-weight:600}
+.content em{color:var(--text-mid)}
+.content blockquote{margin:12px 0;padding:10px 16px;background:var(--card-bg);border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;color:var(--text-mid);font-style:italic;font-size:13px}
+.content blockquote p{color:var(--text-mid)}
+.content hr{border:none;border-top:1px solid var(--card-border);margin:18px 0}
+.content a{color:var(--adm);text-decoration:none}
+.content a:hover{text-decoration:underline}
+.content table{border-collapse:collapse;margin:12px 0;width:100%}
+.content th{background:var(--hover-bg);color:var(--text);font-size:12px;padding:7px 12px;text-align:left;border:1px solid var(--card-border)}
+.content td{padding:6px 12px;font-size:13px;border:1px solid var(--card-border);vertical-align:top}
+.content tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+/* strip bare <br> after block elements from bbcode newline injection */
+h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br,li>br:last-child{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1>Flavorium Universalis</h1>
+    <span class="sub">EU5 Mod</span>
+    <div class="spacer"></div>
+    <a class="tool-link" href="planner.html">Advance Planner &rarr;</a>
+  </header>
+  <div class="body">
+    <nav class="sidebar">
+      <div class="sidebar-section">Navigation</div>
+            <a class="lvl2" href="#overview">Overview</a>
+      <a class="lvl3" href="#balance-amp-compatibility-disclosure">Balance &amp; Compatibility Disclosure</a>
+      <a class="lvl2" href="#installation">Installation</a>
+      <a class="lvl2" href="#features">Features</a>
+      <a class="lvl3" href="#minister-trait-system">Minister Trait System</a>
+      <a class="lvl3" href="#synergy-events">Synergy Events</a>
+      <a class="lvl3" href="#minister-legacies">Minister Legacies</a>
+      <a class="lvl3" href="#negative-traits-amp-rehabilitation">Negative Traits &amp; Rehabilitation</a>
+      <a class="lvl3" href="#stepping-stone-traits-amp-progression">Stepping Stone Traits &amp; Progression</a>
+      <a class="lvl3" href="#court-rivalry-amp-cabal">Court Rivalry &amp; Cabal</a>
+      <a class="lvl3" href="#cabinet-duties">Cabinet Duties</a>
+      <a class="lvl3" href="#cabinet-composition-auto-modifiers">Cabinet Composition Auto-Modifiers</a>
+      <a class="lvl3" href="#war-council">War Council</a>
+      <a class="lvl3" href="#estate-faction-capture">Estate Faction Capture</a>
+      <a class="lvl3" href="#colonial-cabinet">Colonial Cabinet</a>
+      <a class="lvl3" href="#invasion-of-mexico">Invasion of Mexico</a>
+      <a class="lvl3" href="#balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</a>
+      <a class="lvl3" href="#overlord-subject-bonds">Overlord-Subject Bonds</a>
+      <a class="lvl3" href="#new-subject-types">New Subject Types</a>
+      <a class="lvl3" href="#era-advances">Era Advances</a>
+      <a class="lvl3" href="#new-estate-privileges-amp-government-reforms">New Estate Privileges &amp; Government Reforms</a>
+      <a class="lvl3" href="#event-categories">Event Categories</a>
+      <a class="lvl3" href="#hundred-years-war-flavor">Hundred Years War Flavor</a>
+      <a class="lvl3" href="#hussite-wars-flavor">Hussite Wars Flavor</a>
+      <a class="lvl3" href="#dynamic-ai-personalities">Dynamic AI Personalities</a>
+      <a class="lvl3" href="#game-rules">Game Rules</a>
+      <a class="lvl3" href="#country-starting-modifiers">Country Starting Modifiers</a>
+      <a class="lvl3" href="#coming-in-future-updates">Coming in Future Updates</a>
+      <a class="lvl2" href="#compatibility">Compatibility</a>
+      <a class="lvl2" href="#ai-use-disclosure">AI Use Disclosure</a>
+      <a class="lvl2" href="#feedback-amp-bugs">Feedback &amp; Bugs</a>
+    </nav>
+    <article class="content" id="content">
+      <h1 id="flavorium-universalis">Flavorium Universalis</h1><br>
+<br>
+<strong>Compatible with EU5 1.2.* | Multiplayer synchronized </strong><br>
+<br>
+<hr><br>
+<br>
+<h2 id="overview">Overview</h2><br>
+<strong>A note from the author:</strong><br>
+<blockquote>This mod is still in an early preview and not everything has been fully tested. Several subject paths and their event chains are underexplored:<br>
+ <ul><li>large late-game subjects, palatinates, and holy protectorates - and their event family&#39;s have yet to be tested.</li> <li>The changes to subjects culminating in the age of revolutions with the federalization system has not be rigously tested and will likely see more changes.</li> <li>not all character legacies have been verified and balanced.</li> <li>Cabinet situations like the war council and minister schemes still need more work. Along with adding remaining ones: the scholar&#39;s court, regency crisis, and federal/international congress.</li></ul> Balancing of new content is subject to change as more playtesting is done and other feedback comes in. <br>
+<br>
+ The game has been simulated in observer mode through to the 1800s a few times. <br>
+<br>
+ At this point I&#39;m looking for community thoughts on the new subject types, cabinet gameplay, balance, mexico situation, etc.</blockquote><br>
+Flavorium Universalis enhances the vanilla EUV experience across multiple areas:<br>
+<ul><li>Improved AI personality system with dynamic logic AND historical changes.</li>    <ul><li>Let the AI adjust its personality logically instead of randomly — it might react immediately to events or due to a build-up of circumstances.</li>        <li>Watch the great nations of history make historic shifts in their foreign policy.</li></ul>    <li>Transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows.</li>    <ul><li>Develop powerful traits over time through events.</li>        <li>Clash or collaborate (with you, each other, and foreign courts) based on their ideological leanings.</li>        <li>Leave lasting legacies when they retire or die.</li>        <li><strong>NEW:</strong> Ministers now scheme against each other — rivalries escalate through a three-stage event chain, while ideologically aligned ministers may form cabals and push joint agendas.</li>        <li><strong>NEW:</strong> Assign explicit duties to ministers — war council, domestic reform, diplomatic mission, colonial posting, and more — boosting related events and providing ongoing country modifiers.</li>        <li><strong>NEW:</strong> Cabinet composition now has aggregate effects — a court dominated by militarists, merchants, or clergy activates distinct auto-modifiers that reflect the character of your advisors as a whole.</li>        <li><strong>NEW:</strong> Ministers grow through stepping stone trait chains — starting as fumbling reformists or green adjutants and advancing through events into masters of their craft.</li>        <li><strong>NEW:</strong> Your war cabinet matters — military ministers drive war council events during conflicts, unlocking post-war reform proposals when you win.</li>        <li><strong>NEW:</strong> Post a minister overseas as a colonial governor — drive charter company events, navigate native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.</li></ul>    <li>A variety of new subject types gives you access to subject-meta like you never imagined:</li>    <ul><li>Small OPMs for powerful modifiers like cultural influence and naval governor capacity.</li>        <li>Low antagonism and control subjects for exerting progressively expanding influence on foreign states (akin to a Victoria 3 protectorate→puppet progression).</li>        <li>Powerful late-game subjects for organizing large empires and defining your sphere of influence.</li>        <li><strong>NEW:</strong> Long-term subjects now remember how you treated them — a multi-dimensional bond system tracks economic, military, political, cultural, and personal relationships across the Ages, determining how your subjects behave in the Age of Revolutions.</li></ul>    <li>Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more meaningful choices — catchup opportunities, balance, and playstyle specialization as you play through the ages.</li>    <ul><li>Many unlocks are sprinkled into the existing tech tree.</li>        <li>New micro-tech trees unlock from the Age of Discovery onward — branch and region locked, some hidden unless you meet the conditions.</li></ul>    <li>Historical flavor for the Hundred Years War, Hussite Wars, and more.</li>    <li><strong>NEW:</strong> The Invasion of Mexico — a new historical situation covering colonial conquest of Mesoamerica, with a native Mesoamerican Confederation that can resist the incursion, dedicated expedition casus belli, and 28+ events spanning the conquest and its aftermath.</li>    <li><strong>NEW:</strong> A literacy rebalance system — a global baseline adjustment to pop literacy paired with region-specific catch-up advances and per-estate library bonuses, giving Western Europe, colonial powers, and East Asia meaningful education differentiation.</li></ul><br>
+<h3 id="balance-amp-compatibility-disclosure">Balance &amp; Compatibility Disclosure</h3><br>
+<br>
+The mod is mostly additive but does replace some vanilla laws, advances, reforms — however, it adds no replace_paths and does not remove any vanilla content. I wouldn&#39;t advise using this with an existing save due to the balance and country starting condition changes.<br>
+<br>
+This mod adds many new sources of modifiers: cabinet members, permanent and temporary country modifiers, new advances, subject type bonuses, government reforms, cabinet duty assignments, auto-modifiers from cabinet composition profiles, subject bond payoff events, and more. It will change game balance significantly and may not play nicely with other balance mods.<br>
+<br>
+<strong>Balance changes that apply to every game (not toggleable by game rule):</strong><br>
+<ul><li><strong>Literacy nerf</strong> — Three vanilla advances are overridden. <strong>Written Alphabet</strong> baseline is reduced from +5 to +2 global max literacy. <strong>Printing Press</strong> and <strong>Innovativeness</strong> now raise upper-class literacy (nobles, clergy, burghers) rather than generic global literacy — masses no longer benefit directly from these advances. Regional catch-up advances partially restore literacy for Western Europe, colonial powers, and East Asia. Libraries now grant per-estate literacy bonuses instead of generic local literacy.</li><li><strong>Culture capacity nerf</strong> — Several era advances and laws reduce <strong>cultures_capacity</strong>, making cultural integration of diverse realms somewhat harder and more costly than in vanilla.</li></ul><br>
+<strong>Balance changes gated by game rules (all default on, all toggleable):</strong><br>
+<ul><li>France and England starting modifiers (Hundred Years War Flavor rule)</li><li>Mamluk foreign rule strain starting modifiers (Mamluks — Foreign Rule Strain rule)</li><li>Ottoman colonization restriction (Ottomans — Colonization rule)</li><li>France Lowlands antagonism at game start (France — Lowlands Containment rule)</li></ul><br>
+Otherwise it should be broadly compatible. See the Compatibility section at the bottom for the full test mod list.<br>
+<br>
+<hr><br>
+<br>
+<h2 id="installation">Installation</h2><br>
+<br>
+Subscribe on the Steam Workshop, then enable the mod in the EU5 launcher before starting a new game. All game rules default to <strong>on</strong> and can be toggled in the game setup screen (split between the gameplay and flavor tabs).<br>
+<br>
+<hr><br>
+<br>
+<h2 id="features">Features</h2><br>
+<br>
+<h3 id="minister-trait-system">Minister Trait System</h3><br>
+<br>
+Cabinet members accumulate traits through gameplay events. Traits reflect a minister&#39;s background, competencies, and political philosophy — and they interact with each other, creating emergent synergies and tensions. <br>
+<blockquote>Unfortunately as of 1.2 characters can only have one cabinet trait so we are a bit limited when it comes to giving country modifiers conditional to character cabinet employement.</blockquote><br>
+<strong>Core Cabinet Traits (24)</strong><br>
+Tier 1 simple traits, Tier 2 kiss-curse trade-offs with real downsides, Tier 3 attribute-scaled triads covering integration, antagonism, exploration, and more.<br>
+<br>
+<strong>Age Traits (36)</strong><br>
+Era-specific traits granted through historical period events — Renaissance humanists, Reformation theologians, Absolutist administrators, Revolutionary agitators.<br>
+<br>
+<strong>Conditional Traits (75)</strong><br>
+Dynamic traits that spawn based on your realm&#39;s development level, societal value axes (17 ideological pairs), regional/religious context, military specialization, parliamentary activity, and specific game actions.<br>
+<br>
+<strong>Negative Traits (9)</strong><br>
+Acquired through underperformance events; each has a dedicated rehabilitation chain that removes the trait when you address the underlying problem.<br>
+<br>
+<em>Total: 144+ traits</em><br>
+<br>
+<strong>Notable traits:</strong><br>
+<ul><li><strong>Iron Disciplinarian</strong> — Order, hierarchy, obedience — these are the tools of this advisor&#39;s trade.</li><li><strong>Shadow Counselor</strong> — This advisor operates in the spaces between official channels, weaving a web of informants and leverage that would make a spider envious.</li><li><strong>Progressive Reformist</strong> — This advisor burns with the conviction that the old ways must give way to the new.</li><li><strong>War Hawk</strong> — This advisor&#39;s blood runs hot at the smell of gunpowder.</li><li><strong>Master Integrator</strong> — Exceptional in every dimension, this advisor commands the full sweep of administrative, military, and diplomatic knowledge.</li><li><strong>Master Statesman</strong> — Rare is the advisor who can read a room in three languages and leave everyone feeling they have won.</li><li><strong>Grand Chancellor</strong> — There are diplomats, and there are architects of foreign policy — this advisor is the latter.</li><li><strong>Tribune of the People</strong> — A cabinet minister beloved by the commons is a rare and powerful thing.</li><li><strong>Philosopher King</strong> — To be governed by a philosopher-king is the dream of every idealist and the nightmare of every opportunist.</li></ul><br>
+<hr><br>
+<br>
+<h3 id="synergy-events">Synergy Events</h3><br>
+<br>
+When ministers share complementary traits, synergy events fire during the yearly pulse and grant temporary country modifiers. There are <strong>26 standard synergies</strong>, <strong>10 dual-role synergies</strong> (cabinet × religious figure on the same minister), and <strong>12 cross-country synergy events</strong> that fire when your ministers interact with neighboring courts.<br>
+<br>
+Examples of synergy effects:<br>
+<ul><li><strong>Court of Learning</strong> (Scholar + Learned Courtier): +8% research, +4% literacy, +8% institution growth</li><li><strong>Iron Hegemony</strong> (Iron Disciplinarian + War Hawk): +5% discipline, -10% all army costs, +10% antagonism</li><li><strong>Caliphate Network</strong> (Caliphate Diplomat + Grand Vizier): +2 diplomatic reputation, -12% antagonism, +1 diplomatic capacity</li><li><strong>Shadow Network Activated</strong> (Shadow Counselor + Espionage Director): +20 power projection, +2 diplomatic rep, +20% spy network</li></ul><br>
+<hr><br>
+<br>
+<h3 id="minister-legacies">Minister Legacies</h3><br>
+<br>
+Senior ministers can be recognized before they retire, granting them the <strong>Retired Legend</strong> trait. When they eventually die — or if they hold a legendary title (Grand Vizier, Tribune, Navigator, Philosopher King) — they leave a <strong>permanent legacy modifier</strong> on your country. Legendary deaths grant stronger legacies than standard retirements. Consecrated legacy variants (granted at death) are more powerful than the retirement versions. They may also seek out a protégé whom they wish to impart their wisdom upon.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="negative-traits-amp-rehabilitation">Negative Traits &amp; Rehabilitation</h3><br>
+<br>
+Ministers who underperform acquire negative traits through yearly events. Each negative trait has a dedicated <strong>rehabilitation chain</strong>: if you address the underlying problem (stabilize finances, reform institutions, remove the minister&#39;s estate privileges, etc.), the negative trait is removed and the minister emerges stronger.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="stepping-stone-traits-amp-progression">Stepping Stone Traits &amp; Progression</h3><br>
+<br>
+Ministers can now enter <strong>progressive trait chains</strong> — starting from a Tier 0 entry trait and advancing into genuine specialists over the course of a lifespan:<br>
+<ul><li><strong>Chain A — The Reformer&#39;s Path:</strong> fumbling_reformist → &#8230; → master_reformer (driven by Domestic Reform duty)</li><li><strong>Chain C — The Diplomat&#39;s Ascent:</strong> tentative_envoy → &#8230; → master_statesman</li><li><strong>Chain D — Military Hardening:</strong> green_adjutant → &#8230; → standing_army_advocate or defensive_commander</li><li><strong>Chain F — The Fiscal Path:</strong> clumsy_accountant → &#8230; → treasury/prosperity specialist</li><li><strong>Chain E — Colonial Pioneer:</strong> frontier_administrator → returned_colonial_governor (driven by Colonial Posting duty)</li></ul><br>
+Entry traits are mild negatives — they are the starting point, not the destination. Progress is tracked per minister via event variables and advances. Assigning a minister to the matching duty doubles their progression rate.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="court-rivalry-amp-cabal">Court Rivalry &amp; Cabal</h3><br>
+<br>
+Ministers with opposing ideological traits build <strong>court tension</strong> over time. When court tension reaches its threshold, a three-stage rivalry chain fires:<br>
+<ul><li><strong>The Minister&#39;s Complaint</strong> — the rival ministers clash and the ruler must take sides</li><li><strong>A Letter Unsealed</strong> — whispers turn to written evidence; the feud becomes harder to contain</li><li><strong>The Faction Hardens</strong> — the court fractures along factional lines, forcing a resolution</li></ul><br>
+Conversely, ideologically aligned ministers can form <strong>cabals</strong> — political compacts that let them push joint agendas. Cabinet alliances grant temporary bonus modifiers but create factions the ruler may eventually need to manage.<br>
+<br>
+The <strong>Purge Rival</strong> character interaction lets rulers act before tensions escalate, at the cost of minister loyalty.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="cabinet-duties">Cabinet Duties</h3><br>
+<br>
+Assign ministers to explicit roles to boost related event systems and gain ongoing country modifiers:<br>
+<ul><li><strong>War Council</strong> — improves discipline and morale recovery; drives war council events during conflicts</li><li><strong>Domestic Reform</strong> — reduces stability cost; doubles stepping stone progression rate</li><li><strong>Diplomatic Mission</strong> — diplomatic effect; gates diplomatic interaction events</li><li><strong>Scholarly Inquiry</strong> — research effect; boosts scholarly events (Age 5–6)</li><li><strong>Religious Oversight</strong> — religious influence effect; gates confessional tension events</li><li><strong>Colonial Posting</strong> — sends a minister overseas; unlocks colonial dispatch, corruption, and crisis events</li><li><strong>Free Hands</strong> — a &#39;no action&#39; assignment; minister attends to whatever the court requires, all idle events fire at baseline rate</li></ul><br>
+Multiple ministers may share Free Hands. Other duties are exclusive.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="cabinet-composition-auto-modifiers">Cabinet Composition Auto-Modifiers</h3><br>
+<br>
+Your cabinet now speaks as a whole, not just as individual ministers. When the cabinet matches a composition profile, an <strong>aggregate auto-modifier</strong> activates and persists until the profile no longer holds:<br>
+<ul><li><strong>Warlord Court</strong> — two or more military specialists; your court thinks and breathes war</li><li><strong>Merchant Republic Spirit</strong> — two or more commercial/fiscal specialists; a court that counts its coins</li><li><strong>Enlightened Court</strong> — two or more scholarly or empiricist ministers; ideas flourish</li><li><strong>Court Paralysis</strong> — opposing ideologues deadlock the cabinet; efficiency suffers</li><li><strong>Entrenched Court</strong> — three or more conservative ministers; reform slows, stability holds</li><li><strong>Balanced Court</strong> — no single trait category dominates; modest bonuses across the board</li><li><strong>Nobles / Burghers / Clergy Court Captured</strong> — one estate holds a majority in the cabinet; estate power and influence modifiers follow</li></ul><br>
+<hr><br>
+<br>
+<h3 id="war-council">War Council</h3><br>
+<br>
+Your military ministers now drive outcomes during wars:<br>
+<ul><li><strong>The Council of War</strong> — fires annually while at war; military traits shape whether you push for offensive action, defensive consolidation, or emergency resupply</li><li><strong>Financing the War</strong> — when the treasury is strained during a conflict, ministers debate emergency measures</li><li><strong>The General&#39;s Request</strong> — a supreme commander or outdated general pushes for authority or retirement</li><li><strong>Post-war reform proposals</strong> — winning a war unlocks a short window for standing army reform, supply reform, or fortification doctrine proposals, driven by which military traits are present</li><li><strong>The Outdated General</strong> — veterans past their prime can be formally retired with honor during a conflict</li></ul><br>
+<hr><br>
+<br>
+<h3 id="estate-faction-capture">Estate Faction Capture</h3><br>
+<br>
+When a single estate dominates the cabinet — two or more ministers bearing Noble, Burgher, or Clergy affiliation traits — the captured-court auto-modifier activates and faction events begin firing:<br>
+<ul><li><strong>The Nobles Demand</strong> — the noble faction pushes for sweeping privilege; refusal risks minister loyalty</li><li><strong>The Merchant Compact</strong> — burgher ministers push a trade agenda; compliance or friction</li><li><strong>The Prelates Move</strong> — clergy ministers press for religious influence; you decide how much power the church gets</li></ul><br>
+Balancing your cabinet composition is now a genuine strategic concern.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="colonial-cabinet">Colonial Cabinet</h3><br>
+<br>
+Post a minister overseas as a <strong>Colonial Posting</strong> to unlock a dedicated colonial event chain:<br>
+<ul><li><strong>The Governor&#39;s Dispatch</strong> — regular flavor reports from the posted minister; invest, extract, or acknowledge their work</li><li><strong>Corruption in the Colony</strong> — risk events when the minister&#39;s character interacts with colonial wealth</li><li><strong>A Native Uprising</strong> — the posted minister must manage colonial resistance</li><li><strong>Fever in the Colony</strong> — the minister faces tropical disease; their traits and your choices shape the outcome</li></ul><br>
+Charter company owners also receive dedicated events:<br>
+<ul><li><strong>The Company&#39;s Accounts</strong> — the minister audits the company ledgers; windfall or investigation</li><li><strong>A Monopoly Dispute</strong> — merchant-aligned ministers clash over company privileges</li><li><strong>The Colonial Petition</strong> — late-game decolonization pressure chain (Ages 5–6) that can lead to a Defection or a negotiated Compromise</li></ul><br>
+<hr><br>
+<br>
+<h3 id="invasion-of-mexico">Invasion of Mexico</h3><br>
+<br>
+A historical situation that fires when a colonial or foreign power establishes a foothold in Mesoamerica (or the adjacent Caribbean and Central America by 1540). The situation persists until all independent native Mesoamerican powers are subjugated, or until 1600.<br>
+<ul><li><strong>The Mesoamerican Confederation</strong> — native powers can unite under a defensive confederation international organization, sharing military access and coordinating resistance against colonial incursion</li><li><strong>Expedition Casus Belli</strong> — colonial powers gain a dedicated CB for pressing territorial claims against Mesoamerican states during the situation window</li><li><strong>Conquest events</strong> — ~28 events covering the expeditioner&#39;s dilemmas, native reactions, confederation formation, diplomatic overtures, and the resolution of the situation as the balance of power shifts</li><li><strong>Generic actions</strong> — the confederation leader can call member states to arms; colonial powers can press terms or offer negotiated settlement</li></ul><br>
+Gated by the <strong>C&amp;C: Invasion of Mexico</strong> game rule (default: on).<br>
+<br>
+<hr><br>
+<br>
+<h3 id="balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</h3><br>
+<br>
+<strong>Literacy Nerfs</strong> — gives different regions and estates meaningfully different educational trajectories. This is targeted at reducing peasant literacy and thus pop promotion, with europe being able to recoup some of this with new follow-on advancements:<br>
+<ul><li><strong>Global baseline adjustment</strong> — a modest nerf to vanilla&#39;s universal pop literacy, creating more differentiation between literate and non-literate societies</li><li><strong>Library building rework</strong> — vanilla libraries granted generic local literacy; they now provide per-estate bonuses (nobles, clergy, burghers) rather than undifferentiated literacy for all pops</li><li><strong>Regional catch-up advances</strong> — targeted advances that partially restore literacy for specific world regions:</li><ul><li><strong>Western Europe (Age 2)</strong> — mass literacy driven by Innovativeness; soldiers, peasants, laborers</li><li><strong>Western Europe (Age 4)</strong> — Printing Press follow-on; burghers, soldiers, peasants, laborers</li><li><strong>Colonial powers (Age 4)</strong> — colonial ecclesiastical networks; burgher and soldier literacy for powers with active colonial nations</li><li><strong>East Asia (Age 4)</strong> — classical examination tradition; noble and burgher literacy for Japan and China</li></ul></ul><br>
+<strong>Culture Capacity Nerfs</strong> — Several vanilla advances are overridden to halve their <strong>cultures_capacity</strong> bonus, making it harder and more expensive to maintain large multi-cultural realms:<br>
+<ul><li><strong>Cultural Acceptance</strong> (Age 1, universal) — halved from vanilla value to <strong>+0.5</strong></li><li><strong>Vibrant Court</strong> (Age 2, universal) — halved to <strong>+0.5</strong></li><li><strong>Cultural Ties</strong> (Age 4 Adm, universal) — reduced to <strong>+1</strong></li><li><strong>Persian in the Court</strong> (Age 3, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Millets</strong> (Age 2, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Foreign Cultural Law</strong> (law) — the <em>Allow Foreign Rituals</em> option is changed from a flat <strong>+1</strong> culture capacity to <strong>+20%</strong> relative, reducing its value for small realms</li><li><strong>Magyar Supremacy</strong> (Nobles estate privilege, Hungary) — <strong>-33%</strong> culture capacity modifier</li></ul><br>
+<hr><br>
+<br>
+<h3 id="overlord-subject-bonds">Overlord-Subject Bonds</h3><br>
+<br>
+Long-term subjects now have <strong>living relationship histories</strong>. A five-dimensional bond system tracks your relationship with each significant subject across the game:<br>
+<ul><li><strong>Economic</strong> — how you tax and invest in the subject</li><li><strong>Military</strong> — whether you use them as cannon fodder or shield them</li><li><strong>Political</strong> — how much autonomy you grant or revoke</li><li><strong>Cultural</strong> — integration vs. preservation of local identity</li><li><strong>Personal</strong> — how your rulers and their court interact over generations</li></ul><br>
+Bond scores accumulate silently through event chains specific to each subject type (colonial nations, governorates, palatinates, puppets, dependencies, marches, federal subjects). Periodic <strong>status reveal events</strong> surface what your subjects actually think of you.<br>
+<br>
+In the <strong>Age of Revolutions</strong>, accumulated bond scores resolve into <strong>one-shot payoff events</strong> — subjects whose bonds are high become stalwart partners; those with poor bonds may push for independence, defect to rivals, or demand constitutional concessions.<br>
+<br>
+Gated by the <strong>C&amp;C: Overlord-Subject Bonds</strong> game rule (default: on).<br>
+<br>
+<hr><br>
+<br>
+<h3 id="new-subject-types">New Subject Types</h3><br>
+<br>
+There are many new subject types to diversify and enhance subject-based gameplay:<br>
+<ul><li>Progressively tighten your control on loosely aligned states, although they can sometimes be more troublesome than they are worth&#8230;</li><li>Release special OPM states for specific benefits — cultural, research, prestige, naval governor capacity.</li><li>Powerful marcher and governorate subjects during the imperial era, paving the way for Napoleonic-era consolidation, rebellions, and breakaway regions.</li></ul><br>
+Some subject types require a matching estate privilege or government reform (at least one when there are options):<br>
+<ul><li>Elite Enclave</li><li>Scientific College</li><li>Naval Administration</li><li>Provincial Governorate</li><li>Tax Farm</li><li>Military March</li></ul><br>
+<strong>Personal Union</strong><br>
+<ul><li><strong>Junior Partner</strong> <em>(unlocks Age 2)</em> — A Junior Partner retains its own ruler and conducts independent foreign policy, yet acknowledges the preeminence of its overlord.</li><li><strong>Lesser Partner</strong> <em>(unlocks Age 2)</em> — A Lesser Partner is the maturation of a Junior Partner after fifty years of shared dynasty.</li></ul><br>
+<strong>Shadow / Client</strong><br>
+<ul><li><strong>Shadow State</strong> <em>(unlocks Age 2)</em> — A Shadow State is formally independent, bound only by secret treaty and discreet arrangement.</li><li><strong>Client State</strong> <em>(unlocks Age 3)</em> — A Client State is a nation brought into the orbit of a stronger power through treaty or released provinces.</li><li><strong>Puppet State</strong> <em>(unlocks Age 5)</em> — A Puppet State is a formerly independent nation brought under full administrative supervision of its overlord.</li></ul><br>
+<strong>Elite &amp; Cultural</strong><br>
+<ul><li><strong>Elite Enclave</strong> <em>(unlocks Age 2)</em> — An Elite Enclave is a culturally kindred domain granted self-governance in recognition of its noble heritage.</li><li><strong>Palatinate</strong> <em>(unlocks Age 4)</em> — A Palatinate is an Elite Enclave that has grown into a semi-sovereign power — the count palatine may now declare war, call levies, and join campaigns.</li><li><strong>Artists&#39; Commune</strong> <em>(unlocks Age 2)</em> — An Artists Commune is a self-governing community of painters, sculptors, and craftsmen whose works redound to their patron&#39;s glory.</li><li><strong>Scientific College</strong> <em>(unlocks Age 4)</em> — A Scientific College is a scholarly institution of a religiously governed polity, free to pursue learning on behalf of its patron.</li><li><strong>Naval Administration</strong> <em>(unlocks Age 3)</em> — A Naval Administration is a port town granted semi-independence to manage the maritime logistics of its patron&#39;s fleet.</li></ul><br>
+<strong>Trade</strong><br>
+<ul><li><strong>Associated Republic</strong> <em>(unlocks Age 2)</em> — An Associated Republic is an independent republican state under formal patronage.</li><li><strong>Chartered Company</strong> <em>(unlocks Age 5)</em> — A Chartered Company is a royally chartered trading corporation operating in distant lands on behalf of its overlord.</li></ul><br>
+<strong>Governance</strong><br>
+<ul><li><strong>Protectorate</strong> <em>(unlocks Age 3)</em> — A Protectorate is a weaker neighboring state under the protection of a stronger power without formal subjugation.</li><li><strong>Crown Dependency</strong> <em>(unlocks Age 2)</em> — A Crown Dependency is a realm bound to its overlord by ties of shared dynasty — the same ruler family governs both courts without a formal personal union.</li><li><strong>Holy Protectorate</strong> <em>(unlocks Age 4)</em> — A Holy Protectorate is a coreligionist state taken under the spiritual patronage of a larger power.</li><li><strong>Provincial Governorate</strong> <em>(unlocks Age 5)</em> — A high-autonomy administrative region governed by a Crown-appointed magnate.</li><li><strong>Tax Farm</strong> <em>(unlocks Age 5)</em> — An exploitative extraction arrangement in which a powerful lord manages revenue collection in exchange for a portion of the proceeds.</li><li><strong>Military March</strong> <em>(unlocks Age 5)</em> — An offensive border vassal given special military charter to project power beyond our frontiers.</li></ul><br>
+<hr><br>
+<br>
+<h3 id="era-advances">Era Advances</h3><br>
+<br>
+New advances have been added across the ages to unlock new subject types and reforms, enhance regional flavor, add gameplay variability, and provide some balancing.<br>
+Some are age-branch (Adm/Dip/Mil) specific — others cultural, regional, or country based.<br>
+<br>
+Many are mixed into existing tech trees, but there are also new mini-trees in each age past the Renaissance. Mini-trees also have age-branch advances; some have follow-on advances which do not appear in the age picker UI.<br>
+<br>
+<strong>Age of Renaissance</strong> (8 advances)<br>
+<ul><li><em>[DIP]</em> <strong>Royal Union Network</strong> — Unlocks: <strong>Junior Partner, Lesser Partner</strong>. Personal unions need not be passive inheritances.</li><li><em>[DIP]</em> <strong>Shadow Diplomacy</strong> — Unlocks: <strong>Shadow State</strong>. Not all influence announces itself.</li><li><em>[ADM]</em> <strong>Artistic Patronage</strong> — Unlocks: <strong>Artists&#39; Commune</strong>. To commission great art is to leave one&#39;s mark on time itself.</li><li><em>[MIL]</em> <strong>Noble Patronage</strong> — Unlocks: <strong>Elite Enclave</strong>. A wise ruler recognizes that the high nobility, given honored autonomy, will return loyalty rather than resentment.</li><li><em>[DIP]</em> <strong>Republican Patronage</strong> — Unlocks: <strong>Associated Republic</strong>. Republics possess a practical genius that monarchies would do well to cultivate.</li><li><em>[ADM]</em> <strong>Dynastic Governance</strong> — Unlocks: <strong>Crown Dependency</strong>. The web of royal marriages binding European courts together need not remain ceremonial.</li><li><em>[MIL]</em> <strong>Holy Patronage</strong> — Unlocks: <strong>Holy Protectorate</strong>. Faith is a bond stronger than treaty.</li><li><em>[ADM]</em> <strong>Popular Literacy</strong> — The gradual spread of written culture — through vernacular scripture, guild records, parish registers, and civic pamphlets — has begun to reach beyond cathedral schools and university halls into the homes of ordinary soldiers and rural folk.</li>  +2 peasant literacy, +2 laborer literacy, +5 soldier literacy <em>(Western Europe capital)</em></ul><br>
+<strong>Age of Discovery</strong> (15 advances)<br>
+<ul><li><em>[ADM]</em> <strong>Client State Diplomacy</strong> — Unlocks: <strong>Client State</strong>. By offering protection in exchange for tribute, a great power can extend its influence into neighboring territories without the expense of outright conquest.</li><li><em>[DIP]</em> <strong>Naval Charter</strong> — Unlocks: <strong>Naval Administration</strong>. A great fleet requires not only ships but infrastructure: dry docks, provisioning networks, and merchant expertise.</li><li><em>[MIL]</em> <strong>Protectorate Rights</strong> — Unlocks: <strong>Protectorate</strong>. The law of nations permits a stronger power to declare itself the protector of a weaker neighbor, extending a shield without requiring formal subjugation.</li><li><em>[All]</em> <strong>Late Renaissance Ideas</strong> — The flowering of humanist thought and classical revival that defined the Renaissance has not ended with a new age — our scholars and administrators continue to deepen its fruits in literacy, reason, and civic order.</li>  +1 max literacy, +1 burgher literacy
+<li><em>[All]</em> <strong>Natural Philosophy</strong> — Renaissance thinkers turned their gaze from scripture toward nature itself, cataloguing plants, studying the human body, and laying the ground for the empirical sciences.</li>  +2 life expectancy, +5% disease resistance
+<li><em>[ADM]</em> <strong>Civic Humanism</strong> — Humanist thinkers argue that civic virtue — active participation in governance, rhetoric, and public duty — is the highest expression of human excellence.</li>  -5% stability cost, +5% cabinet efficiency
+<li><em>[All]</em> <strong>Church Patronage of Learning</strong> — The Church has long been a patron of art and scholarship.</li>  +10% institution growth, +5% pop conversion <em>(Catholic or Orthodox or Lutheran or Calvinist or Anglican)</em>
+<li><em>[All]</em> <strong>Scholastic Reform</strong> — Catholic theologians have fused Aristotelian logic with Christian doctrine, creating a rigorous intellectual culture in our monasteries and cathedral schools.</li>  -5% stability cost, +1 clergy literacy <em>(Catholic)</em>
+<li><em>[All]</em> <strong>Islamic Observatory Tradition</strong> — The great observatories of Samarkand, Cairo, and Istanbul represent a centuries-long Islamic tradition of precise astronomical and medical knowledge.</li>  +2 life expectancy, +10% dip range <em>(Sunni or Shia or Ibadi, Middle East capital)</em>
+<li><em>[All]</em> <strong>Polymath Networks</strong> — The great cities of the Islamic world are home to polymaths who move freely between mathematics, medicine, philosophy, and engineering.</li>  +5% disease resistance, +5% cultural influence <em>(Middle East capital)</em>
+<li><em>[All]</em> <strong>Renaissance Court Culture</strong> — The princely courts of Italy have become models of refined learning and artistic patronage.</li>  +5% cultural influence, +3 power projection <em>(Monarchy)</em>
+<li><em>[All]</em> <strong>Civic Republican Ideals</strong> — Renaissance republicanism drew on ancient Rome to argue that free citizens deliberating together produce wiser law than any monarch alone.</li>  +5% legislative efficiency, -5% stability cost <em>(Republic)</em>
+<li><em>[All]</em> <strong>Classical Revival</strong> — Neo-Confucian scholars have renewed attention to the classical texts of antiquity, re-examining the Four Books and Five Classics with fresh commentary.</li>  +5 max literacy, +5% cabinet efficiency <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Examination System Refinement</strong> — Generations of scholarly refinement have made the examination system an extraordinarily precise instrument for selecting capable administrators.</li>  +10% cabinet efficiency, -5% stability cost <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Italian Masters</strong> — The workshops of Florence, Venice, and Milan have produced an unbroken line of masters in painting, sculpture, and architecture.</li>  +10% art skill, +5% cultural influence <em>(Italian culture)</em></ul><br>
+<strong>Age of Reformation</strong> (17 advances)<br>
+<ul><li><em>[ADM]</em> <strong>Scholarly Orders</strong> — Unlocks: <strong>Scientific College</strong>. The great religious orders have long been the guardians of learning.</li><li><em>[DIP]</em> <strong>Palatinate System</strong> — Unlocks: <strong>Palatinate</strong>. The most elevated noble enclaves may be recognized as palatinates — sovereign-within-sovereign territories whose counts wield near-regal authority.</li><li><em>[MIL]</em> <strong>Military Academy</strong> — Unlocks: <strong>Military Academy</strong>. The informal apprenticeship of knights and captains has given way to organized study of strategy, logistics, and the art of war.</li><li><em>[All]</em> <strong>Late Discovery Ideas</strong> — A generation of explorers has mapped the contours of a world far larger than our ancestors imagined.</li>  +100 trade range, +150 colonial range
+<li><em>[All]</em> <strong>Systematic Cartography</strong> — Where early explorers navigated by rumor and estimation, a new generation of cartographers brings mathematical precision to the art of the map.</li>  +100 trade range, +10% dip range
+<li><em>[DIP]</em> <strong>Colonial Consolidation</strong> — The era of reckless discovery is giving way to careful consolidation.</li>  +3 subject loyalty, +10% integration speed
+<li><em>[All]</em> <strong>Maritime Republic Trade Networks</strong> — The mercantile republics have long understood that profit lies not in territory but in the control of exchange.</li>  +10% merchant power, +2% maritime merchant power <em>(Republic)</em>
+<li><em>[All]</em> <strong>Maritime Tribute Networks</strong> — Our great fleets have long projected power through tribute relationships with maritime peoples across the seas.</li>  +150 naval range, +3 subject loyalty <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Missionary Expansion</strong> — Faith follows the flag.</li>  +10% pop conversion, +100 colonial range <em>(Catholic or Lutheran or Calvinist or Anglican)</em>
+<li><em>[All]</em> <strong>Colonial Ecclesiastical Orders</strong> — The great religious orders — Dominicans, Franciscans, Jesuits — have established missions across our colonial territories, building schools and churches that anchor European civilization in the new world.</li>  +10% institution growth, +100 colonial range <em>(Catholic, Europe capital, has Colonial Nation subject)</em>
+<li><em>[All]</em> <strong>Iberian Colonial Doctrine</strong> — Spain and Portugal have developed a sophisticated theory of colonial administration: encomienda grants, viceroyalties, and a transatlantic commercial system that channels the wealth of new worlds to Iberian coffers.</li>  +200 colonial range, +5% naval morale <em>(Iberian culture)</em>
+<li><em>[All]</em> <strong>Atlantic Fleet Doctrine</strong> — The carrack and galleon — heavily armed, deep-hulled ships capable of crossing oceans — represent an Iberian mastery of oceanic warfare.</li>  +15% heavy ship power, +5% naval morale <em>(Iberian culture)</em>
+<li><em>[All]</em> <strong>Overland Trade Routes</strong> — While European powers struggle to find sea routes around our lands, we command the ancient arteries of overland trade: the Silk Road, the incense routes, the great caravans that have connected East and West for millennia.</li>  +150 trade range, +25 logistics distance <em>(Sunni or Shia or Ibadi)</em>
+<li><em>[All]</em> <strong>Silk Road Revival</strong> — By securing the caravan routes, investing in caravanserais, and negotiating safe passage agreements, we restore the Silk Road to something of its former glory — channeling the wealth of Asia through our markets.</li>  +150 trade range, +15% dip range, +10% merchant power <em>(Sunni or Shia or Ibadi, Middle East capital or Central Asia capital)</em>
+<li><em>[ADM]</em> <strong>Mass Printing Reaches the Commons</strong> — A generation after the printing press transformed elite discourse, cheap almanacs, ballads, and vernacular Bibles have begun reaching villages and barracks.</li>  +5 burgher literacy, +5 soldier literacy, +3 peasant literacy, +3 laborer literacy <em>(Western Europe capital)</em>
+<li><em>[ADM]</em> <strong>Colonial Parish Networks</strong> — Mission schools and parish churches, planted alongside trading posts and plantations, have created a literate colonial burgher class capable of managing distant accounts, recording land surveys, and corresponding with the metropole.</li>  +2 burgher literacy, +2 soldier literacy <em>(Europe capital, has Colonial Nation subject)</em>
+<li><em>[ADM]</em> <strong>Commercial and Scholarly Printing</strong> — The mature printing industries of our great cities now produce not only classical texts for examination scholars but popular encyclopaedias, commercial manuals, and popular fiction for a broad merchant readership.</li>  +5 noble literacy, +5 burgher literacy <em>(East Asia capital)</em></ul><br>
+<strong>Age of Absolutism</strong> (21 advances)<br>
+<ul><li><em>[DIP]</em> <strong>Naval Administration</strong> — The state establishes a permanent admiralty board to oversee distant naval stations, extending royal control over the seas.</li><li><em>[DIP]</em> <strong>Puppet State Administration</strong> — Unlocks: <strong>Puppet State</strong>. Shadow influence must eventually give way to direct administration.</li><li><em>[DIP]</em> <strong>Chartered Trading Companies</strong> — Unlocks: <strong>Chartered Company</strong>. The merchant classes have demonstrated an unparalleled capacity for organizing commerce at global scale.</li><li><em>[ADM]</em> <strong>Provincial Governance</strong> — Unlocks: <strong>Provincial Governorate</strong>. A formalized system of Crown-appointed governorates allows the realm to extend administrative reach over distant regions without direct annexation.</li><li><em>[MIL]</em> <strong>Tax Farming</strong> — Unlocks: <strong>Tax Farm</strong>. Contracting the collection of revenues to powerful local lords — at a price.</li><li><em>[MIL]</em> <strong>Military Marches</strong> — Unlocks: <strong>Military March</strong>. Designating border territories as military marches creates offensive buffers that extend our power at the frontier.</li>  <em>(has Military Academy subject, has Elite Enclave subject or has Palatinate subject)</em>
+<li><em>[All]</em> <strong>Late Reformation Ideas</strong> — A century of religious upheaval has exhausted many, but its legacy is real: confessions are clearer, institutions more self-aware, and hard-won settlements give the realm a cautious stability that prior generations could not imagine.</li>  -5% stability cost, +5% pop conversion
+<li><em>[ADM]</em> <strong>Confessional State Building</strong> — The lesson drawn from the Wars of Religion is that a stable realm requires a unified confession — or at least a carefully managed one.</li>  +1 reform slots
+<li><em>[All]</em> <strong>Protestant Church-State</strong> — Protestant reformers insisted that the Word of God, accessible to all who can read, must be the foundation of a Christian realm.</li>  +5 max literacy, +5% cabinet efficiency <em>(Lutheran or Calvinist or Anglican)</em>
+<li><em>[All]</em> <strong>Lutheran Educational Legacy</strong> — Luther&#39;s insistence on every Christian reading Scripture for themselves drove the establishment of parish schools across Protestant Europe.</li>  +5 max literacy, -5% stability cost <em>(Lutheran or Calvinist or Anglican, Europe capital)</em>
+<li><em>[All]</em> <strong>Catholic Confessional Legacy</strong> — The Council of Trent revitalized Catholic institutions, clarifying doctrine, reforming the clergy, and establishing new religious orders dedicated to education and pastoral care.</li>  +10% institution growth, -5% stability cost <em>(Catholic)</em>
+<li><em>[All]</em> <strong>Jesuit Reform Networks</strong> — The Society of Jesus operates schools, universities, and missions across three continents, transmitting the methods of rigorous Tridentine Catholicism wherever European colonialism has reached.</li>  +10% institution growth, +100 colonial range <em>(Catholic, Europe capital, has Colonial Nation subject)</em>
+<li><em>[All]</em> <strong>Confessional Consolidation</strong> — In an age when European powers fight over doctrine, Islamic rulers face their own choices between Sunni orthodoxy, Shia devotion, and syncretic practice.</li>  +10% pop conversion, +3 power projection <em>(Sunni or Shia or Ibadi)</em>
+<li><em>[All]</em> <strong>Millet Administrative System</strong> — The Ottoman millet system, which grants recognized religious communities legal autonomy under their own institutions, has proven a remarkably effective tool for governing a diverse empire.</li>  +10% integration speed, +3 subject loyalty <em>(Sunni or Shia or Ibadi, Middle East capital)</em>
+<li><em>[All]</em> <strong>Post-War Religious Settlement</strong> — Decades of religious war have produced exhausted pragmatism: most rulers now accept that forcing universal religious conformity is too costly.</li>  +1 tolerance (heretic)
+<li><em>[All]</em> <strong>Westphalian Sovereignty Doctrine</strong> — The Peace of Westphalia established a new framework for European politics: states are sovereign within their own borders, and the principle of cuius regio, eius religio gives rulers authority over their realms&#39; confessional identity.</li>  +10% dip range, +3 subject loyalty <em>(Western Europe capital)</em>
+<li><em>[All]</em> <strong>Syncretic Tolerance</strong> — India&#39;s extraordinary religious diversity has long required its rulers to practice a degree of tolerance unknown in Europe.</li>  -5% pop conversion, +5% cultural influence, -5% cultural tradition <em>(South Asia capital)</em>
+<li><em>[All]</em> <strong>Sulh-e-Kul</strong> — Akbar&#39;s doctrine of sulh-e-kul — universal peace — argued that a wise ruler stands above sectarian division, drawing legitimacy from all his subjects regardless of faith.</li>  +10% integration speed, +10% cultural influence <em>(South Asia capital)</em>
+<li><em>[All]</em> <strong>Court of Universal Tolerance</strong> — Our court has become a meeting place for scholars of every tradition: Hindu pandits, Muslim ulama, Jain monks, Sikh teachers, and European missionaries all find a welcome audience.</li>  +5% cabinet efficiency, -5% stability cost <em>(South Asia capital)</em>
+<li><em>[All]</em> <strong>State Orthodoxy</strong> — By aligning state ritual and institutional practice with an orthodox tradition — Confucian, Buddhist, or Shinto — our government projects continuity, legitimacy, and cultural coherence across our realm.</li>  +5% pop conversion, +5% cabinet efficiency <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Confucian Bureaucratic Faith</strong> — Neo-Confucian state philosophy has fused ritual, ethics, and administrative technique into a seamless whole.</li>  +10% cabinet efficiency, +1 reform slots <em>(East Asia capital)</em></ul><br>
+<strong>Age of Revolutions</strong> (18 advances)<br>
+<ul><li><em>[ADM]</em> <strong>Colonial Assemblies</strong> — Establish representative assemblies in our colonial territories, giving local leadership a formal voice in imperial governance.</li>  +5 subject loyalty, +10% integration speed <em>(has Colonial Nation subject or has Client State subject or has Shadow State subject or has Chartered Company subject)</em>
+<li><em>[ADM]</em> <strong>Federal Constitution</strong> — Unlocks: <strong>Imperial Council Member, Federal Member, Associate Member</strong>. Draft a constitutional framework for imperial federation, granting colonial assemblies legislative standing within a broader federal parliament.</li>  +5 subject loyalty, +10% integration speed
+<li><em>[DIP]</em> <strong>Imperial Trade Compact</strong> — Formalize an empire-wide preferential trade zone, binding the colonies to the metropole through shared commercial interest.</li>  +1 dip rep, +10% trade center power <em>(has Colonial Nation subject or has Client State subject or has Shadow State subject or has Chartered Company subject)</em>
+<li><em>[DIP]</em> <strong>Federal Charter</strong> — Unlocks: <strong>Federal Charter Holder</strong>. Issue federal charters to existing colonial and client territories — documents that promise the rights of membership while preserving the mechanics of extraction.</li>  +1 dip rep
+<li><em>[All]</em> <strong>Late Absolutism Ideas</strong> — The age of absolute monarchy has passed its zenith, but its achievements endure: centralized bureaucracies, permanent armies, and rationalized state finances are now the baseline from which even reformers must begin.</li>  +5% cabinet efficiency, -5% stability cost
+<li><em>[ADM]</em> <strong>Enlightened Administration</strong> — Enlightenment thought has reached the corridors of power.</li>  +5% legislative efficiency, -5% stability cost
+<li><em>[All]</em> <strong>Enlightened Despotism</strong> — Frederick of Prussia, Catherine of Russia, Joseph of Austria — the great enlightened despots demonstrate that absolute power need not mean arbitrary power.</li>  +1 reform slots, +5% cabinet efficiency <em>(Monarchy)</em>
+<li><em>[All]</em> <strong>Reform from Above</strong> — Faced with the threat of revolution from below, wise rulers choose reform from above.</li>  -10% stability cost, +5 max literacy <em>(Monarchy, Europe capital)</em>
+<li><em>[DIP]</em> <strong>Mercantilist Legacy</strong> — Two centuries of mercantilist policy have created sophisticated trading institutions: regulated companies, customs regimes, navigation acts, and state banks.</li>  +25% trade range, +15% merchant power, -1% bank interest <em>(Republic)</em>
+<li><em>[All]</em> <strong>Colonial Mercantile System</strong> — Our colonial empire is now a mature economic system: plantation agriculture, monopoly trade companies, navigation acts, and silver flows all converge to channel colonial wealth into the metropole.</li>  +5% sea trade efficiency, +10% merchant power, +5 subject loyalty <em>(Europe capital, has Colonial Nation subject)</em>
+<li><em>[MIL]</em> <strong>Professional Standing Army</strong> — The military revolution has reached its culmination: every major power now maintains a permanent, paid, uniformed army rather than relying on feudal levies or mercenaries.</li>  +2% discipline, +25 logistics distance
+<li><em>[All]</em> <strong>Prussian Discipline</strong> — Prussia&#39;s army has become the envy and model of Europe: relentless drill, cadenced marching, and a culture of obedience that makes the Prussian musketeer the most precisely controllable soldier on any battlefield.</li>  +10% tactics, +5% land morale <em>(German culture)</em>
+<li><em>[All]</em> <strong>General Staff System</strong> — The Prussian innovation of a permanent general staff — officers who plan campaigns, map terrain, and war-game scenarios before battles begin — transforms warfare from an art into a science.</li>  +2% discipline, +10% tactics <em>(German culture)</em>
+<li><em>[All]</em> <strong>New Order Military Reform</strong> — Reformist viziers and sultans have recognized that European military methods represent a genuine challenge.</li>  +10% tactics, +2% discipline <em>(Sunni or Shia or Ibadi, Middle East capital)</em>
+<li><em>[All]</em> <strong>Qing Administrative Consolidation</strong> — The Qing conquest has not replaced Chinese administrative culture — it has absorbed and perfected it.</li>  +10% cabinet efficiency, -5% stability cost <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Bureaucratic Peak</strong> — Our administrative tradition has reached a summit of refinement.</li>  +1 reform slots, +1 max literacy <em>(East Asia capital)</em>
+<li><em>[All]</em> <strong>Administrative Sophistication</strong> — Indian states have developed elaborate traditions of revenue administration, provincial governance, and fiscal management.</li>  +5% cabinet efficiency, +20% loan capacity <em>(South Asia capital)</em>
+<li><em>[All]</em> <strong>Fiscal Administration</strong> — The Maratha confederacy has demonstrated that decentralized revenue farming, when combined with effective military power and political skill, can build a formidable state from a fragmented beginning.</li>  +10% merchant power, -5% stability cost <em>(South Asia capital)</em></ul><br>
+<hr><br>
+<br>
+<h3 id="new-estate-privileges-amp-government-reforms">New Estate Privileges &amp; Government Reforms</h3><br>
+<br>
+<strong>Estate Privileges</strong><br>
+<ul><li><strong>Shadow Network</strong> <em>(via: Shadow Diplomacy)</em></li>  +0.33 noble power, +5 power projection, +1 dip rep <em>(Nobles &gt;=35%)</em>
+<li><strong>Patronage of the Arts</strong> <em>(via: Artistic Patronage)</em></li>  +0.25 noble power, +50 cultural tradition, +10% cultural influence
+<li><strong>Noble Enclave Rights</strong> <em>(via: Noble Patronage)</em></li>  +0.5 noble power, +0.05/mo prestige, +50 cultural influence <em>(Nobles &gt;=35%)</em>
+<li><strong>Naval Charter</strong> <em>(via: Naval Charter)</em></li>  +0.25 burgher power, +5% sailors, +5% naval morale, +1 naval governors <em>(Burghers &gt;=30%)</em>
+<li><strong>Scholarly Brotherhood</strong> <em>(via: Scholarly Orders)</em></li>  +0.25 clergy power, -10% institution embrace cost, +5% institution growth, +5% research <em>(Clergy &gt;=35%)</em>
+<li><strong>Military Academy Charter</strong> <em>(via: Military Academy)</em></li>  +0.25 noble power, +0.1/mo army tradition, +1% discipline <em>(Nobles &gt;=30%)</em>
+<li><strong>Royal Trading Charter</strong> <em>(via: Chartered Trading Companies)</em></li>  +0.25 burgher power, +5% trade center power, +1 dip capacity <em>(Burghers &gt;=40%, has Colonial Charter reform)</em>
+<li><strong>Governorate Charter</strong> <em>(via: Provincial Governance)</em></li>  +0.25 noble power, +0.002/mo dev, +5% noble agenda <em>(Nobles &gt;=25%)</em>
+<li><strong>Tax Charter</strong> <em>(via: Tax Farming)</em></li>  +0.25 burgher power, -8% bureaucracy removal cost <em>(Burghers &gt;=30%)</em>
+<li><strong>March Charter</strong> <em>(via: Military Marches)</em></li>  +0.33 noble power, -10% light cav cost, -5% heavy cav cost <em>(Nobles &gt;=35%)</em></ul><br>
+<strong>Government Reforms</strong><br>
+<ul><li><strong>Naval Administration</strong> — The establishment of a permanent admiralty board extends royal authority over distant naval stations, enabling an additional naval governorship and reducing the cost of maintaining far-flung ports. <em>(via: Naval Administration)</em></li>  +1 naval governors, +5% naval morale, -1 port distance cost
+<li><strong>Colonial Charter System</strong> — The crown establishes a formal legal framework for issuing royal charters to commercial enterprises operating in distant lands, granting them military and commercial authority in exchange for tribute and loyalty. <em>(via: Chartered Trading Companies)</em></li>  +1 dip capacity, +5% sailors
+<li><strong>Governorate System</strong> — Formalizes the system of Crown-appointed provincial governorates, improving administrative capacity across the realm. <em>(via: Provincial Governance)</em></li>  +2 dip capacity, +0.003/mo dev, -8% reform removal cost
+<li><strong>Tax Farming Contracts</strong> — Systematizes the practice of farming out tax collection to powerful lords, reducing bureaucratic overhead in exchange for local efficiency. <em>(via: Tax Farming)</em></li>  +1 dip capacity, -10% bureaucracy removal cost
+<li><strong>March Charter</strong> — Issues formal charters to border territories designating them as military marches, creating a network of offensive buffers along the realm&#39;s most contested frontiers. <em>(via: Military Marches)</em></li>  -8% light cav cost, -5% antagonism received, +10% noble agenda</ul><br>
+<hr><br>
+<br>
+<h3 id="event-categories">Event Categories</h3><br>
+<br>
+<table><br>
+<tr><th>Namespace</th><th>Events</th><th>Description</th></tr><br>
+<tr><td>cc_cabinet</td><td>21</td><td>Minister counsel, estate relations, diplomatic situations, provincial affairs</td></tr><br>
+<tr><td>cc_traits</td><td>20</td><td>Age trait acquisition, ruler teaching, peer learning</td></tr><br>
+<tr><td>cc_cond</td><td>16</td><td>Conditional trait spawning based on realm conditions and actions</td></tr><br>
+<tr><td>cc_synergy</td><td>28</td><td>Trait pair synergies — temporary bonuses when ministers share trait families</td></tr><br>
+<tr><td>cc_neg</td><td>21</td><td>Underperformance events and rehabilitation chains</td></tr><br>
+<tr><td>cc_wealth</td><td>10</td><td>Wealth hoarding pressure and minister enrichment</td></tr><br>
+<tr><td>cc_dual</td><td>10</td><td>Cabinet × religious figure dual-role synergies</td></tr><br>
+<tr><td>cc_intl</td><td>12</td><td>Cross-country interactions between neighboring courts</td></tr><br>
+<tr><td>cc_feudal</td><td>8</td><td>Feudal era court events</td></tr><br>
+<tr><td>cc_legacy</td><td>3</td><td>Senior minister retirement and legacy transmission</td></tr><br>
+<tr><td>cc_legend</td><td>6</td><td>Legendary minister quest chains</td></tr><br>
+<tr><td>cc_hyw</td><td>11</td><td>Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure</td></tr><br>
+<tr><td>cc_personality</td><td>18</td><td>Dynamic AI personality inflection events — key historical turning points</td></tr><br>
+<tr><td>cc_bonds</td><td>100</td><td>Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs</td></tr><br>
+<tr><td>cc_rival</td><td>3</td><td>Court rivalry escalation: minister complaint → letter unsealed → faction hardens</td></tr><br>
+<tr><td>cc_cabal</td><td>2</td><td>Cabinet alliance formation: alliance forms → joint reform proposal</td></tr><br>
+<tr><td>cc_wc</td><td>7</td><td>War council: active-war events, post-war reform proposals, outdated general retirement</td></tr><br>
+<tr><td>cc_fac</td><td>3</td><td>Estate faction capture events</td></tr><br>
+<tr><td>cc_prog</td><td>14</td><td>Stepping stone trait progression chains (Paths A/C/D/F/E)</td></tr><br>
+<tr><td>cc_colonial</td><td>6</td><td>Colonial divan: charter company events + decolonization crisis chain</td></tr><br>
+<tr><td>cc_posting</td><td>4</td><td>Colonial posting duty: dispatch, corruption, native uprising, fever</td></tr><br>
+<tr><td>cc_hus</td><td>1</td><td>Hussite Wars — papal loan event</td></tr><br>
+<tr><td>cc_invasion_mexico</td><td>28</td><td>Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution</td></tr><br>
+</table><br>
+<br>
+<em>~352 events total</em><br>
+<br>
+<hr><br>
+<br>
+<h3 id="hundred-years-war-flavor">Hundred Years War Flavor</h3><br>
+<br>
+A system of historical events and starting modifiers for the Hundred Years War situation, activated by the <strong>C&amp;C: Hundred Years War Flavor</strong> game rule (default: on).<br>
+<ul><li><strong>France and England</strong> begin with historical starting modifiers reflecting their positions at the opening of the conflict — French levy readiness and English estate pressure.</li><li><strong>War outcome events</strong> fire when either side wins or loses major wars, stacking levy and estate effects over time to reflect the shifting fortunes of the conflict.</li><li><strong>Observer power reactions</strong> — Burgundy, Castile, and Aragon witness western European wars and may choose sides or demand concessions (cc_hyw.12/13).</li><li><strong>Vassal defection pressure</strong> — French and English vassals face events when their suzerain suffers defeat, with opportunities to renegotiate terms or waver in loyalty (cc_hyw.20–23).</li><li><strong>Lowlands incursion events</strong> — when France or England take land in the Lowlands during the HYW, their Lowlands subjects or the local population may demand the land be transferred to them, lest political crises emerge (cc_hyw.30/31).</li><li><strong>The Auld Alliance</strong> (cc_hyw.1) — France can formally guarantee Scottish independence, binding England&#39;s northern flank and setting up the FRA–SCO–ENG triangle.</li><li><strong>Replace Appanage Ruler decision</strong> — France can replace disloyal appanage lords to consolidate control, at the cost of other vassals&#39; opinions.</li></ul><br>
+<em>~11 events spanning France, England, Scotland, Burgundy, and observer powers.</em><br>
+<br>
+<hr><br>
+<br>
+<h3 id="hussite-wars-flavor">Hussite Wars Flavor</h3><br>
+<br>
+When the Hussite Wars situation fires and Bohemia fights the Papacy, the <strong>C&amp;C: Hussites — One Small Loan</strong> game rule (default: on) enables a flavored papal outreach event:<br>
+<ul><li><strong>The Pope Calls for Aid</strong> — the Pope approaches the strongest Catholic power with coin, asking them to enter the crusade on Rome&#39;s side.</li><li>Catholic countries already in the war can accept or demand more; those on the opposing side can defect for gold; neutral powers can weigh in diplomatically.</li><li>This may seem a littly silly and unbalanced, especially with how it always prefers a catholic player country and when you see the number&#8230; but this is only a fraction of the popes treasury.</li></ul><br>
+<hr><br>
+<br>
+<h3 id="dynamic-ai-personalities">Dynamic AI Personalities</h3><br>
+<br>
+AI countries now evolve their strategic personality across the ages — shifting from aggressive early expansion to defensive consolidation, commercial pragmatism, or cautious decline as the game progresses. Controlled by the <strong>C&amp;C: Dynamic AI Personalities</strong> game rule (default: Dynamic Historical + Drift).<br>
+<br>
+<strong>27 countries</strong> have historically-informed personality arcs covering all six ages:<br>
+<em>TUR, FRA, ENG, MOS, CAS, HAB, POR, SWE, POL, LIT, DAN, BUR, VEN, PAP, GEN, BYZ, HUN, MAM, ETH, MNG, SHO, KOR, NOG/GLH, NAP, SCO, MLO, MLI/SON</em><br>
+<br>
+<strong>Key inflection events</strong> fire at historical turning points and give AI-controlled countries a choice between the historical personality and an alternative:<br>
+<ul><li><strong>The Conquering Sultan</strong> (TUR, Age 3) — peak Selim/Suleiman era aggressive expansion</li><li><strong>The Long Stagnation</strong> (TUR, Age 4) — early Ottoman institutional decline begins</li><li><strong>The Sun King Rises</strong> (FRA, Age 5) — Louis XIV&#39;s absolutist ambition</li><li><strong>Britannia&#39;s Maritime Empire</strong> (ENG, Age 5) — English commercial and naval dominance</li><li><strong>The Terrible Tsar</strong> (MOS, Age 3) — Ivan the Terrible&#39;s consolidation</li><li><strong>The New World Empire</strong> (CAS, Age 3) — Castilian colonial and imperial apex</li><li><strong>The Great Northern Reckoning</strong> (SWE, Age 4) — Swedish imperial overstretch</li></ul><br>
+After a historical event fires, an <strong>AI personality guard</strong> prevents random drift from overriding the fresh assignment for ~20 years.<br>
+<br>
+<strong>Game rule modes:</strong><br>
+<ul><li><strong>Vanilla</strong> — No changes; vanilla personality assignment only</li><li><strong>Dynamic Historical</strong> — Major powers follow age-based personality arcs and fire inflection events at key turning points</li><li><strong>Dynamic Drift Only</strong> — Context-driven drift shifts personality for all AI countries based on war outcomes, power, and wealth</li><li><strong>Dynamic Historical + Drift</strong> <em>(default)</em> — Both: historically-grounded arcs for major powers with context drift for everyone else</li></ul><br>
+<em>~18 inflection events; drift logic fires on yearly and four-yearly pulses for all AI countries.</em><br>
+<br>
+<hr><br>
+<br>
+<h3 id="game-rules">Game Rules</h3><br>
+<br>
+All rules are toggleable in the game setup screen before starting a session.<br>
+<br>
+<strong>C&amp;C: France — Lowlands Containment</strong><br>
+Gives France&#39;s Lowlands-culture neighbors elevated antagonism toward France at game start, decaying over 200 years.<br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — France begins under pressure from its Lowlands neighbors, reflecting historical anxieties about French hegemony.</li><li><strong>Disabled</strong> — France starts with no extra antagonism from its neighbors.</li></ul><br>
+<strong>C&amp;C: Wealth Hoarding Events</strong><br>
+When enabled, countries that hoard gold above 100x their monthly income will periodically face events representing court demands and economic pressure.<br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — Wealth hoarding events fire from the biyearly pulse when the gold threshold is met.</li><li><strong>Disabled</strong> — No wealth hoarding events will fire.</li></ul><br>
+<strong>C&amp;C: Mamluks — Foreign Rule Strain</strong><br>
+Gives the Mamluks starting penalties reflecting their status as a foreign military caste ruling over native Egyptians.<br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — The Mamluks begin with a permanent peasant levy penalty and decaying military strain, easing over 200 years.</li><li><strong>Disabled</strong> — The Mamluks start with no historical penalties.</li></ul><br>
+<strong>C&amp;C: Ottomans — Colonization </strong><br>
+Prevent the Ottomans from colonizing.<br>
+<ul><li><strong>Prevent Colonization</strong> <em>(default)</em> — The Ottomans are permanently prevented from colonizing.</li><li><strong>Allow Colonization</strong> — The Ottomans may still colonize as normal.</li></ul><br>
+<strong>C&amp;C: Dynamic AI Personalities</strong><br>
+Controls whether AI countries evolve their grand strategies across ages and shift in response to game events.<br>
+<ul><li><strong>Vanilla</strong> — No changes. AI personalities use vanilla historical assignments and random rules only.</li><li><strong>Dynamic Historical</strong> — Major powers follow historically-informed personality arcs across ages. Key turning points fire choice events with a historical option and one or two alternatives.</li><li><strong>Dynamic Drift Only</strong> — Adds context-driven personality changes for all AI countries, shifting in response to war, power, wealth, and circumstance.</li><li><strong>Dynamic Historical + Drift</strong> <em>(default)</em> — Adds context-driven drift events for all AI countries, shifting personalities in response to war, power, wealth, and circumstance. Major powers follow historically-informed personality arcs across ages. Key turning points fire choice events with a historical option and one or two alternatives. Historical events still guard against random drift for ~20 years after they fire.</li></ul><br>
+<strong>C&amp;C: France — Hundred Years War Flavor</strong><br>
+Enables historical flavor for the Hundred Years War: starting levy and estate modifiers for France and England, war outcome stacking, vassal defection pressure events, observer power reactions, and the Replace Appanage Ruler decision.<br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — France and England start with historical modifiers; war outcomes stack levy and estate effects over time; Burgundy, Brittany, and other vassals may waver when their suzerain suffers defeat.</li><li><strong>Disabled</strong> — No HYW-specific starting modifiers, stacking events, or vassal defection pressure will fire.</li></ul><br>
+<strong>C&amp;C: Overlord-Subject Bonds</strong><br>
+When enabled, tracks 5 relationship dimensions (economic, military, political, cultural, personal) across large long-term subjects. Player choices across Ages 1-4 determine how subjects behave in the Age of Revolutions. Most tracking is hidden; consequences appear decades later.<br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — Detailed multi-dimensional run-spanning subject event-chains, sentiments, and profiles.</li><li><strong>Disabled</strong> — Normal subject relationships, bond tracking and event chains disabled.</li></ul><br>
+<strong>Cc Invasion Mexico</strong><br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — The Mexican Invasion situation will fire for eligible countries.</li><li><strong>Disabled</strong> — The Mexican Invasion situation will not fire.</li></ul><br>
+<strong>Cc Cc One Small Loan</strong><br>
+<ul><li><strong>Enabled</strong> <em>(default)</em> — Papal one small loan events will fire depending on your stance during hussite crusades.</li><li><strong>Disabled</strong> — No Papal one small loan events will fire.</li></ul><br>
+<hr><br>
+<br>
+<h3 id="country-starting-modifiers">Country Starting Modifiers</h3><br>
+<br>
+<strong>France — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
+France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.<br>
+<br>
+<strong>England — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
+England begins with estate and levy modifiers reflecting its precarious continental position at the start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles.<br>
+<br>
+<strong>Mamluks — Foreign Rule Strain</strong> <em>(default: on)</em><br>
+The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don&#39;t.<br>
+<br>
+<strong>Ottomans — No Colonization</strong> <em>(default: on)</em><br>
+The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than competing in Atlantic exploration.<br>
+<br>
+<hr><br>
+<br>
+<h3 id="coming-in-future-updates">Coming in Future Updates</h3><br>
+<br>
+Several expansion pillars are designed and planned for future releases:<br>
+<ul><li><strong>The Scholar&#39;s Court</strong> — Age 5–6 empiricism events; the Royal Academy building; Scholasticism vs. Empiricism cabinet tensions</li><li><strong>Succession Crisis Cabinet</strong> — Regency events, dynastic drama, cabinet behavior during interregna and heir disputes</li><li><strong>Religious Cabinet Tensions</strong> — Reformation splits courts; confessional traits; inquisitorial pressure events</li><li><strong>The Congress System</strong> — Multi-country diplomatic theater; congress events where great power ministers interact directly</li><li><strong>More Historical Flavor</strong> — Ottoman, Italian, Spanish, Mughal, and French court event chains</li></ul><br>
+<hr><br>
+<br>
+<h2 id="compatibility">Compatibility</h2><br>
+<ul><li>No replace_paths — fully additive, compatible with other mods that don&#39;t replace the same files</li><li>Maybe still safe to enable on existing saves, but not recommended (new content will start appearing as events fire)</li><li>Multiplayer synchronized</li><li>May break game balance — cabinet members and new subjects provide a lot of bonuses</li><li>Generally mod compatible so long as other mods don&#39;t modify character traits heavily</li><ul><li>Not tested with other subject mods — found them unstable in testing</li></ul></ul><br>
+Tested with:<br>
+<ul><li>Hussite, Austria, Brandenburg, Timur, and Ottoman flavor packs</li><ul><li>Ottoman and Hussite flavor pack CBs are not well limited and cause the AI to misuse them.</li></ul><li>Community Flavor Pack</li><li>Overseas Naval Governors</li><li>Logical Advances Trees</li><li>Improved Subject Management</li><li>Nobles Auto Marry</li><li>Auto Child Education</li><li>Additional Buildings</li><li>Bureaucracies for Everyone</li><li>Parliament Expanded</li><li>National Destinies</li><li>Continental Hegemonies</li><li>Terra Cognita</li><li>Forced Cultural Expulsion</li><li>Improved Cultural Dynamics</li></ul><br>
+<hr><br>
+<br>
+<h2 id="ai-use-disclosure">AI Use Disclosure</h2><br>
+<br>
+Numerous AI agents were used in the creation of this project: Claude, Gemini, Qwen, Flux.<br>
+<br>
+<hr><br>
+<br>
+<h2 id="feedback-amp-bugs">Feedback &amp; Bugs</h2><br>
+<br>
+Report issues on the Steam Workshop discussion page or the mod&#39;s <a rel="nofollow" href="https://github.com/wtmenten/flavorium-universalis">GitHub repository</a>.<br>
+
+    </article>
+  </div>
+</div>
+<script>
+// highlight active nav link on scroll
+(function(){
+  const links = document.querySelectorAll('.sidebar a[href^="#"]');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector('.sidebar a[href="#' + e.target.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(h => obs.observe(h));
+})();
+</script>
+</body>
+</html>
