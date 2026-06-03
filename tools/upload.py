@@ -574,7 +574,7 @@ def ensure_submod_item_id(steam, mod_id, workshop_id, config_path):
 
     return new_id
 
-def upload_submods(steam, config, version_gate_enabled=False, version_cache=None, upload_change_notes=False):
+def upload_submods(steam, config, version_gate_enabled=False, version_cache=None, upload_change_notes=False, upload_workshop_pages=False):
     submods_root = os.path.join(ROOT_DIR, SUBMODS_DIR_NAME)
     if not os.path.isdir(submods_root):
         print(f"Warning: submods folder not found: {submods_root}")
@@ -641,6 +641,13 @@ def upload_submods(steam, config, version_gate_enabled=False, version_cache=None
         if not upload_release(steam, meta["root"], preview_path, workshop_id, title):
             success = False
             continue
+
+        if upload_workshop_pages:
+            page_updates = build_submod_workshop_page_updates(config, mod_dir, workshop_id, title)
+            if page_updates is not None:
+                if not upload_workshop_pages_for_item(steam, page_updates, workshop_id):
+                    success = False
+                    continue
 
         if upload_change_notes:
             submod_change_notes_path = os.path.join(mod_dir, "workshop", "change-notes.bbcode")
@@ -1098,6 +1105,65 @@ def build_workshop_page_updates(config, item_id, dev_mode=False, dev_name=None):
 
     return updates
 
+def build_submod_workshop_page_updates(config, mod_dir, item_id, submod_name):
+    """Collect workshop title/description payloads for a submod.
+
+    Reads WORKSHOP_DESCRIPTION_steam.bbcode from the submod root.
+    Returns None if no description file exists (nothing to upload).
+    """
+    source_language = load_source_language(config)
+    if source_language is None:
+        return None
+
+    desc_path = os.path.join(mod_dir, "WORKSHOP_DESCRIPTION_steam.bbcode")
+    base_description = read_text(desc_path)
+    if base_description is None:
+        return None
+
+    base_description = split_workshop_description(base_description)
+    base_description = apply_workshop_item_id(base_description, item_id)
+    base_description = trim_description(base_description, source_language)
+
+    updates = [{
+        "lang": source_language,
+        "steam_lang": LANGUAGE_TO_STEAM[source_language],
+        "title": submod_name,
+        "description": base_description,
+    }]
+
+    translations_dir = os.path.join(mod_dir, "workshop", "translations")
+    if not os.path.exists(translations_dir):
+        return updates
+
+    for filename in os.listdir(translations_dir):
+        match = WORKSHOP_TRANSLATION_FILENAME_RE.match(filename)
+        if not match:
+            continue
+        lang = match.group(1)
+        if lang == source_language:
+            continue
+        if lang not in LANGUAGE_TO_STEAM:
+            print(f"Warning: No Steam language mapping for '{lang}', skipping.")
+            continue
+        path = os.path.join(translations_dir, filename)
+        text = read_text(path)
+        if text is None:
+            continue
+        title_text, desc_text = parse_workshop_translation(text)
+        title_text = apply_workshop_item_id(title_text, item_id)
+        desc_text = apply_workshop_item_id(desc_text, item_id)
+        if title_text is None and desc_text is None:
+            continue
+        desc_text = trim_description(desc_text, lang)
+        updates.append({
+            "lang": lang,
+            "steam_lang": LANGUAGE_TO_STEAM[lang],
+            "title": title_text,
+            "description": desc_text,
+        })
+
+    return updates
+
 def build_change_notes_updates(config, item_id, version=None):
     """Collect source and translated change note payloads for per-language submission."""
     source_language = load_source_language(config)
@@ -1310,7 +1376,8 @@ def main():
                 config,
                 version_gate_enabled=upload_only_on_version_change,
                 version_cache=version_cache,
-                upload_change_notes=upload_change_notes
+                upload_change_notes=upload_change_notes,
+                upload_workshop_pages=upload_workshop_pages,
             )
             if not submods_ok:
                 return 1
