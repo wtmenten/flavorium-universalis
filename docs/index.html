@@ -3,110 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flavorium Universalis</title>
+<title>Flavorium Universalis — EU5 Mod</title>
 <style>
 :root{
   --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
-  --hover-bg:#2d3040;--adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;
-  --gold:#d4a843;--text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --hover-bg:#2d3040;
+  --adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;--gold:#d4a843;--purple:#a07bdf;
+  --text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
   --radius:7px;--sidebar-w:230px;
 }
+/* ----- reset ----- */
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
 
-/* layout */
-.app{display:grid;grid-template-rows:48px 1fr;height:100vh}
-.header{display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--panel-bg);border-bottom:1px solid var(--card-border);z-index:20}
-.header h1{font-size:15px;font-weight:700;white-space:nowrap;color:var(--gold)}
-.header .sub{font-size:11px;color:var(--text-dim)}
-.header .spacer{flex:1}
-.header a.tool-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:4px 10px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s}
-.header a.tool-link:hover{color:var(--text);border-color:var(--adm)}
-.body{display:grid;grid-template-columns:var(--sidebar-w) 1fr;overflow:hidden}
+/* ----- sticky header ----- */
+.site-header{position:sticky;top:0;z-index:100;background:var(--panel-bg);border-bottom:1px solid var(--card-border)}
+.header-inner{display:flex;align-items:center;gap:10px;padding:0 18px;height:50px}
+.menu-btn{background:none;border:none;color:var(--text-mid);font-size:18px;line-height:1;padding:6px 8px;cursor:pointer;border-radius:4px;display:none;flex-shrink:0}
+.menu-btn:hover{color:var(--text);background:var(--hover-bg)}
+.mod-title{font-size:15px;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em}
+.ver-badge{font-size:10px;font-weight:700;background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.3);border-radius:3px;padding:2px 7px;white-space:nowrap}
+.hdr-spacer{flex:1}
+.planner-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:5px 12px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s,background .12s}
+.planner-link:hover{color:var(--adm);border-color:var(--adm);background:rgba(91,174,232,.08)}
 
-/* sidebar */
-.sidebar{background:var(--panel-bg);border-right:1px solid var(--card-border);overflow-y:auto;padding:12px 0}
-.sidebar-section{padding:6px 14px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-top:6px}
-.sidebar a{display:block;padding:4px 14px 4px 18px;font-size:12px;color:var(--text-mid);text-decoration:none;border-left:2px solid transparent;transition:color .1s,background .1s,border-color .1s}
-.sidebar a:hover{color:var(--text);background:var(--hover-bg)}
-.sidebar a.lvl2{padding-left:18px;font-weight:600;color:var(--text-mid)}
-.sidebar a.lvl3{padding-left:30px;font-size:11px;border-left:2px solid transparent}
-.sidebar a.lvl3:hover{border-left-color:var(--adm)}
-.sidebar a.active{color:var(--text);border-left-color:var(--adm)}
+/* ----- layout: sidebar + main ----- */
+.layout{display:flex;min-height:calc(100vh - 50px)}
 
-/* content */
-.content{overflow-y:auto;padding:28px 44px;max-width:820px}
-.content h1{font-size:26px;font-weight:700;color:var(--gold);margin-bottom:8px;margin-top:32px}
-.content h1:first-child{margin-top:0}
-.content h2{font-size:18px;font-weight:700;color:var(--text);margin-top:40px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--card-border)}
-.content h3{font-size:14px;font-weight:700;color:var(--adm);margin-top:26px;margin-bottom:8px}
-.content p{margin-bottom:10px;color:var(--text)}
-.content ul,.content ol{margin:6px 0 10px 22px}
-.content li{margin-bottom:3px}
-.content ul ul,.content ol ul{margin-top:4px}
+/* ----- sidebar ----- */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;background:var(--panel-bg);border-right:1px solid var(--card-border);padding:16px 0 40px}
+.sidebar-label{padding:10px 18px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim)}
+.nav-sec{margin-bottom:2px}
+.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h2:hover{color:var(--text);background:var(--hover-bg)}
+.nav-h2.active{color:var(--text);border-left-color:var(--nav-color,var(--adm))}
+.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.7}
+.nav-h2.active .nav-h2-dot{opacity:1}
+.nav-sub{display:flex;flex-direction:column}
+.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h3:hover{color:var(--text-mid);background:var(--hover-bg)}
+.nav-h3.active{color:var(--text-mid);border-left-color:var(--text-dim)}
+/* section accent colors for nav dots */
+.nav-sec[data-sec="0"] .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="1"] .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="2"] .nav-h2{--nav-color:var(--dip)}
+.nav-sec[data-sec="3"] .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="4"] .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="5"] .nav-h2{--nav-color:var(--mil)}
+.nav-sec[data-sec="6"] .nav-h2{--nav-color:var(--purple)}
+
+/* ----- main content area ----- */
+.main{flex:1;min-width:0}
+.content{max-width:1080px;margin:0 auto;padding:36px 36px 100px}
+
+/* ----- hero h1 ----- */
+.content h1{font-size:32px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em}
+.content h1::after{content:'';display:block;width:52px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-top:12px}
+
+/* ----- section h2 — colored panel bar ----- */
+.content h2{font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:12px 18px;background:var(--panel-bg);border-radius:var(--radius);border-left:4px solid var(--s-color,var(--text-mid));color:var(--text)}
+.content h2[data-sec="0"]{--s-color:var(--gold)}
+.content h2[data-sec="1"]{--s-color:var(--adm)}
+.content h2[data-sec="2"]{--s-color:var(--dip)}
+.content h2[data-sec="3"]{--s-color:var(--adm)}
+.content h2[data-sec="4"]{--s-color:var(--text-dim)}
+.content h2[data-sec="5"]{--s-color:var(--mil)}
+.content h2[data-sec="6"]{--s-color:var(--purple)}
+
+/* ----- h3 sections — editorial border-left style ----- */
+.h3-group{padding-left:18px;border-left:3px solid var(--g-color,var(--adm));margin:24px 0 28px}
+.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:10px;margin-top:0}
+
+/* ----- Features section: 2-col grid tiles ----- */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0;align-items:start}
+.feat-grid .h3-group{border-left:none;padding-left:0;margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-top:3px solid var(--g-color,var(--adm));border-radius:var(--radius);padding:16px 18px}
+.feat-grid .h3-group h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+/* suppress bbcode <br> newline artifacts inside grid tiles */
+.feat-grid .h3-group br{display:none}
+
+/* ----- prose ----- */
+.content p{margin-bottom:10px}
 .content strong{color:var(--text);font-weight:600}
 .content em{color:var(--text-mid)}
-.content blockquote{margin:12px 0;padding:10px 16px;background:var(--card-bg);border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;color:var(--text-mid);font-style:italic;font-size:13px}
-.content blockquote p{color:var(--text-mid)}
-.content hr{border:none;border-top:1px solid var(--card-border);margin:18px 0}
 .content a{color:var(--adm);text-decoration:none}
 .content a:hover{text-decoration:underline}
-.content table{border-collapse:collapse;margin:12px 0;width:100%}
-.content th{background:var(--hover-bg);color:var(--text);font-size:12px;padding:7px 12px;text-align:left;border:1px solid var(--card-border)}
-.content td{padding:6px 12px;font-size:13px;border:1px solid var(--card-border);vertical-align:top}
+
+/* ----- lists ----- */
+.content ul,.content ol{margin:6px 0 10px 20px}
+.content li{margin-bottom:4px}
+.content ul ul,.content ol ul{margin-top:4px}
+
+/* ----- blockquote ----- */
+.content blockquote{margin:14px 0;padding:12px 18px;background:rgba(212,168,67,.05);border-left:3px solid rgba(212,168,67,.45);border-radius:0 var(--radius) var(--radius) 0;font-size:14px;line-height:1.6}
+.content blockquote,.content blockquote p{color:var(--text-mid)}
+.content blockquote p:last-child{margin-bottom:0}
+
+/* ----- hr ----- */
+.content hr{border:none;height:1px;background:var(--card-border);margin:22px 0}
+
+/* ----- table ----- */
+.content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.content th{background:var(--hover-bg);color:var(--text);font-weight:600;font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--card-border)}
+.content td{padding:7px 12px;border:1px solid var(--card-border);vertical-align:top}
 .content tr:nth-child(even) td{background:rgba(255,255,255,.02)}
-/* strip bare <br> after block elements from bbcode newline injection */
-h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br,li>br:last-child{display:none}
+
+/* ----- NEW badge ----- */
+.new-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px 2px;border-radius:3px;background:rgba(90,191,122,.12);color:var(--dip);border:1px solid rgba(90,191,122,.28);margin-right:3px;vertical-align:middle;line-height:1.4}
+
+/* ----- anchor scroll offset: clear the sticky 50px header ----- */
+.content h1[id],.content h2[id],.content h3[id]{scroll-margin-top:66px}
+
+/* ----- suppress stray <br> after block tags (bbcode newline artifact) ----- */
+h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br{display:none}
+
+/* ----- overlay (mobile sidebar) ----- */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:98}
+body.nav-open .sidebar-overlay{display:block}
+
+/* ----- mobile ----- */
+@media(max-width:768px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;top:50px;left:0;height:calc(100vh - 50px);z-index:99;transform:translateX(-100%);transition:transform .22s ease}
+  body.nav-open .sidebar{transform:translateX(0)}
+  .content{padding:22px 18px 80px}
+  .content h1{font-size:26px}
+  .content h2{font-size:17px;padding:10px 14px;margin-top:36px}
+  .feat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .content{padding:18px 14px 60px}
+  .h3-group{padding-left:14px}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="header">
-    <h1>Flavorium Universalis</h1>
-    <span class="sub">EU5 Mod</span>
-    <div class="spacer"></div>
-    <a class="tool-link" href="planner.html">Advance Planner &rarr;</a>
-  </header>
-  <div class="body">
-    <nav class="sidebar">
-      <div class="sidebar-section">Navigation</div>
-            <a class="lvl2" href="#overview">Overview</a>
-      <a class="lvl3" href="#balance-amp-compatibility-disclosure">Balance &amp; Compatibility Disclosure</a>
-      <a class="lvl2" href="#installation">Installation</a>
-      <a class="lvl2" href="#features">Features</a>
-      <a class="lvl3" href="#minister-trait-system">Minister Trait System</a>
-      <a class="lvl3" href="#synergy-events">Synergy Events</a>
-      <a class="lvl3" href="#minister-legacies">Minister Legacies</a>
-      <a class="lvl3" href="#negative-traits-amp-rehabilitation">Negative Traits &amp; Rehabilitation</a>
-      <a class="lvl3" href="#stepping-stone-traits-amp-progression">Stepping Stone Traits &amp; Progression</a>
-      <a class="lvl3" href="#court-rivalry-amp-cabal">Court Rivalry &amp; Cabal</a>
-      <a class="lvl3" href="#cabinet-duties">Cabinet Duties</a>
-      <a class="lvl3" href="#cabinet-composition-auto-modifiers">Cabinet Composition Auto-Modifiers</a>
-      <a class="lvl3" href="#war-council">War Council</a>
-      <a class="lvl3" href="#estate-faction-capture">Estate Faction Capture</a>
-      <a class="lvl3" href="#colonial-cabinet">Colonial Cabinet</a>
-      <a class="lvl3" href="#invasion-of-mexico">Invasion of Mexico</a>
-      <a class="lvl3" href="#balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</a>
-      <a class="lvl3" href="#overlord-subject-bonds">Overlord-Subject Bonds</a>
-      <a class="lvl3" href="#new-subject-types">New Subject Types</a>
-      <a class="lvl3" href="#era-advances">Era Advances</a>
-      <a class="lvl3" href="#new-estate-privileges-amp-government-reforms">New Estate Privileges &amp; Government Reforms</a>
-      <a class="lvl3" href="#event-categories">Event Categories</a>
-      <a class="lvl3" href="#hundred-years-war-flavor">Hundred Years War Flavor</a>
-      <a class="lvl3" href="#hussite-wars-flavor">Hussite Wars Flavor</a>
-      <a class="lvl3" href="#dynamic-ai-personalities">Dynamic AI Personalities</a>
-      <a class="lvl3" href="#game-rules">Game Rules</a>
-      <a class="lvl3" href="#country-starting-modifiers">Country Starting Modifiers</a>
-      <a class="lvl3" href="#coming-in-future-updates">Coming in Future Updates</a>
-      <a class="lvl2" href="#compatibility">Compatibility</a>
-      <a class="lvl2" href="#ai-use-disclosure">AI Use Disclosure</a>
-      <a class="lvl2" href="#feedback-amp-bugs">Feedback &amp; Bugs</a>
-    </nav>
+
+<header class="site-header">
+  <div class="header-inner">
+    <button class="menu-btn" id="menuBtn" title="Navigation">&#9776;</button>
+    <span class="mod-title">Flavorium Universalis</span>
+    <span class="ver-badge">EU5 1.2.*</span>
+    <div class="hdr-spacer"></div>
+    <a class="planner-link" href="planner.html">Advance Planner &rarr;</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-label">Contents</div>
+      <div class="nav-sec" data-sec="0">
+    <a class="nav-h2" href="#overview"><span class="nav-h2-dot"></span>Overview</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#balance-amp-compatibility-disclosure">Balance &amp; Compatibility Disclosure</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="1">
+    <a class="nav-h2" href="#installation"><span class="nav-h2-dot"></span>Installation</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="2">
+    <a class="nav-h2" href="#cabinet-amp-court"><span class="nav-h2-dot"></span>Cabinet &amp; Court</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#minister-trait-system">Minister Trait System</a>
+      <a class="nav-h3" href="#synergy-events">Synergy Events</a>
+      <a class="nav-h3" href="#minister-legacies">Minister Legacies</a>
+      <a class="nav-h3" href="#negative-traits-amp-rehabilitation">Negative Traits &amp; Rehabilitation</a>
+      <a class="nav-h3" href="#stepping-stone-traits-amp-progression">Stepping Stone Traits &amp; Progression</a>
+      <a class="nav-h3" href="#court-rivalry-amp-cabal">Court Rivalry &amp; Cabal</a>
+      <a class="nav-h3" href="#cabinet-duties">Cabinet Duties</a>
+      <a class="nav-h3" href="#cabinet-composition-auto-modifiers">Cabinet Composition Auto-Modifiers</a>
+      <a class="nav-h3" href="#war-council">War Council</a>
+      <a class="nav-h3" href="#estate-faction-capture">Estate Faction Capture</a>
+      <a class="nav-h3" href="#colonial-cabinet">Colonial Cabinet</a>
+      <a class="nav-h3" href="#event-categories">Event Categories</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="3">
+    <a class="nav-h2" href="#subjects-amp-diplomacy"><span class="nav-h2-dot"></span>Subjects &amp; Diplomacy</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#overlord-subject-bonds">Overlord-Subject Bonds</a>
+      <a class="nav-h3" href="#new-subject-types">New Subject Types</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="4">
+    <a class="nav-h2" href="#advances-amp-reforms"><span class="nav-h2-dot"></span>Advances &amp; Reforms</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#era-advances">Era Advances</a>
+      <a class="nav-h3" href="#new-estate-privileges-amp-government-reforms">New Estate Privileges &amp; Government Reforms</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="5">
+    <a class="nav-h2" href="#historical-flavor"><span class="nav-h2-dot"></span>Historical Flavor</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#invasion-of-mexico">Invasion of Mexico</a>
+      <a class="nav-h3" href="#hundred-years-war-flavor">Hundred Years War Flavor</a>
+      <a class="nav-h3" href="#hussite-wars-flavor">Hussite Wars Flavor</a>
+      <a class="nav-h3" href="#dynamic-ai-personalities">Dynamic AI Personalities</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="6">
+    <a class="nav-h2" href="#balance"><span class="nav-h2-dot"></span>Balance</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</a>
+      <a class="nav-h3" href="#country-starting-modifiers">Country Starting Modifiers</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="7">
+    <a class="nav-h2" href="#game-rules"><span class="nav-h2-dot"></span>Game Rules</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="8">
+    <a class="nav-h2" href="#roadmap"><span class="nav-h2-dot"></span>Roadmap</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#coming-in-future-updates">Coming in Future Updates</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="9">
+    <a class="nav-h2" href="#compatibility"><span class="nav-h2-dot"></span>Compatibility</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="10">
+    <a class="nav-h2" href="#ai-use-disclosure"><span class="nav-h2-dot"></span>AI Use Disclosure</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="11">
+    <a class="nav-h2" href="#feedback-amp-bugs"><span class="nav-h2-dot"></span>Feedback &amp; Bugs</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main">
     <article class="content" id="content">
       <h1 id="flavorium-universalis">Flavorium Universalis</h1><br>
 <br>
@@ -114,7 +250,7 @@ h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br,li>br:last-child{disp
 <br>
 <hr><br>
 <br>
-<h2 id="overview">Overview</h2><br>
+<h2 id="overview" data-sec="0">Overview</h2><br>
 <strong>A note from the author:</strong><br>
 <blockquote>This mod is still in an early preview and not everything has been fully tested. Several subject paths and their event chains are underexplored:<br>
  <ul><li>large late-game subjects, palatinates, and holy protectorates - and their event family&#39;s have yet to be tested.</li> <li>The changes to subjects culminating in the age of revolutions with the federalization system has not be rigously tested and will likely see more changes.</li> <li>not all character legacies have been verified and balanced.</li> <li>Cabinet situations like the war council and minister schemes still need more work. Along with adding remaining ones: the scholar&#39;s court, regency crisis, and federal/international congress.</li></ul> Balancing of new content is subject to change as more playtesting is done and other feedback comes in. <br>
@@ -123,7 +259,7 @@ h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br,li>br:last-child{disp
 <br>
  At this point I&#39;m looking for community thoughts on the new subject types, cabinet gameplay, balance, mexico situation, etc.</blockquote><br>
 Flavorium Universalis enhances the vanilla EUV experience across multiple areas:<br>
-<ul><li>Improved AI personality system with dynamic logic AND historical changes.</li>    <ul><li>Let the AI adjust its personality logically instead of randomly — it might react immediately to events or due to a build-up of circumstances.</li>        <li>Watch the great nations of history make historic shifts in their foreign policy.</li></ul>    <li>Transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows.</li>    <ul><li>Develop powerful traits over time through events.</li>        <li>Clash or collaborate (with you, each other, and foreign courts) based on their ideological leanings.</li>        <li>Leave lasting legacies when they retire or die.</li>        <li><strong>NEW:</strong> Ministers now scheme against each other — rivalries escalate through a three-stage event chain, while ideologically aligned ministers may form cabals and push joint agendas.</li>        <li><strong>NEW:</strong> Assign explicit duties to ministers — war council, domestic reform, diplomatic mission, colonial posting, and more — boosting related events and providing ongoing country modifiers.</li>        <li><strong>NEW:</strong> Cabinet composition now has aggregate effects — a court dominated by militarists, merchants, or clergy activates distinct auto-modifiers that reflect the character of your advisors as a whole.</li>        <li><strong>NEW:</strong> Ministers grow through stepping stone trait chains — starting as fumbling reformists or green adjutants and advancing through events into masters of their craft.</li>        <li><strong>NEW:</strong> Your war cabinet matters — military ministers drive war council events during conflicts, unlocking post-war reform proposals when you win.</li>        <li><strong>NEW:</strong> Post a minister overseas as a colonial governor — drive charter company events, navigate native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.</li></ul>    <li>A variety of new subject types gives you access to subject-meta like you never imagined:</li>    <ul><li>Small OPMs for powerful modifiers like cultural influence and naval governor capacity.</li>        <li>Low antagonism and control subjects for exerting progressively expanding influence on foreign states (akin to a Victoria 3 protectorate→puppet progression).</li>        <li>Powerful late-game subjects for organizing large empires and defining your sphere of influence.</li>        <li><strong>NEW:</strong> Long-term subjects now remember how you treated them — a multi-dimensional bond system tracks economic, military, political, cultural, and personal relationships across the Ages, determining how your subjects behave in the Age of Revolutions.</li></ul>    <li>Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more meaningful choices — catchup opportunities, balance, and playstyle specialization as you play through the ages.</li>    <ul><li>Many unlocks are sprinkled into the existing tech tree.</li>        <li>New micro-tech trees unlock from the Age of Discovery onward — branch and region locked, some hidden unless you meet the conditions.</li></ul>    <li>Historical flavor for the Hundred Years War, Hussite Wars, and more.</li>    <li><strong>NEW:</strong> The Invasion of Mexico — a new historical situation covering colonial conquest of Mesoamerica, with a native Mesoamerican Confederation that can resist the incursion, dedicated expedition casus belli, and 28+ events spanning the conquest and its aftermath.</li>    <li><strong>NEW:</strong> A literacy rebalance system — a global baseline adjustment to pop literacy paired with region-specific catch-up advances and per-estate library bonuses, giving Western Europe, colonial powers, and East Asia meaningful education differentiation.</li></ul><br>
+<ul><li>Improved AI personality system with dynamic logic AND historical changes.</li>    <ul><li>Let the AI adjust its personality logically instead of randomly — it might react immediately to events or due to a build-up of circumstances.</li>        <li>Watch the great nations of history make historic shifts in their foreign policy.</li></ul>    <li>Transform your cabinet members from interchangeable bureaucrats into memorable characters whose histories, values, and rivalries shape how your nation grows.</li>    <ul><li>Develop powerful traits over time through events.</li>        <li>Clash or collaborate (with you, each other, and foreign courts) based on their ideological leanings.</li>        <li>Leave lasting legacies when they retire or die.</li>        <li><span class="new-badge">NEW</span> Ministers now scheme against each other — rivalries escalate through a three-stage event chain, while ideologically aligned ministers may form cabals and push joint agendas.</li>        <li><span class="new-badge">NEW</span> Assign explicit duties to ministers — war council, domestic reform, diplomatic mission, colonial posting, and more — boosting related events and providing ongoing country modifiers.</li>        <li><span class="new-badge">NEW</span> Cabinet composition now has aggregate effects — a court dominated by militarists, merchants, or clergy activates distinct auto-modifiers that reflect the character of your advisors as a whole.</li>        <li><span class="new-badge">NEW</span> Ministers grow through stepping stone trait chains — starting as fumbling reformists or green adjutants and advancing through events into masters of their craft.</li>        <li><span class="new-badge">NEW</span> Your war cabinet matters — military ministers drive war council events during conflicts, unlocking post-war reform proposals when you win.</li>        <li><span class="new-badge">NEW</span> Post a minister overseas as a colonial governor — drive charter company events, navigate native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.</li></ul>    <li>A variety of new subject types gives you access to subject-meta like you never imagined:</li>    <ul><li>Small OPMs for powerful modifiers like cultural influence and naval governor capacity.</li>        <li>Low antagonism and control subjects for exerting progressively expanding influence on foreign states (akin to a Victoria 3 protectorate→puppet progression).</li>        <li>Powerful late-game subjects for organizing large empires and defining your sphere of influence.</li>        <li><span class="new-badge">NEW</span> Long-term subjects now remember how you treated them — a multi-dimensional bond system tracks economic, military, political, cultural, and personal relationships across the Ages, determining how your subjects behave in the Age of Revolutions.</li></ul>    <li>Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more meaningful choices — catchup opportunities, balance, and playstyle specialization as you play through the ages.</li>    <ul><li>Many unlocks are sprinkled into the existing tech tree.</li>        <li>New micro-tech trees unlock from the Age of Discovery onward — branch and region locked, some hidden unless you meet the conditions.</li></ul>    <li>Historical flavor for the Hundred Years War, Hussite Wars, and more.</li>    <li><span class="new-badge">NEW</span> The Invasion of Mexico — a new historical situation covering colonial conquest of Mesoamerica, with a native Mesoamerican Confederation that can resist the incursion, dedicated expedition casus belli, and 28+ events spanning the conquest and its aftermath.</li>    <li><span class="new-badge">NEW</span> A literacy rebalance system — a global baseline adjustment to pop literacy paired with region-specific catch-up advances and per-estate library bonuses, giving Western Europe, colonial powers, and East Asia meaningful education differentiation.</li></ul><br>
 <h3 id="balance-amp-compatibility-disclosure">Balance &amp; Compatibility Disclosure</h3><br>
 <br>
 The mod is mostly additive but does replace some vanilla laws, advances, reforms — however, it adds no replace_paths and does not remove any vanilla content. I wouldn&#39;t advise using this with an existing save due to the balance and country starting condition changes.<br>
@@ -138,13 +274,14 @@ Otherwise it should be broadly compatible. See the Compatibility section at the 
 <br>
 <hr><br>
 <br>
-<h2 id="installation">Installation</h2><br>
+<h2 id="installation" data-sec="1">Installation</h2><br>
 <br>
 Subscribe on the Steam Workshop, then enable the mod in the EU5 launcher before starting a new game. All game rules default to <strong>on</strong> and can be toggled in the game setup screen (split between the gameplay and flavor tabs).<br>
 <br>
 <hr><br>
 <br>
-<h2 id="features">Features</h2><br>
+<h2 id="cabinet-amp-court" data-sec="2">Cabinet &amp; Court</h2><br>
+<br>
 <br>
 <h3 id="minister-trait-system">Minister Trait System</h3><br>
 <br>
@@ -242,21 +379,40 @@ Charter company owners also receive dedicated events:<br>
 <ul><li><strong>The Company&#39;s Accounts</strong> — the minister audits the company ledgers; windfall or investigation</li><li><strong>A Monopoly Dispute</strong> — merchant-aligned ministers clash over company privileges</li><li><strong>The Colonial Petition</strong> — late-game decolonization pressure chain (Ages 5–6) that can lead to a Defection or a negotiated Compromise</li></ul><br>
 <hr><br>
 <br>
-<h3 id="invasion-of-mexico">Invasion of Mexico</h3><br>
+<h3 id="event-categories">Event Categories</h3><br>
 <br>
-A historical situation that fires when a colonial or foreign power establishes a foothold in Mesoamerica (or the adjacent Caribbean and Central America by 1540). The situation persists until all independent native Mesoamerican powers are subjugated, or until 1600.<br>
-<ul><li><strong>The Mesoamerican Confederation</strong> — native powers can unite under a defensive confederation international organization, sharing military access and coordinating resistance against colonial incursion</li><li><strong>Expedition Casus Belli</strong> — colonial powers gain a dedicated CB for pressing territorial claims against Mesoamerican states during the situation window</li><li><strong>Conquest events</strong> — ~28 events covering the expeditioner&#39;s dilemmas, native reactions, confederation formation, diplomatic overtures, and the resolution of the situation as the balance of power shifts</li><li><strong>Generic actions</strong> — the confederation leader can call member states to arms; colonial powers can press terms or offer negotiated settlement</li></ul><br>
-Gated by the <strong>C&amp;C: Invasion of Mexico</strong> game rule (default: on).<br>
+<table><br>
+<tr><th>Namespace</th><th>Events</th><th>Description</th></tr><br>
+<tr><td>cc_cabinet</td><td>21</td><td>Minister counsel, estate relations, diplomatic situations, provincial affairs</td></tr><br>
+<tr><td>cc_traits</td><td>20</td><td>Age trait acquisition, ruler teaching, peer learning</td></tr><br>
+<tr><td>cc_cond</td><td>16</td><td>Conditional trait spawning based on realm conditions and actions</td></tr><br>
+<tr><td>cc_synergy</td><td>28</td><td>Trait pair synergies — temporary bonuses when ministers share trait families</td></tr><br>
+<tr><td>cc_neg</td><td>21</td><td>Underperformance events and rehabilitation chains</td></tr><br>
+<tr><td>cc_wealth</td><td>10</td><td>Wealth hoarding pressure and minister enrichment</td></tr><br>
+<tr><td>cc_dual</td><td>10</td><td>Cabinet × religious figure dual-role synergies</td></tr><br>
+<tr><td>cc_intl</td><td>12</td><td>Cross-country interactions between neighboring courts</td></tr><br>
+<tr><td>cc_feudal</td><td>8</td><td>Feudal era court events</td></tr><br>
+<tr><td>cc_legacy</td><td>3</td><td>Senior minister retirement and legacy transmission</td></tr><br>
+<tr><td>cc_legend</td><td>6</td><td>Legendary minister quest chains</td></tr><br>
+<tr><td>cc_hyw</td><td>11</td><td>Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure</td></tr><br>
+<tr><td>cc_personality</td><td>18</td><td>Dynamic AI personality inflection events — key historical turning points</td></tr><br>
+<tr><td>cc_bonds</td><td>100</td><td>Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs</td></tr><br>
+<tr><td>cc_rival</td><td>3</td><td>Court rivalry escalation: minister complaint → letter unsealed → faction hardens</td></tr><br>
+<tr><td>cc_cabal</td><td>2</td><td>Cabinet alliance formation: alliance forms → joint reform proposal</td></tr><br>
+<tr><td>cc_wc</td><td>7</td><td>War council: active-war events, post-war reform proposals, outdated general retirement</td></tr><br>
+<tr><td>cc_fac</td><td>3</td><td>Estate faction capture events</td></tr><br>
+<tr><td>cc_prog</td><td>14</td><td>Stepping stone trait progression chains (Paths A/C/D/F/E)</td></tr><br>
+<tr><td>cc_colonial</td><td>6</td><td>Colonial divan: charter company events + decolonization crisis chain</td></tr><br>
+<tr><td>cc_posting</td><td>4</td><td>Colonial posting duty: dispatch, corruption, native uprising, fever</td></tr><br>
+<tr><td>cc_hus</td><td>1</td><td>Hussite Wars — papal loan event</td></tr><br>
+<tr><td>cc_invasion_mexico</td><td>28</td><td>Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution</td></tr><br>
+</table><br>
+<br>
+<em>~352 events total</em><br>
 <br>
 <hr><br>
 <br>
-<h3 id="balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</h3><br>
-<br>
-<strong>Literacy Nerfs</strong> — gives different regions and estates meaningfully different educational trajectories. This is targeted at reducing peasant literacy and thus pop promotion, with europe being able to recoup some of this with new follow-on advancements:<br>
-<ul><li><strong>Global baseline adjustment</strong> — a modest nerf to vanilla&#39;s universal pop literacy, creating more differentiation between literate and non-literate societies</li><li><strong>Library building rework</strong> — vanilla libraries granted generic local literacy; they now provide per-estate bonuses (nobles, clergy, burghers) rather than undifferentiated literacy for all pops</li><li><strong>Regional catch-up advances</strong> — targeted advances that partially restore literacy for specific world regions:</li><ul><li><strong>Western Europe (Age 2)</strong> — mass literacy driven by Innovativeness; soldiers, peasants, laborers</li><li><strong>Western Europe (Age 4)</strong> — Printing Press follow-on; burghers, soldiers, peasants, laborers</li><li><strong>Colonial powers (Age 4)</strong> — colonial ecclesiastical networks; burgher and soldier literacy for powers with active colonial nations</li><li><strong>East Asia (Age 4)</strong> — classical examination tradition; noble and burgher literacy for Japan and China</li></ul></ul><br>
-<strong>Culture Capacity Nerfs</strong> — Several vanilla advances are overridden to halve their <strong>cultures_capacity</strong> bonus, making it harder and more expensive to maintain large multi-cultural realms:<br>
-<ul><li><strong>Cultural Acceptance</strong> (Age 1, universal) — halved from vanilla value to <strong>+0.5</strong></li><li><strong>Vibrant Court</strong> (Age 2, universal) — halved to <strong>+0.5</strong></li><li><strong>Cultural Ties</strong> (Age 4 Adm, universal) — reduced to <strong>+1</strong></li><li><strong>Persian in the Court</strong> (Age 3, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Millets</strong> (Age 2, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Foreign Cultural Law</strong> (law) — the <em>Allow Foreign Rituals</em> option is changed from a flat <strong>+1</strong> culture capacity to <strong>+20%</strong> relative, reducing its value for small realms</li><li><strong>Magyar Supremacy</strong> (Nobles estate privilege, Hungary) — <strong>-33%</strong> culture capacity modifier</li></ul><br>
-<hr><br>
+<h2 id="subjects-amp-diplomacy" data-sec="3">Subjects &amp; Diplomacy</h2><br>
 <br>
 <h3 id="overlord-subject-bonds">Overlord-Subject Bonds</h3><br>
 <br>
@@ -287,6 +443,8 @@ Some subject types require a matching estate privilege or government reform (at 
 <strong>Governance</strong><br>
 <ul><li><strong>Protectorate</strong> <em>(unlocks Age 3)</em> — A Protectorate is a weaker neighboring state under the protection of a stronger power without formal subjugation.</li><li><strong>Crown Dependency</strong> <em>(unlocks Age 2)</em> — A Crown Dependency is a realm bound to its overlord by ties of shared dynasty — the same ruler family governs both courts without a formal personal union.</li><li><strong>Holy Protectorate</strong> <em>(unlocks Age 4)</em> — A Holy Protectorate is a coreligionist state taken under the spiritual patronage of a larger power.</li><li><strong>Provincial Governorate</strong> <em>(unlocks Age 5)</em> — A high-autonomy administrative region governed by a Crown-appointed magnate.</li><li><strong>Tax Farm</strong> <em>(unlocks Age 5)</em> — An exploitative extraction arrangement in which a powerful lord manages revenue collection in exchange for a portion of the proceeds.</li><li><strong>Military March</strong> <em>(unlocks Age 5)</em> — An offensive border vassal given special military charter to project power beyond our frontiers.</li></ul><br>
 <hr><br>
+<br>
+<h2 id="advances-amp-reforms" data-sec="4">Advances &amp; Reforms</h2><br>
 <br>
 <h3 id="era-advances">Era Advances</h3><br>
 <br>
@@ -384,36 +542,13 @@ Many are mixed into existing tech trees, but there are also new mini-trees in ea
 <li><strong>March Charter</strong> — Issues formal charters to border territories designating them as military marches, creating a network of offensive buffers along the realm&#39;s most contested frontiers. <em>(via: Military Marches)</em></li>  -8% light cav cost, -5% antagonism received, +10% noble agenda</ul><br>
 <hr><br>
 <br>
-<h3 id="event-categories">Event Categories</h3><br>
+<h2 id="historical-flavor" data-sec="5">Historical Flavor</h2><br>
 <br>
-<table><br>
-<tr><th>Namespace</th><th>Events</th><th>Description</th></tr><br>
-<tr><td>cc_cabinet</td><td>21</td><td>Minister counsel, estate relations, diplomatic situations, provincial affairs</td></tr><br>
-<tr><td>cc_traits</td><td>20</td><td>Age trait acquisition, ruler teaching, peer learning</td></tr><br>
-<tr><td>cc_cond</td><td>16</td><td>Conditional trait spawning based on realm conditions and actions</td></tr><br>
-<tr><td>cc_synergy</td><td>28</td><td>Trait pair synergies — temporary bonuses when ministers share trait families</td></tr><br>
-<tr><td>cc_neg</td><td>21</td><td>Underperformance events and rehabilitation chains</td></tr><br>
-<tr><td>cc_wealth</td><td>10</td><td>Wealth hoarding pressure and minister enrichment</td></tr><br>
-<tr><td>cc_dual</td><td>10</td><td>Cabinet × religious figure dual-role synergies</td></tr><br>
-<tr><td>cc_intl</td><td>12</td><td>Cross-country interactions between neighboring courts</td></tr><br>
-<tr><td>cc_feudal</td><td>8</td><td>Feudal era court events</td></tr><br>
-<tr><td>cc_legacy</td><td>3</td><td>Senior minister retirement and legacy transmission</td></tr><br>
-<tr><td>cc_legend</td><td>6</td><td>Legendary minister quest chains</td></tr><br>
-<tr><td>cc_hyw</td><td>11</td><td>Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure</td></tr><br>
-<tr><td>cc_personality</td><td>18</td><td>Dynamic AI personality inflection events — key historical turning points</td></tr><br>
-<tr><td>cc_bonds</td><td>100</td><td>Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs</td></tr><br>
-<tr><td>cc_rival</td><td>3</td><td>Court rivalry escalation: minister complaint → letter unsealed → faction hardens</td></tr><br>
-<tr><td>cc_cabal</td><td>2</td><td>Cabinet alliance formation: alliance forms → joint reform proposal</td></tr><br>
-<tr><td>cc_wc</td><td>7</td><td>War council: active-war events, post-war reform proposals, outdated general retirement</td></tr><br>
-<tr><td>cc_fac</td><td>3</td><td>Estate faction capture events</td></tr><br>
-<tr><td>cc_prog</td><td>14</td><td>Stepping stone trait progression chains (Paths A/C/D/F/E)</td></tr><br>
-<tr><td>cc_colonial</td><td>6</td><td>Colonial divan: charter company events + decolonization crisis chain</td></tr><br>
-<tr><td>cc_posting</td><td>4</td><td>Colonial posting duty: dispatch, corruption, native uprising, fever</td></tr><br>
-<tr><td>cc_hus</td><td>1</td><td>Hussite Wars — papal loan event</td></tr><br>
-<tr><td>cc_invasion_mexico</td><td>28</td><td>Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution</td></tr><br>
-</table><br>
+<h3 id="invasion-of-mexico">Invasion of Mexico</h3><br>
 <br>
-<em>~352 events total</em><br>
+A historical situation that fires when a colonial or foreign power establishes a foothold in Mesoamerica (or the adjacent Caribbean and Central America by 1540). The situation persists until all independent native Mesoamerican powers are subjugated, or until 1600.<br>
+<ul><li><strong>The Mesoamerican Confederation</strong> — native powers can unite under a defensive confederation international organization, sharing military access and coordinating resistance against colonial incursion</li><li><strong>Expedition Casus Belli</strong> — colonial powers gain a dedicated CB for pressing territorial claims against Mesoamerican states during the situation window</li><li><strong>Conquest events</strong> — ~28 events covering the expeditioner&#39;s dilemmas, native reactions, confederation formation, diplomatic overtures, and the resolution of the situation as the balance of power shifts</li><li><strong>Generic actions</strong> — the confederation leader can call member states to arms; colonial powers can press terms or offer negotiated settlement</li></ul><br>
+Gated by the <strong>C&amp;C: Invasion of Mexico</strong> game rule (default: on).<br>
 <br>
 <hr><br>
 <br>
@@ -448,7 +583,34 @@ After a historical event fires, an <strong>AI personality guard</strong> prevent
 <br>
 <hr><br>
 <br>
-<h3 id="game-rules">Game Rules</h3><br>
+<h2 id="balance" data-sec="6">Balance</h2><br>
+<br>
+<h3 id="balance-changes-literacy-amp-culture-capacity-nerfs">Balance Changes - Literacy &amp; Culture Capacity Nerfs</h3><br>
+<br>
+<strong>Literacy Nerfs</strong> — gives different regions and estates meaningfully different educational trajectories. This is targeted at reducing peasant literacy and thus pop promotion, with europe being able to recoup some of this with new follow-on advancements:<br>
+<ul><li><strong>Global baseline adjustment</strong> — a modest nerf to vanilla&#39;s universal pop literacy, creating more differentiation between literate and non-literate societies</li><li><strong>Library building rework</strong> — vanilla libraries granted generic local literacy; they now provide per-estate bonuses (nobles, clergy, burghers) rather than undifferentiated literacy for all pops</li><li><strong>Regional catch-up advances</strong> — targeted advances that partially restore literacy for specific world regions:</li><ul><li><strong>Western Europe (Age 2)</strong> — mass literacy driven by Innovativeness; soldiers, peasants, laborers</li><li><strong>Western Europe (Age 4)</strong> — Printing Press follow-on; burghers, soldiers, peasants, laborers</li><li><strong>Colonial powers (Age 4)</strong> — colonial ecclesiastical networks; burgher and soldier literacy for powers with active colonial nations</li><li><strong>East Asia (Age 4)</strong> — classical examination tradition; noble and burgher literacy for Japan and China</li></ul></ul><br>
+<strong>Culture Capacity Nerfs</strong> — Several vanilla advances are overridden to halve their <strong>cultures_capacity</strong> bonus, making it harder and more expensive to maintain large multi-cultural realms:<br>
+<ul><li><strong>Cultural Acceptance</strong> (Age 1, universal) — halved from vanilla value to <strong>+0.5</strong></li><li><strong>Vibrant Court</strong> (Age 2, universal) — halved to <strong>+0.5</strong></li><li><strong>Cultural Ties</strong> (Age 4 Adm, universal) — reduced to <strong>+1</strong></li><li><strong>Persian in the Court</strong> (Age 3, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Millets</strong> (Age 2, Ottoman) — halved to <strong>+0.5</strong></li><li><strong>Foreign Cultural Law</strong> (law) — the <em>Allow Foreign Rituals</em> option is changed from a flat <strong>+1</strong> culture capacity to <strong>+20%</strong> relative, reducing its value for small realms</li><li><strong>Magyar Supremacy</strong> (Nobles estate privilege, Hungary) — <strong>-33%</strong> culture capacity modifier</li></ul><br>
+<hr><br>
+<br>
+<h3 id="country-starting-modifiers">Country Starting Modifiers</h3><br>
+<br>
+<strong>France — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
+France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.<br>
+<br>
+<strong>England — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
+England begins with estate and levy modifiers reflecting its precarious continental position at the start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles.<br>
+<br>
+<strong>Mamluks — Foreign Rule Strain</strong> <em>(default: on)</em><br>
+The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don&#39;t.<br>
+<br>
+<strong>Ottomans — No Colonization</strong> <em>(default: on)</em><br>
+The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than competing in Atlantic exploration.<br>
+<br>
+<hr><br>
+<br>
+<h2 id="game-rules" data-sec="7">Game Rules</h2><br>
+<br>
 <br>
 All rules are toggleable in the game setup screen before starting a session.<br>
 <br>
@@ -479,62 +641,110 @@ When enabled, tracks 5 relationship dimensions (economic, military, political, c
 <ul><li><strong>Enabled</strong> <em>(default)</em> — Papal one small loan events will fire depending on your stance during hussite crusades.</li><li><strong>Disabled</strong> — No Papal one small loan events will fire.</li></ul><br>
 <hr><br>
 <br>
-<h3 id="country-starting-modifiers">Country Starting Modifiers</h3><br>
-<br>
-<strong>France — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
-France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier representing its expansionist posture toward the Lowlands.<br>
-<br>
-<strong>England — Hundred Years War Flavor</strong> <em>(default: on)</em><br>
-England begins with estate and levy modifiers reflecting its precarious continental position at the start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles.<br>
-<br>
-<strong>Mamluks — Foreign Rule Strain</strong> <em>(default: on)</em><br>
-The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don&#39;t.<br>
-<br>
-<strong>Ottomans — No Colonization</strong> <em>(default: on)</em><br>
-The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than competing in Atlantic exploration.<br>
-<br>
-<hr><br>
+<h2 id="roadmap" data-sec="8">Roadmap</h2><br>
 <br>
 <h3 id="coming-in-future-updates">Coming in Future Updates</h3><br>
 <br>
 Several expansion pillars are designed and planned for future releases:<br>
 <ul><li><strong>The Scholar&#39;s Court</strong> — Age 5–6 empiricism events; the Royal Academy building; Scholasticism vs. Empiricism cabinet tensions</li><li><strong>Succession Crisis Cabinet</strong> — Regency events, dynastic drama, cabinet behavior during interregna and heir disputes</li><li><strong>Religious Cabinet Tensions</strong> — Reformation splits courts; confessional traits; inquisitorial pressure events</li><li><strong>The Congress System</strong> — Multi-country diplomatic theater; congress events where great power ministers interact directly</li><li><strong>More Historical Flavor</strong> — Ottoman, Italian, Spanish, Mughal, and French court event chains</li></ul><br>
 <hr><br>
-<br>
-<h2 id="compatibility">Compatibility</h2><br>
+<h2 id="compatibility" data-sec="9">Compatibility</h2><br>
 <ul><li>No replace_paths — fully additive, compatible with other mods that don&#39;t replace the same files</li><li>Maybe still safe to enable on existing saves, but not recommended (new content will start appearing as events fire)</li><li>Multiplayer synchronized</li><li>May break game balance — cabinet members and new subjects provide a lot of bonuses</li><li>Generally mod compatible so long as other mods don&#39;t modify character traits heavily</li><ul><li>Not tested with other subject mods — found them unstable in testing</li></ul></ul><br>
 Tested with:<br>
 <ul><li>Hussite, Austria, Brandenburg, Timur, and Ottoman flavor packs</li><ul><li>Ottoman and Hussite flavor pack CBs are not well limited and cause the AI to misuse them.</li></ul><li>Community Flavor Pack</li><li>Overseas Naval Governors</li><li>Logical Advances Trees</li><li>Improved Subject Management</li><li>Nobles Auto Marry</li><li>Auto Child Education</li><li>Additional Buildings</li><li>Bureaucracies for Everyone</li><li>Parliament Expanded</li><li>National Destinies</li><li>Continental Hegemonies</li><li>Terra Cognita</li><li>Forced Cultural Expulsion</li><li>Improved Cultural Dynamics</li></ul><br>
 <hr><br>
 <br>
-<h2 id="ai-use-disclosure">AI Use Disclosure</h2><br>
+<h2 id="ai-use-disclosure" data-sec="10">AI Use Disclosure</h2><br>
 <br>
 Numerous AI agents were used in the creation of this project: Claude, Gemini, Qwen, Flux.<br>
 <br>
 <hr><br>
 <br>
-<h2 id="feedback-amp-bugs">Feedback &amp; Bugs</h2><br>
+<h2 id="feedback-amp-bugs" data-sec="11">Feedback &amp; Bugs</h2><br>
 <br>
 Report issues on the Steam Workshop discussion page or the mod&#39;s <a rel="nofollow" href="https://github.com/wtmenten/flavorium-universalis">GitHub repository</a>.<br>
 
     </article>
   </div>
 </div>
+
 <script>
-// highlight active nav link on scroll
 (function(){
-  const links = document.querySelectorAll('.sidebar a[href^="#"]');
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        links.forEach(l => l.classList.remove('active'));
-        const a = document.querySelector('.sidebar a[href="#' + e.target.id + '"]');
-        if (a) a.classList.add('active');
+  // --- group h3 + following siblings into .h3-group, put Features ones in a .feat-grid ---
+  // Uses childNodes (not children) so that bare text nodes produced by bbcode are moved
+  // along with their surrounding element siblings and not stranded as orphans.
+  var PALETTE = ['--adm','--dip','--mil','--gold','--purple'];
+  var content = document.getElementById('content');
+  var nodes = Array.prototype.slice.call(content.childNodes); // includes text nodes
+  var inFeatures = false, currentGrid = null, currentGroup = null, ci = 0;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    // Text / comment nodes: absorb into current group if one is open
+    if (el.nodeType !== 1) {
+      if (currentGroup) currentGroup.appendChild(el);
+      continue;
+    }
+    var tag = el.tagName;
+    if (tag === 'H2') {
+      inFeatures = el.getAttribute('data-sec') === '2';
+      currentGrid = null; currentGroup = null; ci = 0;
+    } else if (tag === 'H3') {
+      var color = 'var(' + PALETTE[ci++ % PALETTE.length] + ')';
+      currentGroup = document.createElement('div');
+      currentGroup.className = 'h3-group';
+      currentGroup.style.setProperty('--g-color', color);
+      if (inFeatures) {
+        if (!currentGrid) {
+          currentGrid = document.createElement('div');
+          currentGrid.className = 'feat-grid';
+          el.parentNode.insertBefore(currentGrid, el);
+        }
+        currentGrid.appendChild(currentGroup);
+      } else {
+        el.parentNode.insertBefore(currentGroup, el);
       }
-    });
-  }, {rootMargin:'-10% 0px -80% 0px'});
-  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(h => obs.observe(h));
+      currentGroup.appendChild(el);
+    } else if (currentGroup) {
+      currentGroup.appendChild(el);
+    }
+  }
+})();
+
+(function(){
+  // --- scroll-spy: sidebar active links ---
+  var allLinks = document.querySelectorAll('.nav-h2, .nav-h3');
+  function activate(id) {
+    allLinks.forEach(function(l){ l.classList.remove('active'); });
+    var a = document.querySelector('[href="#' + id + '"]');
+    if (a) {
+      a.classList.add('active');
+      // also activate parent h2 when a h3 is active
+      if (a.classList.contains('nav-h3')) {
+        var sec = a.closest('.nav-sec');
+        if (sec) { var h2 = sec.querySelector('.nav-h2'); if (h2) h2.classList.add('active'); }
+      }
+      a.scrollIntoView({block:'nearest'});
+    }
+  }
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) activate(e.target.id); });
+  }, {rootMargin:'-6% 0px -78% 0px'});
+  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(function(h){ obs.observe(h); });
+})();
+
+(function(){
+  // --- mobile sidebar toggle ---
+  var btn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('sidebarOverlay');
+  function close() { document.body.classList.remove('nav-open'); }
+  btn.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  overlay.addEventListener('click', close);
+  document.querySelectorAll('.nav-h2, .nav-h3').forEach(function(a){
+    a.addEventListener('click', function(){ if (window.innerWidth <= 768) close(); });
+  });
 })();
 </script>
+
 </body>
 </html>
