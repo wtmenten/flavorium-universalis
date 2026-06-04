@@ -1,0 +1,115 @@
+﻿# ────────────────────────────────────────────────────────────────────────────
+# Peace treaty options for the forced-union-conversion CBs.
+# scope:winner = the senior partner (attacker who won)
+# scope:loser  = the fiefdom union member (defender who lost)
+# ────────────────────────────────────────────────────────────────────────────
+
+cc_force_junior_partnership = {
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 65
+		}
+	}
+
+	base_antagonism = 15
+	antagonism_type = antagonism_cc_force_junior_partnership
+
+	category = country
+
+	potential = {
+		scope:war = {
+			is_no_cb_war = no
+			casus_belli ?= casus_belli:cb_assert_junior_partnership
+		}
+		scope:loser = {
+			can_make_subject_of = {
+				target = scope:winner
+				type = subject_type:junior_partner
+			}
+		}
+	}
+
+	allow = {
+	}
+
+	effect = {
+		# Break the union connection first; on_enable also does this as a safety net
+		scope:winner = {
+			if = {
+				limit = { scope:loser = { exists = union } }
+				break_union = { target = scope:loser }
+			}
+		}
+		scope:loser = {
+			make_subject_of = {
+				target = scope:winner
+				type = subject_type:junior_partner
+				war = scope:war
+			}
+			add_opinion = {
+				target = scope:winner
+				modifier = opinion_cc_forced_junior_partnership
+			}
+		}
+	}
+
+	ai_desire = {
+		value = 1000
+	}
+}
+
+cc_force_crown_dependency = {
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 50
+		}
+	}
+
+	base_antagonism = 10
+	antagonism_type = antagonism_cc_force_crown_dependency
+
+	category = country
+
+	potential = {
+		scope:war = {
+			is_no_cb_war = no
+			casus_belli ?= casus_belli:cb_assert_crown_dependency
+		}
+		scope:loser = {
+			can_make_subject_of = {
+				target = scope:winner
+				type = subject_type:crown_dependency
+			}
+		}
+	}
+
+	allow = {
+	}
+
+	effect = {
+		# Break the union connection first; on_enable also does this as a safety net
+		scope:winner = {
+			if = {
+				limit = { scope:loser = { exists = union } }
+				break_union = { target = scope:loser }
+			}
+		}
+		scope:loser = {
+			make_subject_of = {
+				target = scope:winner
+				type = subject_type:crown_dependency
+				war = scope:war
+			}
+			add_opinion = {
+				target = scope:winner
+				modifier = opinion_cc_forced_crown_dependency
+			}
+		}
+	}
+
+	ai_desire = {
+		value = 1000
+	}
+}

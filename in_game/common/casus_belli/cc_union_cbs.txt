@@ -1,0 +1,129 @@
+﻿# Casus belli for a union's senior partner to forcibly formalize a weaker member
+# as a junior_partner or crown_dependency subject type.
+# root = actor (senior partner declaring war)
+# scope:target = union member (fiefdom) being targeted
+
+cb_assert_junior_partnership = {
+	# Visible when: actor is senior partner, target is a fiefdom union member not yet converted
+	create_visible = {
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		scope:target = {
+			is_subject = yes
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+		}
+		has_advance = royal_union_network_advance
+	}
+
+	declare_enabled = {
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		scope:target = {
+			is_subject = yes
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+		}
+		has_advance = royal_union_network_advance
+	}
+
+	create_enabled = {
+		# Actor must be at least twice the economic weight of the target
+		country_economical_base >= {
+			value = scope:target.country_economical_base
+			multiply = 2
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+		NOT = { has_truce_with = scope:target }
+	}
+
+	ai_will_do = {
+		value = 0
+		if = {
+			limit = {
+				scope:target = {
+					country_economical_base < {
+						value = root.country_economical_base
+						multiply = 0.35
+					}
+				}
+			}
+			add = 5
+		}
+	}
+
+	allow_wars_on_own_subjects = yes
+	war_goal_type = take_capital
+}
+
+# Crown dependency variant — requires an existing royal marriage with the target.
+# Lower size threshold because dynastic ties justify asserting a softer bond earlier.
+cb_assert_crown_dependency = {
+	create_visible = {
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		scope:target = {
+			is_subject = yes
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+		}
+		has_advance = dynastic_governance_advance
+		has_royal_marriage_with = scope:target
+	}
+
+	declare_enabled = {
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		scope:target = {
+			is_subject = yes
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+		}
+		has_advance = dynastic_governance_advance
+		has_royal_marriage_with = scope:target
+	}
+
+	create_enabled = {
+		# Royal marriage lowers the bar: 1.5× suffices
+		country_economical_base >= {
+			value = scope:target.country_economical_base
+			multiply = 1.5
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+		NOT = { has_truce_with = scope:target }
+	}
+
+	ai_will_do = {
+		value = 0
+		if = {
+			limit = {
+				scope:target = {
+					country_economical_base < {
+						value = root.country_economical_base
+						multiply = 0.5
+					}
+				}
+			}
+			add = 5
+		}
+	}
+
+	allow_wars_on_own_subjects = yes
+	war_goal_type = take_capital
+}
