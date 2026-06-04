@@ -51,17 +51,23 @@ cc_invasion_mexico = {
 	}
 
 	can_end = {
-		OR = {
-			current_year > 1600
-			# All independent native powers in mesoamerica are subjugated or gone
-			NOT = {
-				region:mesoamerica_region = {
-					any_country_with_capital_in_geography = {
-						is_capital_mesoamerica = yes
-						is_subject = no
+		end_reason = {
+			trigger = { current_year > 1600 }
+			desc = "ccim_end_year_limit"
+		}
+		end_reason = {
+			trigger = {
+				# All independent native powers in mesoamerica are subjugated or gone
+				NOT = {
+					region:mesoamerica_region = {
+						any_country_with_capital_in_geography = {
+							is_capital_mesoamerica = yes
+							is_subject = no
+						}
 					}
 				}
 			}
+			desc = "ccim_end_natives_subjugated"
 		}
 	}
 

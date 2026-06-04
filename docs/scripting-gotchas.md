@@ -13,7 +13,7 @@ Always verify modifier names in vanilla before using them. Common pitfalls:
 - **`local_navy_tradition_from_battles`** — does NOT exist. Use `navy_tradition_from_battle` (country) + `harbor_suitability` (local)
 - **`monthly_inflation`** — valid country modifier ✓
 - **`monthly_legitimacy`** — valid country modifier ✓
-- **`court_spending_cost_modifier`** — valid country modifier ✓
+- **`court_spending_cost_modifier`** — **RENAMED in 1.3** → `court_spending_efficiency` (sign-flipped: old `-0.08` = new `0.08`)
 - **`free_building_levels`** — valid as a **location** static modifier (NOT country) ✓
 - **`antagonism_taking_land_giving_modifier`** — valid country modifier (makes taking land generate more antagonism) ✓
 - **`num_naval_governors`** — valid in country_modifier blocks for estate privileges, advances, and government reforms ✓
@@ -176,7 +176,14 @@ Names that look obvious but are wrong, with verified replacements:
 | Wrong name | Correct name | Notes |
 |---|---|---|
 | `global_trade_power` | `global_trade_center_power` | country modifier |
-| `fort_maintenance_modifier` | `fort_maintenance_cost` | country modifier |
+| `fort_maintenance_modifier` | `fort_maintenance_efficiency` | country modifier (renamed in 1.3; sign-flipped from old `fort_maintenance_cost`) |
+| `fort_maintenance_cost` | `fort_maintenance_efficiency` | renamed in 1.3; negate value |
+| `stability_cost` | `stability_cost_efficiency` | renamed in 1.3; negate value |
+| `global_bureaucracy_maintenance_cost_modifier` | `global_bureaucracy_maintenance_efficiency` | renamed in 1.3; negate value |
+| `court_spending_cost_modifier` | `court_spending_efficiency` | renamed in 1.3; negate value |
+| `local_build_buildings_cost` | `local_build_buildings_efficiency` | renamed in 1.3; negate value |
+| `global_build_buildings_cost` | `global_build_buildings_efficiency` | renamed in 1.3; negate value |
+| `diplomatic_annexation_cost` | `diplomatic_annexation_efficiency` | renamed in 1.3; negate value |
 | `missionary_strength` | `global_pop_conversion_speed_modifier` | conversion speed |
 | `global_monthly_development_cost_modifier` | **does not exist** | no global dev cost modifier |
 | `has_war_with` | `is_at_war_with` | trigger; also `at_war_with` works |
@@ -327,3 +334,5 @@ If two files each define `on_game_start = { effect = {} }`, the engine warns "mo
 - `has_custom_tag` trigger — doesn't exist; trait `custom_tags = {}` values can't be queried
 - Dynamic culture-group comparison — `root.culture.culture_group` as a dot-chain accessor is parsed as an event target link and fails; use `only_overlord_or_kindred_culture = yes` on subject types instead
 - `illustration_tags = { 10 = combat }` — `combat` tag doesn't exist; use `military`
+
+- **Situation `can_end` block (1.3+)**: bare triggers are INVALID; must wrap each condition in `end_reason = { trigger = { ... } desc = "lockey" }`. Multiple `end_reason` entries are allowed.
