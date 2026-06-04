@@ -1,0 +1,294 @@
+﻿namespace = cc_pu
+
+###############################################################################
+# UNION → JUNIOR PARTNER / CROWN DEPENDENCY CONVERSION EVENTS
+#
+# cc_pu.1  — "A Proposal to Formalize the Union" (junior_partner path)
+#             Senior partner fires; qualifies a small fiefdom union member.
+#             Three paths: diplomatic offer, bribery, skilled negotiator.
+#
+# cc_pu.2  — "Strengthening the Dynastic Bond" (crown_dependency path)
+#             Senior partner fires; requires royal marriage with the target.
+#             Same three paths but uses subject_type:crown_dependency.
+#
+# Both events fired from cc_union_partnership_pulse (on_action).
+# scope:pu_target = the qualifying union member chosen in immediate = {}.
+###############################################################################
+
+# cc_pu.1 — "A Proposal to Formalize the Union"
+# Fires when a senior partner has a small fiefdom union member ripe for
+# formalization. Offers three paths: consent, bribery, or skilled negotiation.
+cc_pu.1 = {
+	type = country_event
+	title = cc_pu.1.title
+	desc = cc_pu.1.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = interior
+	}
+
+	trigger = {
+		is_subject = no
+		has_advance = royal_union_network_advance
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		any_subject = {
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+			NOT = { has_variable = junior_partner_cooldown }
+			country_economical_base < {
+				value = root.country_economical_base
+				multiply = 0.5
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				overlord = root
+				in_union_with = root
+				is_subject_type = fiefdom
+				NOT = { has_variable = junior_partner_cooldown }
+				country_economical_base < {
+					value = root.country_economical_base
+					multiply = 0.5
+				}
+			}
+			save_scope_as = pu_target
+		}
+		# Mark so the event cannot re-fire for this country for 25 years
+		scope:pu_target = {
+			set_variable = { name = junior_partner_cooldown value = yes years = 25 }
+		}
+	}
+
+	# Option A: Propose the partnership directly.
+	# A small opinion hit — the member nobles feel pressured — but both courts gain legitimacy.
+	option = {
+		name = cc_pu.1.a
+		add_prestige = prestige_mild_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:junior_partner
+			}
+			add_prestige = prestige_weak_bonus
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_forced_junior_partnership
+			}
+		}
+	}
+
+	# Option B: Sweeten the deal with a generous financial settlement.
+	# Costs 150 gold; the target's court is compensated, leaving no ill will.
+	option = {
+		name = cc_pu.1.b
+		trigger = {
+			gold >= 150
+		}
+		add_gold = -150
+		add_prestige = prestige_weak_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:junior_partner
+			}
+			add_gold = 150
+			add_prestige = prestige_weak_bonus
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_bribed_into_partnership
+			}
+		}
+	}
+
+	# Option C: Dispatch a skilled diplomat to negotiate on our behalf.
+	# Requires a cabinet character with a senior diplomatic trait.
+	# Best outcome: full prestige, no opinion hit, and both courts benefit.
+	option = {
+		name = cc_pu.1.c
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_pu_minister_cooldown }
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = diplomatic_attache
+					has_trait = caliphate_diplomat
+				}
+			}
+		}
+		add_prestige = prestige_severe_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:junior_partner
+			}
+			add_prestige = prestige_mild_bonus
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_pu_minister_cooldown }
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = diplomatic_attache
+					has_trait = caliphate_diplomat
+				}
+			}
+			save_scope_as = cc_pu_minister
+		}
+		scope:cc_pu_minister = {
+			set_variable = { name = cc_pu_minister_cooldown value = yes years = 10 }
+		}
+	}
+}
+
+# cc_pu.2 — "Strengthening the Dynastic Bond"
+# A more intimate conversion event available when the overlord also holds a
+# royal marriage with the qualifying union member. Uses the crown_dependency
+# subject type instead of junior_partner.
+cc_pu.2 = {
+	type = country_event
+	title = cc_pu.2.title
+	desc = cc_pu.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		is_subject = no
+		has_advance = dynastic_governance_advance
+		exists = union
+		union = {
+			has_active_senior_partner = yes
+			country_is_senior_partner = { country = root }
+		}
+		any_subject = {
+			overlord = root
+			in_union_with = root
+			is_subject_type = fiefdom
+			NOT = { has_variable = crown_dependency_cooldown }
+			has_royal_marriage_with = root
+			country_economical_base < {
+				value = root.country_economical_base
+				multiply = 0.65
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				overlord = root
+				in_union_with = root
+				is_subject_type = fiefdom
+				NOT = { has_variable = crown_dependency_cooldown }
+				has_royal_marriage_with = root
+				country_economical_base < {
+					value = root.country_economical_base
+					multiply = 0.65
+				}
+			}
+			save_scope_as = pu_target
+		}
+		scope:pu_target = {
+			set_variable = { name = crown_dependency_cooldown value = yes years = 25 }
+		}
+	}
+
+	# Option A: Propose the dynastic dependency formally.
+	option = {
+		name = cc_pu.2.a
+		add_prestige = prestige_mild_bonus
+		add_legitimacy = legitimacy_mild_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:crown_dependency
+			}
+			add_prestige = prestige_weak_bonus
+			add_legitimacy = legitimacy_weak_bonus
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_forced_crown_dependency
+			}
+		}
+	}
+
+	# Option B: Sweeten with a dynastic gift (100 gold — slightly cheaper than
+	# the junior_partner path because the royal marriage already warms relations).
+	option = {
+		name = cc_pu.2.b
+		trigger = {
+			gold >= 100
+		}
+		add_gold = -100
+		add_prestige = prestige_weak_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:crown_dependency
+			}
+			add_gold = 100
+			add_prestige = prestige_weak_bonus
+			add_legitimacy = legitimacy_weak_bonus
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_bribed_into_partnership
+			}
+		}
+	}
+
+	# Option C: Dispatch a skilled diplomat — same trait gate as cc_pu.1.
+	option = {
+		name = cc_pu.2.c
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_pu_minister_cooldown }
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = diplomatic_attache
+					has_trait = caliphate_diplomat
+				}
+			}
+		}
+		add_prestige = prestige_severe_bonus
+		add_legitimacy = legitimacy_mild_bonus
+		scope:pu_target = {
+			make_subject_of = {
+				target = root
+				type = subject_type:crown_dependency
+			}
+			add_prestige = prestige_mild_bonus
+			add_legitimacy = legitimacy_weak_bonus
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_variable = cc_pu_minister_cooldown }
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = diplomatic_attache
+					has_trait = caliphate_diplomat
+				}
+			}
+			save_scope_as = cc_pu_minister
+		}
+		scope:cc_pu_minister = {
+			set_variable = { name = cc_pu_minister_cooldown value = yes years = 10 }
+		}
+	}
+}

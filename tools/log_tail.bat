@@ -11,38 +11,28 @@ exit /b
 # Grabs the path from the batch file argument, defaults to "error.log" if empty
 $logFile = if ($env:LOG_PATH) { $env:LOG_PATH } else { "error.log" }
 
-# Forward-block exclusions: when trigger line matches, suppress it + N following lines
-# Each entry: @{ trigger = "..."; skip = N }
-$blockExclusions = @(
-)
-
-# Lookbehind exclusions: when tail line matches, suppress it + N preceding lines from buffer
-# Each entry: @{ tail = "..."; lookbehind = N }
-$contextExclusions = @(
-    @{ tail = "common/formable_countries/99_nd_dnm.txt"; lookbehind = 2 }
-)
-
 # Define the array of strings to exclude
+# If any line in a log chunk (all lines sharing a timestamp) matches, the whole chunk is suppressed.
 $exclusions = @(
     "waves_vfx", "foam_stop",
     "sakuya", "ace_debug", "cheat_menu_l_english",
 
     "00_default_parliament_mod", "country_parliament_mod.txt", "_parliament_mod.txt",
-    
+
     "HBMW_", "MBHW_",
-    
+
     "rise_of_the_ottomans", "ohl_", "OHL_",
     "_types/ab", "ab_events",
-    
+
     "production_method has",
     "nd_bnh", "nd_rom",
     "D008_fate_of_the_phoenix_actions",
     "generic_actions/hundred_years_war",
     "situations/hussite_wars",
-    
+
     "nd_nin", " ism_", "_ism_", "ism_disable_interactions",
     "is not explicitly listed in an ai list", "Failed to find message type:", "does not match game version",
-    
+
     "localization_util.cpp", "should be in utf8-bom encoding",
 
     "Event nd_", "Variable 'nd_",
@@ -54,35 +44,56 @@ $exclusions = @(
     " wrong ruler-term defined for its current",
     "file: common/subject_types/tributary.txt",
     "common/subject_types/dominion.txt:68",
-    
+
     "The advance 'chancery_records'",
-    
+
     " common/formable_countries/00_formable_countries.txt",
-    
+    "common/formable_countries/99_nd_dnm.txt",
+
     "DHE/00", "bramod", "monthly_towards_pru_",
 
     "Country 'AU", "'AUE' has no ", "'AUH' has no ", "kaiserreich_", "hab_", "kaiserreich_austria_l_english", "_kaiserreich.txt' should be in utf8-bom",
-     
-    "country_HAB", "country_VEN", "country_CRO", "country_AUE", "country_AUH", "country_HAB_kaiserreich", 
+
+    "country_HAB", "country_VEN", "country_CRO", "country_AUE", "country_AUH", "country_HAB_kaiserreich",
     "country_TEU", "00_austria_formables", "_kaiserreich.txt", "setup/countries/austria", "AUE has the name 'empire'",
     "zzz_hre",
-    
+
     ".gui:", "gui/town_rights.gui",
 
     "automarry_on_actions", "auto_marry",
 
     "/on_action/_hardcoded.txt",
     "on_action/country_four_yearly.txt",
-    
+
     "ask_join_war_for_favors",
 
-    "used but is never set.", "is set but is never used.", "missing an outcome", "location with no owner", 
+    "used but is never set.", "is set but is never used.", "missing an outcome", "location with no owner",
     "duplicated production method name 'naval_governor_maintenance'",
-    
-    "decline_of_empire.9", 
+
+    "decline_of_empire.9",
     "/00_event_illustration_effects.txt",
     "lombardo_venezia", "boehmen_kronjuwel", "prager_hof_kanzlei", "Duplicated key ribeira_das_naus",
     "fred_generic_",
+    
+
+    "events/character/noble_marriage.txt:400", "events/character/artist_events.txt:2835", 
+    "events/government/parliaments.txt:3129", "events/government/parliaments.txt:22",
+    "common/scripted_triggers/country_triggers.txt:1300",
+    "common/generic_actions/treaty_of_tordesillas.txt:1",
+    "common/generic_actions/italian_wars.txt:12",
+    "common/international_organizations/hre.txt:1047",
+    "events/disaster/succession_crisis.txt:875", "trying to assign a pop",
+    "events/wokou_events.txt:285",
+    "Failed to convert statement for argument '0' for call '",
+    "Failed converting statement for 'Select_int32(InjectedButton.HasLabel",
+    "Malformed token: [Select_int32(InjectedButton.HasLabel",
+    "BuildInLocationLateralView",
+    "InjectedButtonsRegistry",
+    "InjectedButton",
+    "JominiNotification.IsPassword",
+    "GetCustomGui",
+
+
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",
     "audio2_wwise.cpp:757", "audio2_wwise.cpp:1970", "state_event.h:391", "context pointer", "Could not push the provided stack context",
@@ -96,72 +107,42 @@ $exclusions = @(
 if (Test-Path $logFile) {
     Write-Host "Streaming log file: $(Resolve-Path $logFile)" -ForegroundColor Cyan
     Write-Host "Press [Ctrl + C] to stop streaming.`n" -ForegroundColor Yellow
-    
-    # The '-Wait' switch tells PowerShell to keep tracking the file live
+
     $printLine = {
         param($l)
+        if ($l.Trim() -eq '') { return }
         if ($l -match '^[^\]]*\](.*)$') { Write-Output $Matches[1].TrimStart() } else { Write-Output $l }
     }
 
-    $skipRemaining = 0
-    $maxLookbehind = if ($contextExclusions.Count -gt 0) {
-        ($contextExclusions | ForEach-Object { $_.lookbehind } | Measure-Object -Maximum).Maximum
-    } else { 0 }
-    $lineBuffer = [System.Collections.Generic.List[string]]::new()
+    function Test-ChunkExcluded ($chunk) {
+        foreach ($line in $chunk) {
+            foreach ($exclude in $exclusions) {
+                if ($line.Contains($exclude)) { return $true }
+            }
+        }
+        return $false
+    }
+
+    function Flush-Chunk ($chunk) {
+        if ($chunk.Count -gt 0 -and -not (Test-ChunkExcluded $chunk)) {
+            foreach ($l in $chunk) { & $printLine $l }
+        }
+        $chunk.Clear()
+    }
+
+    $currentChunk = [System.Collections.Generic.List[string]]::new()
 
     Get-Content $logFile -Wait | ForEach-Object {
         $line = $_
-
-        # Forward-block exclusions: suppress trigger + N following lines
-        $blockMatched = $false
-        foreach ($block in $blockExclusions) {
-            if ($line.Contains($block.trigger)) {
-                $skipRemaining = $block.skip
-                $blockMatched = $true
-                break
-            }
+        # A line starting with '[' begins a new log entry / chunk
+        if ($line -match '^\[') {
+            Flush-Chunk $currentChunk
         }
-        if ($blockMatched) { return }
-
-        if ($skipRemaining -gt 0) {
-            $skipRemaining--
-            return
-        }
-
-        # Lookbehind exclusions: tail line identifies the block; remove preceding lines from buffer
-        $contextMatched = $false
-        foreach ($ctx in $contextExclusions) {
-            if ($line.Contains($ctx.tail)) {
-                $removeCount = [Math]::Min($ctx.lookbehind, $lineBuffer.Count)
-                if ($removeCount -gt 0) { $lineBuffer.RemoveRange($lineBuffer.Count - $removeCount, $removeCount) }
-                $contextMatched = $true
-                break
-            }
-        }
-        if ($contextMatched) { return }
-
-        # Single-line exclusions (including blank/whitespace-only lines)
-        if ($line.Trim() -eq '') { return }
-        $matched = $false
-        foreach ($exclude in $exclusions) {
-            if ($line.Contains($exclude)) { $matched = $true; break }
-        }
-        if ($matched) { return }
-
-        # Buffer the line; flush any that are now beyond the lookbehind window
-        if ($maxLookbehind -gt 0) {
-            $lineBuffer.Add($line)
-            while ($lineBuffer.Count -gt $maxLookbehind) {
-                & $printLine $lineBuffer[0]
-                $lineBuffer.RemoveAt(0)
-            }
-        } else {
-            & $printLine $line
-        }
+        $currentChunk.Add($line)
     }
 
     # Flush remaining buffer on exit
-    foreach ($l in $lineBuffer) { & $printLine $l }
+    Flush-Chunk $currentChunk
 } else {
     Write-Error "Could not find file: $logFile"
 }
