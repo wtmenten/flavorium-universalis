@@ -124,5 +124,27 @@ cc_on_game_start = {
 				grant_estate_privilege = estate_privilege:magyar_supremacy
 			}
 		}
+
+		# --- AI Personality Monitor Variable Initialization ---
+		# Pre-set all counter variables to 0 so var: comparisons in limits and
+		# ai_chance blocks never fire before the monthly monitor has run once.
+		if = {
+			limit = {
+				OR = {
+					has_game_rule = cc_ai_personalities_dynamic
+					has_game_rule = cc_ai_personalities_full
+				}
+			}
+			every_country = {
+				set_variable = { name = cc_p_at_war value = 0 }
+				set_variable = { name = cc_p_high_exhaustion value = 0 }
+				set_variable = { name = cc_p_treasury_low value = 0 }
+				set_variable = { name = cc_p_treasury_rich value = 0 }
+				set_variable = { name = cc_p_disloyal_subject value = 0 }
+				set_variable = { name = cc_p_coalition_threat value = 0 }
+				set_variable = { name = cc_p_low_prestige value = 0 }
+				set_variable = { name = cc_p_great_power value = 0 }
+			}
+		}
 	}
 }

@@ -39,6 +39,7 @@ biyearly_country_pulse = {
 		cc_cabinet_biyearly_wealth
 		cc_cabinet_biyearly_rivalry
 		cc_cabinet_biyearly_rivalry_events
+		cc_cabinet_biyearly_scorned
 		cc_cabinet_biyearly_cabal
 		cc_cabinet_biyearly_estate_faction
 		cc_cabinet_biyearly_colonial
@@ -430,6 +431,25 @@ cc_cabinet_biyearly_rivalry_events = {
 	}
 }
 
+# Dismissed-resentful counselor event — fires when a purged minister lingers at court
+cc_cabinet_biyearly_scorned = {
+	trigger = {
+		any_character = {
+			NOT = { in_cabinet = yes }
+			has_variable = cc_dismissed_resentful
+		}
+	}
+	random_events = {
+		3 = cc_rival.4    # The Scorned Counselor
+
+		chance_to_happen = 60
+
+		chance_of_no_event = {
+			value = 20
+		}
+	}
+}
+
 # Cabal formation — fires periodically regardless of tension
 cc_cabinet_biyearly_cabal = {
 	random_events = {
@@ -493,7 +513,7 @@ cc_cabinet_yearly_colonial = {
 cc_cabinet_yearly_colonial_posting = {
 	trigger = {
 		any_cabinet_character = {
-			cabinet_action = cabinet_action:cc_duty_colonial_posting
+			cabinet_action ?= cabinet_action:cc_duty_colonial_posting
 		}
 	}
 	random_events = {

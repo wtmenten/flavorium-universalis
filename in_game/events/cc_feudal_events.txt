@@ -388,12 +388,15 @@ cc_feudal.6 = {
 	}
 
 	immediate = {
-		random_neighbor_country = {
-			culture = {
-				save_scope_as = neighbor_culture
-			}
-			religion = {
-				save_scope_as = neighbor_religion
+		# Fallback: use root country's own culture and religion
+		culture = { save_scope_as = neighbor_culture }
+		religion = { save_scope_as = neighbor_religion }
+		# Override with a neighbor's if any exist
+		if = {
+			limit = { any_neighbor_country = { always = yes } }
+			random_neighbor_country = {
+				culture = { save_scope_as = neighbor_culture }
+				religion = { save_scope_as = neighbor_religion }
 			}
 		}
 		create_character = {

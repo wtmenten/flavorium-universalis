@@ -11,10 +11,21 @@ exit /b
 # Grabs the path from the batch file argument, defaults to "error.log" if empty
 $logFile = if ($env:LOG_PATH) { $env:LOG_PATH } else { "error.log" }
 
+# Forward-block exclusions: when trigger line matches, suppress it + N following lines
+# Each entry: @{ trigger = "..."; skip = N }
+$blockExclusions = @(
+)
+
+# Lookbehind exclusions: when tail line matches, suppress it + N preceding lines from buffer
+# Each entry: @{ tail = "..."; lookbehind = N }
+$contextExclusions = @(
+    @{ tail = "common/formable_countries/99_nd_dnm.txt"; lookbehind = 2 }
+)
+
 # Define the array of strings to exclude
 $exclusions = @(
     "waves_vfx", "foam_stop",
-    "sakuya", "ace_debug", "ace", "cheat_menu_l_english",
+    "sakuya", "ace_debug", "cheat_menu_l_english",
 
     "00_default_parliament_mod", "country_parliament_mod.txt", "_parliament_mod.txt",
     
@@ -87,23 +98,70 @@ if (Test-Path $logFile) {
     Write-Host "Press [Ctrl + C] to stop streaming.`n" -ForegroundColor Yellow
     
     # The '-Wait' switch tells PowerShell to keep tracking the file live
+    $printLine = {
+        param($l)
+        if ($l -match '^[^\]]*\](.*)$') { Write-Output $Matches[1].TrimStart() } else { Write-Output $l }
+    }
+
+    $skipRemaining = 0
+    $maxLookbehind = if ($contextExclusions.Count -gt 0) {
+        ($contextExclusions | ForEach-Object { $_.lookbehind } | Measure-Object -Maximum).Maximum
+    } else { 0 }
+    $lineBuffer = [System.Collections.Generic.List[string]]::new()
+
     Get-Content $logFile -Wait | ForEach-Object {
         $line = $_
-        
-        $matched = $false
-        foreach ($exclude in $exclusions) {
-            if ($line.Contains($exclude)) {
-                $matched = $true
+
+        # Forward-block exclusions: suppress trigger + N following lines
+        $blockMatched = $false
+        foreach ($block in $blockExclusions) {
+            if ($line.Contains($block.trigger)) {
+                $skipRemaining = $block.skip
+                $blockMatched = $true
                 break
             }
         }
-        
-        if (-not $matched) {
-            if ($line -match '^[^\]]*\](.*)$') {
-                Write-Output $Matches[1].TrimStart()
+        if ($blockMatched) { return }
+
+        if ($skipRemaining -gt 0) {
+            $skipRemaining--
+            return
+        }
+
+        # Lookbehind exclusions: tail line identifies the block; remove preceding lines from buffer
+        $contextMatched = $false
+        foreach ($ctx in $contextExclusions) {
+            if ($line.Contains($ctx.tail)) {
+                $removeCount = [Math]::Min($ctx.lookbehind, $lineBuffer.Count)
+                if ($removeCount -gt 0) { $lineBuffer.RemoveRange($lineBuffer.Count - $removeCount, $removeCount) }
+                $contextMatched = $true
+                break
             }
         }
+        if ($contextMatched) { return }
+
+        # Single-line exclusions (including blank/whitespace-only lines)
+        if ($line.Trim() -eq '') { return }
+        $matched = $false
+        foreach ($exclude in $exclusions) {
+            if ($line.Contains($exclude)) { $matched = $true; break }
+        }
+        if ($matched) { return }
+
+        # Buffer the line; flush any that are now beyond the lookbehind window
+        if ($maxLookbehind -gt 0) {
+            $lineBuffer.Add($line)
+            while ($lineBuffer.Count -gt $maxLookbehind) {
+                & $printLine $lineBuffer[0]
+                $lineBuffer.RemoveAt(0)
+            }
+        } else {
+            & $printLine $line
+        }
     }
+
+    # Flush remaining buffer on exit
+    foreach ($l in $lineBuffer) { & $printLine $l }
 } else {
     Write-Error "Could not find file: $logFile"
 }

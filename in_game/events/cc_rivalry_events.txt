@@ -134,11 +134,8 @@ cc_rival.1 = {
 		add_prestige = prestige_weak_penalty
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
-		scope:rival_a = {
-			add_opinion = { target = root modifier = cc_court_favored }
-		}
 		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_rival_dismissed }
+			set_variable = { name = cc_minister_resentful value = yes }
 		}
 	}
 
@@ -148,11 +145,8 @@ cc_rival.1 = {
 		add_prestige = prestige_weak_penalty
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
-		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_court_favored }
-		}
 		scope:rival_a = {
-			add_opinion = { target = root modifier = cc_rival_dismissed }
+			set_variable = { name = cc_minister_resentful value = yes }
 		}
 	}
 
@@ -168,12 +162,8 @@ cc_rival.1 = {
 		else = {
 			set_variable = { name = cc_court_rivalry value = 0 }
 		}
-		scope:rival_a = {
-			add_opinion = { target = root modifier = cc_court_reconciliation }
-		}
-		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_court_reconciliation }
-		}
+		scope:rival_a = { remove_variable = cc_minister_resentful }
+		scope:rival_b = { remove_variable = cc_minister_resentful }
 	}
 
 	# Option D — Exploit the tension (open "A Letter Unsealed" chain)
@@ -211,7 +201,7 @@ cc_rival.2 = {
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_rival_dismissed }
+			set_variable = { name = cc_minister_resentful value = yes }
 		}
 		add_country_modifier = {
 			modifier = cc_faction_purge_fallout
@@ -264,7 +254,7 @@ cc_rival.3 = {
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_rival_dismissed }
+			set_variable = { name = cc_minister_resentful value = yes }
 		}
 		add_stability = stability_weak_penalty
 	}
@@ -286,12 +276,86 @@ cc_rival.3 = {
 		add_prestige = prestige_mild_penalty
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
-		scope:rival_a = {
-			add_adm = 1
-			add_opinion = { target = root modifier = cc_court_favored }
-		}
+		scope:rival_a = { add_adm = 1 }
 		scope:rival_b = {
-			add_opinion = { target = root modifier = cc_rival_dismissed }
+			set_variable = { name = cc_minister_resentful value = yes }
+		}
+	}
+}
+
+
+###############################################################################
+# cc_rival.4 — THE SCORNED COUNSELOR
+# Fires biyearly when a dismissed resentful character remains at court.
+# The ex-minister has been quietly working the palace against the ruler's interests.
+###############################################################################
+
+cc_rival.4 = {
+	type = country_event
+	title = cc_rival.4.title
+	desc = cc_rival.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_rival_4_cooldown }
+		any_character = {
+			NOT = { in_cabinet = yes }
+			has_variable = cc_dismissed_resentful
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_rival_4_cooldown value = yes months = 36 }
+		random_character = {
+			limit = {
+				NOT = { in_cabinet = yes }
+				has_variable = cc_dismissed_resentful
+			}
+			save_scope_as = scorned_counselor
+		}
+		random_neighbor_country = { save_scope_as = cc_exile_dest }
+	}
+
+	# Option A — Exile the scorned counselor
+	option = {
+		name = cc_rival.4.a
+		add_prestige = prestige_mild_penalty
+		scope:scorned_counselor = {
+			remove_variable = cc_dismissed_resentful
+			move_country = scope:cc_exile_dest
+		}
+	}
+
+	# Option B — Offer reconciliation (gold buys their silence)
+	option = {
+		name = cc_rival.4.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -1.5 min = -150 }
+		scope:scorned_counselor = {
+			remove_variable = cc_dismissed_resentful
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Option C — Ignore them (rivalry builds, tension follows)
+	option = {
+		name = cc_rival.4.c
+		if = {
+			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry < 5 }
+			change_variable = { name = cc_court_rivalry add = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_variable = cc_court_rivalry } }
+			set_variable = { name = cc_court_rivalry value = 1 }
+		}
+		add_country_modifier = {
+			modifier = court_tension
+			years = 2
+			mode = set_to_largest_and_extend
 		}
 	}
 }

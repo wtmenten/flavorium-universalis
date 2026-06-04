@@ -4,12 +4,15 @@
 # Game rule cc_ai_personalities controls activation:
 #   cc_ai_personalities_historical flag → age arcs + inflection events
 #   cc_ai_personalities_random_drift  flag → periodic drift events for unguarded AI
+#
+# Historical personality logic lives in:
+#   scripted_effects/cc_ai_personality_scripted_effects.txt  (cc_apply_historical_personality)
 
 on_new_age = {
 	on_actions = { cc_on_new_age_personalities }
 }
 on_game_start = {
-	on_actions = { cc_on_new_age_personalities }
+	on_actions = { cc_on_game_start_personalities }
 }
 
 monthly_country_pulse = {
@@ -26,917 +29,29 @@ four_yearly_country_pulse = {
 
 
 # ---------------------------------------------------------------------------
+# cc_on_game_start_personalities
+# Scope: world (on_game_start is world scope).
+# Iterates every country and applies starting historical personalities.
+# ---------------------------------------------------------------------------
+
+cc_on_game_start_personalities = {
+	effect = {
+		every_country = {
+			cc_apply_historical_personality = yes
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
 # cc_on_new_age_personalities
 # Scope: the country entering the new age (fires once per country per age).
-# Sets personality for covered tags according to their historical arc.
-# Inflection events (key turning points) are fired as choice events instead
-# of a direct set_personality so player-controlled countries can respond.
-# After any direct assignment: apply cc_ai_personality_guard for 20 years
-# to block random drift from overriding a fresh historical setting.
+# Delegates to the scripted effect so the same logic can be called from
+# both country scope (on_new_age) and world scope (on_game_start via every_country).
 # ---------------------------------------------------------------------------
 
 cc_on_new_age_personalities = {
 	effect = {
-		if = {
-			limit = { 
-				OR = {
-					has_game_rule = cc_ai_personalities_historical
-					has_game_rule = cc_ai_personalities_full
-				}
-			 }
-
-			# ---------------------------------------------------------------
-			# OTTOMAN EMPIRE (TUR)
-			# Age 1-2: aggressive conquest of Anatolia/Balkans
-			# Age 3: inflection event — peak sultans (Selim/Suleiman)
-			# Age 4: inflection event — early stagnation begins
-			# Age 5-6: gradual defensive decline
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = TUR }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					trigger_event_non_silently = cc_personality.10
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					trigger_event_non_silently = cc_personality.11
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# FRANCE (FRA)
-			# Age 1: expansionist (Hundred Years War ambitions)
-			# Age 2: friendly (Italian Wars / diplomatic maneuvering)
-			# Age 3: expansionist (colonial era, Italian campaigns)
-			# Age 4: cautious (Religious Wars, fragile throne)
-			# Age 5: inflection event — Sun King rises
-			# Age 6: opportunistic (post-Louis XIV realpolitik)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = FRA }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_friendly
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					trigger_event_non_silently = cc_personality.20
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# ENGLAND (ENG)
-			# Age 1: expansionist (Hundred Years War)
-			# Age 2: opportunistic (post-war consolidation, Wars of Roses)
-			# Age 3: expansionist (Elizabethan era, maritime expansion)
-			# Age 4: opportunistic (Protestant Reformation gains)
-			# Age 5: inflection event — Britannia's maritime empire
-			# Age 6: aggressive (British Empire ascent)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = ENG }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					trigger_event_non_silently = cc_personality.21
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# MUSCOVY / RUSSIA (MOS)
-			# Age 1-2: expansionist (gathering of Russian lands)
-			# Age 3: inflection event — Ivan the Terrible era
-			# Age 4: cautious (Time of Troubles, instability)
-			# Age 5-6: aggressive (Peter/Catherine the Great)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = MOS }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					trigger_event_non_silently = cc_personality.30
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_5_absolutism
-							current_age = age_6_revolutions
-						}
-					}
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# CASTILE (CAS)
-			# Age 1-2: expansionist (Reconquista completion)
-			# Age 3: inflection event — New World empire
-			# Age 4: defensive (Counter-Reformation, defending faith)
-			# Age 5: cautious (Spanish decline begins)
-			# Age 6: defensive (late Bourbon Spain)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = CAS }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					trigger_event_non_silently = cc_personality.40
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# HABSBURGS (HAB)
-			# Age 1-2: cautious (consolidating dynastic position)
-			# Age 3: opportunistic (Charles V, marriage diplomacy)
-			# Age 4-5: defensive (Protestant wars, Thirty Years War)
-			# Age 6: cautious (Austrian diplomatic tradition)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = HAB }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# PORTUGAL (POR)
-			# Age 1: opportunistic (early Atlantic ventures)
-			# Age 2: expansionist (Dias, da Gama, Age of Discovery)
-			# Age 3: opportunistic (trading empire management)
-			# Age 4: cautious (Iberian Union with Spain)
-			# Age 5-6: defensive (post-union decline and recovery)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = POR }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_5_absolutism
-							current_age = age_6_revolutions
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# SWEDEN (SWE)
-			# Age 1-4: aggressive (Nordic wars, Baltic ambitions)
-			# Age 5: inflection event — Great Northern War reckoning
-			# Age 6: cautious (diminished post-Carolus Rex Sweden)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = SWE }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-							current_age = age_4_reformation
-						}
-					}
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					trigger_event_non_silently = cc_personality.50
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# POLAND (POL)
-			# Age 1: defensive (consolidating against Teutonic/Muscovy threats)
-			# Age 2: expansionist (Jagiellonian dynasty peak)
-			# Age 3: opportunistic (Rzeczpospolita era)
-			# Age 4-5: defensive (wars with Sweden, Russia, Cossacks)
-			# Age 6: cautious (eve of partitions)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = POL }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# LITHUANIA (LIT)
-			# Age 1-2: defensive (caught between Teutonic Order and Muscovy)
-			# Age 3: expansionist (Lithuanian expansion before Polish union)
-			# Age 4-5: defensive (Commonwealth era, eastern wars)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = LIT }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# DENMARK (DAN)
-			# Age 1: expansionist (Kalmar Union dominance)
-			# Age 2: opportunistic (contested Scandinavian leadership)
-			# Age 3-4: cautious / defensive (Swedish challenge)
-			# Age 5-6: cautious (diminished regional power)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = DAN }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-							current_age = age_6_revolutions
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# BURGUNDY (BUR) — often dissolved mid-game; cover early ages only
-			# Age 1: friendly (duchy-level cultural patron)
-			# Age 2: opportunistic (Charles the Bold's ambitions)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = BUR }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_friendly
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# VENICE (VEN)
-			# Age 1-2: cautious (conservative trade republic)
-			# Age 3: opportunistic (peak of Adriatic trade empire)
-			# Age 4-5: defensive (Ottoman pressure, shrinking influence)
-			# Age 6: cautious (holding on in a changed world)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = VEN }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# PAPAL STATES (PAP)
-			# Ages 1-3: friendly (universal Christian diplomacy)
-			# Age 4: defensive (Counter-Reformation, Protestant challenge)
-			# Ages 5-6: friendly (restored diplomatic focus)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = PAP }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-						}
-					}
-					set_personality = ai_personality:ai_friendly
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_5_absolutism
-							current_age = age_6_revolutions
-						}
-					}
-					set_personality = ai_personality:ai_friendly
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# GENOA (GEN)
-			# Age 1-2: cautious (trade republic balance of power)
-			# Age 3: opportunistic (banking and colonial involvement)
-			# Age 4+: cautious (Spanish client state era)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = GEN }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# BYZANTIUM (BYZ) — usually eliminated by age 3
-			# Ages 1-2: defensive (survival against Ottomans)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = BYZ }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# HUNGARY (HUN)
-			# Age 1: expansionist (Matthias Corvinus ambitions)
-			# Ages 2-4: defensive (Ottoman pressure, Mohács)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = HUN }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_expansionist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-							current_age = age_4_reformation
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# MAMLUKS (MAM) — usually eliminated by Ottomans in age 3
-			# Ages 1-3: defensive (holding Egypt and the Levant)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = MAM }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# ETHIOPIA (ETH)
-			# Ages 1-3: defensive (Christian highland kingdom)
-			# Age 4: isolationist (Oromo migrations, internal focus)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = ETH }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_4_reformation }
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# MING CHINA (MNG)
-			# Ages 1-3: isolationist (inward-looking Confucian state)
-			# Ages 4-6: defensive (Manchu threats, internal rebellions)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = MNG }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-						}
-					}
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_4_reformation
-							current_age = age_5_absolutism
-							current_age = age_6_revolutions
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# ASHIKAGA SHOGUNATE (SHO)
-			# Ages 1-4: isolationist (Sengoku-era internal focus)
-			# Age 5: cautious (Tokugawa consolidation, limited opening)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = SHO }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-							current_age = age_4_reformation
-						}
-					}
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# KOREA (KOR)
-			# Ages 1-4: isolationist (hermit kingdom)
-			# Age 5: defensive (Japanese invasions, Manchu pressure)
-			# Age 6: cautious (Joseon stability)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = KOR }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-							current_age = age_3_discovery
-							current_age = age_4_reformation
-						}
-					}
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_5_absolutism }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_6_revolutions }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# NOGAI HORDE (NOG) / GOLDEN HORDE (GLH)
-			# Ages 1-2: aggressive (steppe raiding)
-			# Age 3: defensive (fragmentation under Muscovy pressure)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = NOG }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-			if = {
-				limit = { tag = GLH }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_aggressive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# NAPLES (NAP)
-			# Ages 1-2: opportunistic (Aragonese / Neapolitan politics)
-			# Ages 3-4: defensive (Spanish domination)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = NAP }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = {
-						OR = {
-							current_age = age_3_discovery
-							current_age = age_4_reformation
-						}
-					}
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# SCOTLAND (SCO)
-			# Age 1: opportunistic (Auld Alliance with France)
-			# Age 2: defensive (English pressure, internal strife)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = SCO }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# MILAN (MLO)
-			# Age 1: opportunistic (Visconti / Sforza courts)
-			# Age 2: cautious (Italian Wars, foreign domination)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = MLO }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_opportunistic
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_cautious
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# MALI (MLI)
-			# Age 1: isolationist (trans-Saharan trade networks, inward)
-			# Age 2: defensive (Songhai pressure)
-			# Age 3: isolationist (decline)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = MLI }
-				if = {
-					limit = { current_age = age_1_traditions }
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_2_renaissance }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-
-			# ---------------------------------------------------------------
-			# SONGHAI (SON)
-			# Ages 1-2: isolationist (internal consolidation)
-			# Age 3: defensive (Moroccan invasion pressure)
-			# ---------------------------------------------------------------
-			if = {
-				limit = { tag = SON }
-				if = {
-					limit = {
-						OR = {
-							current_age = age_1_traditions
-							current_age = age_2_renaissance
-						}
-					}
-					set_personality = ai_personality:ai_isolationist
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-				else_if = {
-					limit = { current_age = age_3_discovery }
-					set_personality = ai_personality:ai_defensive
-					add_country_modifier = { modifier = cc_ai_personality_guard years = 20 }
-				}
-			}
-		}
+		cc_apply_historical_personality = yes
 	}
 }
 
@@ -955,12 +70,22 @@ cc_on_new_age_personalities = {
 cc_on_monthly_personality_monitor = {
 	effect = {
 		if = {
-			limit = { 
+			limit = {
 				OR = {
-					has_game_rule = cc_ai_personalities_dynamic 
-					has_game_rule = cc_ai_personalities_full 
-				} 
+					has_game_rule = cc_ai_personalities_dynamic
+					has_game_rule = cc_ai_personalities_full
+				}
 			}
+
+			# Initialize variables for countries formed after game start
+			if = { limit = { NOT = { has_variable = cc_p_at_war } } set_variable = { name = cc_p_at_war value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_high_exhaustion } } set_variable = { name = cc_p_high_exhaustion value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_low } } set_variable = { name = cc_p_treasury_low value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_rich } } set_variable = { name = cc_p_treasury_rich value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_disloyal_subject } } set_variable = { name = cc_p_disloyal_subject value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_coalition_threat } } set_variable = { name = cc_p_coalition_threat value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_low_prestige } } set_variable = { name = cc_p_low_prestige value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_great_power } } set_variable = { name = cc_p_great_power value = 0 } }
 
 			# cc_p_at_war — months at war vs months at peace
 			if = {
@@ -1049,12 +174,22 @@ cc_on_yearly_pulse_personalities = {
 		if = {
 			limit = {
 				OR = {
-					has_game_rule = cc_ai_personalities_dynamic 
-					has_game_rule = cc_ai_personalities_full 
+					has_game_rule = cc_ai_personalities_dynamic
+					has_game_rule = cc_ai_personalities_full
 				}
 				is_ai = yes
 				NOT = { has_country_modifier = cc_ai_personality_guard }
 			}
+
+			# Initialize variables for countries formed after game start
+			if = { limit = { NOT = { has_variable = cc_p_at_war } } set_variable = { name = cc_p_at_war value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_high_exhaustion } } set_variable = { name = cc_p_high_exhaustion value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_low } } set_variable = { name = cc_p_treasury_low value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_rich } } set_variable = { name = cc_p_treasury_rich value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_disloyal_subject } } set_variable = { name = cc_p_disloyal_subject value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_coalition_threat } } set_variable = { name = cc_p_coalition_threat value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_low_prestige } } set_variable = { name = cc_p_low_prestige value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_great_power } } set_variable = { name = cc_p_great_power value = 0 } }
 
 			# "The Winds of War"
 			# Boosted to 25% if cc_p_at_war >= 9 (been at war for most of the year)
@@ -1156,12 +291,22 @@ cc_on_four_yearly_pulse_personalities = {
 		if = {
 			limit = {
 				OR = {
-					has_game_rule = cc_ai_personalities_dynamic 
-					has_game_rule = cc_ai_personalities_full 
+					has_game_rule = cc_ai_personalities_dynamic
+					has_game_rule = cc_ai_personalities_full
 				}
 				is_ai = yes
 				NOT = { has_country_modifier = cc_ai_personality_guard }
 			}
+
+			# Initialize variables for countries formed after game start
+			if = { limit = { NOT = { has_variable = cc_p_at_war } } set_variable = { name = cc_p_at_war value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_high_exhaustion } } set_variable = { name = cc_p_high_exhaustion value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_low } } set_variable = { name = cc_p_treasury_low value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_treasury_rich } } set_variable = { name = cc_p_treasury_rich value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_disloyal_subject } } set_variable = { name = cc_p_disloyal_subject value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_coalition_threat } } set_variable = { name = cc_p_coalition_threat value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_low_prestige } } set_variable = { name = cc_p_low_prestige value = 0 } }
+			if = { limit = { NOT = { has_variable = cc_p_great_power } } set_variable = { name = cc_p_great_power value = 0 } }
 
 			# Priority 1 — "The Exhausted Kingdom"
 			# Sustained war + sustained high exhaustion → the realm is ground down

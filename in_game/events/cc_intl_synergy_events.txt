@@ -135,6 +135,7 @@ cc_intl.2 = {
 		}
 		scope:war_nation.capital.continent = {
 			any_location_in_continent = {
+				has_owner = yes
 				owner = scope:war_nation
 				OR = {
 					province.province_prosperity <= 0.33
@@ -156,6 +157,7 @@ cc_intl.2 = {
 		capital.continent = {
 			random_location_in_continent = {
 				limit = {
+					has_owner = yes
 					owner = scope:war_nation
 					OR = {
 						province.province_prosperity <= 0.33
@@ -166,6 +168,7 @@ cc_intl.2 = {
 			}
 			random_location_in_continent = {
 				limit = {
+					has_owner = yes
 					owner = scope:war_nation
 					OR = {
 						province.province_prosperity <= 0.33
@@ -176,6 +179,7 @@ cc_intl.2 = {
 			}
 			random_location_in_continent = {
 				limit = {
+					has_owner = yes
 					owner = scope:war_nation
 					OR = {
 						province.province_prosperity <= 0.33
@@ -187,6 +191,7 @@ cc_intl.2 = {
 			
 			random_location_in_continent = {
 				limit = {
+					has_owner = yes
 					owner = ROOT
 					NOT = { location_rank = location_rank:rural_settlement } 
 				}
@@ -213,7 +218,11 @@ cc_intl.2 = {
 		name = cc_intl.2.a
 		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  mode = set_to_largest_and_extend }
 		if = {
-			limit = { NOT = { scope:war_nation_province_1 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_1
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_1 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_1
 				to_location = scope:cc_intl_dest
@@ -225,7 +234,11 @@ cc_intl.2 = {
 			}
 		}
 		if = {
-			limit = { NOT = { scope:war_nation_province_2 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_2
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_2 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_2
 				to_location = scope:cc_intl_dest
@@ -237,7 +250,11 @@ cc_intl.2 = {
 			}
 		}
 		if = {
-			limit = { NOT = { scope:war_nation_province_3 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_3
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_3 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_3
 				to_location = scope:cc_intl_dest
@@ -270,7 +287,11 @@ cc_intl.2 = {
 			mode = set_to_largest_and_extend 
 		}
 		if = {
-			limit = { NOT = { scope:war_nation_province_1 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_1
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_1 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_1
 				to_location = scope:cc_intl_dest
@@ -282,7 +303,11 @@ cc_intl.2 = {
 			}
 		}
 		if = {
-			limit = { NOT = { scope:war_nation_province_2 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_2
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_2 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_2
 				to_location = scope:cc_intl_dest
@@ -294,7 +319,11 @@ cc_intl.2 = {
 			}
 		}
 		if = {
-			limit = { NOT = { scope:war_nation_province_3 = { this = scope:cc_intl_dest } } }
+			limit = {
+				exists = scope:war_nation_province_3
+				exists = scope:cc_intl_dest
+				NOT = { scope:war_nation_province_3 = scope:cc_intl_dest }
+			}
 			add_migration = {
 				from_location = scope:war_nation_province_3
 				to_location = scope:cc_intl_dest
@@ -337,7 +366,7 @@ cc_intl.3 = {
 	trigger = {
 		NOT = { has_variable = cc_intl_3_cooldown }
 		OR = {
-			ruler = { has_trait = philosopher_king }
+			ruler_or_regent = { has_trait = philosopher_king }
 			any_cabinet_character = {
 				in_cabinet = yes
 				OR = {

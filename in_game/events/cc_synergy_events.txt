@@ -17,7 +17,7 @@ cc_synergy.1 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = iron_disciplinarian }
+		ruler_or_regent ={ has_trait = iron_disciplinarian }
 		any_cabinet_character = {
 			in_cabinet = yes
 			NOT = { has_variable = cc_recent_trait_assignment }
@@ -81,7 +81,7 @@ cc_synergy.2 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = learned_counselor }
+		ruler_or_regent ={ has_trait = learned_counselor }
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_trait = renaissance_patron
@@ -144,7 +144,7 @@ cc_synergy.3 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = master_statesman }
+		ruler_or_regent ={ has_trait = master_statesman }
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_trait = caliphate_diplomat
@@ -191,7 +191,7 @@ cc_synergy.4 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = parliamentarian }
+		ruler_or_regent = { has_trait = parliamentarian }
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
@@ -243,7 +243,7 @@ cc_synergy.5 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = progressive_reformist }
+		ruler_or_regent ={ has_trait = progressive_reformist }
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
@@ -298,7 +298,7 @@ cc_synergy.6 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = sufi_scholar }
+		ruler_or_regent ={ has_trait = sufi_scholar }
 		any_cabinet_character = {
 			in_cabinet = yes
 			NOT = { has_variable = cc_recent_trait_assignment }
@@ -349,7 +349,7 @@ cc_synergy.7 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = eastern_pragmatist }
+		ruler_or_regent ={ has_trait = eastern_pragmatist }
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_trait = confucian_mandarin
@@ -395,7 +395,7 @@ cc_synergy.8 = {
 	}
 
 	trigger = {
-		ruler = {
+		ruler_or_regent ={
 			OR = {
 				has_trait = restless_pioneer
 				has_trait = legendary_navigator
@@ -463,7 +463,7 @@ cc_synergy.9 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = iron_disciplinarian }
+		ruler_or_regent ={ has_trait = iron_disciplinarian }
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_trait = supreme_commander
@@ -524,7 +524,7 @@ cc_synergy.10 = {
 	}
 
 	trigger = {
-		ruler = { has_trait = progressive_reformist }
+		ruler_or_regent ={ has_trait = progressive_reformist }
 		any_cabinet_character = {
 			in_cabinet = yes
 			has_trait = parliamentary_broker
@@ -748,7 +748,7 @@ cc_synergy.13 = {
 	}
 }
 
-# Minister integrating area + Minister developing province (has conquered province)
+# Minister integrating area/province + Minister developing province (has conquered province)
 cc_synergy.14 = {
 	type = country_event
 	title = cc_synergy.14.title
@@ -762,11 +762,14 @@ cc_synergy.14 = {
 	trigger = {
 		any_cabinet_character = {
 			in_cabinet = yes
-			cabinet_action = cabinet_action:integrate_province
+			OR = {
+				cabinet_action ?= cabinet_action:integrate_province
+				cabinet_action ?= cabinet_action:integrate_area
+			}
 		}
 		any_cabinet_character = {
 			in_cabinet = yes
-			cabinet_action = cabinet_action:develop_province
+			cabinet_action ?= cabinet_action:develop_province
 		}
 		any_owned_location = { has_variable = recently_conquered }
 		NOT = { has_variable = cc_synergy_14_fired }

@@ -12,7 +12,6 @@ cc_duty_war_council = {
 	allow = {
 		OR = {
 			root = { at_war = yes }
-			scope:actor = { at_war = yes }
 		}
 	}
 
@@ -45,19 +44,22 @@ cc_duty_war_council = {
 			if = {
 				limit = {
 					scope:actor = { at_war = yes }
-					root.cabinet_member ?= {
-						OR = {
-							has_trait = standing_army_advocate
-							has_trait = tactical_advisor
-							has_trait = cavalry_marshal
-							has_trait = siege_engineer
-							has_trait = commissariat_officer
-							has_trait = offensive_strategist
-							has_trait = defensive_commander
-							has_trait = supreme_commander
-							has_trait = hawk_minister
+					scope:actor = {
+						any_cabinet_character = {
+							OR = {
+								has_trait = standing_army_advocate
+								has_trait = tactical_advisor
+								has_trait = cavalry_marshal
+								has_trait = siege_engineer
+								has_trait = commissariat_officer
+								has_trait = offensive_strategist
+								has_trait = defensive_commander
+								has_trait = supreme_commander
+								has_trait = hawk_minister
+							}
 						}
 					}
+					
 				}
 				value = 10
 			}

@@ -316,7 +316,7 @@ All recurring events fire through three pulse hooks in `cc_cabinet_pulse.txt`:
 1. Add `<duty_name> = {}` block to a new file in `in_game/common/cabinet_actions/`
 2. Set `ability = adm/dip/mil`, define `country_modifier`, `allow`, `potential`
 3. Add localization to `cc_duties_and_modifiers_l_english.yml`
-4. Hook any new events it should boost into the relevant pulse block in `cc_cabinet_pulse.txt`, gated by `any_cabinet_character = { cabinet_action = cabinet_action:<duty_name> }`
+4. Hook any new events it should boost into the relevant pulse block in `cc_cabinet_pulse.txt`, gated by `any_cabinet_character = { cabinet_action = <duty_name> }`
 
 ### New auto-modifier
 1. Add block to `in_game/common/auto_modifiers/cc_cabinet_composition.txt`

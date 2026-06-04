@@ -222,19 +222,23 @@ cc_traits.10 = {
 			# Fire only when at least one cultural option would be visible
 			OR = {
 				AND = {
-					OR = {
-						scope:country.capital.sub_continent = sub_continent:western_europe
-						scope:country.capital.sub_continent = sub_continent:eastern_europe
-					}
-					scope:country = { has_advance = renaissance_thought }
+					ROOT = { 
+						has_advance = renaissance_thought
+						OR = {
+							capital.sub_continent = sub_continent:western_europe
+							capital.sub_continent = sub_continent:eastern_europe
+						}
+				 	}
 					NOT = { has_trait = renaissance_humanist }
 					adm > 50
 				}
 				AND = {
-					OR = {
-						scope:country.capital.sub_continent = sub_continent:east_asia
-						scope:country.capital.sub_continent = sub_continent:south_east_asia
-					}
+					ROOT = { 
+						OR = {
+							capital.sub_continent = sub_continent:east_asia
+							capital.sub_continent = sub_continent:south_east_asia
+						}
+				 	}
 					NOT = { has_trait = eastern_pragmatist }
 					adm > 50
 				}
@@ -288,18 +292,23 @@ cc_traits.10 = {
 					# Fire only when at least one cultural option would be visible
 					OR = {
 						AND = {
-							OR = {
-								scope:country.capital.sub_continent = sub_continent:western_europe
-								scope:country.capital.sub_continent = sub_continent:eastern_europe
+							ROOT = { 
+								has_advance = renaissance_thought
+								OR = {
+									capital.sub_continent = sub_continent:western_europe
+									capital.sub_continent = sub_continent:eastern_europe
+								}
 							}
-							scope:country = { has_advance = renaissance_thought }
+							ROOT = { has_advance = renaissance_thought }
 							NOT = { has_trait = renaissance_humanist }
 							adm > 50
 						}
 						AND = {
-							OR = {
-								scope:country.capital.sub_continent = sub_continent:east_asia
-								scope:country.capital.sub_continent = sub_continent:south_east_asia
+							ROOT = { 
+								OR = {
+									capital.sub_continent = sub_continent:east_asia
+									capital.sub_continent = sub_continent:south_east_asia
+								}
 							}
 							NOT = { has_trait = eastern_pragmatist }
 							adm > 50
@@ -409,7 +418,7 @@ cc_traits.11 = {
 			OR = {
 				AND = {
 					NOT = { has_trait = age_of_discovery_pioneer }
-					scope:country = { has_advance = explorer_commisions_advance }
+					ROOT = { has_advance = explorer_commisions_advance }
 					adm > 50
 					dip > 33
 					mil > 33
@@ -464,7 +473,7 @@ cc_traits.11 = {
 					OR = {
 						AND = {
 							NOT = { has_trait = age_of_discovery_pioneer }
-							scope:country = { has_advance = explorer_commisions_advance }
+							ROOT = { has_advance = explorer_commisions_advance }
 							adm > 50
 							dip > 33
 							mil > 33
@@ -878,12 +887,12 @@ cc_traits.13 = {
 				AND = {
 					NOT = { has_trait = noble_patron }
 					dip > 66
-					scope:country.government_type = government_type:monarchy
-					scope:country = { has_advance = noble_patronage_advance }
+					ROOT.government_type = government_type:monarchy
+					ROOT = { has_advance = noble_patronage_advance }
 				}
 				AND = {
 					NOT = { has_trait = parliamentarian }
-					scope:country.modifier:has_a_parliamentary_system = yes
+					ROOT.modifier:has_a_parliamentary_system = yes
 					dip > 66
 				}
 				AND = {
@@ -928,12 +937,12 @@ cc_traits.13 = {
 						AND = {
 							NOT = { has_trait = noble_patron }
 							dip > 66
-							scope:country.government_type = government_type:monarchy
-							scope:country = { has_advance = noble_patronage_advance }
+							ROOT.government_type = government_type:monarchy
+							ROOT = { has_advance = noble_patronage_advance }
 						}
 						AND = {
 							NOT = { has_trait = parliamentarian }
-							scope:country.modifier:has_a_parliamentary_system = yes
+							ROOT.modifier:has_a_parliamentary_system = yes
 							dip > 66
 						}
 						AND = {
