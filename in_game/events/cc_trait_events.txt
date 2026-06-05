@@ -1346,7 +1346,7 @@ cc_traits.20 = {
 	option = {
 		name = cc_traits.20.d
 		scope:student = { set_variable = cc_teach_20_done }
-		scope:minister = {
+		scope:student = {
 			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
 		}
 	}
@@ -2021,7 +2021,10 @@ cc_traits.35 = {
 			modifier:has_a_parliamentary_system = yes
 			AND = {
 				country_has_estate = estate_type:clergy_estate
-				"estate_satisfaction(estate_type:clergy_estate)" >= 0.6
+				estate_satisfaction = {
+					estate_type = estate_type:clergy_estate
+					value >= 0.6
+				}
 			}
 		}
 	}

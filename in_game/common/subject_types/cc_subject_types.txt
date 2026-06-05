@@ -53,9 +53,15 @@ junior_partner = {
 			text = junior_partner_tt
 			root = { NOT = { has_variable = junior_partner_cooldown } }
 		}
+		scope:target = { 
+			OR = {
+				in_union_with = root 
+				is_subject_type = junior_partner
+			}
+		}
 	}
 	creation_visible = { always = no }
-
+	has_overlords_ruler = yes
 	has_limited_diplomacy = no
 	will_join_independence_wars = yes
 	can_change_rank = no
@@ -72,7 +78,7 @@ junior_partner = {
 	annexation_stall_opinion = 125
 
 	strength_vs_overlord = -0.3
-	diplomatic_capacity_cost_scale = 0.75
+	diplomatic_capacity_cost_scale = 1
 
 	overlord_can_cancel = yes
 	subject_can_cancel = no
@@ -97,7 +103,6 @@ junior_partner = {
 	great_power_score_transfer = 0.5
 
 	on_enable = {
-		lock_current_subject_type = yes
 		hidden_effect = {
 			# Set the 25-year cooldown so the UI offer can't reappear immediately
 			scope:future_overlord = {
@@ -108,16 +113,19 @@ junior_partner = {
 				limit = { scope:future_overlord = { in_union_with = root } }
 				root = { break_union = { target = scope:future_overlord  } }
 			}
+			set_variable = { name = junior_partner_maturation value = yes years = 50 }
 		}
+		lock_current_subject_type = yes
 	}
 	on_disable = {
+		remove_variable = junior_partner_maturation
 		unlock_current_subject_type = yes
 	}
 
 	diplo_chance_accept_subject = {
 		base = -92
 		current_strength = 0.2
-		border_distance = -0.3
+		border_distance = -0.05
 		negative_opinion = -5
 		positive_opinion = 0.3
 		rank_difference = -5
@@ -131,7 +139,7 @@ junior_partner = {
 		different_religion = -20
 		same_common_language = 5
 		same_court_language = 10
-		different_culture = -10
+		different_culture_group = -10
 		different_government_type = -25
 		actor_at_war = -20
 		competing_power = -200
@@ -142,7 +150,7 @@ junior_partner = {
 
 	diplo_chance_accept_overlord = {
 		base = -52
-		border_distance = -0.3
+		border_distance = -0.05
 		negative_opinion = -5
 		positive_opinion = 0.25
 		same_common_language = 5
@@ -172,10 +180,17 @@ lesser_partner = {
 	enabled_through_diplomacy = {
 		custom_tooltip = {
 			text = lesser_partner_upgrade_tt
-			scope:target = { NOT = { has_variable = junior_lesser_cooldown } }
+			scope:target = { NOT = { has_variable = junior_partner_maturation } }
+		}
+		scope:target = { 
+			OR = {
+				is_subject_type = junior_partner
+				is_subject_type = lesser_partner
+			}
 		}
 	}
 
+	has_overlords_ruler = yes
 	has_limited_diplomacy = yes
 	will_join_independence_wars = yes
 	can_change_rank = no
@@ -192,7 +207,7 @@ lesser_partner = {
 	annexation_stall_opinion = 100
 
 	strength_vs_overlord = -0.15
-	diplomatic_capacity_cost_scale = 0.5
+	diplomatic_capacity_cost_scale = 1.25
 
 	overlord_can_cancel = yes
 	subject_can_cancel = no
@@ -219,36 +234,39 @@ lesser_partner = {
 	on_enable = {
 		lock_current_subject_type = yes
 		hidden_effect = {
-			set_variable = { name = junior_lesser_cooldown value = yes years = 50 }
+			set_variable = { name = lesser_partner_maturation value = yes years = 50 }
 		}
 	}
 	on_disable = {
+		remove_variable = lesser_partner_maturation
 		unlock_current_subject_type = yes
 	}
 
 	diplo_chance_accept_subject = {
 		base = -72
 		current_strength = 0.2
-		border_distance = -0.3
+		border_distance = -0.2
 		negative_opinion = -5
 		positive_opinion = 0.25
-		rank_difference = -5
-		giving_defensive_support = 2
-		receiving_defensive_support = 5
+		rank_difference = -10
+		giving_defensive_support = 0
+		receiving_defensive_support = 0
 		royal_ties = 2
-		trust_in_actor = 0.2
-		num_of_limited_subjects = -5
+		trust_in_actor = 1
+		num_of_limited_subjects = -2
 		culture_war = 3
-		diplomatic_reputation = 1
-		different_religion = -20
+		diplomatic_reputation = 1.5
+		different_religion = -10
+		different_religion_group = -10
 		same_common_language = 5
 		same_court_language = 10
-		different_culture = -10
+		different_culture = 0
+		different_culture_group = -10
 		different_government_type = -25
 		actor_at_war = -20
 		competing_power = -200
 		tax_base = -0.25
-		reject_subjugation_reasons = -1
+		reject_subjugation_reasons = -0.75
 		accept_subjugation_reasons = 1
 	}
 
@@ -300,7 +318,7 @@ shadow_state = {
 	can_be_annexed = no
 
 	strength_vs_overlord = -0.1
-	diplomatic_capacity_cost_scale = 0.25
+	diplomatic_capacity_cost_scale = 0.33
 
 	overlord_can_cancel = yes
 	subject_can_cancel = no
@@ -325,23 +343,25 @@ shadow_state = {
 	great_power_score_transfer = 0.1
 
 	diplo_chance_accept_subject = {
-		base = -45
+		base = -60
 		current_strength = 0.2
-		border_distance = -0.3
+		border_distance = -0.20
 		negative_opinion = -5
-		positive_opinion = 0.5
-		rank_difference = -5
-		giving_defensive_support = 5
+		positive_opinion = 0.20
+		rank_difference = -8
+		giving_defensive_support = 10
 		receiving_defensive_support = 5
 		royal_ties = 2
 		trust_in_actor = 0.3
-		num_of_limited_subjects = -5
+		num_of_limited_subjects = -3
 		culture_war = 3
 		diplomatic_reputation = 2
-		different_religion = -10
-		same_common_language = 5
-		same_court_language = 5
+		different_religion = -5
+		different_religion_group = -5
+		same_common_language = 3
+		same_court_language = 3
 		different_culture = -5
+		different_culture_group = -10
 		actor_at_war = -20
 		competing_power = -200
 		tax_base = -0.1
@@ -498,7 +518,7 @@ puppet_state = {
 	annexation_stall_opinion = 125
 
 	strength_vs_overlord = -0.15
-	diplomatic_capacity_cost_scale = 0.33
+	diplomatic_capacity_cost_scale = 0.45
 
 	overlord_can_cancel = yes
 	subject_can_cancel = no
@@ -835,7 +855,7 @@ associated_republic = {
 	can_be_annexed = no
 
 	strength_vs_overlord = -0.15
-	diplomatic_capacity_cost_scale = 1
+	diplomatic_capacity_cost_scale = 2.5
 
 	overlord_can_cancel = yes
 	subject_can_cancel = yes
@@ -862,27 +882,29 @@ associated_republic = {
 	great_power_score_transfer = 0.15
 
 	diplo_chance_accept_subject = {
-		base = -72
+		base = -67
 		current_strength = 0.2
-		border_distance = -0.3
+		border_distance = -0.15
 		negative_opinion = -5
-		positive_opinion = 0.25
-		rank_difference = -5
-		giving_defensive_support = 5
-		receiving_defensive_support = 5
+		positive_opinion = 0.10
+		rank_difference = -7
+		giving_defensive_support = 10
+		receiving_defensive_support = 2
 		royal_ties = 1
-		trust_in_actor = 0.3
-		diplomatic_reputation = 2
-		different_religion = -15
+		trust_in_actor = 1
+		diplomatic_reputation = 1.2
+		different_religion = -5
+		different_religion_group = -10
 		same_common_language = 5
 		same_court_language = 10
-		different_culture = -10
-		different_government_type = -30
-		same_government_type = 15
+		different_culture = -5
+		different_culture_group = -5
+		different_government_type = 0
+		same_government_type = 5
 		actor_at_war = -20
 		competing_power = -200
-		reject_subjugation_reasons = -1
-		accept_subjugation_reasons = 1
+		reject_subjugation_reasons = -0.2
+		accept_subjugation_reasons = 0.2
 	}
 
 	diplo_chance_accept_overlord = {
@@ -1442,6 +1464,12 @@ crown_dependency = {
 			text = crown_dependency_conversion_tt
 			root = { NOT = { has_variable = crown_dependency_cooldown } }
 		}
+		scope:target = { 
+			OR = {
+				in_union_with = root 
+				is_subject_type = crown_dependency
+			}
+		}
 	}
 	creation_visible = {
 		has_advance = dynastic_governance_advance
@@ -1464,6 +1492,7 @@ crown_dependency = {
 		unlock_current_subject_type = yes
 	}
 
+	has_overlords_ruler = yes
 	has_limited_diplomacy = yes
 	will_join_independence_wars = yes
 	can_change_rank = no
@@ -1479,7 +1508,7 @@ crown_dependency = {
 	annexation_stall_opinion = 125
 
 	strength_vs_overlord = -0.35
-	diplomatic_capacity_cost_scale = 0.5
+	diplomatic_capacity_cost_scale = 1.1
 
 	overlord_can_cancel = yes
 	subject_can_cancel = no
@@ -1516,10 +1545,12 @@ crown_dependency = {
 		trust_in_actor = 0.5
 		num_of_limited_subjects = -0.3
 		diplomatic_reputation = 1.5
-		different_religion = -20
+		different_religion = -10
+		different_religion_group = -10
 		same_common_language = 10
 		same_court_language = 10
-		different_culture = -10
+		different_culture = -2
+		different_culture_group = -3
 		different_government_type = -20
 		actor_at_war = -20
 		competing_power = -200
