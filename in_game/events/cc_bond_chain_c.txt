@@ -136,6 +136,12 @@ cc_bonds.120 = {
 cc_bonds.121 = {
 	type = country_event
 	title = cc_bonds.121.title
+
+	trigger = {
+		exists = scope:bond_subj
+		scope:bond_subj = { has_variable = cc_bond_initialized }
+	}
+
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -285,8 +291,77 @@ cc_bonds.121 = {
 cc_bonds.122 = {
 	type = country_event
 	title = cc_bonds.122.title
-	desc = cc_bonds.122.desc
+
+	trigger = {
+		exists = scope:bond_subj
+		scope:bond_subj = { has_variable = cc_bond_initialized }
+	}
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_positive } }
+				desc = cc_bonds.122.desc_positive
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_bitter } }
+				desc = cc_bonds.122.desc_bitter
+			}
+			desc = cc_bonds.122.desc
+		}
+	}
 	illustration_tags = { 10 = military }
+
+	# Fort legacy positive: overlord gave the subject lord full credit for the defense
+	# The current command question carries the weight of that goodwill
+	option = {
+		name = cc_bonds.122.d
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_positive }
+		}
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_fort_legacy_positive
+			change_variable = { name = cc_bond_pol  add = 2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 2 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Fort legacy bitter: the fort was breached when overlooked; the subject bore the cost
+	# Option E-repair: Pay restitution and acknowledge the old failure
+	option = {
+		name = cc_bonds.122.e_repair
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_bitter }
+		}
+		add_gold = { value = scope:bond_subj.monthly_income_trade_and_tax  multiply = -0.40  min = -100 }
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_fort_legacy_bitter
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Option E-ignore: Let the bitterness stand; command question settled without acknowledgment
+	option = {
+		name = cc_bonds.122.e_ignore
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_bitter }
+		}
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_fort_legacy_bitter
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = -1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
 
 	# Appoint a crown officer — pol-2, mil+1, per-1
 	option = {

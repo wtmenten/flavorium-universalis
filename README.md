@@ -368,6 +368,30 @@ python tools/advance_combos.py --mod-only
 python tools/advance_combos.py --json tools/advance_data.js && open tools/advance_explorer.html
 ```
 
+### `tools/var_refs.py` — Variable reference search
+
+Find where any scripted variable is set, changed, checked, or removed across all mod files. Output shows the file, line, operation type, and event/block + option context.
+
+```bash
+# All references to a specific variable:
+python tools/var_refs.py cc_bond_initialized
+
+# Substring match — all vars containing a prefix:
+python tools/var_refs.py cc_bond_cul
+
+# List all variable names and total reference counts:
+python tools/var_refs.py --list
+
+# Filter by operation type (set/change/clamp/has/remove/map_add/map_ref/var):
+python tools/var_refs.py cc_bond --op set,remove
+
+# Group output by file instead of by variable:
+python tools/var_refs.py cc_bond --group file
+
+# Search a single file:
+python tools/var_refs.py --file in_game/events/cc_bond_chain_d.txt
+```
+
 ### `tools/fix_bom.py` — UTF-8 BOM fixer
 
 ```bash

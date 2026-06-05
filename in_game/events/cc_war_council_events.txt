@@ -410,6 +410,144 @@ cc_wc.12 = {
 # SECTION C — OUTDATED GENERAL RESOLUTION
 ###############################################################################
 
+###############################################################################
+# SECTION D — POST-WAR CHARACTER FOLLOW-UPS
+###############################################################################
+
+# "The Hawk's Reckoning" — fires from on_pre_ending_war via cc_hawk_reckoning_pre_end
+# when the country ends a war while a hawk_minister's pledge (cc_hawk_war_pledge) is active.
+# The hawk swore no peace would be made short of total victory. Peace has been made.
+cc_wc.50 = {
+	type = country_event
+	title = cc_wc.50.title
+	desc = cc_wc.50.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	trigger = {
+		any_cabinet_character = { has_trait = hawk_minister }
+	}
+
+	immediate = {
+		remove_variable = cc_hawk_war_pledge
+		random_cabinet_character = {
+			limit = { has_trait = hawk_minister }
+			save_scope_as = minister
+		}
+	}
+
+	# Assert authority — the peace was necessary; the minister must accept it
+	option = {
+		name = cc_wc.50.a
+		add_prestige = prestige_weak_bonus
+		scope:minister = {
+			set_variable = { name = cc_minister_resentful value = yes }
+		}
+	}
+
+	# Acknowledge the peace was unfortunate — offer the hawk symbolic concession
+	option = {
+		name = cc_wc.50.b
+		add_prestige = prestige_weak_penalty
+		scope:minister = { add_mil = 1 }
+	}
+
+	# Promise the next campaign — hawk stays loyal, but you accept an obligation
+	option = {
+		name = cc_wc.50.c
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = {
+			modifier = cc_wc_offensive_surge
+			years = 5
+			mode = set_to_largest_and_extend
+		}
+	}
+}
+
+# "The General's Resentment" — fires biyearly when a cabinet character has cc_minister_defied.
+# Set by cc_wc.3 option B (ruler refused the general's resource request during war).
+# The minister's grievance has festered long enough to require resolution.
+cc_wc.51 = {
+	type = country_event
+	title = cc_wc.51.title
+	desc = cc_wc.51.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_variable = cc_minister_defied
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_minister_defied
+			}
+			save_scope_as = minister
+		}
+	}
+
+	# Apologize and compensate — gold cost, minister forgiven, add mil skill
+	option = {
+		name = cc_wc.51.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3  min = -100 }
+		scope:minister = {
+			remove_variable = cc_minister_defied
+			add_mil = 1
+		}
+	}
+
+	# Grant a symbolic recognition — prestige cost, tension resolved without material cost
+	option = {
+		name = cc_wc.51.b
+		add_prestige = prestige_weak_penalty
+		add_opinion = {
+			target = scope:minister
+			modifier = cc_wc_general_defied
+		}
+		scope:minister = {
+			remove_variable = cc_minister_defied
+		}
+	}
+
+	# Dismiss the insubordination — minister leaves resentful
+	option = {
+		name = cc_wc.51.c
+		add_stability = stability_weak_penalty
+		scope:minister = {
+			remove_variable = cc_minister_defied
+			set_variable = { name = cc_dismissed_resentful value = yes }
+		}
+	}
+
+	# Ignore it entirely — minister escalates to full resentment, mil penalty
+	option = {
+		name = cc_wc.51.d
+		scope:minister = {
+			remove_variable = cc_minister_defied
+			set_variable = { name = cc_minister_resentful value = yes }
+		}
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+###############################################################################
+# SECTION C — OUTDATED GENERAL RESOLUTION
+###############################################################################
+
 # "A Council Decision on the Old General" — fires during war when an outdated_general is present.
 # The council can formally retire him with dignity, clearing the negative trait.
 cc_wc.20 = {

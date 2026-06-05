@@ -559,3 +559,84 @@ cc_bonds.16 = {
 		trigger_event_silently = { id = cc_bonds.74  months = 6 }
 	}
 }
+
+###############################################################################
+
+# cc_bonds.200 — "The Colonial Congress Convenes"
+# Memory follow-up for cc_bond_mem_voice_granted (set in cc_bonds.14 option A).
+# Fires when the colonial nation's formal representation has matured into organized demands.
+# Requires cc_bond_pol >= 2 — the bond must be positive for the congress to be credible.
+cc_bonds.200 = {
+	type = country_event
+	title = cc_bonds.200.title
+	desc = cc_bonds.200.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			is_subject_type = colonial_nation
+			has_variable = cc_bond_mem_voice_granted
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_200_cd }
+			var:cc_bond_pol >= 2
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				has_variable = cc_bond_mem_voice_granted
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_200_cd }
+				var:cc_bond_pol >= 2
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			set_variable = { name = cc_bond_200_cd  value = yes }
+		}
+	}
+
+	# Ratify a Colonial Charter — strong pol+1 cul+1, prestige cost; clears voice_granted
+	option = {
+		name = cc_bonds.200.a
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = {
+			modifier = cc_colonial_legitimacy_era
+			years = 50
+			mode = add_and_extend
+		}
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_voice_granted
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			add_opinion = { target = ROOT modifier = cc_diplomatic_favor }
+		}
+	}
+
+	# Maintain symbolic representation — modest pol gain; flag persists (can fire again)
+	option = {
+		name = cc_bonds.200.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Curtail the representation — pol-2, cul-1, liberty_desire; clears voice_granted
+	option = {
+		name = cc_bonds.200.c
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_voice_granted
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+}
