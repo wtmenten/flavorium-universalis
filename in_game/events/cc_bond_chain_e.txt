@@ -1,0 +1,83 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Chain E memory follow-up: "Faith Under the Surface" — cc_bonds.202
+#
+# Fires when a subject has cc_bond_mem_religion_forced set AND cc_bond_cul <= -3.
+# The flag is set in cc_bonds_on_religion_changed (cc_bond_pulse.txt) when the
+# subject converts to the overlord's religion while cultural tension is already
+# severe (cul <= -2). This means the conversion happened under coercive pressure,
+# not organic acceptance. Signs of underground practice have emerged.
+#
+# Scope: root = overlord. scope:bond_subj = the subject.
+###############################################################################
+
+cc_bonds.202 = {
+	type = country_event
+	title = cc_bonds.202.title
+	desc = cc_bonds.202.desc
+	illustration_tags = { 10 = interior }
+
+	trigger = {
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			has_variable = cc_bond_mem_religion_forced
+			has_variable = cc_bond_initialized
+			NOT = { has_variable = cc_bond_202_cd }
+			var:cc_bond_cul <= -3
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				has_variable = cc_bond_mem_religion_forced
+				has_variable = cc_bond_initialized
+				NOT = { has_variable = cc_bond_202_cd }
+				var:cc_bond_cul <= -3
+			}
+			save_scope_as = bond_subj
+		}
+		scope:bond_subj = {
+			# Cooldown allows the event to re-fire if tolerance path (option B) is chosen
+			set_variable = { name = cc_bond_202_cd  value = yes  years = 15 }
+		}
+	}
+
+	# Purge the hidden faithful — RI gain, pol-2, mil-1, liberty_desire
+	option = {
+		name = cc_bonds.202.a
+		add_religious_influence = 30
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_religion_forced
+			change_variable = { name = cc_bond_pol  add = -2 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_mil  add = -1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Tolerate quietly — cul-1, no other cost; flag persists (may fire again after cooldown)
+	option = {
+		name = cc_bonds.202.b
+		scope:bond_subj = {
+			change_variable = { name = cc_bond_cul  add = -1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+		}
+	}
+
+	# Formalize limited tolerance — RI cost, cul+1 recovery, pol+1; clears flag
+	option = {
+		name = cc_bonds.202.c
+		add_religious_influence = -40
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_religion_forced
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+}

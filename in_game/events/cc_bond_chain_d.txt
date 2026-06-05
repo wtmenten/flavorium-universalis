@@ -180,7 +180,10 @@ cc_bonds.131 = {
 
 	trigger = {
 		exists = scope:bond_subj
-		scope:bond_subj = { exists = var:cc_bond_scholar_char }
+		scope:bond_subj = {
+			has_variable = cc_bond_initialized
+			exists = var:cc_bond_scholar_char
+		}
 	}
 
 	immediate = {
@@ -362,6 +365,11 @@ cc_bonds.132 = {
 	type = country_event
 	title = cc_bonds.132.title
 
+	trigger = {
+		exists = scope:bond_subj
+		scope:bond_subj = { has_variable = cc_bond_initialized }
+	}
+
 	immediate = {
 		# Retrieve scholar; fall back to overlord ruler as patron proxy
 		scope:bond_subj = { var:cc_bond_scholar_char ?= { save_scope_as = scholar_char } }
@@ -384,6 +392,10 @@ cc_bonds.132 = {
 			triggered_desc = {
 				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed } }
 				desc = cc_bonds.132.desc_suppressed
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_counter } }
+				desc = cc_bonds.132.desc_counter
 			}
 			desc = cc_bonds.132.desc_default
 		}
@@ -448,6 +460,24 @@ cc_bonds.132 = {
 		}
 	}
 
+	# Counter-narrative: scholar distanced themselves from propaganda — work gained authenticity
+	# The overlord took political distance in cc_bonds.131.c_distance; now the legacy is assessed.
+	option = {
+		name = cc_bonds.132.e
+		ai_chance = { base = 100 }
+		trigger = {
+			scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_counter }
+		}
+		scope:bond_subj = {
+			remove_variable = cc_bond_mem_scholar_legacy_counter
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			capital ?= { create_art = { type = work_of_art_type:chronicle  artist = scope:scholar_char  quality = { 65 80 }  key = cc_scholar_legacy_work } }
+		}
+	}
+
 	# Default / propagandist path
 	option = {
 		name = cc_bonds.132.d
@@ -457,6 +487,7 @@ cc_bonds.132 = {
 				NOT = { has_variable = cc_bond_mem_scholar_legacy_aligned }
 				NOT = { has_variable = cc_bond_mem_scholar_legacy_contested }
 				NOT = { has_variable = cc_bond_mem_scholar_suppressed }
+				NOT = { has_variable = cc_bond_mem_scholar_legacy_counter }
 			}
 		}
 	}

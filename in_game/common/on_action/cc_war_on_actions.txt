@@ -5,12 +5,92 @@
 # when the winning country has a reform-capable military minister in cabinet.
 
 on_winning_war = {
-	on_actions = { cc_wc_on_winning_war }
+	on_actions = { cc_wc_on_winning_war  cc_holy_war_on_winning }
+}
+
+on_losing_war = {
+	on_actions = { cc_neg8_on_losing_war }
+}
+
+on_took_location_in_peace_treaty = {
+	on_actions = { cc_mark_recently_conquered }
+}
+
+on_pre_ending_war = {
+	on_actions = { cc_hawk_reckoning_pre_end }
 }
 
 # Sets cc_military_reform_opportunity (60-month window) on the winning country
 # when a standing_army_advocate, commissariat_officer, or siege_engineer is present.
 # The reform proposal events (cc_wc.10-12) sweep yearly against this flag.
+
+# Sets cc_neg8_failed_war on the loser when an expansionist minister is in cabinet.
+# Enables cc_neg.8 (Reckless Expander grant) to fire in the yearly neg-grant sweep.
+# Scope: scope:loser = losing country, scope:winner = winning country, scope:war = war.
+cc_neg8_on_losing_war = {
+	trigger = {
+		scope:loser = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = expansionist_advisor
+					has_trait = new_world_pioneer
+				}
+				NOT = { has_trait = reckless_expander }
+			}
+		}
+	}
+	effect = {
+		scope:loser = {
+			set_variable = { name = cc_neg8_failed_war value = yes months = 24 }
+		}
+	}
+}
+
+# Tags each location taken in a peace treaty with recently_conquered (36 months).
+# Enables cc_synergy.14 (Integrationist + Developer synergy) to fire.
+# Scope: scope:location = location taken, scope:winner, scope:loser, scope:war.
+cc_mark_recently_conquered = {
+	effect = {
+		scope:location = {
+			set_variable = { name = recently_conquered value = yes months = 36 }
+		}
+	}
+}
+
+# Fires cc_wc.50 when a country ends a war while its hawk minister's pledge is active.
+# Scope: root = country ending the war. scope:winner, scope:loser, scope:war available.
+cc_hawk_reckoning_pre_end = {
+	trigger = {
+		has_variable = cc_hawk_war_pledge
+		any_cabinet_character = { has_trait = hawk_minister }
+	}
+	effect = {
+		trigger_event_non_silently = cc_wc.50
+	}
+}
+
+# Fires cc.111 when overlord wins a holy war while holding a holy_protectorate.
+# Scope: scope:winner = winning country, scope:war = the concluded war.
+cc_holy_war_on_winning = {
+	trigger = {
+		scope:winner = {
+			any_subject = { is_subject_type = holy_protectorate }
+		}
+		scope:war = {
+			OR = {
+				casus_belli ?= casus_belli:cb_deus_vult
+				casus_belli ?= casus_belli:cb_jihad
+				casus_belli ?= casus_belli:cb_crusade
+				casus_belli ?= casus_belli:cb_religious_superiority
+			}
+		}
+	}
+	effect = {
+		scope:winner = { trigger_event_non_silently = cc.111 }
+	}
+}
+
 cc_wc_on_winning_war = {
 	trigger = {
 		scope:winner = {

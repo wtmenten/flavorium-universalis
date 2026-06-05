@@ -41,6 +41,7 @@ biyearly_country_pulse = {
 		cc_cabinet_biyearly_rivalry_events
 		cc_cabinet_biyearly_scorned
 		cc_cabinet_biyearly_cabal
+		cc_cabinet_biyearly_defied
 		cc_cabinet_biyearly_estate_faction
 		cc_cabinet_biyearly_colonial
 	}
@@ -176,7 +177,7 @@ cc_cabinet_monthly_synergy = {
 		1 = cc_synergy.11  1 = cc_synergy.12  1 = cc_synergy.13  1 = cc_synergy.14  1 = cc_synergy.15
 		1 = cc_synergy.16  1 = cc_synergy.17  1 = cc_synergy.18
 		1 = cc_synergy.21  1 = cc_synergy.22  1 = cc_synergy.23  1 = cc_synergy.24  1 = cc_synergy.25
-		1 = cc_synergy.26
+		1 = cc_synergy.26  1 = cc_synergy.27  1 = cc_synergy.28
 
 		# Dual-layer (cabinet × religious_figure on same minister)
 		1 = cc_dual.1   1 = cc_dual.2   1 = cc_dual.3   1 = cc_dual.4   1 = cc_dual.5
@@ -450,10 +451,30 @@ cc_cabinet_biyearly_scorned = {
 	}
 }
 
-# Cabal formation — fires periodically regardless of tension
+# Defied general follow-up — fires when a minister with cc_minister_defied is still in cabinet
+cc_cabinet_biyearly_defied = {
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_variable = cc_minister_defied
+		}
+	}
+	random_events = {
+		3 = cc_wc.51    # The General's Resentment
+
+		chance_to_happen = 60
+
+		chance_of_no_event = {
+			value = 20
+		}
+	}
+}
+
+# Cabal formation and follow-up — fires periodically regardless of tension
 cc_cabinet_biyearly_cabal = {
 	random_events = {
 		3 = cc_cabal.1    # The Alliance Forms
+		2 = cc_cabal.3    # The Informal Cabal Stirs
 
 		chance_to_happen = 25
 

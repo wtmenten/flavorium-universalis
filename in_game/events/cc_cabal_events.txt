@@ -198,6 +198,100 @@ cc_cabal.1 = {
 
 
 ###############################################################################
+# cc_cabal.3 — THE INFORMAL CABAL STIRS
+# Fires biyearly when two cc_cabal_ally ministers are in cabinet, court_tension
+# is active, and no cc_cabal_compact is in force (option B was taken in cc_cabal.1).
+# The partners have been working quietly and want to press the advantage.
+###############################################################################
+
+cc_cabal.3 = {
+	type = country_event
+	title = cc_cabal.3.title
+	desc = cc_cabal.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		has_country_modifier = court_tension
+		NOT = { has_country_modifier = cc_cabal_compact }
+		NOT = { has_variable = cc_cabal3_cooldown }
+		any_cabinet_character = {
+			in_cabinet = yes
+			has_variable = cc_cabal_ally
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_cabal3_cooldown  value = yes  months = 36 }
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_variable = cc_cabal_ally }
+			save_scope_as = cabal_a
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				has_variable = cc_cabal_ally
+				NOT = { this = scope:cabal_a }
+			}
+			save_scope_as = cabal_b
+		}
+	}
+
+	# Let them formalize — grants a shorter cc_cabal_compact (5 years); prestige
+	option = {
+		name = cc_cabal.3.a
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_cabal_compact
+			years = 5
+		}
+		if = {
+			limit = { exists = scope:cabal_a }
+			scope:cabal_a = { add_adm = 1 }
+		}
+		if = {
+			limit = { exists = scope:cabal_b }
+			scope:cabal_b = { add_adm = 1 }
+		}
+	}
+
+	# Channel the energy — one partner receives a trait advancement opportunity
+	option = {
+		name = cc_cabal.3.b
+		if = {
+			limit = { exists = scope:cabal_a }
+			scope:cabal_a = { add_adm = 1  add_dip = 1 }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Confront the partnership — dissolve the informal bond
+	option = {
+		name = cc_cabal.3.c
+		if = {
+			limit = { exists = scope:cabal_a }
+			scope:cabal_a = {
+				remove_variable = cc_cabal_ally
+				set_variable = { name = cc_minister_resentful value = yes }
+			}
+		}
+		if = {
+			limit = { exists = scope:cabal_b }
+			scope:cabal_b = {
+				remove_variable = cc_cabal_ally
+				set_variable = { name = cc_minister_resentful value = yes }
+			}
+		}
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+###############################################################################
 # cc_cabal.2 — THE JOINT REFORM PROPOSAL
 # Triggered from cc_cabal.1 option A.
 # The allied ministers present a joint proposal to the ruler.

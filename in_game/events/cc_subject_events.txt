@@ -385,38 +385,61 @@ cc.110 = {
 	}
 }
 
-# "The Faith Protected"
-# Fires if holy_protectorate subject exists.
+# "The Protectorate Claims the Holy War's Fruit"
+# Fires from cc_holy_war_on_winning when overlord wins a holy war
+# while holding a holy_protectorate subject.
 cc.111 = {
 	type = country_event
-	title = cc.holy.2.title
-	desc = cc.holy.2.desc
+	title = cc.111.title
+	desc = cc.111.desc
 	outcome = neutral
 
 	illustration_tags = {
-		10 = interior
+		10 = armed
+		10 = happy
 	}
 
-	trigger = {
-		any_subject = { is_subject_type = holy_protectorate }
-	}
-
-	option = {
-		name = cc.holy.2.a
-		add_country_modifier = {
-			modifier = cc_holy_league_modifier
-			years = 20
-			mode = add_and_extend
-		}
-		every_subject = {
+	immediate = {
+		random_subject = {
 			limit = { is_subject_type = holy_protectorate }
+			save_scope_as = ward
+		}
+	}
+
+	# Transfer nearby conquered locations to the protectorate
+	option = {
+		name = cc.111.a
+		trigger = {
+			any_owned_location = {
+				integration_level = conquered
+				"border_distance_to(scope:ward)" < 300
+			}
+		}
+		every_owned_location = {
+			limit = {
+				integration_level = conquered
+				"border_distance_to(scope:ward)" < 300
+			}
+			change_location_owner = scope:ward
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_minus
 			add_prestige = prestige_mild_bonus
 		}
-		add_prestige = prestige_mild_bonus
 	}
 
+	# Keep the lands — prestige for the victory, costs for the broken expectation
 	option = {
-		name = cc.holy.2.b
+		name = cc.111.b
+		add_prestige = prestige_mild_bonus
+		add_religious_influence = -40
+		add_opinion = {
+			target = scope:ward
+			modifier = cc_protectorate_lands_withheld
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
 	}
 }
 
@@ -2393,6 +2416,33 @@ cc.195 = {
 		}
 		scope:ward = {
 			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
+			# Find a hostile neighboring country of a different religion group with negative opinion of the ward
+			random_country_in_diplomatic_range = {
+				limit = {
+					NOT = { religion.group = scope:ward.religion.group }
+					opinion = { target = scope:ward value < 0 }
+					NOT = { is_at_war_with = scope:ward }
+					NOT = { is_subject = yes }
+				}
+				weight = {
+					base = 1
+					modifier = {
+						factor = 100
+						"border_distance_to(scope:ward)" < 100
+					}
+					modifier = {
+						factor = 25
+						"border_distance_to(scope:ward)" >= 100
+						"border_distance_to(scope:ward)" < 300
+					}
+					modifier = {
+						factor = 5
+						"border_distance_to(scope:ward)" >= 300
+						"border_distance_to(scope:ward)" < 600
+					}
+				}
+				save_scope_as = threat
+			}
 		}
 	}
 
@@ -2404,6 +2454,8 @@ cc.195 = {
 			years = 4
 			mode = add_and_extend
 		}
+		add_manpower = { value = root.monthly_manpower multiply = -6 }
+		add_gold = { value = root.monthly_income_trade_and_tax multiply = -2 }
 		scope:ward = {
 			add_liberty_desire = liberty_desire_mild_minus
 		}
@@ -2413,9 +2465,34 @@ cc.195 = {
 	option = {
 		name = cc.holy_prot.1.b
 		add_prestige = prestige_weak_penalty
+		add_country_modifier = {
+			modifier = cc_holy_prot_spiritual_neglect
+			years = 3
+			mode = add_and_extend
+		}
+		add_religious_influence = -50
 		scope:ward = {
 			add_liberty_desire = liberty_desire_mild_plus
 		}
+	}
+
+	# Declare a holy war (only if a hostile threat was found and war can be declared)
+	option = {
+		name = cc.holy_prot.1.c
+		trigger = {
+			exists = scope:threat
+			can_declare_war_on = scope:threat
+		}
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_holy_protectorate_defense
+			years = 4
+			mode = add_and_extend
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_severe_minus
+		}
+		declare_war_with_cb = { target = scope:threat type = casus_belli:cb_deus_vult }
 	}
 }
 

@@ -67,6 +67,32 @@ python tools/wiki_search.py all declare_war
 
 **Refreshing the docs:** Run `python tools/wiki_scraper.py` to re-download all wiki pages. Requires `beautifulsoup4` and `requests` (`pip install beautifulsoup4 requests`).
 
+## Mod variable reference search
+
+**Use `tools/var_refs.py` to find where any scripted variable is read, written, or checked** across the whole mod. Use this before adding new variable logic to see the existing access pattern, or when debugging a `Variable not of the 'value' scope type` / `returned an invalid object` error.
+
+```
+# Show all references to a specific variable:
+python tools/var_refs.py cc_bond_initialized
+
+# Substring match — all vars containing a prefix:
+python tools/var_refs.py cc_bond_cul
+
+# Just list all variable names and reference counts:
+python tools/var_refs.py --list
+
+# Filter to specific operation types (set/change/clamp/has/remove/map_add/map_ref/var):
+python tools/var_refs.py cc_bond --op set,remove
+
+# Group results by file instead of by variable:
+python tools/var_refs.py cc_bond --group file
+
+# Search a single file only:
+python tools/var_refs.py --file in_game/events/cc_bond_chain_d.txt
+```
+
+Output format: `file:line  op  event_or_block > section[option_name]`
+
 ## Development Environment
 
 - **Game files location**: `F:\SteamLibrary\steamapps\common\Europa Universalis V\game` — reference these when checking vanilla definitions, scripting syntax, or effect/trigger scopes.
