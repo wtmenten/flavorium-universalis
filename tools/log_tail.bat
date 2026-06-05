@@ -79,8 +79,8 @@ $exclusions = @(
     "events/character/noble_marriage.txt:400", "events/character/artist_events.txt:2835", 
     "events/government/parliaments.txt:3129", "events/government/parliaments.txt:22",
     "common/scripted_triggers/country_triggers.txt:1300",
-    "common/generic_actions/treaty_of_tordesillas.txt:1",
-    "common/generic_actions/italian_wars.txt:12",
+    "common/generic_actions/treaty_of_tordesillas.txt",
+    "common/generic_actions/italian_wars.txt:1",
     "common/international_organizations/hre.txt:1047",
     "events/disaster/succession_crisis.txt:875", "trying to assign a pop",
     "events/wokou_events.txt:285",
@@ -93,6 +93,15 @@ $exclusions = @(
     "JominiNotification.IsPassword",
     "GetCustomGui",
 
+
+    "common/heir_selections/specialized.txt:339",
+    "common/building_types/rural_buildings.txt:22",
+    "common/coat_of_arms/template_lists/colored_emblem_lists.txt",
+    "events/disaster/byzantine_succession_crisis.txt:",
+    "events/situations/black_death.txt:",
+    "common/coat_of_arms/template_lists/",
+    "common/scripted_triggers/country_triggers.txt:13",
+    "to increase their 'accepted_cultures_capacity'",
 
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",

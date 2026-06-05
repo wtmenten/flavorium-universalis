@@ -248,7 +248,7 @@ cc.107 = {
 
 	option = {
 		name = cc.arts.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
 		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 	}
@@ -318,7 +318,7 @@ cc.109 = {
 
 	option = {
 		name = cc.naval.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_thriving_port_modifier
 			years = 15
@@ -498,7 +498,7 @@ cc.120 = {
 	# Pay off the governor's court
 	option = {
 		name = cc.gov.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 min = -100 max = -1500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 max = -100 min = -1500 }
 		scope:governor = {
 			set_variable = { name = cc_gov_ambitions_cooldown value = yes }
 		}
@@ -628,7 +628,7 @@ cc.121 = {
 	# Reduce extraction pressure — cost gold, grant tax relief
 	option = {
 		name = cc.tax.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.35 min = -80 max = -1250 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.35 max = -80 min = -1250 }
 		scope:tax_lord = {
 			add_country_modifier = { modifier = cc_subject_tax_relief }
 			set_variable = { name = cc_tax_revolt_cooldown value = yes years = 15 }
@@ -696,7 +696,7 @@ cc.125 = {
 	# Pay off the neighbors — gold proportional to income, opinion restored
 	option = {
 		name = cc.tax.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 min = -100 max = -1500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 max = -100 min = -1500 }
 		scope:angry_neighbor = {
 			add_opinion = { modifier = opinion_compensated target = root }
 		}
@@ -796,7 +796,10 @@ cc.123 = {
 			is_subject_type = military_march
 			NOT = { has_variable = cc_march_independence_cooldown }
 		}
-		"estate_satisfaction(estate_type:nobles_estate)" < 0.35
+		estate_satisfaction = {
+			estate_type = estate_type:nobles_estate
+			value < 0.35
+		}
 	}
 
 	immediate = {
@@ -910,7 +913,7 @@ cc.126 = {
 	# Mediate the dispute — gold proportional to income, moderate outcome for all
 	option = {
 		name = cc.march.3.c
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 min = -100 max = -1500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.40 max = -100 min = -1500 }
 		scope:march_lord = {
 			set_variable = { name = cc_march_threat_cooldown value = yes }
 		}
@@ -1267,7 +1270,7 @@ cc.140 = {
 	# Reward the network and discard the intel
 	option = {
 		name = cc.shadow.intel.1.c
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.15 min = -30 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.15 max = -30 min = -500 }
 		add_prestige = prestige_weak_bonus
 		scope:shadow_agent = {
 			add_liberty_desire = liberty_desire_weak_minus
@@ -1314,7 +1317,7 @@ cc.141 = {
 	# Arbitrate — both networks stand down, at cost
 	option = {
 		name = cc.shadow.conflict.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		add_stability = stability_mild_penalty
 		scope:shadow_a = { add_liberty_desire = liberty_desire_weak_minus }
 		scope:shadow_b = { add_liberty_desire = liberty_desire_weak_minus }
@@ -1562,7 +1565,7 @@ cc.143 = {
 	# Send agents to re-establish contact
 	option = {
 		name = cc.shadow.dark.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		add_prestige = prestige_weak_bonus
 	}
 
@@ -1632,7 +1635,7 @@ cc.150 = {
 	# Rein them in — the client loses face, but respects the leash
 	option = {
 		name = cc.client.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		scope:client = {
 			add_opinion = { modifier = opinion_harshly_treated target = root }
 			add_liberty_desire = liberty_desire_weak_plus
@@ -1707,7 +1710,7 @@ cc.151 = {
 	# Buy their silence — gold makes the strings invisible
 	option = {
 		name = cc.puppet.1.c
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.30 min = -65 max = -1000 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.30 max = -65 min = -1000 }
 		scope:puppet = { add_liberty_desire = liberty_desire_mild_minus }
 	}
 }
@@ -1762,7 +1765,7 @@ cc.152 = {
 	# Mediate the contact formally
 	option = {
 		name = cc.client.puppet.1.c
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		scope:the_client = { add_liberty_desire = liberty_desire_weak_minus }
 		scope:the_puppet = { add_liberty_desire = liberty_desire_weak_minus }
 	}
@@ -1808,7 +1811,7 @@ cc.160 = {
 	# Fund the cultural project — tradition grows, enclave is grateful
 	option = {
 		name = cc.enclave.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
 		scope:enclave = { add_liberty_desire = liberty_desire_mild_minus }
 	}
@@ -1871,7 +1874,7 @@ cc.161 = {
 	# Negotiate a middle path — cost gold, partial satisfaction
 	option = {
 		name = cc.palatinate.1.c
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		scope:palatinate_lord = { add_liberty_desire = liberty_desire_weak_minus }
 	}
 }
@@ -1908,21 +1911,18 @@ cc.170 = {
 			}
 			save_scope_as = republic
 		}
-		scope:republic = {
-			set_variable = { name = cc_republic_exchange_cooldown value = yes years = 12 }
-		}
 	}
 
 	# Fund the program — research benefits the realm
 	option = {
 		name = cc.republic.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.30 min = -65 max = -1000 }
+		add_gold = { value = scope:republic.monthly_income_trade_and_tax multiply = -0.30 max = -65 min = -1000 }
 		add_country_modifier = {
 			modifier = cc_scholarly_exchange_modifier
 			years = 10
 			mode = add_and_extend
 		}
-		scope:republic = { add_liberty_desire = liberty_desire_mild_minus }
+		scope:republic = { add_liberty_desire = liberty_desire_mild_minus set_variable = { name = cc_republic_exchange_cooldown value = yes years = 12 } }
 	}
 
 	# Absorb a scholar into the cabinet — a cabinet member gains a trait
@@ -1942,12 +1942,15 @@ cc.170 = {
 			add_trait = trait:learned_counselor
 		}
 		add_prestige = prestige_weak_bonus
+		scope:republic = {
+			set_variable = { name = cc_republic_exchange_cooldown value = yes years = 4 }
+		}
 	}
 
 	# Decline the proposal
 	option = {
 		name = cc.republic.1.c
-		scope:republic = { add_liberty_desire = liberty_desire_weak_plus }
+		scope:republic = { add_liberty_desire = liberty_desire_weak_plus set_variable = { name = cc_republic_exchange_cooldown value = yes years = 2 } }
 	}
 }
 
@@ -1969,7 +1972,10 @@ cc.171 = {
 			is_subject_type = associated_republic
 			NOT = { has_variable = cc_republic_dissent_cooldown }
 		}
-		"estate_satisfaction(estate_type:burghers_estate)" < 0.40
+		estate_satisfaction = {
+			estate_type = estate_type:burghers_estate
+			value < 0.40
+		}
 	}
 
 	immediate = {
@@ -1988,7 +1994,7 @@ cc.171 = {
 	# Make concessions — calm the burghers, cost gold
 	option = {
 		name = cc.republic.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
 		scope:republic = { add_liberty_desire = liberty_desire_weak_minus }
 	}
@@ -2051,7 +2057,7 @@ cc.180 = {
 	# Send gold — practical aid over sentiment
 	option = {
 		name = cc.crowndep.1.b
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		scope:dependency = { add_liberty_desire = liberty_desire_mild_minus }
 	}
 
@@ -2110,7 +2116,7 @@ cc.181 = {
 	# Send gold — let them handle it themselves
 	option = {
 		name = cc.protectorate.1.b
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		scope:ward = {
 			add_liberty_desire = liberty_desire_weak_minus
 		}
@@ -2229,7 +2235,7 @@ cc.192 = {
 	# Fund the exercises fully
 	option = {
 		name = cc.academy.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_academy_exercises
 			years = 5
@@ -2504,7 +2510,7 @@ cc.197 = {
 	# Commission the masterwork — pay gold, gain cultural prestige
 	option = {
 		name = cc.artists.1.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 min = -50 max = -750 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		add_country_modifier = {
 			modifier = cc_artistic_patronage
 			years = 6
@@ -2730,7 +2736,7 @@ cc.211 = {
 	# Attend and sponsor the tournament
 	option = {
 		name = cc.palatinate.2.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 min = -40 max = -500 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_palatinate_tournament
 			years = 4
