@@ -125,6 +125,28 @@ cc_on_game_start = {
 			}
 		}
 
+		# --- Synergy Consolation Counter Initialization ---
+		every_country = {
+			set_variable = { name = cc_synergy_consolation_count value = 0 }
+		}
+
+		# --- Ward Recent Subject Initialization ---
+		# For saves started before this version, existing protectorate/holy_protectorate subjects
+		# did not have cc_ward_recent_subject set by on_enable. Give them 70 years instead of 100
+		# so mid-game saves are not immediately eligible for the conversion chain.
+		every_country = {
+			every_subject = {
+				limit = {
+					OR = {
+						is_subject_type = protectorate
+						is_subject_type = holy_protectorate
+					}
+					NOT = { has_variable = cc_ward_recent_subject }
+				}
+				set_variable = { name = cc_ward_recent_subject value = yes years = 70 }
+			}
+		}
+
 		# --- AI Personality Monitor Variable Initialization ---
 		# Pre-set all counter variables to 0 so var: comparisons in limits and
 		# ai_chance blocks never fire before the monthly monitor has run once.

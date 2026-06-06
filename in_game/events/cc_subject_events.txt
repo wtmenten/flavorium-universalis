@@ -2891,3 +2891,1101 @@ cc.212 = {
 		}
 	}
 }
+
+###############################################################################
+# PROTECTORATE / HOLY PROTECTORATE EVOLUTION EVENTS (cc.220–cc.226)
+# cc.220 — A Ward No Longer (conversion to vassal, fires for both subject types)
+# cc.221 — An Emboldened Ward (diplomatic incident chain opener, protectorate only)
+# cc.222 — The Rival Makes Their Move (follow-up to cc.221 option B)
+# cc.223 — Ward Abandoned to Their Fate (follow-up to cc.221 option C)
+# cc.224 — The Ward's Own Ambitions (subject-driven upgrade request)
+# cc.225 — The Faith Grows Cold (holy protectorate dissolution request)
+# cc.226 — Patron of the Faith (multi-ward religious recognition)
+###############################################################################
+
+# "A Ward No Longer"
+# The subject has matured: opinion high, loyalty high, culture accepted, 100 years elapsed.
+# Both protectorate and holy_protectorate are eligible.
+cc.220 = {
+	type = country_event
+	title = cc.ward_no_longer.title
+	desc = {
+		trigger = { scope:ward = { is_subject_type = holy_protectorate } }
+		desc = cc.ward_no_longer.desc.holy
+	}
+	desc = {
+		trigger = { scope:ward = { is_subject_type = protectorate } }
+		desc = cc.ward_no_longer.desc.prot
+	}
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			OR = {
+				is_subject_type = protectorate
+				is_subject_type = holy_protectorate
+			}
+			opinion = { target = root value >= 180 }
+			subject_loyalty >= 65
+			NOT = { has_variable = cc_ward_recent_subject }
+			root = { has_primary_or_accepted_culture = prev.culture }
+		}
+		current_age_or_later = { age = age_4_reformation }
+		NOT = { has_variable = cc_conversion_chain_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_conversion_chain_cooldown value = yes years = 10 }
+		random_subject = {
+			limit = {
+				OR = {
+					is_subject_type = protectorate
+					is_subject_type = holy_protectorate
+				}
+				opinion = { target = root value >= 180 }
+				subject_loyalty >= 65
+				NOT = { has_variable = cc_ward_recent_subject }
+				root = { has_primary_or_accepted_culture = prev.culture }
+			}
+			save_scope_as = ward
+		}
+	}
+
+	# Accept the transformation — conversion to vassal (standard)
+	option = {
+		name = cc.ward_no_longer.a
+		trigger = {
+			NOT = { ruler_or_regent = { has_trait = cruel } }
+			NOT = {
+				AND = {
+					ruler_or_regent = { has_trait = zealot }
+					scope:ward = { is_subject_type = holy_protectorate }
+				}
+			}
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_prestige = prestige_severe_bonus
+		# Pope disapproves of dissolving a sacred holy arrangement into a secular bond
+		if = {
+			limit = {
+				scope:ward = {
+					is_subject_type = holy_protectorate
+					religion = religion:catholic
+				}
+				exists = c:PAP
+			}
+			c:PAP = { add_opinion = { target = prev modifier = cc_papal_disapproval_neglect } }
+		}
+	}
+
+	# Cruel ruler absorbs by decree — conversion but ward resents it
+	option = {
+		name = cc.ward_no_longer.a_cruel
+		trigger = {
+			ruler_or_regent = { has_trait = cruel }
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = 20
+			add_country_modifier = { modifier = cc_forced_subjection years = 5 }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Zealot ruler + holy protectorate — relinquishing the sacred charge
+	option = {
+		name = cc.ward_no_longer.a_zealot
+		trigger = {
+			ruler_or_regent = { has_trait = zealot }
+			scope:ward = { is_subject_type = holy_protectorate }
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Masterstroke (bonus option: grand_chancellor or master_statesman in cabinet)
+	option = {
+		name = cc.ward_no_longer.a_master
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = master_statesman
+				}
+			}
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_prestige = prestige_severe_bonus
+	}
+
+	# Integration framework (bonus option: consolidation_minister or federal_architect)
+	option = {
+		name = cc.ward_no_longer.a_integration
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = consolidation_minister
+					has_trait = federal_architect
+				}
+			}
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_country_modifier = { modifier = cc_smooth_integration }
+		}
+		add_prestige = prestige_severe_bonus
+	}
+
+	# Delay (age 4 only, ward must be content enough to accept waiting)
+	option = {
+		name = cc.ward_no_longer.b
+		trigger = {
+			NOT = { current_age_or_later = { age = age_5_absolutism } }
+			scope:ward = { subject_loyalty >= 75 }
+		}
+		set_variable = { name = cc_conversion_chain_cooldown value = yes years = 15 }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Decline firmly (age 4 only, ward still willing to accept)
+	option = {
+		name = cc.ward_no_longer.c
+		trigger = {
+			NOT = { current_age_or_later = { age = age_5_absolutism } }
+			scope:ward = { subject_loyalty >= 25 }
+		}
+		scope:ward = { add_liberty_desire = 5 }
+		set_variable = { name = cc_conversion_chain_cooldown value = yes years = 25 }
+		if = {
+			limit = { religion = religion:catholic }
+			add_opinion = {
+				target = c:PAP
+				modifier = cc_papal_disapproval_neglect
+			}
+		}
+	}
+
+	# Ward demands freedom — loyalty < 25, they are near rebellion (age 4 only)
+	option = {
+		name = cc.ward_no_longer.c_demand_release
+		trigger = {
+			NOT = { current_age_or_later = { age = age_5_absolutism } }
+			scope:ward = { loyalty < 25 }
+		}
+		cancel_subject = scope:ward
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Ward demands freedom — refuses to be denied, declares independence (age 4 only)
+	option = {
+		name = cc.ward_no_longer.c_demand_refuse
+		trigger = {
+			NOT = { current_age_or_later = { age = age_5_absolutism } }
+			scope:ward = { loyalty < 25 }
+		}
+		scope:ward = {
+			declare_war_with_cb = { target = root type = casus_belli:cb_independence_war }
+			random_current_war = {
+				save_scope_as = cc_indie_war
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		add_country_modifier = { modifier = cc_faithless_overlord_repute years = 5 }
+		if = {
+			limit = {
+				scope:ward = { religion = religion:catholic }
+				country_exists = c:PAP
+				c:PAP = { NOT = { is_at_war_with = root } }
+				exists = scope:cc_indie_war
+			}
+			c:PAP = { join_war_as_attacker = { war = scope:cc_indie_war } }
+		}
+	}
+
+	# Release with honor (age 5+ with a diplo-minded minister)
+	option = {
+		name = cc.ward_no_longer.d_honor
+		trigger = {
+			current_age_or_later = { age = age_5_absolutism }
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = master_statesman
+					has_trait = peacemaker_counselor
+					has_trait = diplomatic_attache
+				}
+			}
+		}
+		cancel_subject = scope:ward
+		add_prestige = prestige_severe_bonus
+		add_country_modifier = { modifier = cc_gracious_release years = 5 }
+		# Pope approves of a gracious and ceremonial release — a dignified conclusion to a holy compact
+		if = {
+			limit = {
+				scope:ward = { religion = religion:catholic }
+				exists = c:PAP
+			}
+			c:PAP = { add_opinion = { target = prev modifier = cc_de_escalation_overture } }
+		}
+	}
+
+	# Release in embarrassment (age 5+ without a diplo minister)
+	option = {
+		name = cc.ward_no_longer.d_embarrass
+		trigger = {
+			current_age_or_later = { age = age_5_absolutism }
+			NOT = {
+				any_cabinet_character = {
+					in_cabinet = yes
+					OR = {
+						has_trait = grand_chancellor
+						has_trait = master_statesman
+						has_trait = peacemaker_counselor
+						has_trait = diplomatic_attache
+					}
+				}
+			}
+		}
+		cancel_subject = scope:ward
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = { modifier = cc_diplomatic_scramble years = 3 }
+	}
+}
+
+# "An Emboldened Ward"
+# A protectorate has provoked a diplomatic incident with a hostile neighbor.
+cc.221 = {
+	type = country_event
+	title = cc.emboldened_ward.title
+	desc = cc.emboldened_ward.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = protectorate
+			NOT = { has_variable = cc_emboldened_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { this = root }
+				opinion = { target = prev value < 0 }
+				NOT = { is_at_war_with = prev }
+			}
+		}
+		NOT = { has_variable = cc_emboldened_overlord_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_emboldened_overlord_cooldown value = yes years = 10 }
+		random_subject = {
+			limit = {
+				is_subject_type = protectorate
+				NOT = { has_variable = cc_emboldened_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { this = root }
+					opinion = { target = prev value < 0 }
+					NOT = { is_at_war_with = prev }
+				}
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_emboldened_cooldown value = yes years = 8 }
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { this = root }
+					opinion = { target = prev value < 0 }
+					NOT = { is_at_war_with = prev }
+				}
+				save_scope_as = rival
+			}
+		}
+	}
+
+	# Defuse diplomatically (costs prestige and diplomatic reputation)
+	option = {
+		name = cc.emboldened_ward.a
+		trigger = {
+			NOT = {
+				any_cabinet_character = {
+					in_cabinet = yes
+					OR = {
+						has_trait = master_statesman
+						has_trait = grand_chancellor
+						has_trait = peacemaker_counselor
+					}
+				}
+			}
+		}
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = { modifier = cc_diplomatic_scramble years = 3 }
+	}
+
+	# Masterful Mediation (grand_chancellor or master_statesman)
+	option = {
+		name = cc.emboldened_ward.a_master
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = master_statesman
+					has_trait = grand_chancellor
+				}
+			}
+		}
+		scope:ward = { add_liberty_desire = -5 }
+	}
+
+	# Quiet Resolution (peacemaker_counselor)
+	option = {
+		name = cc.emboldened_ward.a_peace
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				has_trait = peacemaker_counselor
+			}
+		}
+		add_prestige = prestige_weak_penalty
+		add_opinion = {
+			target = scope:rival
+			modifier = cc_de_escalation_overture
+		}
+	}
+
+	# Stand firm → triggers cc.222
+	option = {
+		name = cc.emboldened_ward.b
+		trigger_event = { id = cc.222 days = 1 }
+	}
+
+	# Step back → triggers cc.223
+	option = {
+		name = cc.emboldened_ward.c
+		trigger_event = { id = cc.223 days = 1 }
+	}
+}
+
+# "The Rival Makes Their Move"
+# Follow-up: the overlord has stood firm, and now the rival escalates to war.
+cc.222 = {
+	type = country_event
+	title = cc.rival_moves.title
+	desc = cc.rival_moves.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	# Join as war leader — declare war on the rival using the intervention CB
+	option = {
+		name = cc.rival_moves.b1
+		scope:ward = { add_liberty_desire = -10 }
+		declare_war_with_cb = {
+			target = scope:rival
+			type = casus_belli:cb_cc_protectorate_intervention
+		}
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Show of Force (war_hawk ruler or supreme_commander cabinet)
+	option = {
+		name = cc.rival_moves.b1_force
+		trigger = {
+			OR = {
+				ruler_or_regent = { has_trait = war_hawk }
+				any_cabinet_character = { in_cabinet = yes has_trait = supreme_commander }
+			}
+		}
+		scope:ward = { add_liberty_desire = -10 }
+		declare_war_with_cb = {
+			target = scope:rival
+			type = casus_belli:cb_cc_protectorate_intervention
+		}
+		add_country_modifier = { modifier = cc_righteous_intervention years = 3 }
+	}
+
+	# Sacred Duty (zealot ruler + holy protectorate)
+	option = {
+		name = cc.rival_moves.b1_sacred
+		trigger = {
+			ruler_or_regent = { has_trait = zealot }
+			scope:ward = { is_subject_type = holy_protectorate }
+		}
+		scope:ward = { add_liberty_desire = -10 }
+		declare_war_with_cb = {
+			target = scope:rival
+			type = casus_belli:cb_cc_protectorate_intervention
+		}
+		add_country_modifier = { modifier = cc_sacred_defense years = 5 }
+	}
+
+	# Abandon after backing them — relationship ends in shame
+	option = {
+		name = cc.rival_moves.b2
+		add_prestige = prestige_severe_penalty
+		add_country_modifier = { modifier = cc_faithless_overlord_repute years = 5 }
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		cancel_subject = scope:ward
+		scope:rival = {
+			declare_war_with_cb = {
+				target = scope:ward
+				type = casus_belli:cb_cc_protectorate_intervention
+			}
+		}
+	}
+}
+
+# "Ward Abandoned to Their Fate"
+# Follow-up: the overlord has stepped back entirely. The rival declares war unopposed.
+cc.223 = {
+	type = country_event
+	title = cc.ward_abandoned.title
+	desc = cc.ward_abandoned.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = military
+	}
+
+	immediate = {
+		scope:rival = {
+			declare_war_with_cb = {
+				target = scope:ward
+				type = casus_belli:cb_cc_protectorate_intervention
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		add_country_modifier = { modifier = cc_faithless_overlord_repute years = 5 }
+		scope:ward = {
+			add_liberty_desire = liberty_desire_severe_plus
+		}
+		# 20% chance a third party applies antagonism against the overlord
+		random_country = {
+			limit = {
+				NOT = { this = root }
+				NOT = { this = scope:ward }
+				NOT = { this = scope:rival }
+				opinion = { target = scope:ward value >= 50 }
+				is_neighbor_of = root
+			}
+			random = {
+				chance = 20
+				add_opinion = {
+					target = root
+					modifier = cc_faithless_overlord_infamy
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc.ward_abandoned.a
+	}
+}
+
+# "The Ward's Own Ambitions"
+# A protectorate of high development and low loyalty pushes for a defined relationship on their terms.
+cc.224 = {
+	type = country_event
+	title = cc.ward_ambitions.title
+	desc = cc.ward_ambitions.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = armed
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = protectorate
+			development >= 30
+			loyalty < 45
+			NOT = { has_variable = cc_ward_ambitions_cooldown }
+		}
+		NOT = { has_variable = cc_ward_ambitions_overlord_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_ward_ambitions_overlord_cooldown value = yes years = 10 }
+		random_subject = {
+			limit = {
+				is_subject_type = protectorate
+				development >= 30
+				loyalty < 45
+				NOT = { has_variable = cc_ward_ambitions_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_ward_ambitions_cooldown value = yes years = 8 }
+		}
+	}
+
+	# Grant client state status
+	option = {
+		name = cc.ward_ambitions.a
+		trigger = {
+			NOT = { ruler_or_regent = { has_trait = cruel } }
+		}
+		scope:ward = { change_subject_type = subject_type:client_state }
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_magnanimous_overlord years = 10 }
+	}
+
+	# Offer vassal status instead
+	option = {
+		name = cc.ward_ambitions.b
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = 10
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# "Your ambitions serve me well" — vassal with permanent loyalty modifier (diplo minister)
+	option = {
+		name = cc.ward_ambitions.b_minister
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = consolidation_minister
+					has_trait = loyal_steward
+				}
+			}
+		}
+		scope:ward = {
+			change_subject_type = subject_type:vassal
+			add_liberty_desire = 5
+			add_country_modifier = { modifier = cc_recognized_partner }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Deny the request (available until denied twice)
+	option = {
+		name = cc.ward_ambitions.c
+		trigger = {
+			scope:ward = {
+				NOT = {
+					AND = {
+						has_variable = cc_ward_ambitions_denied_count
+						var:cc_ward_ambitions_denied_count >= 2
+					}
+				}
+			}
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_severe_plus
+			if = {
+				limit = { NOT = { has_variable = cc_ward_ambitions_denied_count } }
+				set_variable = { name = cc_ward_ambitions_denied_count value = 1 }
+			}
+			else = {
+				change_variable = { name = cc_ward_ambitions_denied_count add = 1 }
+			}
+		}
+	}
+
+	# Independence war — denied too many times; friendly neighbors may join
+	option = {
+		name = cc.ward_ambitions.c_war
+		trigger = {
+			scope:ward = {
+				has_variable = cc_ward_ambitions_denied_count
+				var:cc_ward_ambitions_denied_count >= 2
+			}
+		}
+		scope:ward = {
+			declare_war_with_cb = { target = root type = casus_belli:cb_independence_war }
+			random_current_war = {
+				save_scope_as = cc_ambitions_war
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		add_country_modifier = { modifier = cc_faithless_overlord_repute years = 5 }
+		# Friendly neighbors of the ward may join the independence war
+		if = {
+			limit = { exists = scope:cc_ambitions_war }
+			scope:ward = {
+				every_neighbor_country = {
+					limit = {
+						NOT = { is_subject_of = root }
+						NOT = { this = root }
+						opinion = { target = prev value >= 50 }
+						NOT = { at_war = yes }
+					}
+					join_war_as_attacker = { war = scope:cc_ambitions_war }
+				}
+			}
+		}
+	}
+}
+
+# "The Faith Grows Cold"
+# A neglected holy protectorate, with low loyalty, requests release from the arrangement.
+cc.225 = {
+	type = country_event
+	title = cc.faith_cold.title
+	desc = cc.faith_cold.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			subject_loyalty < 40
+			NOT = { has_variable = cc_faith_cold_cooldown }
+		}
+		NOT = { has_variable = cc_faith_cold_overlord_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_faith_cold_overlord_cooldown value = yes years = 8 }
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				subject_loyalty < 40
+				NOT = { has_variable = cc_faith_cold_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_faith_cold_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Grant release graciously
+	option = {
+		name = cc.faith_cold.a
+		cancel_subject = scope:ward
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_gracious_release years = 5 }
+	}
+
+	# Renew commitment — costs religious influence, restores loyalty
+	option = {
+		name = cc.faith_cold.b
+		scope:ward = { add_liberty_desire = -15 }
+		add_religious_influence = -20
+		add_country_modifier = { modifier = cc_faith_renewed years = 3 }
+	}
+
+	# Refuse bluntly (available until refused twice)
+	option = {
+		name = cc.faith_cold.c
+		trigger = {
+			scope:ward = {
+				NOT = {
+					AND = {
+						has_variable = cc_faith_cold_denied_count
+						var:cc_faith_cold_denied_count >= 2
+					}
+				}
+			}
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+			if = {
+				limit = { NOT = { has_variable = cc_faith_cold_denied_count } }
+				set_variable = { name = cc_faith_cold_denied_count value = 1 }
+			}
+			else = {
+				change_variable = { name = cc_faith_cold_denied_count add = 1 }
+			}
+		}
+		add_prestige = prestige_weak_penalty
+	}
+
+	# "Sacred duty is non-negotiable" (zealot ruler)
+	option = {
+		name = cc.faith_cold.c_zealot
+		trigger = {
+			ruler_or_regent = { has_trait = zealot }
+			scope:ward = {
+				NOT = {
+					AND = {
+						has_variable = cc_faith_cold_denied_count
+						var:cc_faith_cold_denied_count >= 2
+					}
+				}
+			}
+		}
+		scope:ward = {
+			add_liberty_desire = 10
+			if = {
+				limit = { NOT = { has_variable = cc_faith_cold_denied_count } }
+				set_variable = { name = cc_faith_cold_denied_count value = 1 }
+			}
+			else = {
+				change_variable = { name = cc_faith_cold_denied_count add = 1 }
+			}
+		}
+		add_country_modifier = { modifier = cc_zealous_refusal years = 5 }
+		add_stability = stability_mild_penalty
+	}
+
+	# Diplomatic solution (peacemaker_counselor or grand_chancellor)
+	option = {
+		name = cc.faith_cold.e
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = peacemaker_counselor
+					has_trait = grand_chancellor
+				}
+			}
+		}
+		scope:ward = { add_liberty_desire = -15 }
+		add_religious_influence = -10
+		add_country_modifier = { modifier = cc_faith_renewed years = 3 }
+	}
+
+	# Seek Papal Mediation — Catholic only, requires Pope to have decent opinion of overlord
+	option = {
+		name = cc.faith_cold.d_papal
+		trigger = {
+			religion = religion:catholic
+			scope:ward = { religion = religion:catholic }
+			exists = c:PAP
+			c:PAP = { opinion = { target = root value >= 80 } }
+		}
+		scope:ward = { add_liberty_desire = -20 }
+		# Calling in a favor costs some goodwill with Rome
+		c:PAP = { add_opinion = { target = prev modifier = cc_papal_mediation_called } }
+		add_country_modifier = { modifier = cc_faith_renewed years = 3 }
+	}
+
+	# Independence war — too many refusals
+	option = {
+		name = cc.faith_cold.c_war
+		trigger = {
+			scope:ward = {
+				has_variable = cc_faith_cold_denied_count
+				var:cc_faith_cold_denied_count >= 2
+			}
+		}
+		scope:ward = {
+			declare_war_with_cb = { target = root type = casus_belli:cb_independence_war }
+			random_current_war = {
+				save_scope_as = cc_faith_war
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		if = {
+			limit = {
+				scope:ward = { religion = religion:catholic }
+				country_exists = c:PAP
+				c:PAP = { NOT = { is_at_war_with = root } }
+				exists = scope:cc_faith_war
+			}
+			c:PAP = { join_war_as_attacker = { war = scope:cc_faith_war } }
+		}
+	}
+}
+
+# "Patron of the Faith"
+# Fires once per game when the overlord holds 2+ holy protectorates with sufficient religious influence.
+cc.226 = {
+	type = country_event
+	title = cc.patron_faith.title
+	desc = cc.patron_faith.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			count >= 2
+			is_subject_type = holy_protectorate
+		}
+		NOT = { has_variable = cc_patron_of_faith_fired }
+		religious_influence >= 50
+		current_age_or_later = { age = age_3_discovery }
+	}
+
+	immediate = {
+		set_variable = { name = cc_patron_of_faith_fired value = yes }
+		random_subject = {
+			limit = { is_subject_type = holy_protectorate }
+			save_scope_as = ward_a
+		}
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { this = scope:ward_a }
+			}
+			save_scope_as = ward_b
+		}
+	}
+
+	# Embrace the title — prestige modifier + ward loyalty
+	option = {
+		name = cc.patron_faith.a
+		add_country_modifier = { modifier = cc_patron_of_faith }
+		scope:ward_a = { add_liberty_desire = -10 }
+		scope:ward_b = { add_liberty_desire = -10 }
+		set_variable = { name = cc_patron_of_faith_active value = yes }
+	}
+
+	# Champion of the Faith (zealot ruler — variant of A with war bonus)
+	option = {
+		name = cc.patron_faith.a_zealot
+		trigger = {
+			ruler_or_regent = { has_trait = zealot }
+		}
+		add_country_modifier = { modifier = cc_patron_of_faith }
+		add_country_modifier = { modifier = cc_champion_of_faith years = 20 }
+		scope:ward_a = { add_liberty_desire = -10 }
+		scope:ward_b = { add_liberty_desire = -10 }
+		set_variable = { name = cc_patron_of_faith_active value = yes }
+	}
+
+	# Receive Papal Recognition — Catholic overlord, Pope formally endorses the role
+	option = {
+		name = cc.patron_faith.a_papal
+		trigger = {
+			religion = religion:catholic
+			exists = c:PAP
+		}
+		add_country_modifier = { modifier = cc_papal_patron }
+		scope:ward_a = { add_liberty_desire = -10 }
+		scope:ward_b = { add_liberty_desire = -10 }
+		set_variable = { name = cc_patron_of_faith_active value = yes }
+		# Pope formally recognizes the overlord's patronage — a prestigious endorsement
+		c:PAP = { add_opinion = { target = prev modifier = cc_papal_patron_recognition } }
+	}
+
+	# Remain humble — prestige bonus, minor ward loyalty
+	option = {
+		name = cc.patron_faith.b
+		add_prestige = prestige_severe_bonus
+		scope:ward_a = { add_liberty_desire = -5 }
+		scope:ward_b = { add_liberty_desire = -5 }
+	}
+
+	# Use the reputation as leverage — diplomatic reputation
+	option = {
+		name = cc.patron_faith.c
+		add_country_modifier = { modifier = cc_gracious_release years = 10 }
+	}
+}
+
+# "A Rift in the Sacred Bond"
+# Fires when a holy protectorate no longer shares the overlord's religion.
+# Could be the overlord who converted or the ward — the event makes no judgment, only the player does.
+cc.227 = {
+	type = country_event
+	title = cc.faith_rift.title
+	desc = cc.faith_rift.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			NOT = { religion = root.religion }
+			NOT = { has_variable = cc_faith_rift_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { religion = root.religion }
+				NOT = { has_variable = cc_faith_rift_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_faith_rift_cooldown value = yes years = 20 }
+		}
+	}
+
+	# Issue conversion ultimatum — demand the ward return to the true faith
+	option = {
+		name = cc.faith_rift.a
+		scope:ward = { add_liberty_desire = liberty_desire_severe_plus }
+		scope:ward = { set_variable = { name = cc_reconversion_ultimatum value = yes years = 10 } }
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Crusade for the True Faith (zealot ruler — demands reconversion with fervor)
+	option = {
+		name = cc.faith_rift.a_zealot
+		trigger = {
+			ruler_or_regent = { has_trait = zealot }
+		}
+		scope:ward = { add_liberty_desire = liberty_desire_severe_plus }
+		scope:ward = { set_variable = { name = cc_reconversion_ultimatum value = yes years = 10 } }
+		add_country_modifier = { modifier = cc_righteous_intervention years = 3 }
+	}
+
+	# Release them graciously — dissolve the holy compact rather than force a contradiction
+	option = {
+		name = cc.faith_rift.b
+		cancel_subject = scope:ward
+		add_prestige = prestige_mild_bonus
+		# Pope approves if the overlord themselves is still Catholic
+		if = {
+			limit = {
+				religion = religion:catholic
+				exists = c:PAP
+			}
+			c:PAP = { add_opinion = { target = prev modifier = cc_de_escalation_overture } }
+		}
+	}
+
+	# Maintain the arrangement despite the rift — political utility over spiritual purity
+	option = {
+		name = cc.faith_rift.c
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_country_modifier = { modifier = cc_faith_rift_tension years = 10 }
+		}
+		add_prestige = prestige_weak_penalty
+	}
+
+	# Negotiate a formal exception — a skilled minister finds a face-saving arrangement
+	option = {
+		name = cc.faith_rift.c_master
+		trigger = {
+			any_cabinet_character = {
+				in_cabinet = yes
+				OR = {
+					has_trait = grand_chancellor
+					has_trait = master_statesman
+					has_trait = peacemaker_counselor
+				}
+			}
+		}
+		scope:ward = {
+			add_liberty_desire = 5
+			add_country_modifier = { modifier = cc_faith_rift_tension years = 5 }
+		}
+	}
+
+	# Seek Papal Guidance — Catholic overlord places the matter before Rome
+	option = {
+		name = cc.faith_rift.d_papal
+		trigger = {
+			religion = religion:catholic
+			exists = c:PAP
+			c:PAP = { opinion = { target = root value >= 60 } }
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+			set_variable = { name = cc_reconversion_ultimatum value = yes years = 10 }
+		}
+		# Rome is pleased to be consulted rather than bypassed
+		c:PAP = { add_opinion = { target = prev modifier = cc_de_escalation_overture } }
+	}
+}
+
+# "The Ward Seeks Their Own Path"
+# Follow-up to cc.227 when the ward received a reconversion ultimatum but loyalty remains too low
+# to compel compliance. The ward demands independence, citing the broken spiritual covenant.
+cc.228 = {
+	type = country_event
+	title = cc.faith_rift_escalate.title
+	desc = cc.faith_rift_escalate.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			has_variable = cc_reconversion_ultimatum
+			subject_loyalty < 25
+		}
+		NOT = { has_variable = cc_faith_rift_escalate_cooldown }
+	}
+
+	immediate = {
+		set_variable = { name = cc_faith_rift_escalate_cooldown value = yes years = 5 }
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				has_variable = cc_reconversion_ultimatum
+				subject_loyalty < 25
+			}
+			save_scope_as = ward
+		}
+	}
+
+	# Grant independence — accept the inevitable and release them with what dignity remains
+	option = {
+		name = cc.faith_rift_escalate.a
+		cancel_subject = scope:ward
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Refuse — the ward declares independence and goes to war
+	option = {
+		name = cc.faith_rift_escalate.b
+		scope:ward = {
+			declare_war_with_cb = { target = root type = casus_belli:cb_independence_war }
+			random_current_war = {
+				save_scope_as = cc_faith_rift_war
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		add_country_modifier = { modifier = cc_faithless_overlord_repute years = 5 }
+		# If the ward is Catholic, the Pope backs their claim — a heretical overlord has no right to hold them
+		if = {
+			limit = {
+				scope:ward = { religion = religion:catholic }
+				country_exists = c:PAP
+				c:PAP = { NOT = { is_at_war_with = root } }
+				exists = scope:cc_faith_rift_war
+			}
+			c:PAP = { join_war_as_attacker = { war = scope:cc_faith_rift_war } }
+		}
+	}
+}

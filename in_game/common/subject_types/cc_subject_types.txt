@@ -394,6 +394,12 @@ client_state = {
 	creation_visible = {
 		has_advance = client_state_advance
 	}
+	# enabled = {
+	# 	OR = {
+	# 		has_advance = client_state_advance
+	# 		target = { is_subject_type = client_state }
+	# 	}
+	# }
 
 	has_limited_diplomacy = no
 	will_join_independence_wars = yes
@@ -1373,6 +1379,10 @@ protectorate = {
 
 	subject_pays = subject_pays_protectorate
 
+	on_enable = {
+		set_variable = { name = cc_ward_recent_subject value = yes years = 100 }
+	}
+
 	overlord_modifier = {
 		power_projection = 5
 		diplomatic_reputation = 1
@@ -1588,6 +1598,7 @@ holy_protectorate = {
 	}
 	creation_visible = {
 		has_advance = holy_patronage_advance
+		NOT = { current_age_or_later = { age = age_5_absolutism } }
 	}
 	enabled = {
 		scope:target = {
@@ -1621,6 +1632,10 @@ holy_protectorate = {
 	institution_spread_to_subject = monthly_institution_spread_mild
 
 	subject_pays = subject_pays_holy_protectorate
+
+	on_enable = {
+		set_variable = { name = cc_ward_recent_subject value = yes years = 100 }
+	}
 
 	overlord_modifier = {
 		monthly_religious_influence = 0.1

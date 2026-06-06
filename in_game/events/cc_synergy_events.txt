@@ -696,6 +696,7 @@ cc_synergy.12 = {
 		name = cc_synergy.12.b
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		if = { limit = { NOT = { has_variable = cc_synergy_consolation_count } } set_variable = { name = cc_synergy_consolation_count value = 0 } }
 		change_variable = { name = cc_synergy_consolation_count add = 1 }
 	}
 }
@@ -790,7 +791,7 @@ cc_synergy.14 = {
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
-				cabinet_action = cabinet_action:develop_province
+				cabinet_action ?= cabinet_action:develop_province
 				NOT = { this = scope:minister_a }
 			}
 			save_scope_as = minister_b
@@ -889,6 +890,7 @@ cc_synergy.15 = {
 	option = {
 		name = cc_synergy.15.b
 		add_prestige = prestige_mild_bonus
+		if = { limit = { NOT = { has_variable = cc_synergy_consolation_count } } set_variable = { name = cc_synergy_consolation_count value = 0 } }
 		change_variable = { name = cc_synergy_consolation_count add = 1 }
 	}
 }
