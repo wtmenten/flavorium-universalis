@@ -2415,30 +2415,30 @@ cc.195 = {
 			save_scope_as = ward
 		}
 		scope:ward = {
-			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
 			# Find a hostile neighboring country of a different religion group with negative opinion of the ward
 			random_country_in_diplomatic_range = {
 				limit = {
 					NOT = { religion.group = scope:ward.religion.group }
 					opinion = { target = scope:ward value < 0 }
 					NOT = { is_at_war_with = scope:ward }
-					NOT = { is_subject = yes }
+					NOT = { is_at_war_with = root }
+					# NOT = { is_subject = yes }
+					root = { can_declare_war_on = prev }
 				}
 				weight = {
-					base = 1
+					base = 10000
 					modifier = {
 						factor = 100
-						"border_distance_to(scope:ward)" < 100
+						is_neighbor_of = scope:ward
 					}
 					modifier = {
-						factor = 25
-						"border_distance_to(scope:ward)" >= 100
-						"border_distance_to(scope:ward)" < 300
-					}
-					modifier = {
-						factor = 5
-						"border_distance_to(scope:ward)" >= 300
-						"border_distance_to(scope:ward)" < 600
+						factor = {
+							value = 1
+							if = {
+								limit = { NOT = { is_neighbor_of = scope:ward } }
+								divide = "border_distance_to(scope:ward)"
+							}
+						}
 					}
 				}
 				save_scope_as = threat
@@ -2457,6 +2457,7 @@ cc.195 = {
 		add_manpower = { value = root.monthly_manpower multiply = -6 }
 		add_gold = { value = root.monthly_income_trade_and_tax multiply = -2 }
 		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
 			add_liberty_desire = liberty_desire_mild_minus
 		}
 	}
@@ -2472,6 +2473,7 @@ cc.195 = {
 		}
 		add_religious_influence = -50
 		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
 			add_liberty_desire = liberty_desire_mild_plus
 		}
 	}
@@ -2490,6 +2492,7 @@ cc.195 = {
 			mode = add_and_extend
 		}
 		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 15 }
 			add_liberty_desire = liberty_desire_severe_minus
 		}
 		declare_war_with_cb = { target = scope:threat type = casus_belli:cb_deus_vult }
@@ -2498,12 +2501,12 @@ cc.195 = {
 
 cc.196 = {
 	type = country_event
-	title = cc.holy_prot.2.title
-	desc = cc.holy_prot.2.desc
+	title = cc.holy_prot.frontier.title
+	desc = cc.holy_prot.frontier.desc
 	outcome = neutral
 
 	illustration_tags = {
-		10 = armed
+		10 = exterior
 	}
 
 	trigger = {
@@ -2521,29 +2524,107 @@ cc.196 = {
 			}
 			save_scope_as = ward
 		}
-		scope:ward = {
-			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 6 }
-		}
 	}
 
-	# Back the holy war — religious unity and morale boost
+	# Seek fellowship with co-religionist neighbors — dispatch emissaries to kindred states
 	option = {
-		name = cc.holy_prot.2.a
+		name = cc.holy_prot.frontier.a
+		trigger = {
+			scope:ward = {
+				any_neighbor_country = {
+					religion.group = scope:ward.religion.group
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+			}
+		}
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			every_neighbor_country = {
+				limit = {
+					religion.group = scope:ward.religion.group
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+				add_opinion = { target = root modifier = cc_intl_religious_kinship }
+			}
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_religious_influence = religious_influence_mild_bonus
+	}
+
+	# Open the frontier to discourse — reach out to non-coreligionist neighbors
+	option = {
+		name = cc.holy_prot.frontier.b
+		trigger = {
+			scope:ward = {
+				any_neighbor_country = {
+					NOT = { religion.group = scope:ward.religion.group }
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+			}
+		}
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			every_neighbor_country = {
+				limit = {
+					NOT = { religion.group = scope:ward.religion.group }
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+				add_opinion = { target = root modifier = cc_de_escalation_overture }
+			}
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		add_religious_influence = religious_influence_mild_penalty
 		add_country_modifier = {
-			modifier = cc_spiritual_mandate
+			modifier = cc_holy_prot_frontier_accord
 			years = 5
 			mode = add_and_extend
 		}
-		add_prestige = prestige_mild_bonus
 	}
 
-	# Counsel restraint — avoid escalation but disappoint the subject
+	# Fortify the border of the faithful — cold signal to heathen (different religion group) neighbors
 	option = {
-		name = cc.holy_prot.2.b
-		add_prestige = prestige_weak_bonus
+		name = cc.holy_prot.frontier.c
+		trigger = {
+			scope:ward = {
+				any_neighbor_country = {
+					NOT = { religion.group = scope:ward.religion.group }
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+			}
+		}
 		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 10 }
+			every_neighbor_country = {
+				limit = {
+					NOT = { religion.group = scope:ward.religion.group }
+					NOT = { this = root }
+					"border_distance_to(scope:ward)" < 300
+				}
+				add_opinion = { target = root modifier = cc_diplomatic_insult }
+			}
+			add_country_modifier = {
+				modifier = cc_holy_prot_border_faith
+				years = 5
+				mode = add_and_extend
+			}
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Leave the ward to manage its own frontier
+	option = {
+		name = cc.holy_prot.frontier.d
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 5 }
 			add_liberty_desire = liberty_desire_weak_plus
 		}
+		add_prestige = prestige_weak_bonus
 	}
 }
 
@@ -2910,12 +2991,16 @@ cc.220 = {
 	type = country_event
 	title = cc.ward_no_longer.title
 	desc = {
-		trigger = { scope:ward = { is_subject_type = holy_protectorate } }
-		desc = cc.ward_no_longer.desc.holy
-	}
-	desc = {
-		trigger = { scope:ward = { is_subject_type = protectorate } }
-		desc = cc.ward_no_longer.desc.prot
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:ward = { is_subject_type = holy_protectorate } }
+				desc = cc.ward_no_longer.desc.holy
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc.ward_no_longer.desc.prot
+			}
+		}
 	}
 	outcome = positive
 
@@ -3086,7 +3171,7 @@ cc.220 = {
 		name = cc.ward_no_longer.c_demand_release
 		trigger = {
 			NOT = { current_age_or_later = { age = age_5_absolutism } }
-			scope:ward = { loyalty < 25 }
+			scope:ward = { subject_loyalty < 25 }
 		}
 		cancel_subject = scope:ward
 		add_prestige = prestige_mild_penalty
@@ -3097,7 +3182,7 @@ cc.220 = {
 		name = cc.ward_no_longer.c_demand_refuse
 		trigger = {
 			NOT = { current_age_or_later = { age = age_5_absolutism } }
-			scope:ward = { loyalty < 25 }
+			scope:ward = { subject_loyalty < 25 }
 		}
 		scope:ward = {
 			declare_war_with_cb = { target = root type = casus_belli:cb_independence_war }
@@ -3278,13 +3363,13 @@ cc.221 = {
 	# Stand firm → triggers cc.222
 	option = {
 		name = cc.emboldened_ward.b
-		trigger_event = { id = cc.222 days = 1 }
+		trigger_event_non_silently = { id = cc.222 days = 1 }
 	}
 
 	# Step back → triggers cc.223
 	option = {
 		name = cc.emboldened_ward.c
-		trigger_event = { id = cc.223 days = 1 }
+		trigger_event_non_silently = { id = cc.223 days = 1 }
 	}
 }
 
@@ -3427,8 +3512,8 @@ cc.224 = {
 	trigger = {
 		any_subject = {
 			is_subject_type = protectorate
-			development >= 30
-			loyalty < 45
+			total_development >= 30
+			subject_loyalty < 45
 			NOT = { has_variable = cc_ward_ambitions_cooldown }
 		}
 		NOT = { has_variable = cc_ward_ambitions_overlord_cooldown }
@@ -3439,8 +3524,8 @@ cc.224 = {
 		random_subject = {
 			limit = {
 				is_subject_type = protectorate
-				development >= 30
-				loyalty < 45
+				total_development >= 30
+				subject_loyalty < 45
 				NOT = { has_variable = cc_ward_ambitions_cooldown }
 			}
 			save_scope_as = ward
@@ -3986,6 +4071,290 @@ cc.228 = {
 				exists = scope:cc_faith_rift_war
 			}
 			c:PAP = { join_war_as_attacker = { war = scope:cc_faith_rift_war } }
+		}
+	}
+}
+
+###############################################################################
+# HOLY PROTECTORATE PERIODIC EVENTS (cc.229–cc.231)
+# Drawn from cc_holy_protectorate_pulse alongside cc.195 and cc.196.
+# cc.229 — The Holy See Takes Notice (catholic-gated)
+# cc.230 — A Shepherd for the Flock (character: religious or military)
+# cc.231 — The Wandering Preacher (internal religious pressure)
+###############################################################################
+
+cc.229 = {
+	type = country_event
+	title = cc.holy_prot.papacy.title
+	desc = cc.holy_prot.papacy.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		religion = religion:catholic
+		any_subject = {
+			is_subject_type = holy_protectorate
+			religion = religion:catholic
+			NOT = { has_variable = cc_holy_prot_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				religion = religion:catholic
+				NOT = { has_variable = cc_holy_prot_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+	}
+
+	# Invoke papal protection — lobby the Holy See to formally shelter the ward
+	option = {
+		name = cc.holy_prot.papacy.a
+		add_religious_influence = religious_influence_mild_penalty
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 12 }
+			add_country_modifier = {
+				modifier = cc_holy_prot_papal_mandate
+				years = 5
+				mode = add_and_extend
+			}
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Request a papal legate — the Holy See sends a learned cleric to the overlord's benefit
+	option = {
+		name = cc.holy_prot.papacy.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -300 }
+		add_prestige = prestige_mild_bonus
+		create_character = {
+			trait_category = cabinet
+			add_trait = trait:theologian
+			religion = religion:catholic
+			culture = root.culture
+		}
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 10 }
+			add_country_modifier = {
+				modifier = cc_spiritual_mandate
+				years = 4
+				mode = add_and_extend
+			}
+		}
+	}
+
+	# Accept the recognition graciously — take the papal attention as a blessing
+	option = {
+		name = cc.holy_prot.papacy.c
+		add_religious_influence = religious_influence_mild_bonus
+		add_prestige = prestige_mild_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			add_prestige = prestige_weak_bonus
+		}
+	}
+}
+
+cc.230 = {
+	type = country_event
+	title = cc.holy_prot.shepherd.title
+	desc = cc.holy_prot.shepherd.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		5 = regular
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			NOT = { has_variable = cc_holy_prot_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { has_variable = cc_holy_prot_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		# Find a religious counselor in the overlord's cabinet
+		random_cabinet_character = {
+			limit = {
+				OR = {
+					has_trait = theologian
+					has_trait = oracle
+				}
+			}
+			save_scope_as = own_religious
+		}
+		# Find a military commander in the ward
+		scope:ward = {
+			random_character = {
+				limit = { has_trait_category = general }
+				save_scope_as = ward_commander
+			}
+		}
+	}
+
+	# Dispatch our learned cleric to guide the ward's clergy
+	# The counselor departs — the overlord forgoes their religious influence while the ward benefits
+	option = {
+		name = cc.holy_prot.shepherd.a
+		trigger = { exists = scope:own_religious }
+		add_religious_influence = religious_influence_mild_penalty
+		add_prestige = prestige_mild_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 10 }
+			create_character = {
+				trait_category = cabinet
+				add_trait = trait:theologian
+				religion = scope:own_religious.religion
+				culture = scope:own_religious.culture
+			}
+			add_country_modifier = {
+				modifier = cc_holy_prot_sponsored_scholar
+				years = 5
+				mode = add_and_extend
+			}
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Summon the ward's commander to serve in our campaigns
+	# The commander is reassigned — the ward must manage without their best general
+	option = {
+		name = cc.holy_prot.shepherd.b
+		trigger = { exists = scope:ward_commander }
+		create_character = {
+			trait_category = general
+			culture = scope:ward_commander.culture
+			religion = scope:ward_commander.religion
+		}
+		add_manpower = { value = root.monthly_manpower multiply = 12 }
+		add_prestige = prestige_mild_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Sponsor a new theologian in the ward — fund a scholar from our treasury
+	option = {
+		name = cc.holy_prot.shepherd.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -300 }
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			create_character = {
+				trait_category = cabinet
+				add_trait = trait:theologian
+				religion = scope:ward.religion
+				culture = scope:ward.culture
+			}
+			add_country_modifier = {
+				modifier = cc_holy_prot_sponsored_scholar
+				years = 5
+				mode = add_and_extend
+			}
+		}
+	}
+
+	# Leave the ward's spiritual life to its own stewardship
+	option = {
+		name = cc.holy_prot.shepherd.d
+		add_prestige = prestige_weak_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 5 }
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+}
+
+cc.231 = {
+	type = country_event
+	title = cc.holy_prot.preacher.title
+	desc = cc.holy_prot.preacher.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		5 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+			NOT = { has_variable = cc_holy_prot_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = holy_protectorate
+				NOT = { has_variable = cc_holy_prot_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+	}
+
+	# Endorse the preacher — send them on mission beyond the ward's borders
+	option = {
+		name = cc.holy_prot.preacher.a
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			add_country_modifier = {
+				modifier = cc_holy_prot_zealous_mission
+				years = 5
+				mode = add_and_extend
+			}
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		add_religious_influence = religious_influence_mild_bonus
+	}
+
+	# Channel the preacher toward our own frontier — redirect their zeal to serve us
+	option = {
+		name = cc.holy_prot.preacher.b
+		add_country_modifier = {
+			modifier = cc_spiritual_mandate
+			years = 5
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 8 }
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+
+	# Have the preacher judged by church authorities — protect orthodox faith
+	option = {
+		name = cc.holy_prot.preacher.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
+		add_religious_influence = religious_influence_mild_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 10 }
+			add_liberty_desire = liberty_desire_mild_minus
+		}
+	}
+
+	# Ignore this — let local matters resolve themselves
+	option = {
+		name = cc.holy_prot.preacher.d
+		add_prestige = prestige_weak_bonus
+		scope:ward = {
+			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 5 }
+			add_liberty_desire = liberty_desire_weak_plus
 		}
 	}
 }
