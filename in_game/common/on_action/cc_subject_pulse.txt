@@ -5,7 +5,9 @@ yearly_country_pulse = {
 		cc_subject_shadow_pulse
 		cc_subject_drawbacks_pulse
 		cc_subjects_yearly_pulse
+		cc_holy_protectorate_pulse
 		cc_union_partnership_pulse
+		cc_ward_long_term_pulse
 	}
 }
 # Misc Yearly Random Events
@@ -23,10 +25,6 @@ cc_subjects_yearly_pulse = {
 
 		# Elite Enclave — Versailles theme
 		10 = cc.194        # Nobles Compete for Court Positions
-
-		# Holy Protectorate events (MIL Age 2)
-		10 = cc.195        # The Faith Under Threat
-		10 = cc.196        # Crusading Zeal
 
 		# Artists' Commune events (ADM Age 2)
 		10 = cc.197        # The Maestro's Commission
@@ -77,5 +75,43 @@ cc_subject_shadow_pulse = {
 		10 = cc.143   # The Network Goes Silent
 
 		chance_to_happen = 10 # yearly_pulse@10% = 10yr mean & ~10yr std
+	}
+}
+
+# Dedicated holy protectorate periodic events — separated from the shared pool so they
+# have their own chance_to_happen cadence and don't compete with other subject type events.
+cc_holy_protectorate_pulse = {
+	trigger = {
+		any_subject = {
+			is_subject_type = holy_protectorate
+		}
+	}
+	random_events = {
+		10 = cc.195        # The Faith Under Threat
+		10 = cc.196        # Voices Across the Frontier
+		10 = cc.229        # The Holy See Takes Notice (catholic-gated internally)
+		10 = cc.230        # A Shepherd for the Flock
+		10 = cc.231        # The Wandering Preacher
+
+		chance_to_happen = 25
+	}
+}
+
+# Ward evolution events — long-term events for protectorate/holy protectorate development.
+# At most 1 fires per year; tight trigger conditions mean most will not fire even when rolled.
+# chance_to_happen = 15: ~15% per year = ~7yr mean before one triggers from this pool.
+# Each individual event fires at 15% × 100/500 = ~3% per year when conditions are met.
+cc_ward_long_term_pulse = {
+	random_events = {
+		sample_count = 1
+		100 = cc.220   # A Ward No Longer — conversion to vassal
+		100 = cc.221   # An Emboldened Ward — diplomatic incident
+		100 = cc.224   # The Ward's Own Ambitions — subject-driven upgrade
+		100 = cc.225   # The Faith Grows Cold — holy protectorate dissolution request
+		100 = cc.226   # Patron of the Faith — multi-ward recognition (fires once)
+		100 = cc.227   # A Rift in the Sacred Bond — religion divergence between overlord and ward
+		100 = cc.228   # The Ward Seeks Their Own Path — independence demand after reconversion ultimatum
+
+		chance_to_happen = 15
 	}
 }

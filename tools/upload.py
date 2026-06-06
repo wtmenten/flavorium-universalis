@@ -168,9 +168,9 @@ def load_optional_bool(config, key, default):
 
 def resolve_upload_targets(args, config):
     """Resolve whether to upload mod, workshop pages, submods, and change notes."""
-    if args.mod or args.workshop_pages or args.submods or args.change_notes:
+    if args.mod or args.workshop_pages or args.submods or args.submod or args.change_notes:
         # CLI target flags override config defaults for this run.
-        return args.mod, args.workshop_pages, args.submods, args.change_notes
+        return args.mod, args.workshop_pages, args.submods or bool(args.submod), args.change_notes
 
     upload_mod = load_required_bool(config, UPLOAD_MOD_DEFAULT_KEY)
     if upload_mod is None:
@@ -574,7 +574,7 @@ def ensure_submod_item_id(steam, mod_id, workshop_id, config_path):
 
     return new_id
 
-def upload_submods(steam, config, version_gate_enabled=False, version_cache=None, upload_change_notes=False, upload_workshop_pages=False):
+def upload_submods(steam, config, version_gate_enabled=False, version_cache=None, upload_change_notes=False, upload_workshop_pages=False, name_filter=None):
     submods_root = os.path.join(ROOT_DIR, SUBMODS_DIR_NAME)
     if not os.path.isdir(submods_root):
         print(f"Warning: submods folder not found: {submods_root}")
@@ -589,6 +589,7 @@ def upload_submods(steam, config, version_gate_enabled=False, version_cache=None
         print(f"Warning: No submods found in {submods_root}.")
         return True, False
 
+    matched = False
     for entry in entries:
         mod_dir = os.path.join(submods_root, entry)
         if not os.path.isdir(mod_dir):
@@ -598,6 +599,11 @@ def upload_submods(steam, config, version_gate_enabled=False, version_cache=None
         if meta is None:
             success = False
             continue
+
+        if name_filter is not None:
+            if name_filter.lower() not in meta["id"].lower():
+                continue
+        matched = True
 
         mod_id = meta["id"]
         version = meta.get("version")
@@ -669,6 +675,9 @@ def upload_submods(steam, config, version_gate_enabled=False, version_cache=None
         if version_gate_enabled:
             set_uploaded_version(version_cache, cache_key, version)
             cache_changed = True
+
+    if name_filter is not None and not matched:
+        print(f"Warning: No submod id matched '{name_filter}'.")
 
     return success, cache_changed
 
@@ -1274,6 +1283,11 @@ def parse_args():
         help="Upload all submods found in the submods folder."
     )
     parser.add_argument(
+        "-S", "--submod",
+        metavar="NAME",
+        help="Upload a single submod by metadata id (case-insensitive substring match). Implies --submods."
+    )
+    parser.add_argument(
         "-cn", "--change-notes",
         action="store_true",
         help="Upload change notes. When set, config default target settings are ignored."
@@ -1378,6 +1392,7 @@ def main():
                 version_cache=version_cache,
                 upload_change_notes=upload_change_notes,
                 upload_workshop_pages=upload_workshop_pages,
+                name_filter=args.submod,
             )
             if not submods_ok:
                 return 1

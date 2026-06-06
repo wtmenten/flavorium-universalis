@@ -144,6 +144,7 @@ add_gold_to_estate = {
 
 ## Localization
 
+- **No `scope:` prefix inside `[...]` loc tags.** Script-side scope references use `scope:ward`, but localization interpolation drops the prefix: write `[ward.GetName]`, never `[scope:ward.GetName]`. The `scope:` prefix is invalid in `.yml` and will display as a literal string or error in-game.
 - All `.yml` files **must** have UTF-8 BOM (`\xef\xbb\xbf` as first bytes). The engine silently ignores files without it.
 - Write with Python: `f.write(b'\xef\xbb\xbf'); f.write(content.encode('utf-8'))`
 - Static modifier display names: try both `cc_modifier_name:` and `STATIC_MODIFIER_NAME_cc_modifier_name:` — the mod currently uses the un-prefixed form and it works

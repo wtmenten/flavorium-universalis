@@ -96,6 +96,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_colonial",         "cc_colonial_events.txt",           "Colonial divan: charter company events + decolonization crisis chain"),
     ("cc_posting",          "cc_colonial_posting_events.txt",   "Colonial posting duty: dispatch, corruption, native uprising, fever"),
     ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars — papal loan event"),
+    ("cc",                  "cc_subject_events.txt",            "Protectorate & holy protectorate chains — ward maturation, diplomatic incidents, faith crises, religion divergence, papal interactions"),
     ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
 ]
 
