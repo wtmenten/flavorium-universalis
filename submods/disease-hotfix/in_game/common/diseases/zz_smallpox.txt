@@ -12,7 +12,16 @@
 		random_ownable_location = {
 			limit = {
 				#Not empty location
-				population > 1
+				OR = {
+					AND = {
+						NOT = { location_rank ?= location_rank:rural_settlement }
+					}
+					population > 5000
+					AND = {
+						is_coastal = yes
+						population > 2000
+					}
+				}
 				#Climate preferences
 				OR = {
 					climate = mediterranean
@@ -44,7 +53,7 @@
 			}
 			spawn_disease = {
 				disease = scope:disease
-				value = 0.5
+				value = 0.85
 				#save the outbreak created for later
 				save_scope_as = outbreak
 			}
