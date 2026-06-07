@@ -17,6 +17,8 @@ import sys
 BOM = b"\xef\xbb\xbf"
 EXTENSIONS = {".txt", ".yml"}
 SCAN_DIRS = ["in_game", "main_menu"]
+# Directories whose files must NOT have BOM (engine setup scripts, etc.)
+EXCLUDE_DIRS = {"setup"}
 
 
 def find_mod_root():
@@ -24,15 +26,34 @@ def find_mod_root():
     return os.path.dirname(here)
 
 
+def collect_scan_roots(root):
+    """Return all directories to scan: main mod dirs + matching dirs in each submod."""
+    roots = []
+    for d in SCAN_DIRS:
+        path = os.path.join(root, d)
+        if os.path.isdir(path):
+            roots.append(path)
+    submods_dir = os.path.join(root, "submods")
+    if os.path.isdir(submods_dir):
+        for submod in os.listdir(submods_dir):
+            submod_path = os.path.join(submods_dir, submod)
+            if not os.path.isdir(submod_path):
+                continue
+            for d in SCAN_DIRS:
+                path = os.path.join(submod_path, d)
+                if os.path.isdir(path):
+                    roots.append(path)
+    return roots
+
+
 def scan(root, check_only):
     missing = []
     fixed = []
 
-    for scan_dir in SCAN_DIRS:
-        base = os.path.join(root, scan_dir)
-        if not os.path.isdir(base):
-            continue
-        for dirpath, _, filenames in os.walk(base):
+    for base in collect_scan_roots(root):
+        for dirpath, dirnames, filenames in os.walk(base):
+            # Skip excluded directory names in-place so os.walk won't descend into them
+            dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
             for name in filenames:
                 if os.path.splitext(name)[1].lower() not in EXTENSIONS:
                     continue

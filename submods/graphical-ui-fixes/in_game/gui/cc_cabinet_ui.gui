@@ -1,0 +1,185 @@
+﻿# Override select_interaction_target template to add a description-toggle button.
+# The button is always shown in the panel; it only has visible effect when the
+# panel is displaying cabinet actions (since only cabinet_action_name reads the var).
+#
+# State is stored as a country variable via scripted_gui (cc_cabinet_ui.txt)
+# so it persists across panel openings and across save/load within a campaign.
+
+template select_interaction_target {
+	vbox = {
+		using = layoutpolicy_expanding
+		using = bg_secondary_inner_alt
+		using = window_main_tabs_margin_alt
+		# allow_outside = yes
+
+		subheader_A = {
+			visible = "[SelectInteractionTargetView.IsTopVisible]"
+			# Left Data
+			blockoverride "left_1liner_text_visible" {
+				visible = "[Not(SelectInteractionTargetView.IsLeftMultiline)]"
+			}
+			blockoverride "left_1liner_text" {
+				text = "[SelectInteractionTargetView.GetTopLeftTitle]"
+			}
+			blockoverride "left_2liner_text_1_visible" {
+				visible = "[SelectInteractionTargetView.IsLeftMultiline]"
+			}
+			blockoverride "left_2liner_text_1" {
+				text = "[SelectInteractionTargetView.GetTopLeftTitle]"
+			}
+			blockoverride "left_2liner_text_2_visible" {
+				visible = "[SelectInteractionTargetView.IsLeftMultiline]"
+			}
+			blockoverride "left_2liner_text_2" {
+				text = "[SelectInteractionTargetView.GetTopLeftDesc]"
+			}
+			blockoverride "left_icon_visible" {
+				visible = yes
+			}
+			blockoverride "left_icon_gfx" {
+				texture = "[SelectInteractionTargetView.GetTopLeftTexture]"
+				texture_density = 2
+			}
+
+			# Right Data
+			blockoverride "right_icon_visible" {
+				visible = yes
+			}
+			blockoverride "right_icon_gfx" {
+				texture = "[SelectInteractionTargetView.GetTopRightTexture]"
+				texture_density = 2
+
+				glow = {
+					name = "drop_shadow"
+					glow_radius = 3
+					color = {0.0 0.0 0.0 1.0}
+					alpha = 0.3
+				}
+			}
+			blockoverride "right_1liner_text_visible" {
+				visible = "[Not(SelectInteractionTargetView.IsRightMultiline)]"
+			}
+			blockoverride "right_1liner_text" {
+				text = "[SelectInteractionTargetView.GetTopRightTitle]"
+			}
+			blockoverride "right_2liner_text_1_visible" {
+				visible = "[SelectInteractionTargetView.IsRightMultiline]"
+			}
+			blockoverride "right_2liner_text_1" {
+				text = "[SelectInteractionTargetView.GetTopRightTitle]"
+			}
+			blockoverride "right_2liner_text_2_visible" {
+				visible = "[SelectInteractionTargetView.IsRightMultiline]"
+			}
+			blockoverride "right_2liner_text_2" {
+				text = "[SelectInteractionTargetView.GetTopRightDesc]"
+			}
+		}
+
+		# top widget (specifyable in script with top_widget)
+		vbox = {
+			layoutpolicy_vertical = fixed
+			layoutpolicy_horizontal = expanding
+			name = "top_widget_container"
+		}
+
+		# Description-toggle button row — only meaningful when cabinet actions are shown
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			margin = { 10 2 }
+
+			expand = {}
+
+			button_check_visibility = {
+				size = { 28 28 }
+				down = "[GetScriptedGui('cc_cabinet_desc_is_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+
+				action_tooltip = {
+					click_type = left
+					click_mode = single
+					title = "CC_CABINET_TOGGLE_DESC"
+					on_action = "[GetScriptedGui('cc_cabinet_toggle_desc').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+				}
+
+				tooltipwidget = { BasicFunctionalTooltip = {} }
+			}
+		}
+
+		# select a number
+		vbox = {
+			layoutpolicy_vertical = expanding
+			layoutpolicy_horizontal = expanding
+			visible = "[SelectInteractionTargetView.IsValue]"
+
+			select_value_widget = {
+				datacontext = "[SelectInteractionTargetView.GetCurrentValueGlue]"
+			}
+
+			expand = {}
+		}
+
+		# select from a list
+		filtered_sorted_list = {
+			using = layoutpolicy_expanding
+			allow_outside = yes
+
+			visible = "[Not(SelectInteractionTargetView.IsValue)]"
+			datacontext = "[SelectInteractionTargetView.GetTargetObjectSortSearch]"
+
+			blockoverride "scroll_list_vbox" {
+				using = layoutpolicy_expanding
+				allow_outside = yes
+				margin = { -10 0 }
+				margin_bottom = 5
+			}
+
+			blockoverride "scroll_list_is_empty" {
+				visible = "[Not(GreaterThan_int32(GetDataModelSize(SelectInteractionTargetView.GetTargetObjects), '(int32)0'))]"
+			}
+
+			blockoverride "scroll_list_is_empty_text" {
+				text = "[SelectInteractionTargetView.GetNoneAvailableTextOnlyHeader]"
+			}
+
+			blockoverride "sort_buttons_filtered_list" {
+				datamodel = "[FilteredSortedList.GetSortKeys]"
+				item = {
+					sort_by_key_button = {
+						blockoverride "sort_by_key_button_datacontext" {}
+						size = "[SortKey.GetSize]"
+						visible = "[SortKey.IsVisible]"
+					}
+				}
+			}
+
+			blockoverride "scroll_list_layout" {
+				table = {
+					name = "selection_table"
+					size = { 540 100% }
+					margin = { 0 5 }
+					margin_left = 10
+					spacing = 7
+
+					# data model is set from code
+					even_row_widget = {
+						interaction_target_table_entry = {
+							size = { -1 30 }
+						}
+					}
+					odd_row_widget = {
+						interaction_target_table_entry = {
+							size = { -1 30 }
+						}
+					}
+				}
+			}
+		}
+
+		# bottom widget (specifyable in script with bottom_widget)
+		vbox = {
+			layoutpolicy_vertical = fixed
+			layoutpolicy_horizontal = expanding
+			name = "bottom_widget_container"
+		}
+	}
+}

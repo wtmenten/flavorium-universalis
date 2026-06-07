@@ -1,0 +1,601 @@
+# Override AgeEventWindow to give each branch banner a scrollable advance list.
+#
+# Key constraints:
+#  - block "datamodel" does NOT propagate through a scrollwidget boundary, so the
+#    advance list cannot be a reused AgeEventAdvancesList sitting inside the
+#    scrollwidget while the datamodel is overridden from outside. Instead the list
+#    body is inlined (template cc_advances_list_body) on the vbox that lives inside
+#    the scrollwidget, and its block "datamodel" is overridden in place.
+#  - The scrollarea is fixed-size (autoresizescrollarea = no, fixed size). This is
+#    the actual fix: the previous scissor-only vbox let the list's intrinsic height
+#    drive layout, pushing the branch-selection button below the window. A fixed
+#    scrollarea reports a constant height to the parent and scrolls overflow.
+#
+# Strategy: override type AgeEventWindow with banners hardcoded inline (no block
+# "banners"). The vanilla instantiation's blockoverride "banners" has no matching
+# block and is ignored. blockoverride "title_text", "illustration", and
+# "description_text" still apply normally.
+
+@illustration_wide = 560
+@illustration_height = @[illustration_wide * 0.4]
+@banner_wide = 180
+@banner_height = @[banner_wide * 2.17]
+@advances_list_height = 250
+
+# Scrollarea config for the per-banner advance lists. Mirrors vanilla
+# agenda_scrollarea_setup: fixed viewport that scissors overflow, no horizontal
+# scrollbar, vertical scrollbar appears when the advance list is taller than the
+# viewport. autoresizescrollarea = no keeps the scrollarea from growing to fit
+# its content (which is what pushed the branch button outside the window).
+template cc_advances_scrollarea_setup {
+	autoresizeviewport = yes
+	viewportwidget = {
+		widget = {
+			scissor = yes
+		}
+	}
+	autoresizescrollarea = no
+	scrollbarpolicy_horizontal = always_off
+	scrollbarpolicy_vertical = auto
+
+	# The scrollarea engine type does not render a scrollbar on its own here — it
+	# must be supplied explicitly. Without this the content is scissored but has no
+	# visible bar and no wheel target. Scrollbar_Vertical is the standard template.
+	scrollbar_vertical = {
+		using = Scrollbar_Vertical
+	}
+}
+
+# Inline copy of the vanilla AgeEventAdvancesList body. The list type cannot be
+# reused here because block "datamodel" does NOT propagate through a scrollwidget
+# boundary — the datamodel must be set directly on the vbox that owns the items.
+template cc_advances_list_body {
+	layoutpolicy_horizontal = expanding
+	margin = { 8 0 }
+	vbox = {
+		layoutpolicy_horizontal = expanding
+
+		background = {
+			texture = "gfx/interface/component_masks/age_event_mask_frame_horizontal.dds"
+			texture_density = 2
+			alpha = 0.6
+			spriteType = corneredstretched
+			spriteBorder = { 12 12 }
+
+			modify_texture = {
+				using = color_bg_blue_texture
+				blend_mode = add
+				alpha = 0.7
+			}
+			modify_texture = {
+				using = color_bg_blue_texture
+				blend_mode = overlay
+			}
+
+			modify_texture = {
+				texture = "gfx/interface/component_masks/mask_fade_horizontal_middle_overlay.dds"
+				texture_density = 2
+				alpha = 1.0
+				blend_mode = alphamultiply
+			}
+		}
+
+		block "datamodel" {}
+		item = {
+			text_multi = {
+				margin = { 0 4 }
+				minimumsize = { @[banner_wide - 36] -1 }
+				maximumsize = { @[banner_wide - 26] 26 }
+				autoresize = yes
+				fontsize = 11
+				fontsize_min = 9
+				align = nobaseline|center
+
+				raw_text = "[AdvanceDefinition.GetName]"
+
+				background = {
+					visible = "[IsOdd_int32(PdxGuiWidget.GetIndexInParent)]"
+					using = color_bg_blue_texture
+					alpha = 0.4
+
+					modify_texture = {
+						texture = "gfx/interface/component_masks/mask_fade_horizontal_middle_overlay.dds"
+						texture_density = 2
+						alpha = 1
+						blend_mode = alphamultiply
+					}
+				}
+			}
+		}
+	}
+}
+
+types EventWindows
+{
+	type AgeEventWindow = window {
+		allow_outside = yes
+		using = snd_UI_event_age
+
+		vbox = {
+			set_parent_size_to_minimum = yes
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				margin = {0 0}
+
+				AgeEventTitle = {
+					block "title_text" {
+						raw_text = " "
+					}
+				}
+			}
+			vbox = {
+				set_parent_size_to_minimum = yes
+				allow_outside = yes
+				bottomtotop = yes
+
+				vbox = {
+					margin = {15 15}
+					margin_bottom = 7
+					using = layoutpolicy_expanding
+					using = bg_age_event_inner
+					using = bg_age_event_frame
+
+					spacing = 10
+					bottomtotop = yes
+
+					widget = {
+						allow_outside = yes
+						layoutpolicy_horizontal = expanding
+						size = { -1 @banner_height }
+
+						vbox = {
+							allow_outside = yes
+							margin = { -28 -4 }
+							AgeEventBar = {
+								layoutpolicy_horizontal = expanding
+								size = { -1 24 }
+							}
+							expand = {}
+						}
+
+						hbox = {
+							allow_outside = yes
+							margin = { -10 0 }
+
+							# ADM banner
+							AgeEventBanner = {
+								datacontext = "[EventWindow.AccessOptionItemWithKey('adm')]"
+								layoutpolicy_vertical = expanding
+								size = { @banner_wide -1 }
+
+								blockoverride "banner_color" {
+									modify_texture = {
+										using = color_yellow_texture
+										blend_mode = overlay
+									}
+								}
+								blockoverride "banner_texture" {
+									texture = "gfx/interface/illustrations/advances/focus/adm_focus.dds"
+									modify_texture = {
+										using = color_bg_blue_texture
+										blend_mode = multiply
+										alpha = 0.4
+									}
+								}
+
+								vbox = {
+									margin = { 5 20 }
+
+									circle_navigational_button_alt = {
+										size = { 45 45 }
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										blockoverride "icon_texture" {
+											texture = "gfx/interface/buttons/flats/adm_button.dds"
+											size = {80% 80%}
+										}
+										using = bg_circle_alt_brown
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/adm.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_ADMINISTRATIVE"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+									}
+
+									expand = {}
+
+									scrollarea = {
+										using = cc_advances_scrollarea_setup
+										layoutpolicy_horizontal = expanding
+										size = { -1 @advances_list_height }
+										scrollwidget = {
+											vbox = {
+												layoutpolicy_horizontal = expanding
+												using = cc_advances_list_body
+												blockoverride "datamodel" {
+													datamodel = "[GetCurrentAgeAdvancesList('adm')]"
+												}
+											}
+										}
+									}
+
+									expand = {}
+
+									button_wax = {
+										layoutpolicy_horizontal = expanding
+										blockoverride "button_texture" {
+											texture = "gfx/interface/buttons/button_wax_yellow.dds"
+										}
+										size = { -1 55 }
+										fontsize = 14
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										align = center|nobaseline
+										using = Font_Type_Headers
+										using = Font_Size_Small
+										using = snd_UI_event_age_option_administrative
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/adm.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_ADMINISTRATIVE"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+										text = "[EventOption.GetText]"
+									}
+								}
+							}
+
+							# DIP banner
+							AgeEventBanner = {
+								datacontext = "[EventWindow.AccessOptionItemWithKey('dip')]"
+								layoutpolicy_vertical = expanding
+								size = { @banner_wide -1 }
+
+								blockoverride "banner_texture" {
+									texture = "gfx/interface/illustrations/advances/focus/dip_focus.dds"
+									modify_texture = {
+										using = color_bg_blue_texture
+										blend_mode = multiply
+										alpha = 0.4
+									}
+								}
+								blockoverride "banner_color" {
+									modify_texture = {
+										using = color_progress_blue_texture
+										blend_mode = overlay
+									}
+									modify_texture = {
+										using = color_white_texture
+										blend_mode = overlay
+										alpha = 0.2
+									}
+								}
+
+								vbox = {
+									margin = { 5 20 }
+
+									circle_navigational_button_alt = {
+										size = { 45 45 }
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										blockoverride "icon_texture" {
+											texture = "gfx/interface/buttons/flats/dip_button.dds"
+											size = {80% 80%}
+										}
+										using = bg_circle_alt_brown
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/dip.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_DIPLOMACY"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+									}
+
+									expand = {}
+
+									scrollarea = {
+										using = cc_advances_scrollarea_setup
+										layoutpolicy_horizontal = expanding
+										size = { -1 @advances_list_height }
+										scrollwidget = {
+											vbox = {
+												layoutpolicy_horizontal = expanding
+												using = cc_advances_list_body
+												blockoverride "datamodel" {
+													datamodel = "[GetCurrentAgeAdvancesList('dip')]"
+												}
+											}
+										}
+									}
+
+									expand = {}
+
+									button_wax = {
+										layoutpolicy_horizontal = expanding
+										blockoverride "button_texture" {
+											texture = "gfx/interface/buttons/button_wax_blue.dds"
+										}
+										size = { -1 55 }
+										fontsize = 14
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										align = center|nobaseline
+										using = Font_Type_Headers
+										using = Font_Size_Small
+										using = snd_UI_event_age_option_diplomatic
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/dip.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_DIPLOMACY"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+										text = "[EventOption.GetText]"
+									}
+								}
+							}
+
+							# MIL banner (no banner_color or button_texture override in vanilla)
+							AgeEventBanner = {
+								datacontext = "[EventWindow.AccessOptionItemWithKey('mil')]"
+								layoutpolicy_vertical = expanding
+								size = { @banner_wide -1 }
+
+								blockoverride "banner_texture" {
+									texture = "gfx/interface/illustrations/advances/focus/mil_focus.dds"
+									modify_texture = {
+										using = color_bg_blue_texture
+										blend_mode = multiply
+										alpha = 0.4
+									}
+								}
+
+								vbox = {
+									margin = { 5 20 }
+
+									circle_navigational_button_alt = {
+										size = { 45 45 }
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										blockoverride "icon_texture" {
+											texture = "gfx/interface/buttons/flats/military_button.dds"
+											size = {80% 80%}
+										}
+										using = bg_circle_alt_brown
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/mil.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_MILITARY"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+									}
+
+									expand = {}
+
+									scrollarea = {
+										using = cc_advances_scrollarea_setup
+										layoutpolicy_horizontal = expanding
+										size = { -1 @advances_list_height }
+										scrollwidget = {
+											vbox = {
+												layoutpolicy_horizontal = expanding
+												using = cc_advances_list_body
+												blockoverride "datamodel" {
+													datamodel = "[GetCurrentAgeAdvancesList('mil')]"
+												}
+											}
+										}
+									}
+
+									expand = {}
+
+									button_wax = {
+										layoutpolicy_horizontal = expanding
+										size = { -1 55 }
+										fontsize = 14
+										enabled = "[EventWindow.GetLockableInfo.IsUnlocked]"
+										align = center|nobaseline
+										using = Font_Type_Headers
+										using = Font_Size_Small
+										using = snd_UI_event_age_option_military
+										tooltipwidget = {
+											ContextualTooltipType = {
+												blockoverride "title_icon" {
+													icon = {
+														using = tooltip_title_icon_size
+														texture = "gfx/interface/icons/abilities/mil.dds"
+													}
+												}
+												blockoverride "title_text" {
+													text = "AGE_EVENT_TT_MILITARY"
+												}
+												blockoverride "concept_link" {
+													text = [age|E]
+												}
+												blockoverride "tooltip_content" {
+													TooltipTextBlock = {
+														blockoverride "text" {
+															text = "[EventOption.GetTooltip]"
+														}
+													}
+												}
+											}
+										}
+										onclick = "[EventOption.Select]"
+										text = "[EventOption.GetText]"
+									}
+								}
+							}
+						}
+					}
+
+					widget = {
+						size = { @illustration_wide @[illustration_height * 0.8] }
+						text_multi = {
+							parentanchor = center
+							background = {
+								using = tile_frame_squared_texture
+								using = color_bg_brown
+								modify_texture = {
+									using = overlay_cloth_texture
+									blend_mode = overlay
+									alpha = 0.3
+								}
+							}
+							using = bg_age_event_mask
+							using = bg_corner_flavor
+							blockoverride "corner_flavor_texture" {
+								texture = "gfx/interface/component_decoration/bg_corner_flavor_06.dds"
+								texture_density = 2
+								spriteType = Corneredstretched
+								spriteborder = { 35 35 }
+								margin = {-2 -2}
+							}
+							blockoverride "corner_flavor_color" {
+								modify_texture = {
+									using = color_bg_brown_texture
+									blend_mode = multiply
+								}
+								modify_texture = {
+									using = overlay_cloth_texture
+									blend_mode = overlay
+									alpha = 0.3
+								}
+							}
+							size = { @illustration_wide @[illustration_height * 0.8] }
+							autoresize = no
+							align = center
+							margin = { 30 40 }
+							using = Font_Type_Flavor
+							block "description_text" {}
+						}
+					}
+
+					widget = {
+						size = { @illustration_wide @illustration_height }
+						using = bg_age_event_frame
+						allow_outside = yes
+
+						block "illustration" {}
+
+						AgeEventDecorationTop2 = {
+							parentanchor = left|bottom
+							widgetanchor = right|bottom
+							position = { 0 10}
+						}
+						AgeEventDecorationTop2 = {
+							mirror = horizontal
+							parentanchor = right|bottom
+							widgetanchor = left|bottom
+							position = { 0 10}
+						}
+
+						text_single = {
+							visible = "[GameIsMultiplayer]"
+							parentanchor = hcenter|bottom
+							align = right|nobaseline
+							autoresize = yes
+							fontsize = 15
+							text = "age_event_timeout"
+							tooltip = "age_event_timeout_tt"
+							background = {
+								using = bg_name_banner
+								blockoverride "button_banner_02_texture" {
+									margin = {21 8}
+									margin_bottom = 8
+									margin_top = 5
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

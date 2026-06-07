@@ -1,0 +1,33 @@
+﻿# Persistent toggle for cabinet action description visibility.
+# State is stored as a country variable so it survives save/load within a campaign.
+#
+# GUI reads state via:
+#   GetScriptedGui('cc_cabinet_desc_is_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)
+# GUI fires toggle via:
+#   GetScriptedGui('cc_cabinet_toggle_desc').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)
+
+# True when the description bodies should be visible (variable exists)
+cc_cabinet_desc_is_shown = {
+	scope = country
+
+	is_shown = {
+		exists = var:cc_cabinet_show_desc
+	}
+}
+
+# Toggle the variable on/off
+cc_cabinet_toggle_desc = {
+	scope = country
+
+	effect = {
+		root = {
+			if = {
+				limit = { exists = var:cc_cabinet_show_desc }
+				remove_variable = cc_cabinet_show_desc
+			}
+			else = {
+				set_variable = { name = cc_cabinet_show_desc value = 1 }
+			}
+		}
+	}
+}

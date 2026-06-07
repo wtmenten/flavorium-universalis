@@ -125,6 +125,7 @@ $exclusions = @(
     "common/coat_of_arms/template_lists/",
     "common/scripted_triggers/country_triggers.txt:13",
     "to increase their 'accepted_cultures_capacity'",
+    "scaligeri_peace_treaties.txt",
 
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",

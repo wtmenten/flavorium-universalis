@@ -50,7 +50,7 @@ def create_junction(link_path, target_path):
         if os.path.normcase(os.path.abspath(existing_target)) == os.path.normcase(os.path.abspath(target_path)):
             print(f"    Already up to date.")
             return True
-        print(f"    Removing stale junction (was → {existing_target})")
+        print(f"    Removing stale junction (was -> {existing_target})")
         try:
             os.rmdir(link_path)
         except Exception as e:
