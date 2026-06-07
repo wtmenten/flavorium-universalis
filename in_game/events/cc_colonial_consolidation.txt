@@ -1,0 +1,778 @@
+﻿namespace = cc_colonial
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — COLONIAL CONSOLIDATION & BORDER FRICTION (Pillar 07)
+#
+# Models the mid/late-colonial consolidation that followed the initial scramble.
+# All chains gated to Age 5 (Absolutism) + presence of colonial subjects.
+# Root = overlord. Fired from cc_colonial_consolidation_pulse (cc_subject_pulse.txt).
+#
+# Section D — Border Friction (cc_colonial.20–23):
+#   .20 The Frontier Quarrel    (entry; two adjacent intolerant colonies)
+#   .21 Raids on the Line       (escalation if left to fester)
+#   .22 The Crown's Arbitration (resolution branch)
+#
+# Section E — Consolidation / Viceroyalty (cc_colonial.30–33):
+#   .30 A Petition for Unified Governance (entry; two same-overlord adjacent colonies)
+#   .31 The Act of Union of the Colonies (real merge via annex_country)
+#   .32 Twin Seats Preserved             (soft outcome — coordination, no merge)
+#   .33 The Viceroy's First Court        (follow-up flavor after a merge)
+#
+# Section F — Labor & Demographics (cc_colonial.40–43):
+#   .40 The Question of Labor    (entry; Americas colony)
+#   .41 The Mission and the Plantation (cultural/religious friction)
+#   .42 Creole Grievances        (settler-vs-crown payoff)
+#   .43 A Demographic Reckoning   (long-term consequence)
+###############################################################################
+
+
+###############################################################################
+# SECTION D — BORDER FRICTION
+###############################################################################
+
+# cc_colonial.20 — The Frontier Quarrel
+# Two of the crown's neighboring colonies, settled by peoples with little love for
+# one another, fall to quarreling over an unsurveyed frontier.
+cc_colonial.20 = {
+	type = country_event
+	title = cc_colonial.20.title
+	desc = cc_colonial.20.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = angry
+	}
+
+	trigger = {
+		has_game_rule = cc_colonial_consolidation_on
+		NOT = { has_variable = cc_colonial_friction_cd }
+		current_age_or_later = { age = age_5_absolutism }
+		any_subject = {
+			is_subject_type = colonial_nation
+			num_locations >= 5
+			num_locations <= 25
+			any_neighbor_country = {
+				is_subject_type = colonial_nation
+				num_locations >= 5
+				num_locations <= 25
+				NOT = { is_at_war_with = prev }
+				NOT = { culture = prev.culture }
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_friction_cd value = yes years = 12 }
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				num_locations >= 5
+				num_locations <= 25
+				any_neighbor_country = {
+					is_subject_type = colonial_nation
+					num_locations >= 5
+					num_locations <= 25
+					NOT = { is_at_war_with = prev }
+					NOT = { culture = prev.culture }
+				}
+			}
+			save_scope_as = colony_a
+			culture = { save_scope_as = colony_a_culture }
+		}
+		scope:colony_a = {
+			random_neighbor_country = {
+				limit = {
+					is_subject_type = colonial_nation
+					num_locations >= 5
+					num_locations <= 25
+					NOT = { is_at_war_with = scope:colony_a }
+					NOT = { culture = scope:colony_a_culture }
+				}
+				save_scope_as = colony_b
+			}
+		}
+	}
+
+	# Demarcate a firm line in the crown's favour — the larger colony gains, the lesser resents it
+	option = {
+		name = cc_colonial.20.a
+		scope:colony_a = {
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+		scope:colony_b = {
+			add_country_modifier = { modifier = cc_col_frontier_tension years = 10 mode = set_to_largest_and_extend }
+			add_opinion = { modifier = cc_opinion_colonial_border_dispute target = scope:colony_a }
+			if = {
+				limit = { has_variable = cc_bond_per }
+				change_variable = { name = cc_bond_per add = -1 }
+				clamp_variable = { name = cc_bond_per max = 5 min = -5 }
+			}
+		}
+		trigger_event_silently = { id = cc_colonial.21 years = 4 }
+	}
+
+	# Let the colonists settle it themselves — the crown stays out, and the quarrel festers
+	option = {
+		name = cc_colonial.20.b
+		add_prestige = prestige_weak_penalty
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_frontier_tension years = 10 mode = set_to_largest_and_extend }
+		}
+		scope:colony_b = {
+			add_country_modifier = { modifier = cc_col_frontier_tension years = 10 mode = set_to_largest_and_extend }
+		}
+		trigger_event_silently = { id = cc_colonial.21 years = 3 }
+	}
+
+	# Dispatch a royal surveyor at once — costly, but heads off the dispute (Crown's Arbitration)
+	option = {
+		name = cc_colonial.20.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -1 max = -30 min = -200 }
+		trigger_event_silently = { id = cc_colonial.22 months = 6 }
+	}
+}
+
+
+# cc_colonial.21 — Raids on the Line
+# Left unresolved, the quarrel has hardened into open raiding across the frontier.
+cc_colonial.21 = {
+	type = country_event
+	title = cc_colonial.21.title
+	desc = cc_colonial.21.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		exists = scope:colony_b
+	}
+
+	# Send crown troops to police the frontier — manpower cost, the line is pacified (Arbitration)
+	option = {
+		name = cc_colonial.21.a
+		add_manpower = { value = monthly_manpower multiply = -3 max = -5 min = -30 }
+		trigger_event_silently = { id = cc_colonial.22 months = 3 }
+	}
+
+	# Back the stronger colony's claim by force — it gains, the lesser is embittered
+	option = {
+		name = cc_colonial.21.b
+		ai_chance = { base = 40 }
+		scope:colony_a = {
+			if = {
+				limit = { has_variable = cc_bond_mil }
+				change_variable = { name = cc_bond_mil add = 1 }
+				clamp_variable = { name = cc_bond_mil max = 5 min = -5 }
+			}
+		}
+		scope:colony_b = {
+			add_liberty_desire = liberty_desire_mild_plus
+			add_opinion = { modifier = cc_opinion_colonial_border_dispute target = scope:colony_a }
+			if = {
+				limit = { has_variable = cc_bond_per }
+				change_variable = { name = cc_bond_per add = -2 }
+				clamp_variable = { name = cc_bond_per max = 5 min = -5 }
+			}
+		}
+	}
+
+	# Ignore the bloodshed — both colonies grow restless under a crown that will not protect them
+	option = {
+		name = cc_colonial.21.c
+		add_prestige = prestige_mild_penalty
+		scope:colony_a = { add_liberty_desire = liberty_desire_weak_plus }
+		scope:colony_b = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+
+# cc_colonial.22 — The Crown's Arbitration
+# Royal commissioners survey the disputed ground and hand down a binding settlement.
+cc_colonial.22 = {
+	type = country_event
+	title = cc_colonial.22.title
+	desc = cc_colonial.22.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		exists = scope:colony_b
+	}
+
+	# Ratify a fair frontier — both colonies accept the line and prosper (default; reform-flavoured)
+	option = {
+		name = cc_colonial.22.a
+		add_prestige = prestige_weak_bonus
+		scope:colony_a = {
+			remove_country_modifier = cc_col_frontier_tension
+			add_country_modifier = { modifier = cc_col_settled_frontier years = 15 mode = set_to_largest_and_extend }
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+		scope:colony_b = {
+			remove_country_modifier = cc_col_frontier_tension
+			add_country_modifier = { modifier = cc_col_settled_frontier years = 15 mode = set_to_largest_and_extend }
+			add_opinion = { modifier = cc_opinion_colonial_frontier_accord target = scope:colony_a }
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+
+	# A diplomat-minister brokers a generous accord — extra goodwill all round
+	option = {
+		name = cc_colonial.22.b
+		trigger = {
+			any_cabinet_character = { has_trait = merchant_of_the_crown }
+		}
+		add_prestige = prestige_mild_bonus
+		scope:colony_a = {
+			remove_country_modifier = cc_col_frontier_tension
+			add_country_modifier = { modifier = cc_col_settled_frontier years = 20 mode = set_to_largest_and_extend }
+			if = {
+				limit = { has_variable = cc_bond_per }
+				change_variable = { name = cc_bond_per add = 1 }
+				clamp_variable = { name = cc_bond_per max = 5 min = -5 }
+			}
+		}
+		scope:colony_b = {
+			remove_country_modifier = cc_col_frontier_tension
+			add_country_modifier = { modifier = cc_col_settled_frontier years = 20 mode = set_to_largest_and_extend }
+			add_opinion = { modifier = cc_opinion_colonial_frontier_accord target = scope:colony_a }
+			if = {
+				limit = { has_variable = cc_bond_per }
+				change_variable = { name = cc_bond_per add = 1 }
+				clamp_variable = { name = cc_bond_per max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# SECTION E — CONSOLIDATION / VICEROYALTY
+###############################################################################
+
+# cc_colonial.30 — A Petition for Unified Governance
+# Two adjacent colonies of the same realm and kindred culture have outgrown their
+# separate, overlapping administrations. Their governors petition for a single seat.
+cc_colonial.30 = {
+	type = country_event
+	title = cc_colonial.30.title
+	desc = cc_colonial.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		has_game_rule = cc_colonial_consolidation_on
+		NOT = { has_variable = cc_colonial_consolidate_cd }
+		current_age_or_later = { age = age_5_absolutism }
+		any_subject = {
+			is_subject_type = colonial_nation
+			is_subject_of = root
+			num_locations >= 10
+			any_neighbor_country = {
+				is_subject_type = colonial_nation
+				is_subject_of = root
+				num_locations <= 12
+				culture = prev.culture
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_consolidate_cd value = yes years = 20 }
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				is_subject_of = root
+				num_locations >= 10
+				any_neighbor_country = {
+					is_subject_type = colonial_nation
+					is_subject_of = root
+					num_locations <= 12
+					culture = prev.culture
+				}
+			}
+			save_scope_as = colony_a
+			culture = { save_scope_as = colony_a_culture }
+		}
+		scope:colony_a = {
+			random_neighbor_country = {
+				limit = {
+					is_subject_type = colonial_nation
+					is_subject_of = root
+					num_locations <= 12
+					culture = scope:colony_a_culture
+				}
+				save_scope_as = colony_b
+			}
+		}
+	}
+
+	# Unite them into a single viceroyalty — the lesser colony is absorbed (real merge)
+	option = {
+		name = cc_colonial.30.a
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2  ruler = { has_trait = efficient_administrator } }
+			modifier = { factor = 1.5  any_cabinet_character = { has_trait = colonial_planner } }
+		}
+		add_prestige = prestige_mild_penalty
+		trigger_event_silently = { id = cc_colonial.31 days = 30 }
+	}
+
+	# Coordinate them under a shared council, but keep both seats (soft outcome)
+	option = {
+		name = cc_colonial.30.b
+		ai_chance = { base = 50 }
+		trigger_event_silently = { id = cc_colonial.32 days = 30 }
+	}
+
+	# Leave the arrangement as it is — the governors grumble at the missed opportunity
+	option = {
+		name = cc_colonial.30.c
+		scope:colony_a = { add_liberty_desire = liberty_desire_weak_plus }
+		scope:colony_b = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+
+# cc_colonial.31 — The Act of Union of the Colonies
+# The lesser colony's territory and institutions are folded into its larger neighbour,
+# which is elevated to a vice-regal seat.
+cc_colonial.31 = {
+	type = country_event
+	title = cc_colonial.31.title
+	desc = cc_colonial.31.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		exists = scope:colony_b
+	}
+
+	immediate = {
+		scope:colony_a = {
+			annex_country = { country = scope:colony_b }
+			add_country_modifier = { modifier = cc_col_viceroyalty years = 100 mode = set_to_largest_and_extend }
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 2 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+		add_country_modifier = { modifier = cc_col_unified_administration years = 30 mode = set_to_largest_and_extend }
+	}
+
+	# Inaugurate the viceroyalty with full ceremony
+	option = {
+		name = cc_colonial.31.a
+		add_prestige = prestige_mild_bonus
+		trigger_event_silently = { id = cc_colonial.33 years = 3 }
+	}
+}
+
+
+# cc_colonial.32 — Twin Seats Preserved
+# Rather than merge, the crown binds the two colonies under a shared coordinating council.
+cc_colonial.32 = {
+	type = country_event
+	title = cc_colonial.32.title
+	desc = cc_colonial.32.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		exists = scope:colony_b
+	}
+
+	# Formalise the shared council — both colonies cooperate, liberty desire eases
+	option = {
+		name = cc_colonial.32.a
+		add_prestige = prestige_weak_bonus
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_colonial_coordination years = 20 mode = set_to_largest_and_extend }
+			add_liberty_desire = liberty_desire_mild_minus
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+		scope:colony_b = {
+			add_country_modifier = { modifier = cc_col_colonial_coordination years = 20 mode = set_to_largest_and_extend }
+			add_liberty_desire = liberty_desire_mild_minus
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+# cc_colonial.33 — The Viceroy's First Court
+# The new viceroyalty convenes its first court. The choice of viceroy sets its tone.
+cc_colonial.33 = {
+	type = country_event
+	title = cc_colonial.33.title
+	desc = cc_colonial.33.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = burghers
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		scope:colony_a = { is_subject_of = root }
+	}
+
+	# Appoint a crown loyalist — tighter control, the colony chafes a little
+	option = {
+		name = cc_colonial.33.a
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_unified_administration years = 15 mode = set_to_largest_and_extend }
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+
+	# Appoint a respected creole — looser leash, but a contented and prosperous seat
+	option = {
+		name = cc_colonial.33.b
+		scope:colony_a = {
+			add_liberty_desire = liberty_desire_weak_minus
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# SECTION F — LABOR & DEMOGRAPHICS
+###############################################################################
+
+# cc_colonial.40 — The Question of Labor
+# As a New World colony matures, the crown must settle how its plantations and mines
+# will be worked — and who will bear the cost.
+cc_colonial.40 = {
+	type = country_event
+	title = cc_colonial.40.title
+	desc = cc_colonial.40.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = economy
+		10 = exterior
+	}
+
+	trigger = {
+		has_game_rule = cc_colonial_consolidation_on
+		NOT = { has_variable = cc_colonial_labor_cd }
+		current_age_or_later = { age = age_5_absolutism }
+		any_subject = {
+			is_subject_type = colonial_nation
+			total_population > 40000
+			OR = {
+				capital.continent = continent:north_america
+				capital.continent = continent:south_america
+				capital.continent = continent:america
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_colonial_labor_cd value = yes years = 15 }
+		random_subject = {
+			limit = {
+				is_subject_type = colonial_nation
+				total_population > 40000
+				OR = {
+					capital.continent = continent:north_america
+					capital.continent = continent:south_america
+					capital.continent = continent:america
+				}
+			}
+			save_scope_as = colony_a
+		}
+	}
+
+	# Entrench the encomienda — coerced labor, rich returns, lasting resentment
+	option = {
+		name = cc_colonial.40.a
+		ai_chance = {
+			base = 30
+			modifier = { factor = 2  ruler = { has_trait = cruel } }
+			modifier = { factor = 2  ruler = { has_trait = greedy } }
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_bonus }
+		change_societal_value = { type = aristocracy_vs_plutocracy value = societal_value_move_to_left }
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_coerced_labor_regime years = 25 mode = set_to_largest_and_extend }
+			random_province = {
+				add_province_modifier = { modifier = cc_col_encomienda_labor years = 25 mode = set_to_largest }
+			}
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = 2 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = -1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+		trigger_event_silently = { id = cc_colonial.42 years = 12 }
+	}
+
+	# Charter merchant plantations — a burgher-run cash-crop economy
+	option = {
+		name = cc_colonial.40.b
+		trigger = {
+			OR = {
+				has_estate_privilege = estate_privilege:trade_monopolies
+				any_cabinet_character = { has_trait = merchant_of_the_crown }
+			}
+		}
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		change_societal_value = { type = aristocracy_vs_plutocracy value = societal_value_move_to_right }
+		scope:colony_a = {
+			random_province = {
+				add_province_modifier = { modifier = cc_col_plantation_economy years = 25 mode = set_to_largest }
+			}
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = 1 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+		}
+		trigger_event_silently = { id = cc_colonial.42 years = 15 }
+	}
+
+	# Found missions and encourage free settlement — slower, but cohesive and devout
+	option = {
+		name = cc_colonial.40.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
+		scope:colony_a = {
+			random_province = {
+				add_province_modifier = { modifier = cc_col_mission_district years = 25 mode = set_to_largest }
+			}
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+		trigger_event_silently = { id = cc_colonial.41 years = 8 }
+	}
+}
+
+
+# cc_colonial.41 — The Mission and the Plantation
+# The mission frontier and the planters' demand for labor collide.
+cc_colonial.41 = {
+	type = country_event
+	title = cc_colonial.41.title
+	desc = cc_colonial.41.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		scope:colony_a = { is_subject_of = root }
+	}
+
+	# Side with the missions — protect converts, anger the planters
+	option = {
+		name = cc_colonial.41.a
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2  ruler = { has_trait = zealot } }
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty }
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_settled_frontier years = 15 mode = set_to_largest_and_extend }
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+	}
+
+	# Side with the planters — wealth flows, but the frontier grows bitter
+	option = {
+		name = cc_colonial.41.b
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2  ruler = { has_trait = greedy } }
+		}
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		change_societal_value = { type = aristocracy_vs_plutocracy value = societal_value_minor_move_to_right }
+		scope:colony_a = {
+			random_province = {
+				add_province_modifier = { modifier = cc_col_encomienda_labor years = 20 mode = set_to_largest }
+			}
+			if = {
+				limit = { has_variable = cc_bond_eco }
+				change_variable = { name = cc_bond_eco add = 1 }
+				clamp_variable = { name = cc_bond_eco max = 5 min = -5 }
+			}
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = -1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+	}
+}
+
+
+# cc_colonial.42 — Creole Grievances
+# A generation of colonial-born elites resents rule by metropolitan appointees.
+cc_colonial.42 = {
+	type = country_event
+	title = cc_colonial.42.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:colony_a = { has_country_modifier = cc_col_coerced_labor_regime } }
+				desc = cc_colonial.42.desc_coerced
+			}
+			desc = cc_colonial.42.desc_default
+		}
+	}
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		scope:colony_a = { is_subject_of = root }
+	}
+
+	# Open offices to the creole elite — concessions ease the tension
+	option = {
+		name = cc_colonial.42.a
+		ai_chance = {
+			base = 50
+			modifier = { factor = 2  ruler = { has_trait = just } }
+		}
+		scope:colony_a = {
+			add_liberty_desire = liberty_desire_mild_minus
+			if = {
+				limit = { has_variable = cc_bond_pol }
+				change_variable = { name = cc_bond_pol add = 1 }
+				clamp_variable = { name = cc_bond_pol max = 5 min = -5 }
+			}
+		}
+	}
+
+	# Reaffirm metropolitan control — order held, but resentment deepens
+	option = {
+		name = cc_colonial.42.b
+		add_prestige = prestige_weak_bonus
+		scope:colony_a = {
+			add_liberty_desire = liberty_desire_mild_plus
+			if = {
+				limit = { has_variable = cc_bond_per }
+				change_variable = { name = cc_bond_per add = -1 }
+				clamp_variable = { name = cc_bond_per max = 5 min = -5 }
+			}
+		}
+		trigger_event_silently = { id = cc_colonial.43 years = 10 }
+	}
+}
+
+
+# cc_colonial.43 — A Demographic Reckoning
+# Decades of a hardened colonial order leave a lasting demographic and political imprint.
+cc_colonial.43 = {
+	type = country_event
+	title = cc_colonial.43.title
+	desc = cc_colonial.43.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = ages
+	}
+
+	trigger = {
+		exists = scope:colony_a
+		scope:colony_a = { is_subject_of = root }
+	}
+
+	# Invest in reconciliation and integration — costly, but the colony stabilises
+	option = {
+		name = cc_colonial.43.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 max = -40 min = -250 }
+		scope:colony_a = {
+			add_liberty_desire = liberty_desire_mild_minus
+			if = {
+				limit = { has_variable = cc_bond_cul }
+				change_variable = { name = cc_bond_cul add = 1 }
+				clamp_variable = { name = cc_bond_cul max = 5 min = -5 }
+			}
+		}
+	}
+
+	# Accept the divided society as it is — the imprint endures
+	option = {
+		name = cc_colonial.43.b
+		scope:colony_a = {
+			add_country_modifier = { modifier = cc_col_coerced_labor_regime years = 30 mode = set_to_largest_and_extend }
+		}
+	}
+}

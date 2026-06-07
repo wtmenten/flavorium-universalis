@@ -8,6 +8,25 @@ yearly_country_pulse = {
 		cc_holy_protectorate_pulse
 		cc_union_partnership_pulse
 		cc_ward_long_term_pulse
+		cc_colonial_consolidation_pulse
+	}
+}
+
+# Colonial consolidation / border friction — mid-colonial period (Age 5+) only.
+# At most 1 entry event fires per year from this pool; follow-up events fire via
+# trigger_event_silently from their parents, not from here.
+cc_colonial_consolidation_pulse = {
+	trigger = {
+		has_game_rule = cc_colonial_consolidation_on
+		current_age_or_later = { age = age_5_absolutism }
+		any_subject = { is_subject_type = colonial_nation }
+	}
+	random_events = {
+		sample_count = 1
+		10 = cc_colonial.20    # Border Friction — The Frontier Quarrel
+		10 = cc_colonial.30    # Consolidation — A Petition for Unified Governance
+		10 = cc_colonial.40    # Labor & Demographics — The Question of Labor
+		chance_to_happen = 15
 	}
 }
 # Misc Yearly Random Events
