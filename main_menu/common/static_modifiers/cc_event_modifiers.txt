@@ -1521,3 +1521,149 @@ cc_col_coerced_labor_regime = {
 	selling_efficiency = 0.06
 	global_pop_assimilation_speed_modifier = -0.10
 }
+
+########################
+# Balance of Power
+########################
+
+# A court that abandoned its bloc — distrusted abroad. (cc_bop on_left)
+cc_bop_defector = {
+	game_data = { category = country  decaying = no }
+	diplomatic_reputation = -1
+	antagonism_received_modifier = 0.15
+}
+
+# Recently aligned with the balancing coalition. (cc_bop_coalition on_joined)
+cc_bop_coalition_partner = {
+	game_data = { category = country  decaying = yes }
+	land_morale = 0.03
+	monthly_prestige = 0.02
+}
+
+# The preponderant bloc rides high — momentum behind the aspiring hegemon. (high ambition)
+cc_bop_ascendant_confidence = {
+	game_data = { category = country  decaying = yes }
+	land_morale = 0.05
+	monthly_prestige = 0.03
+}
+
+# A united, confident coalition. (high resolve)
+cc_bop_coalition_solidarity = {
+	game_data = { category = country  decaying = yes }
+	land_morale = 0.04
+	diplomatic_reputation = 1
+}
+
+# A coalition pulling apart at the seams. (low resolve)
+cc_bop_coalition_wavering = {
+	game_data = { category = country  decaying = yes }
+	land_morale = -0.05
+	monthly_prestige = -0.02
+}
+
+# Foreign gold buys neutrality — counsels of appeasement. (cc_bop bribery events)
+cc_bop_bought_ally = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = -0.02
+}
+
+# A runaway power overextends — resentment and strain. (applied to a dominant leader)
+cc_bop_hegemonic_overstretch = {
+	game_data = { category = country  decaying = no }
+	monthly_war_exhaustion = 0.02
+	global_manpower_modifier = -0.10
+	antagonism_received_modifier = 0.15
+}
+
+# Coalition war-chest subsidies prop up a weaker member. (cc_bop rebalancing events)
+cc_bop_subsidized = {
+	game_data = { category = country  decaying = yes }
+	land_morale = 0.05
+	global_manpower_modifier = 0.10
+}
+
+# The acknowledged balancer of Europe — prestige of the indispensable power.
+cc_bop_balancer_prestige = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = 0.05
+	diplomatic_reputation = 1
+}
+
+# ---- Pillar event modifiers ----
+
+# SCORCHED EARTH: applied to the invading hegemon — the long retreat bleeds it white. (.42)
+cc_bop_scorched_earth = {
+	game_data = { category = country  decaying = no }
+	land_unit_attrition = 0.5
+	global_supply_limit_modifier = -0.15
+	monthly_war_exhaustion = 0.03
+}
+
+# CONTINENTAL SYSTEM: applied to coalition members under the hegemon's blockade. (.44)
+cc_bop_continental_blockade = {
+	game_data = { category = country  decaying = no }
+	global_trade_center_power = -0.10
+	monthly_war_exhaustion = 0.01
+}
+
+# LEVÉE EN MASSE: a leader's mass mobilization — a manpower surge at a political cost. (.45)
+cc_bop_levee_en_masse = {
+	game_data = { category = country  decaying = yes }
+	global_manpower_modifier = 0.20
+	land_morale = 0.05
+	monthly_legitimacy = -0.03
+	monthly_war_exhaustion = 0.02
+}
+
+# ---- Endings ----
+
+# HEGEMONY: the power that broke the balance and mastered the continent.
+cc_bop_master_of_europe = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = 0.15
+	diplomatic_capacity = 3
+	diplomatic_reputation = 2
+	global_integration_speed_modifier = 0.25
+	land_morale = 0.05
+}
+
+# HEGEMONY: the powers that failed to stop it — humbled and revanchist.
+cc_bop_humbled_power = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = -0.10
+	antagonism_received_modifier = 0.20
+	diplomatic_reputation = -1
+}
+
+# EASTERN DELUGE: the surging eastern power overwhelming the west.
+cc_bop_scourge_of_the_west = {
+	game_data = { category = country  decaying = no }
+	global_manpower_modifier = 0.15
+	land_morale = 0.05
+	global_integration_speed_modifier = 0.20
+}
+
+# EASTERN DELUGE: western survivors girding for defence and recovery.
+cc_bop_western_bulwark = {
+	game_data = { category = country  decaying = no }
+	land_morale = 0.05
+	naval_morale = 0.05
+	monthly_war_exhaustion = -0.05
+}
+
+# CONCERT OF EUROPE (positive): the diplomatic order that kept the peace.
+cc_bop_concert_of_europe = {
+	game_data = { category = country  decaying = no }
+	diplomatic_reputation = 2
+	diplomatic_capacity = 2
+	monthly_prestige = 0.05
+	monthly_war_exhaustion = -0.03
+}
+
+# REVOLUTION: the old order swept away as the system collapses.
+cc_bop_revolutionary_upheaval = {
+	game_data = { category = country  decaying = no }
+	monthly_legitimacy = -0.05
+	land_morale = -0.05
+	monthly_war_exhaustion = 0.03
+}

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dev Diaries — Flavorium Universalis</title>
+<style>
+:root{
+  --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
+  --hover-bg:#2d3040;
+  --adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;--gold:#d4a843;--purple:#a07bdf;
+  --text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --radius:7px;--sidebar-w:230px;
+}
+/* ----- reset ----- */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
+
+/* ----- sticky header ----- */
+.site-header{position:sticky;top:0;z-index:100;background:var(--panel-bg);border-bottom:1px solid var(--card-border)}
+.header-inner{display:flex;align-items:center;gap:10px;padding:0 18px;height:50px}
+.menu-btn{background:none;border:none;color:var(--text-mid);font-size:18px;line-height:1;padding:6px 8px;cursor:pointer;border-radius:4px;display:none;flex-shrink:0}
+.menu-btn:hover{color:var(--text);background:var(--hover-bg)}
+.mod-title{font-size:15px;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em}
+.ver-badge{font-size:10px;font-weight:700;background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.3);border-radius:3px;padding:2px 7px;white-space:nowrap}
+.hdr-spacer{flex:1}
+.planner-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:5px 12px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s,background .12s}
+.planner-link:hover{color:var(--adm);border-color:var(--adm);background:rgba(91,174,232,.08)}
+
+/* ----- layout: sidebar + main ----- */
+.layout{display:flex;min-height:calc(100vh - 50px)}
+
+/* ----- sidebar ----- */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;background:var(--panel-bg);border-right:1px solid var(--card-border);padding:16px 0 40px}
+.sidebar-label{padding:10px 18px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim)}
+.nav-sec{margin-bottom:2px}
+.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h2:hover{color:var(--text);background:var(--hover-bg)}
+.nav-h2.active{color:var(--text);border-left-color:var(--nav-color,var(--adm))}
+.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.7}
+.nav-h2.active .nav-h2-dot{opacity:1}
+.nav-sub{display:flex;flex-direction:column}
+.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h3:hover{color:var(--text-mid);background:var(--hover-bg)}
+.nav-h3.active{color:var(--text-mid);border-left-color:var(--text-dim)}
+/* section accent colors for nav dots */
+.nav-sec[data-sec="0"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="1"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="2"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="3"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="4"]  .nav-h2{--nav-color:var(--dip)}
+.nav-sec[data-sec="5"]  .nav-h2{--nav-color:var(--mil)}
+.nav-sec[data-sec="6"]  .nav-h2{--nav-color:var(--purple)}
+.nav-sec[data-sec="7"]  .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="8"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="9"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="10"] .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="11"] .nav-h2{--nav-color:var(--mil)}
+
+/* ----- main content area ----- */
+.main{flex:1;min-width:0}
+.content{max-width:1080px;margin:0 auto;padding:36px 36px 100px}
+
+/* ----- hero h1 ----- */
+.content h1{font-size:32px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em}
+.content h1::after{content:'';display:block;width:52px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-top:12px}
+
+/* ----- section h2 — colored panel bar ----- */
+.content h2{font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:12px 18px;background:var(--panel-bg);border-radius:var(--radius);border-left:4px solid var(--s-color,var(--text-mid));color:var(--text)}
+.content h2[data-sec="0"] {--s-color:var(--gold)}
+.content h2[data-sec="1"] {--s-color:var(--adm)}
+.content h2[data-sec="2"] {--s-color:var(--gold)}
+.content h2[data-sec="3"] {--s-color:var(--adm)}
+.content h2[data-sec="4"] {--s-color:var(--dip)}
+.content h2[data-sec="5"] {--s-color:var(--mil)}
+.content h2[data-sec="6"] {--s-color:var(--purple)}
+.content h2[data-sec="7"] {--s-color:var(--text-mid)}
+.content h2[data-sec="8"] {--s-color:var(--gold)}
+.content h2[data-sec="9"] {--s-color:var(--adm)}
+.content h2[data-sec="10"]{--s-color:var(--text-mid)}
+.content h2[data-sec="11"]{--s-color:var(--mil)}
+
+/* ----- h3 sections — editorial border-left style ----- */
+.h3-group{padding-left:18px;border-left:3px solid var(--g-color,var(--adm));margin:24px 0 28px}
+.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:10px;margin-top:0}
+
+/* ----- Features section: 2-col grid tiles ----- */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0;align-items:start}
+.feat-grid .h3-group{border-left:none;padding-left:0;margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-top:3px solid var(--g-color,var(--adm));border-radius:var(--radius);padding:16px 18px}
+.feat-grid .h3-group h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+/* suppress bbcode <br> newline artifacts inside grid tiles */
+.feat-grid .h3-group br{display:none}
+
+/* ----- prose ----- */
+.content p{margin-bottom:10px}
+.content strong{color:var(--text);font-weight:600}
+.content em{color:var(--text-mid)}
+.content a{color:var(--adm);text-decoration:none}
+.content a:hover{text-decoration:underline}
+
+/* ----- lists ----- */
+.content ul,.content ol{margin:6px 0 10px 20px}
+.content li{margin-bottom:4px}
+.content ul ul,.content ol ul{margin-top:4px}
+
+/* ----- blockquote ----- */
+.content blockquote{margin:14px 0;padding:12px 18px;background:rgba(212,168,67,.05);border-left:3px solid rgba(212,168,67,.45);border-radius:0 var(--radius) var(--radius) 0;font-size:14px;line-height:1.6}
+.content blockquote,.content blockquote p{color:var(--text-mid)}
+.content blockquote p:last-child{margin-bottom:0}
+
+/* ----- hr ----- */
+.content hr{border:none;height:1px;background:var(--card-border);margin:22px 0}
+
+/* ----- table ----- */
+.content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.content th{background:var(--hover-bg);color:var(--text);font-weight:600;font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--card-border)}
+.content td{padding:7px 12px;border:1px solid var(--card-border);vertical-align:top}
+.content tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+/* ----- NEW badge ----- */
+.new-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px 2px;border-radius:3px;background:rgba(90,191,122,.12);color:var(--dip);border:1px solid rgba(90,191,122,.28);margin-right:3px;vertical-align:middle;line-height:1.4}
+
+/* ----- anchor scroll offset: clear the sticky 50px header ----- */
+.content h1[id],.content h2[id],.content h3[id]{scroll-margin-top:66px}
+
+/* ----- suppress stray <br> after block tags (bbcode newline artifact) ----- */
+h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br{display:none}
+
+/* ----- overlay (mobile sidebar) ----- */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:98}
+body.nav-open .sidebar-overlay{display:block}
+
+/* ----- mobile ----- */
+@media(max-width:768px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;top:50px;left:0;height:calc(100vh - 50px);z-index:99;transform:translateX(-100%);transition:transform .22s ease}
+  body.nav-open .sidebar{transform:translateX(0)}
+  .content{padding:22px 18px 80px}
+  .content h1{font-size:26px}
+  .content h2{font-size:17px;padding:10px 14px;margin-top:36px}
+  .feat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .content{padding:18px 14px 60px}
+  .h3-group{padding-left:14px}
+}
+
+/* ----- dev diary figures ----- */
+.content figure{margin:18px 0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
+.content figure a{display:block}
+.content figure img{display:block;width:100%;height:auto}
+.content figcaption{padding:8px 14px;font-size:12.5px;color:var(--text-mid);border-top:1px solid var(--card-border)}
+.fig-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}
+.fig-row figure{margin:0}
+@media(max-width:680px){.fig-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <button class="menu-btn" id="menuBtn" title="Navigation">&#9776;</button>
+    <span class="mod-title">Flavorium Universalis</span>
+    <span class="ver-badge">Dev Diaries</span>
+    <div class="hdr-spacer"></div>
+    <a class="planner-link" href="index.html">&larr; Home</a>
+    <a class="planner-link" href="planner.html">Advance Planner &rarr;</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-label">Dev Diaries</div>
+  <div class="nav-sec" data-sec="0">
+    <a class="nav-h2" href="#how-it-plays"><span class="nav-h2-dot"></span>How it plays</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="1">
+    <a class="nav-h2" href="#taking-a-hand-in-the-game"><span class="nav-h2-dot"></span>Taking a hand in the game</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#the-unaligned">The unaligned</a>
+      <a class="nav-h3" href="#the-bloc-leaders">The bloc leaders</a>
+      <a class="nav-h3" href="#the-currencies-also-speak-for-themselves">The currencies also speak for themselves</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="2">
+    <a class="nav-h2" href="#betrayal-and-the-reversal-of-alliances"><span class="nav-h2-dot"></span>Betrayal and the reversal of alliances</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="3">
+    <a class="nav-h2" href="#the-historical-inspiration"><span class="nav-h2-dot"></span>The historical inspiration</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="4">
+    <a class="nav-h2" href="#how-it-can-end"><span class="nav-h2-dot"></span>How it can end</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main">
+    <article class="content" id="content">
+<h1 id="dev-diary-the-balance-of-power">Dev Diary — The Balance of Power</h1>
+<p><em>An End-game Situation for Flavorium Universalis.</em></p>
+<p><em>Dev Note: I wanted more to do in the end-game european theatre apart from Revs. This situation is intended to be a punishing end-game challenge simulating european geo-politics of the rev-france, napoleonic, early-victorian period. See if you can shatter the balance of power, or maintain it — be rewarded either way. The situation can even re-emerge if the balance is threatened again.</em></p>
+<figure>
+  <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_1.png" target="_blank">
+    <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_1.png" alt="The Balance of Power situation panel">
+  </a>
+  <figcaption>The situation panel — the Preponderance Share at the top, the three-way power pie, and the two bloc leaders.</figcaption>
+</figure>
+<p>For two centuries the chancelleries of Europe played a single, deadly game: no one crown must ever overtop the rest. Flavorium Universalis brings that game to life as <strong>The Balance of Power</strong> — a continent-spanning situation in which an aspiring hegemon and the coalition that forms to deny it contend for the destiny of Europe and the Near-East.</p>
+<p>It begins quietly. Once a great power embraces the <strong>Balance of Power Doctrine</strong> in the Age of Absolutism — or once the revolutionary era throws the old order into the fire — the strongest court is cast as the <strong>Preponderant Bloc</strong>, and the strongest power that fears it rises to lead the <strong>Balancing Coalition</strong>. Every eligible court is put to the question: which way will you lean?</p>
+<hr>
+<h2 id="how-it-plays" data-sec="0">How it plays</h2>
+<p>At the heart of the situation is a single number: the <strong>Preponderance Share</strong>, running from 0 to 100, where 50 is perfect equilibrium. It is not a hidden die-roll — it is the real weight of the two blocs, measured against each other. Bring a great power into your camp and the scale tips; lose one and it swings back.</p>
+<p>As the leading bloc's share climbs past 65, the balance approaches breaking point — and a hegemon may emerge. The whole drama of the feature is the struggle over those few points in the middle.</p>
+<p>You influence them through play, not menus:</p>
+<ul><li><strong>Choosing sides.</strong> Unaligned courts are courted by both camps — drawn by kinship, shared faith, fear, threats, or gold. A minister kept on <em>Free Hands</em> embodies the court that keeps its options open, courted by both and beholden to neither.</li><li><strong>The balancer's levers.</strong> As chief balancer you can subsidise a faltering partner, court a neutral into the fold, or convene a <strong>Congress</strong> to close ranks and stiffen the coalition's resolve.</li><li><strong>The hegemon's reach.</strong> As the aspiring power you can lean on weaker neighbours, buy their neutrality, bind them by marriage — or set one of your own kin upon a satellite throne.</li></ul>
+<p>Your cabinet matters here. A <em>Diplomatic Mission</em> minister draws the great game toward your court; a <em>War Council</em> minister presses every military advantage; a war-hawk or a recognised <strong>Master Balancer</strong> can turn a close-run event into a decisive one.</p>
+<hr>
+<h2 id="taking-a-hand-in-the-game" data-sec="1">Taking a hand in the game</h2>
+<p>The balance is not something to merely watch tick by — every court can reach into it directly through actions in the situation panel and the bloc's organisation view.</p>
+<h3 id="the-unaligned">The unaligned</h3>
+<p>Courts that have not yet committed can petition their way into a bloc — or make a virtue of standing apart.</p>
+<div class="fig-row">
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_non_aligned_petition.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_non_aligned_petition.png" alt="An unaligned power petitioning a bloc">
+    </a>
+    <figcaption>An unaligned court petitions a bloc to join — the leader decides whether to admit it.</figcaption>
+  </figure>
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_non_aligned_play_sides.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_situation_screen_non_aligned_play_sides.png" alt="Playing both sides as an unaligned power">
+    </a>
+    <figcaption>Playing both sides — leaning toward the weaker bloc to keep the contest finely balanced, and making both camps pay for the privilege.</figcaption>
+  </figure>
+</div>
+<ul><li><strong>Petition a bloc</strong> — ask the aspiring hegemon or the chief balancer to admit you. The leader decides; a friendly disposition (or a frightening Preponderance Share) makes acceptance more likely.</li><li><strong>Proclaim Armed Neutrality</strong> — keep your hands free and let foreign gold flow to keep you so. Requires a minister on the <strong>Free Hands</strong> duty.</li><li><strong>Play Both Sides</strong> — lean discreetly toward the weaker bloc and make both camps pay for your goodwill. Requires a diplomat at work — your <strong>Diplomatic Mission</strong> or a vanilla diplomatic corps.</li></ul>
+<h3 id="the-bloc-leaders">The bloc leaders</h3>
+<p>Each bloc accumulates a currency of its cause — <strong>Ambition</strong> for the Preponderant Bloc, <strong>Resolve</strong> for the Balancing Coalition — which its leader spends on bold measures from the organisation view (reachable straight from the new icon on each bloc's card in the situation panel).</p>
+<div class="fig-row">
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_prepond_io_continental_action.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_prepond_io_continental_action.png" alt="The hegemon proclaiming the Continental System">
+    </a>
+    <figcaption>As the aspiring hegemon, spending Ambition to proclaim the Continental System and blockade the coalition's commerce.</figcaption>
+  </figure>
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_coal_io_subs_allies.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_coal_io_subs_allies.png" alt="The balancer subsidising the allies">
+    </a>
+    <figcaption>As the chief balancer, spending Resolve to subsidise the coalition's lesser members and harden them against the hegemon.</figcaption>
+  </figure>
+</div>
+<ul><li>The hegemon can <strong>Intimidate the Unaligned</strong>, proclaim the <strong>Continental System</strong> once dominant, or, with a great store of Ambition, <strong>Consolidate Hegemony</strong> for a hard swing of the balance.</li><li>The balancer can <strong>Subsidise the Allies</strong>, order a <strong>Naval Blockade</strong> in answer to the Continental System, <strong>Coordinate Strategy</strong> to drag the balance back toward equilibrium, or <strong>Convene a Congress</strong> to close ranks decisively.</li></ul>
+<p>Non-leader members, for their part, may always <strong>leave their bloc</strong> — at the price of being branded a defector.</p>
+<h3 id="the-currencies-also-speak-for-themselves">The currencies also speak for themselves</h3>
+<p>Ambition and Resolve are not only spent on actions; they colour the whole situation. A confident, ambitious bloc presses its event opportunities harder, while a resolute coalition reaps a passive monthly bonus and reaches more readily for the means to redress the scale.</p>
+<div class="fig-row">
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_prepon_monthly_mod.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_prepon_monthly_mod.png" alt="Preponderant bloc monthly modifier from Ambition">
+    </a>
+    <figcaption>High Ambition emboldens the whole Preponderant Bloc with a monthly confidence modifier.</figcaption>
+  </figure>
+  <figure>
+    <a href="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_coal_monthly_mod.png" target="_blank">
+      <img src="assets/screenshots/BoP/EUV_1.3.2_FU_BoP_0.1_coal_monthly_mod.png" alt="Coalition monthly modifier from Resolve">
+    </a>
+    <figcaption>A resolute coalition earns a monthly solidarity modifier — and wavers when its Resolve runs low.</figcaption>
+  </figure>
+</div>
+<hr>
+<h2 id="betrayal-and-the-reversal-of-alliances" data-sec="2">Betrayal and the reversal of alliances</h2>
+<p>Rare, high-impact special events turn the whole contest on a single act of treachery — and they hinge on a bloc's currency and the character of the minister at court.</p>
+<ul><li><strong>The Reversal of Alliances</strong> — a wavering member, its bloc faltering and a scheming minister whispering at court, can cross over to the enemy entirely, swinging the balance hard and earning the lasting enmity of those it abandons. A recognised <strong>Master Balancer</strong> holds wavering allies to their word; a <em>court schemer</em>, <em>cynical courtier</em>, or <em>corrupted official</em> makes treachery far likelier.</li><li><strong>A Purchased Treason</strong> — a leader flush with Ambition or Resolve, served by a cunning minister, can spend that currency and a sack of gold to buy the defection of an enemy member outright.</li></ul>
+<p>These echo the real reversals of the age — the Diplomatic Revolution of 1756, Saxony changing sides at Leipzig in 1813 — where a single court's betrayal could remake the map.</p>
+<hr>
+<h2 id="the-historical-inspiration" data-sec="3">The historical inspiration</h2>
+<figure>
+  <a href="assets/screenshots/BoP/battle_of_leipzig.jpg" target="_blank">
+    <img src="assets/screenshots/BoP/battle_of_leipzig.jpg" alt="The Battle of the Nations at Leipzig, 1813">
+  </a>
+  <figcaption>The Battle of the Nations at Leipzig, 1813 — the great convergence that broke a bid for mastery.</figcaption>
+</figure>
+<p>The feature takes its shape from the wars of the coalitions against Napoleon — the last and greatest test of the European balance in this era. Its events echo the real turning points of that struggle:</p>
+<ul><li><strong>The Continental System</strong> — close the markets of the continent against your rival's commerce, and watch the blockade bite both ways.</li><li><strong>The Bleeding Ulcer</strong> — a national insurrection that drains an occupying hegemon by a thousand small wounds, as Spain bled France.</li><li><strong>Scorched Earth</strong> — burn the land and fall back into the cold and the distance, until the great host starves amid the ashes, as Russia did in 1812.</li><li><strong>Levée en Masse</strong> — summon the whole nation to arms, conjuring armies beyond counting at a cost to the old order.</li><li><strong>A Separate Peace</strong> — the secret terms offered to a weary partner, as at Tilsit, that the coalition would name betrayal.</li><li><strong>The Battle of the Nations</strong> — the moment the hosts converge and the bid for mastery may break in blood and smoke, as at Leipzig.</li></ul>
+<p>And over it all hangs the memory of the <strong>Congress of Vienna</strong> — the settlement that ended the wars and tried to make the balance permanent.</p>
+<hr>
+<h2 id="how-it-can-end" data-sec="4">How it can end</h2>
+<p>The situation resolves in one of four ways — and not all of them are defeats:</p>
+<ul><li><strong>Hegemony</strong> — one power masters the continent. Glory for the victor; a long humiliation for those who failed to stop it. A decisive, permanent break.</li><li><strong>The Eastern Deluge</strong> — an eastern colossus surges westward and overwhelms the old western order.</li><li><strong>Revolutionary Collapse</strong> — the careful equilibrium of kings counts for nothing once the people rise.</li><li><strong>The Concert of Europe</strong> — the equilibrium endures, congress and compromise maturing into a lasting diplomatic order.</li></ul>
+<p>The first three are final — the question is settled for good. But the <strong>Concert is not a tombstone</strong>. History teaches that even the best-managed peace eventually frays, and so a concert may, a generation later, give way to a <em>new</em> balance — fresh poles, fresh ambitions, the wary calculus begun anew. The peace, after all, could not last forever.</p>
+<hr>
+<p><em>The Balance of Power can be toggled in the game-rule screen and arrives once a great power adopts the doctrine, or once the revolutionary era opens.</em></p>
+    </article>
+  </div>
+</div>
+
+<script>
+(function(){
+  // --- group h3 + following siblings into .h3-group, put Features ones in a .feat-grid ---
+  // Uses childNodes (not children) so that bare text nodes produced by bbcode are moved
+  // along with their surrounding element siblings and not stranded as orphans.
+  var PALETTE = ['--adm','--dip','--mil','--gold','--purple'];
+  var content = document.getElementById('content');
+  var nodes = Array.prototype.slice.call(content.childNodes); // includes text nodes
+  var inFeatures = false, currentGrid = null, currentGroup = null, ci = 0;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    // Text / comment nodes: absorb into current group if one is open
+    if (el.nodeType !== 1) {
+      if (currentGroup) currentGroup.appendChild(el);
+      continue;
+    }
+    var tag = el.tagName;
+    if (tag === 'H2') {
+      inFeatures = el.getAttribute('data-sec') === '2';
+      currentGrid = null; currentGroup = null; ci = 0;
+    } else if (tag === 'H3') {
+      var color = 'var(' + PALETTE[ci++ % PALETTE.length] + ')';
+      currentGroup = document.createElement('div');
+      currentGroup.className = 'h3-group';
+      currentGroup.style.setProperty('--g-color', color);
+      if (inFeatures) {
+        if (!currentGrid) {
+          currentGrid = document.createElement('div');
+          currentGrid.className = 'feat-grid';
+          el.parentNode.insertBefore(currentGrid, el);
+        }
+        currentGrid.appendChild(currentGroup);
+      } else {
+        el.parentNode.insertBefore(currentGroup, el);
+      }
+      currentGroup.appendChild(el);
+    } else if (currentGroup) {
+      currentGroup.appendChild(el);
+    }
+  }
+})();
+
+(function(){
+  // --- scroll-spy: sidebar active links ---
+  var allLinks = document.querySelectorAll('.nav-h2, .nav-h3');
+  function activate(id) {
+    allLinks.forEach(function(l){ l.classList.remove('active'); });
+    var a = document.querySelector('[href="#' + id + '"]');
+    if (a) {
+      a.classList.add('active');
+      // also activate parent h2 when a h3 is active
+      if (a.classList.contains('nav-h3')) {
+        var sec = a.closest('.nav-sec');
+        if (sec) { var h2 = sec.querySelector('.nav-h2'); if (h2) h2.classList.add('active'); }
+      }
+      a.scrollIntoView({block:'nearest'});
+    }
+  }
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) activate(e.target.id); });
+  }, {rootMargin:'-6% 0px -78% 0px'});
+  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(function(h){ obs.observe(h); });
+})();
+
+(function(){
+  // --- mobile sidebar toggle ---
+  var btn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('sidebarOverlay');
+  function close() { document.body.classList.remove('nav-open'); }
+  btn.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  overlay.addEventListener('click', close);
+  document.querySelectorAll('.nav-h2, .nav-h3').forEach(function(a){
+    a.addEventListener('click', function(){ if (window.innerWidth <= 768) close(); });
+  });
+})();
+</script>
+
+</body>
+</html>

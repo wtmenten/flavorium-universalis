@@ -475,6 +475,7 @@ Each submod can have its own `WORKSHOP_DESCRIPTION_steam.bbcode` at `submods/<na
 
 ## Reference docs
 
+- [Dev Diaries](docs/dev_diaries/) — feature deep-dives (e.g. [The Balance of Power](docs/dev_diaries/balance-of-power.md)); rendered on the docs site at `dev-diaries.html` (regenerate with `python tools/generate_dev_diaries.py`)
 - [docs/scripting-gotchas.md](docs/scripting-gotchas.md) — verified patterns and a named table of things that don't exist
 - [docs/eu5-modding-reference.md](docs/eu5-modding-reference.md) — summarized EU5 modding reference
 - [docs/v2/v2.md](docs/v2/v2.md) — v2.0 expansion design overview and pillar status

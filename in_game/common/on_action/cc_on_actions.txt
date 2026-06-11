@@ -32,9 +32,9 @@ cc_on_war_declared = {
 				scope:recipient = { exists = capital capital.sub_continent = sub_continent:western_europe }
 				OR = {
 					scope:actor = c:FRA
-					scope:actor = c:ENG
+					scope:actor = { has_or_had_tag = ENG }
 					scope:recipient = c:FRA
-					scope:recipient = c:ENG
+					scope:recipient = { has_or_had_tag = ENG }
 				}
 				is_situation_active = situation:hundred_years_war
 			}
@@ -137,22 +137,22 @@ cc_on_winning_war = {
 		if = {
 			limit = {
 				has_game_rule = cc_hyw_flavor_on
+				is_situation_active = situation:hundred_years_war
+				root = c:FRA # only fire once per war
 				scope:winner = { exists = capital capital.sub_continent = sub_continent:western_europe }
 				scope:loser = { exists = capital capital.sub_continent = sub_continent:western_europe }
 				OR = {
 					scope:winner = c:FRA
-					scope:winner = c:ENG
+					scope:winner = { has_or_had_tag = ENG }
 					scope:loser = c:FRA
-					scope:loser = c:ENG
+					scope:loser = { has_or_had_tag = ENG }
 				}
-				root = c:FRA # only fire once per war
-				is_situation_active = situation:hundred_years_war
 			}
 			# --- FRA wins vs ENG ---
 			if = {
 				limit = {
 					scope:winner = c:FRA
-					scope:loser = c:ENG
+					scope:loser = { has_or_had_tag = ENG }
 				}
 				c:FRA = {
 					add_country_modifier = {
@@ -201,8 +201,8 @@ cc_on_winning_war = {
 			}
 			# --- ENG wins ---
 			if = {
-				limit = { scope:winner = c:ENG }
-				c:ENG = {
+				limit = { scope:winner = { has_or_had_tag = ENG } }
+				scope:winner = {
 					add_country_modifier = {
 						modifier = cc_eng_hyw_ascendancy
 						years = 40
@@ -212,8 +212,8 @@ cc_on_winning_war = {
 			}
 			# --- ENG loses ---
 			if = {
-				limit = { scope:loser = c:ENG }
-				c:ENG = {
+				limit = { scope:loser = { has_or_had_tag = ENG } }
+				scope:loser = {
 					add_country_modifier = {
 						modifier = cc_eng_hyw_setback
 						years = 40
@@ -223,7 +223,7 @@ cc_on_winning_war = {
 				# Fire vassal wavering for disloyal ENG subjects in western Europe
 				every_country = {
 					limit = {
-						is_subject_of = c:ENG
+						is_subject_of = scope:loser
 						subject_loyalty < 40
 						exists = capital
 						capital.sub_continent = sub_continent:western_europe
@@ -268,19 +268,19 @@ cc_on_winning_war = {
 				else = { trigger_event_non_silently = cc_hyw.31 }
 			}
 		}
-		# --- ENG wins and holds lowlands (deduped: root = c:ENG) ---
+		# --- ENG wins and holds lowlands (deduped: root = { has_or_had_tag = ENG }) ---
 		if = {
 			limit = {
 				has_game_rule = cc_hyw_flavor_on
-				scope:winner = c:ENG
-				root = c:ENG
-				c:ENG = {
+				scope:winner = { has_or_had_tag = ENG }
+				root = { has_or_had_tag = ENG }
+				root = {
 					any_owned_location = {
 						is_in_scripted_geography = scripted_geography:netherlands_geography
 					}
 				}
 			}
-			c:ENG = {
+			root = {
 				if = {
 					limit = {
 						any_subject = {

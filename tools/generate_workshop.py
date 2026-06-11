@@ -98,6 +98,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars — papal loan event"),
     ("cc",                  "cc_subject_events.txt",            "Protectorate & holy protectorate chains — ward maturation, diplomatic incidents, faith crises, religion divergence, papal interactions"),
     ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
+    ("cc_balance_of_power",  "cc_balance_of_power.txt",          "European Balance of Power situation — alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings"),
 ]
 
 HIGHLIGHTED_TRAITS: list[str] = [
@@ -651,7 +652,7 @@ def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
     by_age: dict[str, list[tuple[str, list]]] = {}
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
@@ -772,7 +773,7 @@ def _load_reform_data() -> dict[str, dict]:
     """Return {reform_id: {modifiers: [str]}} for all mod government reforms."""
     reform_dir = MOD_ROOT / "in_game" / "common" / "government_reforms"
     data: dict[str, dict] = {}
-    for fname in ["cc_subject_reforms.txt"]:
+    for fname in ["cc_subject_reforms.txt", "cc_diplomacy_reforms.txt"]:
         path = reform_dir / fname
         if not path.exists():
             continue
@@ -793,7 +794,7 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
     privileges: list[tuple[str, str, str]] = []   # (name, from_adv, priv_id)
     reforms: list[tuple[str, str, str, str]] = []  # (name, desc, from_adv, reform_id)
 
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue

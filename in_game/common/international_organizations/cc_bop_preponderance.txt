@@ -1,0 +1,191 @@
+﻿
+# Balance of Power — The Preponderant Bloc
+# The alignment of the aspiring hegemon: the leading great power and the states that
+# orbit it through kinship, faith, fear, or gold. Created by the cc_balance_of_power
+# situation on_start; led by the strongest eligible power. Its growth is what the
+# Balancing Coalition (cc_bop_coalition) exists to check.
+
+cc_bop_preponderance = {
+	has_target = no
+	unique = yes
+	show_on_diplomatic_map = yes
+
+	expel_members_who_are_targets_of_other_members = yes
+	expel_members_who_are_attackers_at_war_with_other_members = yes
+
+	has_leader_country = yes
+	leader_type = country
+	disband_if_no_leader = yes
+
+	# Bloc members march where they please — through friend, foe, or neutral alike.
+	# In the great game of preponderance, the rights of lesser states are not consulted.
+	has_military_access = {
+		scope:actor ?= { is_member_of_international_organization = root }
+	}
+
+	can_declare_war = {
+		trigger_if = {
+			limit = { scope:attacker ?= { is_member_of_international_organization = scope:recipient } }
+			scope:defender ?= { NOT = { is_member_of_international_organization = scope:recipient } }
+		}
+		trigger_else = { always = yes }
+	}
+
+	create_visible_trigger = { always = no }
+	invite_visible_trigger = { always = yes }
+
+	can_lead_trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+	}
+
+	can_join_trigger = {
+		is_subject = no
+		is_rebel_country = no
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+	}
+
+	can_leave_trigger = {
+		NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+	}
+
+	auto_leave_trigger = {
+		is_subject = yes
+	}
+
+	auto_disband_trigger = {
+		total_members < 1
+	}
+
+	disband_minimum_member_count = 0
+
+	# root = the joining/leaving country, scope:recipient = the organization.
+	on_joined = {
+		scope:recipient = {
+			change_variable = { name = cc_bop_ambition add = 4 }
+		}
+	}
+
+	on_left = {
+		scope:recipient = {
+			change_variable = { name = cc_bop_ambition add = -8 }
+		}
+		add_country_modifier = {
+			modifier = cc_bop_defector
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	leader_modifier = {
+		monthly_prestige = 0.04
+		diplomatic_reputation = 1
+	}
+
+	non_leader_modifier = {
+		land_morale = 0.03
+	}
+
+	# War footing — the contest is fought without regard for supply niceties.
+	# Members' armies neither starve nor melt away on the march.
+	modifier = {
+		land_unit_attrition = -1
+		army_food_gathering_modifier = 1
+		food_purchase_efficiency = 1
+		global_food_capacity_modifier = 0.5
+	}
+
+	monthly_effect = {
+		if = {
+			limit = { var:cc_bop_ambition >= 70 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_ascendant_confidence
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	variables = {
+		cc_bop_ambition = {
+			format = "CC_BOP_AMBITION_FORMAT"
+			change_format = "VARIABLE_CHANGE_FORMAT"
+			min = 0
+			max = 100
+			start = 50
+			monthly_change = {
+				add = {
+					desc = "CC_BOP_AMBITION_NATURAL"
+					value = 0.3
+				}
+				add = {
+					desc = "CC_BOP_AMBITION_LEADER_STRENGTH"
+					if = {
+						limit = { leader_country ?= { is_great_power = yes } }
+						value = 0.3
+					}
+					else = { value = 0 }
+				}
+			}
+		}
+	}
+
+	# root = potential joiner, actor = potential leader (the aspiring hegemon), recipient = existing org
+	ai_desire_to_join = {
+		add = {
+			value = -50
+			desc = BASE_VALUE
+		}
+		# Only the "engaged" pool considers alignment at all; bystanders abstain.
+		if = {
+			limit = { NOT = { has_variable = cc_bop_engaged } }
+			add = {
+				desc = "CC_BOP_NOT_ENGAGED"
+				value = -100
+			}
+		}
+		# Kinship — a shared dynasty draws minor courts into the leader's orbit.
+		if = {
+			limit = { exists = scope:actor  has_royal_marriage_with = scope:actor }
+			add = { desc = "CC_BOP_ROYAL_MARRIAGE" value = 25 }
+		}
+		# Shared faith.
+		if = {
+			limit = { exists = scope:actor  religion = scope:actor.religion }
+			add = { desc = "CC_BOP_SHARED_RELIGION" value = 15 }
+		}
+		# A subject naturally follows its overlord into the bloc.
+		if = {
+			limit = { exists = scope:actor  is_subject_of = scope:actor }
+			add = { desc = "CC_BOP_OVERLORD" value = 60 }
+		}
+		# Rivalry with the aspirant pushes the country away.
+		if = {
+			limit = { exists = scope:actor  is_rival_of = scope:actor }
+			add = { desc = "CC_BOP_RIVALRY" value = -60 }
+		}
+		# Standing relations with the leader.
+		if = {
+			limit = { exists = scope:actor }
+			add = {
+				desc = "CC_BOP_LEADER_RELATIONS"
+				scope:actor = { add = { value = this_opinion_of_prev  multiply = 0.2 } }
+			}
+		}
+		# Bribed neutrality keeps a court on the sidelines.
+		if = {
+			limit = { has_country_modifier = cc_bop_bought_ally }
+			add = { desc = "CC_BOP_BOUGHT_NEUTRALITY" value = -50 }
+		}
+	}
+
+	# root = international organization, actor = potential new member
+	ai_desire_to_allow_new_member = {
+		add = {
+			desc = "WE_WANT_THE_ORGANIZATION_TO_GROW"
+			value = 20
+		}
+	}
+}

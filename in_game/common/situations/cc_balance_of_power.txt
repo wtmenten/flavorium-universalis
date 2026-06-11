@@ -1,0 +1,645 @@
+﻿
+# Flavorium Universalis — The European Balance of Power
+# A two-pole great-power situation spanning Europe and the Near-East. An aspiring
+# preponderant bloc (cc_bop_preponderance), led by the strongest power, is checked by
+# a balancing coalition (cc_bop_coalition) led by the chief balancer. The situation
+# tracks a 0-100 preponderance share (50 = equilibrium) and ends when the balance is
+# broken — by hegemony, an eastern deluge, or revolution — or institutionalised as a
+# peaceful Concert of Europe. Begins in the Age of Absolutism once a great power adopts
+# the balance-of-power doctrine, or automatically once the revolutionary era opens.
+
+cc_balance_of_power = {
+	monthly_spawn_chance = monthly_spawn_chance_unique
+	hint_tag = hint_cc_balance_of_power
+
+	can_start = {
+		has_enabled_situation_trigger = { type = cc_balance_of_power }
+		current_age_or_later = { age = age_5_absolutism }
+		cc_bop_doctrine_or_era = yes
+		# A decisive break (hegemony / deluge / revolution) settles the question for good.
+		NOT = { has_global_variable = cc_bop_concluded }
+		# A prior Concert of Europe may give way to a new balance, but only after its
+		# ~25-year cooldown has lapsed.
+		OR = {
+			NOT = { has_global_variable = cc_bop_concert_restart_year }
+			cc_bop_concert_cooldown_elapsed = yes
+		}
+		# At least two distinct eligible great powers — otherwise there is no balance to keep.
+		any_country = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			is_great_power = yes
+			any_country = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				is_great_power = yes
+				NOT = { this = prev }
+			}
+		}
+	}
+
+	can_end = {
+		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_hegemony } }
+			desc = "cc_bop_end_hegemony"
+		}
+		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_deluge } }
+			desc = "cc_bop_end_deluge"
+		}
+		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_revolution } }
+			desc = "cc_bop_end_revolution"
+		}
+		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_concert } }
+			desc = "cc_bop_end_concert"
+		}
+	}
+
+	visible = {
+		cc_bop_eligible_country = yes
+	}
+
+	on_start = {
+		cc_bop_designate_poles = yes
+
+		# Mark the engaged participants. Great powers are always in the game; secondary
+		# powers join the contest only sometimes; most minors remain bystanders.
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+				NOT = { has_variable = cc_bop_engaged }
+			}
+			if = {
+				limit = { is_great_power = yes }
+				set_variable = cc_bop_engaged
+			}
+			else = {
+				random_list = {
+					30 = { set_variable = cc_bop_engaged }
+					70 = { }
+				}
+			}
+		}
+
+		situation:cc_balance_of_power = {
+			set_variable = { name = cc_bop_hegemony_months value = 0 }
+			# Event-driven momentum layered on top of the structural share by
+			# cc_bop_recompute_share; starts neutral and decays toward 0 monthly.
+			set_variable = { name = cc_bop_share_offset value = 0 }
+		}
+		cc_bop_recompute_share = yes
+
+		# Grand announcement to every eligible power.
+		every_country = {
+			limit = { cc_bop_eligible_country = yes is_subject = no }
+			trigger_event_non_silently = cc_balance_of_power.1
+		}
+
+		# Role intros for the two leaders.
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			trigger_event_non_silently = { id = cc_balance_of_power.2 days = 4 }
+		}
+		international_organization:cc_bop_coalition.leader_country ?= {
+			trigger_event_non_silently = { id = cc_balance_of_power.3 days = 6 }
+		}
+
+		# Alignment choice to engaged powers that are not yet aligned.
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				has_variable = cc_bop_engaged
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			}
+			trigger_event_non_silently = { id = cc_balance_of_power.10 days = 12 }
+		}
+
+		# --- A balance re-forming from the ashes of a lapsed Concert of Europe ---
+		# When the cooldown has elapsed and a fresh balance arises, the old concert is
+		# formally broken: the courts resent the power whose renewed ambition shattered
+		# the peace, and a heralding event plays. Clear the cooldown stamp so a future
+		# concert can set its own.
+		if = {
+			limit = { has_global_variable = cc_bop_concert_restart_year }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				save_scope_as = bop_new_aspirant
+			}
+			every_country = {
+				limit = {
+					cc_bop_eligible_country = yes
+					is_subject = no
+					exists = scope:bop_new_aspirant
+					NOT = { this = scope:bop_new_aspirant }
+				}
+				add_opinion = { target = scope:bop_new_aspirant  modifier = cc_bop_concert_betrayal }
+				trigger_event_non_silently = { id = cc_balance_of_power.75 days = 8 }
+			}
+			remove_global_variable = cc_bop_concert_restart_year
+		}
+	}
+
+	on_monthly = {
+		cc_bop_recompute_share = yes
+
+		# Event-driven momentum decays back toward equilibrium each month.
+		situation:cc_balance_of_power = {
+			if = {
+				limit = { var:cc_bop_share_offset > 0.5 }
+				change_variable = { name = cc_bop_share_offset subtract = 0.5 }
+			}
+			else_if = {
+				limit = { var:cc_bop_share_offset < -0.5 }
+				change_variable = { name = cc_bop_share_offset add = 0.5 }
+			}
+			else = {
+				set_variable = { name = cc_bop_share_offset value = 0 }
+			}
+			clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+		}
+
+		# Track sustained hegemony and raise the hegemony break flag.
+		situation:cc_balance_of_power = {
+			if = {
+				limit = { var:cc_bop_preponderance_share >= 65 }
+				change_variable = { name = cc_bop_hegemony_months add = 1 }
+			}
+			else = {
+				set_variable = { name = cc_bop_hegemony_months value = 0 }
+			}
+			if = {
+				limit = {
+					var:cc_bop_hegemony_months >= 36
+					years_since_situation_start > 5
+				}
+				set_variable = cc_bop_flag_hegemony
+			}
+		}
+
+		# Eastern deluge — an eastern great power leads the preponderant bloc and dominates.
+		if = {
+			limit = {
+				situation:cc_balance_of_power = {
+					years_since_situation_start > 5
+					var:cc_bop_preponderance_share >= 62
+				}
+				any_country = {
+					cc_bop_eligible_country = yes
+					cc_bop_eastern_power = yes
+					is_great_power = yes
+					is_leader_of_international_organization = international_organization:cc_bop_preponderance
+				}
+			}
+			situation:cc_balance_of_power = { set_variable = cc_bop_flag_deluge }
+		}
+
+		# Revolutionary collapse.
+		if = {
+			limit = { is_situation_active = situation:the_revolution }
+			situation:cc_balance_of_power = { set_variable = cc_bop_flag_revolution }
+		}
+
+		# Concert of Europe — sustained equilibrium into the revolutionary era.
+		if = {
+			limit = {
+				current_age_or_later = { age = age_6_revolutions }
+				situation:cc_balance_of_power = {
+					years_since_situation_start > 40
+					var:cc_bop_preponderance_share >= 40
+					var:cc_bop_preponderance_share <= 60
+				}
+			}
+			situation:cc_balance_of_power = { set_variable = cc_bop_flag_concert }
+		}
+
+		# Overstretch settles on a runaway preponderant leader.
+		if = {
+			limit = {
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 }
+				exists = international_organization:cc_bop_preponderance
+			}
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				add_country_modifier = {
+					modifier = cc_bop_hegemonic_overstretch
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+
+		# --- Pulse events ---
+
+		# Ongoing alignment temptation for engaged neutrals.
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				has_variable = cc_bop_engaged
+				can_see_situation = root
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			}
+			# A minister on Free Hands embodies the unaligned court keeping its options
+			# open — such powers are courted (and tempted) more often.
+			random_list = {
+				3 = {
+					modifier = {
+						add = 3
+						any_cabinet_character = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_free_hands
+						}
+					}
+					trigger_event_non_silently = cc_balance_of_power.10
+				}
+				97 = { }
+			}
+		}
+
+		# The aspiring hegemon leans on a weaker neighbour (threats / bribery).
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_preponderance
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 45 }
+			}
+			random_list = {
+				4 = {
+					# A confident bloc presses the unaligned harder.
+					modifier = {
+						add = 4
+						international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 50
+					}
+					trigger_event_non_silently = cc_balance_of_power.20
+				}
+				96 = { }
+			}
+		}
+
+		# Coalition members stoke fear of the hegemon.
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+			}
+			random_list = {
+				3 = {
+					# A resolute coalition raises its voice more readily.
+					modifier = {
+						add = 3
+						international_organization:cc_bop_coalition.var:cc_bop_resolve >= 50
+					}
+					trigger_event_non_silently = cc_balance_of_power.30
+				}
+				97 = { }
+			}
+		}
+
+		# The balancer weighs measures to redress the balance — stronger as preponderance grows.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
+			}
+			random_list = {
+				6 = {
+					# A resolute balancer reaches more often for the means to redress the scale.
+					modifier = {
+						add = 4
+						international_organization:cc_bop_coalition.var:cc_bop_resolve >= 50
+					}
+					trigger_event_non_silently = cc_balance_of_power.40
+				}
+				94 = { }
+			}
+		}
+
+		# Congress of the coalition — collective deliberation when resolve holds.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
+			}
+			random_list = {
+				3 = { trigger_event_non_silently = cc_balance_of_power.50 }
+				97 = { }
+			}
+		}
+
+		# Break warning — the system teeters toward hegemony.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 63 }
+			}
+			random_list = {
+				15 = { trigger_event_non_silently = cc_balance_of_power.60 }
+				85 = { }
+			}
+		}
+
+		# --- Pillar pulse events: warfare / economy / government ---
+
+		# Battle of the Nations — the coalition forces a decisive engagement (Leipzig).
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				at_war = yes
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 56 }
+			}
+			random_list = {
+				5 = {
+					modifier = {
+						add = 5
+						any_cabinet_character = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_war_council
+						}
+					}
+					trigger_event_non_silently = cc_balance_of_power.41
+				}
+				95 = { }
+			}
+		}
+
+		# Scorched earth — a coalition member invaded by the hegemon trades space for time (1812).
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				exists = international_organization:cc_bop_preponderance
+				is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+			}
+			random_list = {
+				6 = { trigger_event_non_silently = cc_balance_of_power.42 }
+				94 = { }
+			}
+		}
+
+		# The Spanish ulcer — a national insurrection bleeds the overstretched hegemon.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_preponderance
+				can_see_situation = root
+				has_country_modifier = cc_bop_hegemonic_overstretch
+			}
+			random_list = {
+				5 = { trigger_event_non_silently = cc_balance_of_power.43 }
+				95 = { }
+			}
+		}
+
+		# The Continental System — the hegemon weaponises trade against the coalition (1806).
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_preponderance
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 56 }
+			}
+			random_list = {
+				4 = {
+					# An ambitious hegemon is quicker to weaponise the continent's trade.
+					modifier = {
+						add = 4
+						international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 50
+					}
+					trigger_event_non_silently = cc_balance_of_power.44
+				}
+				96 = { }
+			}
+		}
+
+		# Levée en masse — a leader at war calls the whole nation to arms (1793).
+		every_country = {
+			limit = {
+				can_see_situation = root
+				at_war = yes
+				OR = {
+					is_leader_of_international_organization = international_organization:cc_bop_preponderance
+					is_leader_of_international_organization = international_organization:cc_bop_coalition
+				}
+			}
+			random_list = {
+				4 = {
+					modifier = {
+						add = 4
+						any_cabinet_character = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_war_council
+						}
+					}
+					trigger_event_non_silently = cc_balance_of_power.45
+				}
+				96 = { }
+			}
+		}
+
+		# A separate peace — a wavering coalition member is tempted to defect (Tilsit 1807).
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				can_see_situation = root
+				international_organization:cc_bop_coalition.var:cc_bop_resolve < 35
+			}
+			random_list = {
+				4 = {
+					modifier = {
+						add = 4
+						any_cabinet_character = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+						}
+					}
+					trigger_event_non_silently = cc_balance_of_power.46
+				}
+				96 = { }
+			}
+		}
+
+		# Marriage of state — the hegemon binds a court by dynastic tie (Marie-Louise 1810).
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_preponderance
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 50 }
+			}
+			random_list = {
+				3 = {
+					modifier = {
+						add = 3
+						any_cabinet_character = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+						}
+					}
+					# A confident hegemon reaches more readily for the dynastic bond.
+						modifier = {
+							add = 3
+							international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 50
+						}
+						trigger_event_non_silently = cc_balance_of_power.47
+				}
+				97 = { }
+			}
+		}
+
+		# --- Rare special events: betrayal & the reversal of alliances ---
+
+		# A wavering member is tempted to reverse alliances entirely and cross to the
+		# other bloc (Saxony 1813; the Diplomatic Revolution of 1756). Far likelier when
+		# the member's own bloc falters, the enemy is ascendant, or a scheming minister
+		# whispers at court — and resisted by a master balancer's counsel.
+		every_country = {
+			limit = {
+				can_see_situation = root
+				OR = {
+					AND = {
+						is_member_of_international_organization = international_organization:cc_bop_coalition
+						NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+						OR = {
+							international_organization:cc_bop_coalition.var:cc_bop_resolve < 35
+							international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 60
+							situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 }
+						}
+					}
+					AND = {
+						is_member_of_international_organization = international_organization:cc_bop_preponderance
+						NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+						OR = {
+							international_organization:cc_bop_preponderance.var:cc_bop_ambition < 35
+							international_organization:cc_bop_coalition.var:cc_bop_resolve >= 60
+							situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 40 }
+						}
+					}
+				}
+			}
+			random_list = {
+				1 = {
+					# A venal or scheming minister makes the court far readier for treachery.
+					modifier = {
+						add = 3
+						any_cabinet_character = {
+							OR = {
+								has_trait = court_schemer
+								has_trait = cynical_courtier
+								has_trait = corrupted_official
+							}
+						}
+					}
+					# A master balancer at court holds wavering allies to their word.
+					modifier = {
+						factor = 0.25
+						any_cabinet_character = { has_trait = cc_master_balancer }
+					}
+					trigger_event_non_silently = cc_balance_of_power.100
+				}
+				299 = { }
+			}
+		}
+
+		# A bloc leader, flush with the currency of its cause and served by a cunning
+		# minister, engineers the defection of an enemy member through gold and intrigue.
+		every_country = {
+			limit = {
+				can_see_situation = root
+				OR = {
+					AND = {
+						is_leader_of_international_organization = international_organization:cc_bop_preponderance
+						international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 60
+						exists = international_organization:cc_bop_coalition
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_coalition
+							NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+						}
+					}
+					AND = {
+						is_leader_of_international_organization = international_organization:cc_bop_coalition
+						international_organization:cc_bop_coalition.var:cc_bop_resolve >= 60
+						exists = international_organization:cc_bop_preponderance
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_preponderance
+							NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+						}
+					}
+				}
+				any_cabinet_character = {
+					OR = {
+						has_trait = court_schemer
+						has_trait = cynical_courtier
+						has_cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+					}
+				}
+			}
+			random_list = {
+				2 = { trigger_event_non_silently = cc_balance_of_power.102 }
+				198 = { }
+			}
+		}
+	}
+
+	on_ended = {
+		cc_bop_apply_ending = yes
+		cc_bop_cleanup = yes
+	}
+
+	# Map tooltip per location.
+	tooltip = {
+		if = {
+			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_preponderance } }
+			custom_tooltip = cc_bop_preponderance_member_tt
+		}
+		else_if = {
+			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_coalition } }
+			custom_tooltip = cc_bop_coalition_member_tt
+		}
+		else_if = {
+			limit = { owner ?= { cc_bop_eligible_country = yes } }
+			custom_tooltip = cc_bop_neutral_tt
+		}
+	}
+
+	# Map colours: preponderance bloc red, coalition blue, eligible neutrals light grey.
+	map_color = {
+		if = {
+			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_preponderance } }
+			value = rgb { 190 50 50 }
+		}
+		else_if = {
+			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_coalition } }
+			value = rgb { 50 90 190 }
+		}
+		else_if = {
+			limit = { owner ?= { cc_bop_eligible_country = yes } }
+			value = rgb { 190 190 190 }
+		}
+		else = {
+			value = rgb { 120 120 120 }
+		}
+	}
+
+	legend_key = {
+		color = rgb { 190 50 50 }
+		require_color_on_map = yes
+		desc = CC_BOP_PREPONDERANCE_LEGEND
+	}
+	legend_key = {
+		color = rgb { 50 90 190 }
+		require_color_on_map = yes
+		desc = CC_BOP_COALITION_LEGEND
+	}
+	legend_key = {
+		color = rgb { 190 190 190 }
+		require_color_on_map = yes
+		desc = CC_BOP_NEUTRAL_LEGEND
+	}
+}

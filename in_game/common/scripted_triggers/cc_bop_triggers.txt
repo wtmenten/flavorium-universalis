@@ -1,0 +1,47 @@
+﻿
+# Balance of Power — shared triggers
+
+# A country eligible to take part in the European balance of power: a real country
+# (not a pop/rebel/colony abstraction) whose capital lies in Europe or the Near-East.
+cc_bop_eligible_country = {
+	NOT = { country_type = pop }
+	NOT = { country_type = building }
+	exists = capital
+	OR = {
+		capital.sub_continent = sub_continent:western_europe
+		capital.sub_continent = sub_continent:eastern_europe
+		capital.sub_continent = sub_continent:north_africa
+		capital.region = region:crescent_region
+		capital.region = region:anatolia_region
+	}
+}
+
+# An "eastern" power whose surge westward would constitute a deluge breaking the balance.
+cc_bop_eastern_power = {
+	exists = capital
+	OR = {
+		capital.sub_continent = sub_continent:eastern_europe
+		capital.sub_continent = sub_continent:middle_east
+		capital.sub_continent = sub_continent:north_asia
+		capital.sub_continent = sub_continent:central_asia
+	}
+}
+
+# True once a prior Concert of Europe has lapsed: the cooldown year stamped at the
+# end of that concert (its end year + ~25) has been reached, so a new balance may form.
+cc_bop_concert_cooldown_elapsed = {
+	has_global_variable = cc_bop_concert_restart_year
+	current_year >= global_var:cc_bop_concert_restart_year
+}
+
+# True once a great power has the doctrine, or the revolutionary era has opened.
+cc_bop_doctrine_or_era = {
+	OR = {
+		current_age_or_later = { age = age_6_revolutions }
+		any_country = {
+			cc_bop_eligible_country = yes
+			is_great_power = yes
+			has_advance = cc_balance_of_power_advance
+		}
+	}
+}

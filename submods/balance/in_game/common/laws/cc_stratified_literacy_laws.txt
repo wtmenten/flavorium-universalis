@@ -1,0 +1,261 @@
+﻿############################################
+# Flavorium Universalis — Class-Stratified Literacy Laws
+#
+# education_masses_law is reproduced in full so we can retune one of
+# its options. Vanilla already stratifies literacy by class, so the
+# ONLY change here is in basic_religious_education ("Religious
+# Teachings"): the lower classes (laborers / soldiers / peasants)
+# drop from 5 to 2. Upper classes keep their vanilla values.
+#
+# All other options are byte-for-byte vanilla.
+############################################
+
+REPLACE_OR_CREATE:education_masses_law = {
+	law_category = socioeconomic
+	potential = {
+		"estate_power(estate_type:peasants_estate)" > 0
+	}
+	allow = {}
+
+	# BASIC EDUCATIONS
+	uneducated_masses_education = {
+		country_modifier = {
+			nobles_estate_target_satisfaction = medium_permanent_target_satisfaction
+			monthly_towards_serfdom = societal_value_minor_monthly_move
+			monthly_towards_traditionalist = societal_value_monthly_move
+			global_nobles_max_literacy = 10
+			global_clergy_max_literacy = 10
+		}
+		estate_preferences = {
+			nobles_estate
+		}
+		years = 2
+	}
+
+	# CC: lower classes reduced 5 -> 2 (peasant literacy nerf)
+	basic_religious_education = {
+		country_modifier = {
+			clergy_estate_target_satisfaction = medium_permanent_target_satisfaction
+			global_nobles_max_literacy = 10
+			global_clergy_max_literacy = 10
+			global_burghers_max_literacy = 5
+			global_laborers_max_literacy = 2
+			global_soldiers_max_literacy = 2
+			global_peasants_max_literacy = 2
+			monthly_towards_spiritualist = societal_value_monthly_move
+		}
+		estate_preferences = {
+			clergy_estate
+		}
+		years = 2
+	}
+
+	# EXOTIC EDUCATIONS
+	theocratic_education = {
+		potential = {
+			OR = {
+				government_type = government_type:theocracy
+				modifier:allow_theocratic_education = yes
+			}
+		}
+		country_modifier = {
+			clergy_estate_target_satisfaction = large_permanent_target_satisfaction
+			monthly_towards_spiritualist = societal_value_tiny_monthly_move
+			monthly_religious_influence = 0.02
+			global_nobles_max_literacy = 10
+			global_clergy_max_literacy = 10
+			global_burghers_max_literacy = 5
+			global_peasants_max_literacy = 5
+			global_soldiers_max_literacy = 5
+			global_laborers_max_literacy = 5
+
+			monthly_towards_traditionalist = societal_value_monthly_move
+		}
+		estate_preferences = {
+			clergy_estate
+		}
+		years = 2
+	}
+
+	apprenticeships_education = {
+		potential = { modifier:allow_apprenticeships_education = yes }
+		country_modifier = {
+			global_nobles_max_literacy = 10
+			global_clergy_max_literacy = 10
+			global_burghers_max_literacy = 10
+			global_merchant_power = 0.15
+		}
+		estate_preferences = {
+			burghers_estate
+		}
+		years = 2
+	}
+
+	oral_tradition_education = {
+		potential = {
+			OR = {
+				NOT = { has_advance = written_alphabet }
+				government_type = government_type:steppe_horde
+				government_type = government_type:tribe
+			}
+		}
+		country_modifier = {
+			monthly_towards_spiritualist = societal_value_tiny_monthly_move
+			monthly_tribal_cohesion = 0.01
+			monthly_religious_influence = 0.15
+			monthly_towards_communalism = societal_value_monthly_move
+			change_liturgical_language_cost_modifier = 0.25
+		}
+		estate_preferences = {
+			clergy_estate
+		}
+		years = 2
+	}
+
+	scottish_presbyterian_education = {
+		unique = yes
+		potential = {
+			culture = culture:scottish
+			has_unlocked_policy_trigger = { type = scottish_presbyterian_education }
+		}
+		country_modifier = {
+			nobles_estate_max_tax = 0.1
+			clergy_estate_target_satisfaction = medium_permanent_target_satisfaction
+			global_nobles_max_literacy = 5
+			global_clergy_max_literacy = 5
+			global_burghers_max_literacy = 5
+			global_peasants_max_literacy = 5
+			global_soldiers_max_literacy = 5
+			global_laborers_max_literacy = 5
+
+			monthly_towards_innovative = societal_value_monthly_move
+		}
+		estate_preferences = {
+			peasants_estate
+			clergy_estate
+		}
+		years = 2
+	}
+
+	# PRINTING-PRESS UNLOCKS
+	personal_religious_education = {
+		potential = {
+			has_advance = written_alphabet
+			has_advance = printing_press_advance
+
+			OR = {
+				has_estate_privilege = estate_privilege:sponsor_printing_of_religious_texts
+				is_protestant = yes
+			}
+		}
+		country_modifier = {
+			monthly_towards_individualism = societal_value_tiny_monthly_move
+			global_nobles_max_literacy = 5
+			global_clergy_max_literacy = 5
+			global_burghers_max_literacy = 5
+			global_peasants_max_literacy = 5
+			global_soldiers_max_literacy = 5
+			global_laborers_max_literacy = 5
+
+			global_slaves_max_literacy = 2
+		}
+		estate_preferences = {
+			burghers_estate
+			peasants_estate
+		}
+		years = 2
+	}
+
+	epic_tradition_education_sects = {
+		potential = {
+			has_advance = written_alphabet
+			AND = {
+				OR = {
+					AND = {
+						has_advance = printing_press_advance
+						OR = {
+							has_estate_privilege = estate_privilege:clergy_literacy_rights
+							has_estate_privilege = estate_privilege:embellish_great_works_of_faith
+						}
+					}
+					government_type = government_type:tribe
+					government_type = government_type:steppe_horde
+				}
+				religion = { has_sects = yes }
+			}
+		}
+		country_modifier = {
+			skill_of_new_artists = 0.15
+			increase_literacy_from_religious_sects_cost_modifier = -0.5
+			invite_artist_cost_modifier = 0.1
+		}
+		estate_preferences = {
+			burghers_estate
+		}
+		years = 2
+	}
+
+	epic_tradition_education = {
+		potential = {
+			has_advance = written_alphabet
+			AND = {
+				OR = {
+					AND = {
+						has_advance = printing_press_advance
+						OR = {
+							has_estate_privilege = estate_privilege:clergy_literacy_rights
+							has_estate_privilege = estate_privilege:embellish_great_works_of_faith
+						}
+					}
+					government_type = government_type:tribe
+					government_type = government_type:steppe_horde
+				}
+				religion = { has_sects = no }
+			}
+		}
+		country_modifier = {
+			skill_of_new_artists = 0.15
+			invite_artist_cost_modifier = 0.1
+		}
+		estate_preferences = {
+			burghers_estate
+		}
+		years = 2
+	}
+
+	# ILLUSTRATION (Enlightment) UNLOCKS
+	secular_education = {
+		potential = {
+			NOT = { government_type = government_type:theocracy }
+			has_embraced_institution = institution:enlightenment
+		}
+		country_modifier = {
+			clergy_estate_target_satisfaction = big_permanent_target_satisfaction_penalty
+			global_institution_growth_modifier = 0.25
+			global_max_literacy = 10
+		}
+		estate_preferences = {
+			burghers_estate
+			peasants_estate
+		}
+		years = 2
+	}
+
+	# Vedic Education
+	vedic_education = {
+		unique = yes
+		potential = {
+			has_unlocked_policy_trigger = {
+				type = vedic_education
+			}
+			religion = religion:hindu
+		}
+		country_modifier = {
+			clergy_estate_target_satisfaction = medium_permanent_target_satisfaction
+			nobles_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+			global_max_literacy = 5
+			monthly_towards_spiritualist = societal_value_minor_monthly_move
+		}
+		years = 2
+	}
+}

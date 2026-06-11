@@ -1,0 +1,1570 @@
+﻿namespace = cc_balance_of_power
+
+################################################################################
+# EVENT 1 — A New Equilibrium (announcement to every eligible power)
+################################################################################
+cc_balance_of_power.1 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.1.title
+	desc = cc_balance_of_power.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	trigger = {
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_balance_of_power.1.a
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 2 — The Aspiring Power (to the preponderant leader)
+################################################################################
+cc_balance_of_power.2 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.2.title
+	desc = cc_balance_of_power.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+	}
+
+	# "Let them fear us — Europe will bend to our will."
+	option = {
+		name = cc_balance_of_power.2.a
+		add_country_modifier = {
+			modifier = cc_bop_ascendant_confidence
+			years = 3
+			mode = add_and_extend
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = 10 }
+		}
+	}
+
+	# "We seek pre-eminence, not dominion — for now."
+	option = {
+		name = cc_balance_of_power.2.b
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+################################################################################
+# EVENT 3 — The Indispensable Power (to the chief balancer)
+################################################################################
+cc_balance_of_power.3 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.3.title
+	desc = cc_balance_of_power.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	# "We shall be the balance of Europe." — appoint a master balancer
+	option = {
+		name = cc_balance_of_power.3.a
+		add_country_modifier = {
+			modifier = cc_bop_balancer_prestige
+			years = 50
+		}
+		random_cabinet_character = {
+			limit = { NOT = { has_trait_category = cabinet } }
+			add_trait = trait:cc_master_balancer
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 10 }
+		}
+	}
+
+	# "Let others carry this burden."
+	option = {
+		name = cc_balance_of_power.3.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 10 — Choosing Sides (to engaged, unaligned powers)
+################################################################################
+cc_balance_of_power.10 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.10.title
+	desc = cc_balance_of_power.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	trigger = {
+		situation:cc_balance_of_power = { situation_is_active = yes }
+		is_subject = no
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+	}
+
+	# Join the balancing coalition.
+	option = {
+		name = cc_balance_of_power.10.a
+		ai_chance = {
+			factor = 1
+			modifier = {
+				factor = 2.5
+				exists = international_organization:cc_bop_preponderance
+				international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root }
+			}
+			modifier = { factor = 0.3  has_country_modifier = cc_bop_bought_ally }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					exists = international_organization:cc_bop_coalition
+					can_join_international_organization = international_organization:cc_bop_coalition
+				}
+				international_organization:cc_bop_coalition = {
+					add_country_to_international_organization = root
+				}
+			}
+		}
+		international_organization:cc_bop_coalition.leader_country ?= {
+			add_opinion = { target = root  modifier = cc_bop_coalition_solidarity_opinion }
+		}
+	}
+
+	# Join the preponderant bloc.
+	option = {
+		name = cc_balance_of_power.10.b
+		ai_chance = {
+			factor = 1
+			modifier = {
+				factor = 2
+				exists = international_organization:cc_bop_preponderance
+				international_organization:cc_bop_preponderance.leader_country ?= { has_royal_marriage_with = root }
+			}
+			modifier = { factor = 2  has_country_modifier = cc_bop_bought_ally }
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					exists = international_organization:cc_bop_preponderance
+					can_join_international_organization = international_organization:cc_bop_preponderance
+				}
+				international_organization:cc_bop_preponderance = {
+					add_country_to_international_organization = root
+				}
+			}
+		}
+	}
+
+	# Remain neutral — keep our hands free.
+	option = {
+		name = cc_balance_of_power.10.c
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 20 — Pressure and Persuasion (preponderant leader coerces a court)
+################################################################################
+cc_balance_of_power.20 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.20.title
+	desc = cc_balance_of_power.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = armed
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+		any_country = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			has_variable = cc_bop_engaged
+			NOT = { this = root }
+			NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+		}
+	}
+
+	immediate = {
+		random_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				has_variable = cc_bop_engaged
+				NOT = { this = root }
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			}
+			save_scope_as = bop_target
+		}
+	}
+
+	# Threaten them into our bloc.
+	option = {
+		name = cc_balance_of_power.20.a
+		ai_chance = { factor = 1 }
+		hidden_effect = {
+			scope:bop_target = {
+				if = {
+					limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+					international_organization:cc_bop_coalition = {
+						remove_country_from_international_organization = scope:bop_target
+					}
+				}
+			}
+			if = {
+				limit = { scope:bop_target = { can_join_international_organization = international_organization:cc_bop_preponderance } }
+				international_organization:cc_bop_preponderance = {
+					add_country_to_international_organization = scope:bop_target
+				}
+			}
+		}
+		scope:bop_target = {
+			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
+		}
+	}
+
+	# Buy their neutrality with gold.
+	option = {
+		name = cc_balance_of_power.20.b
+		ai_chance = { factor = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.50  min = -150 }
+		scope:bop_target = {
+			add_country_modifier = {
+				modifier = cc_bop_bought_ally
+				years = 6
+				mode = add_and_extend
+			}
+			add_opinion = { target = root  modifier = cc_bop_bought_neutrality_opinion }
+		}
+	}
+
+	# Leave them be for now.
+	option = {
+		name = cc_balance_of_power.20.c
+		ai_chance = { factor = 1 }
+	}
+}
+
+################################################################################
+# EVENT 30 — Fear of the Hegemon (coalition members)
+################################################################################
+cc_balance_of_power.30 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.30.title
+	desc = cc_balance_of_power.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_bop_coalition
+		exists = international_organization:cc_bop_preponderance
+	}
+
+	# Denounce the aspiring hegemon.
+	option = {
+		name = cc_balance_of_power.30.a
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			add_opinion = { target = root  modifier = cc_bop_fear_of_hegemony }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 4 }
+		}
+	}
+
+	# Hold our tongue and watch.
+	option = {
+		name = cc_balance_of_power.30.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 40 — Redressing the Balance (chief balancer)
+################################################################################
+cc_balance_of_power.40 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.40.title
+	desc = cc_balance_of_power.40.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	# Subsidise a coalition partner.
+	option = {
+		name = cc_balance_of_power.40.a
+		ai_chance = { factor = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -120 }
+		random_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+			}
+			add_country_modifier = {
+				modifier = cc_bop_subsidized
+				years = 4
+				mode = add_and_extend
+			}
+			add_opinion = { target = root  modifier = cc_bop_grateful_for_support }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 5 }
+		}
+	}
+
+	# Court a neutral power into the coalition.
+	option = {
+		name = cc_balance_of_power.40.b
+		ai_chance = { factor = 1 }
+		hidden_effect = {
+			random_country = {
+				limit = {
+					cc_bop_eligible_country = yes
+					is_subject = no
+					has_variable = cc_bop_engaged
+					can_join_international_organization = international_organization:cc_bop_coalition
+				}
+				save_scope_as = bop_recruit
+				international_organization:cc_bop_coalition = {
+					add_country_to_international_organization = scope:bop_recruit
+				}
+			}
+		}
+		if = {
+			limit = { exists = scope:bop_recruit }
+			scope:bop_recruit = {
+				add_opinion = { target = root  modifier = cc_bop_coalition_solidarity_opinion }
+			}
+		}
+	}
+
+	# Stand pat and conserve our strength.
+	option = {
+		name = cc_balance_of_power.40.c
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 50 — A Congress of Powers (coalition leader)
+################################################################################
+cc_balance_of_power.50 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.50.title
+	desc = cc_balance_of_power.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+		international_organization:cc_bop_coalition = { total_members >= 2 }
+	}
+
+	# A collective war-chest — subsidise the whole coalition.
+	option = {
+		name = cc_balance_of_power.50.a
+		ai_chance = { factor = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.60  min = -200 }
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_subsidized
+					years = 3
+					mode = add_and_extend
+				}
+			}
+			change_variable = { name = cc_bop_resolve add = 8 }
+		}
+	}
+
+	# Resolve to contain the hegemon — close ranks.
+	option = {
+		name = cc_balance_of_power.50.b
+		ai_chance = { factor = 1 }
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_coalition_solidarity
+					years = 2
+					mode = add_and_extend
+				}
+			}
+			change_variable = { name = cc_bop_resolve add = 12 }
+		}
+	}
+
+	# Adjourn without agreement.
+	option = {
+		name = cc_balance_of_power.50.c
+		ai_chance = { factor = 1 }
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -5 }
+		}
+	}
+}
+
+################################################################################
+# EVENT 60 — The Balance Teeters (break warning to the balancer)
+################################################################################
+cc_balance_of_power.60 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.60.title
+	desc = cc_balance_of_power.60.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	# Rally every court against the looming hegemony.
+	option = {
+		name = cc_balance_of_power.60.a
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_coalition_solidarity
+					years = 2
+					mode = add_and_extend
+				}
+			}
+			change_variable = { name = cc_bop_resolve add = 10 }
+		}
+	}
+
+	# We may be too late.
+	option = {
+		name = cc_balance_of_power.60.b
+	}
+}
+
+################################################################################
+# EVENT 41 — Battle of the Nations (coalition leader, at war)
+# Echoes Leipzig 1813 — a decisive allied engagement.
+################################################################################
+cc_balance_of_power.41 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.41.title
+	desc = cc_balance_of_power.41.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+		at_war = yes
+	}
+
+	# Stake everything on a general engagement.
+	option = {
+		name = cc_balance_of_power.41.a
+		ai_chance = { factor = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -150 }
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = -6 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 8 }
+		}
+		# A war-hawk or master balancer in cabinet presses the advantage home.
+		if = {
+			limit = {
+				any_cabinet_character = {
+					OR = {
+						has_trait = war_hawk
+						has_trait = cc_master_balancer
+					}
+				}
+			}
+			situation:cc_balance_of_power = {
+				change_variable = { name = cc_bop_share_offset add = -3 }
+			}
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					add_country_modifier = {
+						modifier = cc_bop_coalition_solidarity
+						years = 2
+						mode = add_and_extend
+					}
+				}
+			}
+		}
+	}
+
+	# Harry and delay — conserve our strength.
+	option = {
+		name = cc_balance_of_power.41.b
+		ai_chance = { factor = 1 }
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = -2 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 3 }
+		}
+	}
+}
+
+################################################################################
+# EVENT 42 — Scorched Earth (coalition member at war with the hegemon)
+# Echoes the long retreat of 1812.
+################################################################################
+cc_balance_of_power.42 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.42.title
+	desc = cc_balance_of_power.42.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+		10 = army
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_bop_coalition
+		exists = international_organization:cc_bop_preponderance
+		is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+	}
+
+	# Burn the land before them and fall back.
+	option = {
+		name = cc_balance_of_power.42.a
+		ai_chance = { factor = 1 }
+		add_stability = stability_weak_penalty
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			add_country_modifier = {
+				modifier = cc_bop_scorched_earth
+				months = 12
+				mode = add_and_extend
+			}
+		}
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = -4 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 4 }
+		}
+	}
+
+	# Stand and defend our homes.
+	option = {
+		name = cc_balance_of_power.42.b
+		ai_chance = { factor = 1 }
+		add_country_modifier = {
+			modifier = cc_bop_coalition_solidarity
+			years = 1
+			mode = add_and_extend
+		}
+	}
+}
+
+################################################################################
+# EVENT 43 — The Spanish Ulcer (overstretched hegemon)
+# A national insurrection bleeds the would-be master of the continent.
+################################################################################
+cc_balance_of_power.43 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.43.title
+	desc = cc_balance_of_power.43.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = angry
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+		has_country_modifier = cc_bop_hegemonic_overstretch
+	}
+
+	# Pour in troops to crush the revolt.
+	option = {
+		name = cc_balance_of_power.43.a
+		ai_chance = { factor = 1 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.35  min = -120 }
+		add_country_modifier = {
+			modifier = cc_bop_hegemonic_overstretch
+			months = 12
+			mode = add_and_extend
+		}
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = -3 }
+		}
+	}
+
+	# Garrison the towns and endure the bleeding.
+	option = {
+		name = cc_balance_of_power.43.b
+		ai_chance = { factor = 1 }
+		add_stability = stability_weak_penalty
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = -2 }
+		}
+	}
+}
+
+################################################################################
+# EVENT 44 — The Continental System (hegemon, high preponderance)
+# Echoes the blockade of 1806 — economic warfare against the coalition.
+################################################################################
+cc_balance_of_power.44 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.44.title
+	desc = cc_balance_of_power.44.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = trading
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+	}
+
+	# Proclaim the blockade — strangle their commerce.
+	option = {
+		name = cc_balance_of_power.44.a
+		ai_chance = { factor = 1 }
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_continental_blockade
+					months = 18
+					mode = add_and_extend
+				}
+			}
+		}
+		# Smuggling and resentment rebound on us.
+		add_country_modifier = {
+			modifier = cc_bop_continental_blockade
+			months = 9
+			mode = add_and_extend
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = 6 }
+		}
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = 3 }
+		}
+	}
+
+	# Keep the sea-lanes open — we profit more by trade than by siege.
+	option = {
+		name = cc_balance_of_power.44.b
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 45 — Levée en Masse (a leader at war)
+# Echoes 1793 — the nation in arms.
+################################################################################
+cc_balance_of_power.45 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.45.title
+	desc = cc_balance_of_power.45.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	trigger = {
+		at_war = yes
+		OR = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+		}
+	}
+
+	# Call the whole nation to arms.
+	option = {
+		name = cc_balance_of_power.45.a
+		ai_chance = { factor = 1 }
+		add_country_modifier = {
+			modifier = cc_bop_levee_en_masse
+			years = 3
+			mode = add_and_extend
+		}
+		# The mobilized bloc gains momentum.
+		if = {
+			limit = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = {
+				change_variable = { name = cc_bop_ambition add = 5 }
+			}
+			situation:cc_balance_of_power = {
+				change_variable = { name = cc_bop_share_offset add = 4 }
+			}
+		}
+		else = {
+			international_organization:cc_bop_coalition = {
+				change_variable = { name = cc_bop_resolve add = 5 }
+			}
+			situation:cc_balance_of_power = {
+				change_variable = { name = cc_bop_share_offset add = -4 }
+			}
+		}
+	}
+
+	# Trust the professional army — spare the people the levy.
+	option = {
+		name = cc_balance_of_power.45.b
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 46 — A Separate Peace (a wavering coalition member, low resolve)
+# Echoes Tilsit 1807 — a partner tempted to come to terms with the colossus.
+################################################################################
+cc_balance_of_power.46 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.46.title
+	desc = cc_balance_of_power.46.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_bop_coalition
+		NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+	}
+
+	# Come to terms with the hegemon — leave the coalition.
+	option = {
+		name = cc_balance_of_power.46.a
+		ai_chance = {
+			factor = 1
+			modifier = {
+				factor = 2
+				exists = international_organization:cc_bop_coalition
+				international_organization:cc_bop_coalition.leader_country ?= { NOT = { is_rival_of = root } }
+			}
+		}
+		hidden_effect = {
+			if = {
+				limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+				international_organization:cc_bop_coalition = {
+					remove_country_from_international_organization = root
+				}
+			}
+		}
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			add_opinion = { target = root  modifier = cc_bop_bought_neutrality_opinion }
+		}
+	}
+
+	# Hold firm — our place is with the coalition.
+	option = {
+		name = cc_balance_of_power.46.b
+		ai_chance = { factor = 1 }
+		add_country_modifier = {
+			modifier = cc_bop_coalition_solidarity
+			years = 2
+			mode = add_and_extend
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = 6 }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 47 — Marriage of State (the hegemon binds a court)
+# Echoes the Austrian marriage of 1810 — and Napoleon's satellite kingdoms.
+################################################################################
+cc_balance_of_power.47 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.47.title
+	desc = cc_balance_of_power.47.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+		any_country = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			has_variable = cc_bop_engaged
+			NOT = { this = root }
+			NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+		}
+	}
+
+	immediate = {
+		random_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				has_variable = cc_bop_engaged
+				NOT = { this = root }
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			}
+			save_scope_as = bop_match
+		}
+	}
+
+	# Bind them to our house — draw them into our orbit.
+	option = {
+		name = cc_balance_of_power.47.a
+		ai_chance = { factor = 1 }
+		hidden_effect = {
+			scope:bop_match = {
+				if = {
+					limit = {
+						is_member_of_international_organization = international_organization:cc_bop_coalition
+					}
+					international_organization:cc_bop_coalition = {
+						remove_country_from_international_organization = scope:bop_match
+					}
+				}
+			}
+			if = {
+				limit = { scope:bop_match = { can_join_international_organization = international_organization:cc_bop_preponderance } }
+				international_organization:cc_bop_preponderance = {
+					add_country_to_international_organization = scope:bop_match
+				}
+			}
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = 4 }
+		}
+	}
+
+	# Install them as a satellite kingdom — a crown in our gift.
+	option = {
+		name = cc_balance_of_power.47.b
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2  scope:bop_match = { is_great_power = no } }
+			modifier = { factor = 0  scope:bop_match = { is_great_power = yes } }
+		}
+		trigger = {
+			scope:bop_match = {
+				is_subject = no
+				is_great_power = no
+			}
+		}
+		scope:bop_match = {
+			make_subject_of = { target = root  type = subject_type:client_state }
+			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = 8 }
+		}
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset add = 3 }
+		}
+	}
+
+	# A courtesy only — exchange portraits and pleasantries.
+	option = {
+		name = cc_balance_of_power.47.c
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 75 — The Concert Falters (a balance re-forming after a lapsed Concert)
+# Heralds the breakdown of an institutionalised peace; concert_betrayal opinion
+# is applied by the situation on_start.
+################################################################################
+cc_balance_of_power.75 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.75.title
+	desc = cc_balance_of_power.75.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	option = {
+		name = cc_balance_of_power.75.a
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# ENDINGS (.70-.74) — modifiers already applied by cc_bop_apply_ending
+################################################################################
+
+# Hegemony — the victor
+cc_balance_of_power.70 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.70.title
+	desc = cc_balance_of_power.70.desc
+	outcome = positive
+	illustration_tags = { 10 = exterior  10 = military }
+
+	immediate = {
+		random_country = {
+			limit = {
+				has_country_modifier = cc_bop_humbled_power
+				is_subject = no
+				is_great_power = no
+				NOT = { this = root }
+			}
+			save_scope_as = bop_humbled
+		}
+	}
+
+	# Bask in the triumph.
+	option = {
+		name = cc_balance_of_power.70.a
+		ai_chance = { factor = 1 }
+		add_prestige = prestige_extreme_bonus
+	}
+
+	# Set a crown upon a humbled rival — a puppet in our gift.
+	option = {
+		name = cc_balance_of_power.70.b
+		ai_chance = { factor = 1 }
+		trigger = { exists = scope:bop_humbled }
+		add_prestige = prestige_severe_bonus
+		scope:bop_humbled = {
+			make_subject_of = { target = root  type = subject_type:puppet_state }
+			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
+		}
+	}
+}
+
+# Hegemony — the humbled
+cc_balance_of_power.71 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.71.title
+	desc = cc_balance_of_power.71.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = angry }
+	option = { name = cc_balance_of_power.71.a }
+}
+
+# Eastern deluge
+cc_balance_of_power.72 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.72.title
+	desc = cc_balance_of_power.72.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = army }
+	option = { name = cc_balance_of_power.72.a  add_prestige = prestige_severe_bonus }
+}
+
+# Revolutionary collapse
+cc_balance_of_power.73 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.73.title
+	desc = cc_balance_of_power.73.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = angry }
+	option = { name = cc_balance_of_power.73.a }
+}
+
+# Concert of Europe — the positive close
+cc_balance_of_power.74 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.74.title
+	desc = cc_balance_of_power.74.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = happy }
+	option = { name = cc_balance_of_power.74.a  add_prestige = prestige_mild_bonus }
+}
+
+################################################################################
+# ACTION EVENTS (80-90)
+# Fired by the generic_actions in cc_bop_actions.txt. The .80/.81 join requests
+# carry a real accept/decline choice; the rest are flavor narration that applies
+# the mechanical payoff of a leader's spent currency.
+################################################################################
+
+# EVENT 80 — A Petition to Join (to the preponderant leader)
+# scope:cc_bop_petitioner = the court asking to be admitted.
+cc_balance_of_power.80 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.80.title
+	desc = cc_balance_of_power.80.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_preponderance
+		exists = scope:cc_bop_petitioner
+	}
+
+	# "Admit them to our bloc."
+	option = {
+		name = cc_balance_of_power.80.a
+		trigger = { scope:cc_bop_petitioner ?= { can_join_international_organization = international_organization:cc_bop_preponderance } }
+		international_organization:cc_bop_preponderance = {
+			add_country_to_international_organization = scope:cc_bop_petitioner
+		}
+		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.91 days = 2 } }
+		ai_chance = {
+			base = 70
+			modifier = { add = 20  scope:cc_bop_petitioner = { this_opinion_of_prev >= 0 } }
+			modifier = { add = -40  scope:cc_bop_petitioner = { is_rival_of = root } }
+		}
+	}
+
+	# "We have no need of them."
+	option = {
+		name = cc_balance_of_power.80.b
+		add_prestige = prestige_weak_bonus
+		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.92 days = 2 } }
+		ai_chance = { base = 30 }
+	}
+}
+
+# EVENT 81 — A Petition to Join (to the coalition leader)
+cc_balance_of_power.81 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.81.title
+	desc = cc_balance_of_power.81.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+		exists = scope:cc_bop_petitioner
+	}
+
+	option = {
+		name = cc_balance_of_power.81.a
+		trigger = { scope:cc_bop_petitioner ?= { can_join_international_organization = international_organization:cc_bop_coalition } }
+		international_organization:cc_bop_coalition = {
+			add_country_to_international_organization = scope:cc_bop_petitioner
+		}
+		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.91 days = 2 } }
+		ai_chance = {
+			base = 75
+			modifier = { add = 15  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 } }
+		}
+	}
+
+	option = {
+		name = cc_balance_of_power.81.b
+		add_prestige = prestige_weak_bonus
+		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.92 days = 2 } }
+		ai_chance = { base = 25 }
+	}
+}
+
+# EVENT 91 / 92 — Outcome notices to the petitioner
+cc_balance_of_power.91 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.91.title
+	desc = cc_balance_of_power.91.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = happy }
+	option = { name = cc_balance_of_power.91.a }
+}
+
+cc_balance_of_power.92 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.92.title
+	desc = cc_balance_of_power.92.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = angry }
+	option = { name = cc_balance_of_power.92.a  add_prestige = prestige_weak_penalty }
+}
+
+# EVENT 82 — Armed Neutrality (to an unaligned court that proclaimed it)
+cc_balance_of_power.82 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.82.title
+	desc = cc_balance_of_power.82.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+	option = {
+		name = cc_balance_of_power.82.a
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = { modifier = cc_bop_bought_ally  years = 4  mode = add_and_extend }
+	}
+}
+
+# EVENT 83 — Playing Both Sides (to an unaligned court)
+# Nudges the balance toward the weaker bloc and turns a modest profit.
+cc_balance_of_power.83 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.83.title
+	desc = cc_balance_of_power.83.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = trading }
+	option = {
+		name = cc_balance_of_power.83.a
+		add_gold = 25
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 50 } }
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 3 } }
+		}
+		else = {
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 3 } }
+		}
+	}
+}
+
+# EVENT 84 — Intimidate the Unaligned (preponderant leader spent ambition)
+cc_balance_of_power.84 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.84.title
+	desc = cc_balance_of_power.84.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = military }
+	option = {
+		name = cc_balance_of_power.84.a
+		add_prestige = prestige_weak_bonus
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 4 } }
+	}
+}
+
+# EVENT 85 — The Continental System (preponderant leader)
+cc_balance_of_power.85 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.85.title
+	desc = cc_balance_of_power.85.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = trading }
+	option = {
+		name = cc_balance_of_power.85.a
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_continental_blockade  years = 2  mode = add_and_extend }
+				}
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 3 } }
+	}
+}
+
+# EVENT 86 — Consolidate Hegemony (preponderant leader capstone)
+cc_balance_of_power.86 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.86.title
+	desc = cc_balance_of_power.86.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = armed }
+	option = {
+		name = cc_balance_of_power.86.a
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_ascendant_confidence  years = 2  mode = add_and_extend }
+				}
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 6 } }
+	}
+}
+
+# EVENT 87 — Subsidise the Allies (coalition leader)
+cc_balance_of_power.87 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.87.title
+	desc = cc_balance_of_power.87.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = economy }
+	option = {
+		name = cc_balance_of_power.87.a
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					limit = { NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition } }
+					add_country_modifier = { modifier = cc_bop_subsidized  years = 2  mode = add_and_extend }
+				}
+			}
+		}
+	}
+}
+
+# EVENT 88 — Coordinate Strategy (coalition leader)
+cc_balance_of_power.88 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.88.title
+	desc = cc_balance_of_power.88.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = military }
+	option = {
+		name = cc_balance_of_power.88.a
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 2  mode = add_and_extend }
+				}
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
+	}
+}
+
+# EVENT 89 — Convene a Congress (coalition leader capstone)
+cc_balance_of_power.89 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.89.title
+	desc = cc_balance_of_power.89.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = happy }
+	option = {
+		name = cc_balance_of_power.89.a
+		add_prestige = prestige_mild_bonus
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 6 } }
+	}
+}
+
+# EVENT 90 — Naval Blockade (coalition leader, mirror of the Continental System)
+cc_balance_of_power.90 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.90.title
+	desc = cc_balance_of_power.90.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = trading }
+	option = {
+		name = cc_balance_of_power.90.a
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_continental_blockade  years = 2  mode = add_and_extend }
+				}
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 3 } }
+	}
+}
+
+################################################################################
+# BETRAYAL & THE REVERSAL OF ALLIANCES (100-102)
+# Rare, high-impact special events. A wavering member can cross to the other bloc
+# entirely (the Diplomatic Revolution / Saxony 1813); a flush leader can buy an
+# enemy member's treason. Both swing the balance hard and turn on currency and the
+# character of the minister at court.
+################################################################################
+
+# EVENT 100 — The Reversal of Alliances (to a wavering non-leader member)
+cc_balance_of_power.100 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.100.title
+	desc = cc_balance_of_power.100.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+
+	trigger = {
+		OR = {
+			AND = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+			}
+			AND = {
+				is_member_of_international_organization = international_organization:cc_bop_preponderance
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			}
+		}
+	}
+
+	immediate = {
+		save_scope_as = bop_defector
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition.leader_country ?= { save_scope_as = bop_old_leader }
+			international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_new_leader }
+		}
+		else = {
+			international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_old_leader }
+			international_organization:cc_bop_coalition.leader_country ?= { save_scope_as = bop_new_leader }
+		}
+	}
+
+	# "Reverse our alliances — cross to the other camp." (the betrayal)
+	option = {
+		name = cc_balance_of_power.100.a
+		ai_chance = {
+			factor = 1
+			modifier = {
+				factor = 2.5
+				any_cabinet_character = {
+					OR = { has_trait = court_schemer  has_trait = cynical_courtier  has_trait = corrupted_official }
+				}
+			}
+			modifier = { factor = 0.2  any_cabinet_character = { has_trait = cc_master_balancer } }
+			modifier = { factor = 1.5  is_at_war = yes }
+		}
+		# Leave our bloc (on_left brands us a defector) and cross to the other.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = { remove_country_from_international_organization = root }
+			if = {
+				limit = { can_join_international_organization = international_organization:cc_bop_preponderance }
+				international_organization:cc_bop_preponderance = { add_country_to_international_organization = root }
+			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 8 } }
+		}
+		else = {
+			international_organization:cc_bop_preponderance = { remove_country_from_international_organization = root }
+			if = {
+				limit = { can_join_international_organization = international_organization:cc_bop_coalition }
+				international_organization:cc_bop_coalition = { add_country_to_international_organization = root }
+			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 8 } }
+		}
+		# Our new patron pays handsomely; our betrayed former allies seethe.
+		add_gold = 100
+		scope:bop_old_leader ?= {
+			add_opinion = { target = root  modifier = cc_bop_concert_betrayal }
+			trigger_event_non_silently = { id = cc_balance_of_power.101 days = 3 }
+		}
+	}
+
+	# "Stand by our allies."
+	option = {
+		name = cc_balance_of_power.100.b
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2.5  any_cabinet_character = { has_trait = cc_master_balancer } }
+		}
+		add_prestige = prestige_mild_bonus
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = { change_variable = { name = cc_bop_resolve add = 8 } }
+		}
+		else = {
+			international_organization:cc_bop_preponderance = { change_variable = { name = cc_bop_ambition add = 8 } }
+		}
+	}
+}
+
+# EVENT 101 — A Betrayal Most Foul (to the abandoned bloc's leader)
+# scope:bop_defector = the country that crossed over.
+cc_balance_of_power.101 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.101.title
+	desc = cc_balance_of_power.101.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = angry }
+
+	option = {
+		name = cc_balance_of_power.101.a
+		add_prestige = prestige_weak_penalty
+		# Outrage steels those who remain.
+		if = {
+			limit = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 1  mode = add_and_extend }
+				}
+			}
+		}
+		else_if = {
+			limit = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = {
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_ascendant_confidence  years = 1  mode = add_and_extend }
+				}
+			}
+		}
+	}
+}
+
+# EVENT 102 — A Purchased Treason (to a flush bloc leader served by a cunning minister)
+# scope:bop_treason_target = an enemy non-leader member to be turned.
+cc_balance_of_power.102 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.102.title
+	desc = cc_balance_of_power.102.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+
+	immediate = {
+		if = {
+			limit = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			random_country = {
+				limit = {
+					is_member_of_international_organization = international_organization:cc_bop_coalition
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				}
+				save_scope_as = bop_treason_target
+			}
+		}
+		else = {
+			random_country = {
+				limit = {
+					is_member_of_international_organization = international_organization:cc_bop_preponderance
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+				}
+				save_scope_as = bop_treason_target
+			}
+		}
+	}
+
+	# "Buy their treason." (spend currency + gold to turn an enemy member)
+	option = {
+		name = cc_balance_of_power.102.a
+		trigger = {
+			exists = scope:bop_treason_target
+			OR = {
+				AND = {
+					is_leader_of_international_organization = international_organization:cc_bop_preponderance
+					international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 40
+				}
+				AND = {
+					is_leader_of_international_organization = international_organization:cc_bop_coalition
+					international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
+				}
+			}
+		}
+		ai_chance = {
+			factor = 1
+			modifier = {
+				factor = 2
+				any_cabinet_character = { OR = { has_trait = court_schemer  has_trait = cynical_courtier } }
+			}
+		}
+		add_gold = -150
+		if = {
+			limit = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = { change_variable = { name = cc_bop_ambition add = -40 } }
+			scope:bop_treason_target = {
+				if = {
+					limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+					international_organization:cc_bop_coalition = { remove_country_from_international_organization = scope:bop_treason_target }
+				}
+				if = {
+					limit = { can_join_international_organization = international_organization:cc_bop_preponderance }
+					international_organization:cc_bop_preponderance = { add_country_to_international_organization = scope:bop_treason_target }
+				}
+			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 8 } }
+		}
+		else = {
+			international_organization:cc_bop_coalition = { change_variable = { name = cc_bop_resolve add = -40 } }
+			scope:bop_treason_target = {
+				if = {
+					limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+					international_organization:cc_bop_preponderance = { remove_country_from_international_organization = scope:bop_treason_target }
+				}
+				if = {
+					limit = { can_join_international_organization = international_organization:cc_bop_coalition }
+					international_organization:cc_bop_coalition = { add_country_to_international_organization = scope:bop_treason_target }
+				}
+			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 8 } }
+		}
+		scope:bop_treason_target ?= { add_opinion = { target = root  modifier = cc_bop_grateful_for_support } }
+	}
+
+	# "Such intrigues are beneath us."
+	option = {
+		name = cc_balance_of_power.102.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+

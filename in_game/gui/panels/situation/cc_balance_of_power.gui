@@ -1,0 +1,658 @@
+######################################################################
+# Balance of Power — situation panel
+# Top header carries an equilibrium "tension" bar (share 0-100, thresholds
+# at equilibrium 50 and the danger line 65). The Equilibrium card shows a
+# three-way power pie (preponderance / coalition / unaligned) with a large
+# central share figure. Long descriptions use wrapping text_multi widgets.
+######################################################################
+
+situation_panel = {
+
+	##################################### TOP HEADER — TENSION BAR #####################################
+
+	blockoverride "situation_top_subheader_content" {
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			background = {
+				texture = "gfx/interface/progressbars/tension_header_bg.dds"
+			}
+
+			hbox = {
+				size = { 70 28 }
+				margin = { 6 5 }
+				icon = {
+					size = { 26 26 }
+					texture = "gfx/interface/icons/situations/tension.dds"
+				}
+				text_single = {
+					autoresize = yes
+					minimumsize = { 30 -1 }
+					fontsize = 16
+					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_preponderance_share').GetValue)]%"
+				}
+				tooltipwidget = {
+					ContextualTooltipType = {
+						blockoverride "title_icon_texture" {
+							texture = "gfx/interface/icons/situations/tension.dds"
+						}
+						blockoverride "title_text" {
+							text = "CC_BOP_EQUILIBRIUM_HEADER"
+						}
+						blockoverride "tooltip_content" {
+							text_multi = {
+								autoresize = yes
+								multiline = yes
+								max_width = 320
+								text = "CC_BOP_TENSION_TT"
+							}
+						}
+					}
+				}
+			}
+
+			hbox = {
+				using = bg_cabinet_card_frame
+				margin = { 4 4 }
+				widget = {
+					size = { 450 12 }
+					layoutpolicy_vertical = expanding
+
+					# The share bar — fills red as the leading bloc grows dominant.
+					progressbar = {
+						size = { 100% 100% }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 100
+						value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_preponderance_share').GetValue)]"
+					}
+					# Equilibrium marker (50).
+					widget = {
+						parentanchor = left|top
+						position = { 50% 0 }
+						size = { 2 100% }
+						background = {
+							using = color_white_texture
+							alpha = 0.55
+						}
+					}
+					# Danger line (65) — hegemony approaches.
+					widget = {
+						parentanchor = left|top
+						position = { 65% 0 }
+						size = { 2 100% }
+						background = {
+							using = color_red_texture
+							alpha = 0.9
+						}
+					}
+				}
+			}
+			expand = {}
+		}
+	}
+
+	##################################### MAIN IMAGE #####################################
+
+	blockoverride "situation_panel_image" {
+		background = {
+			texture = "gfx/interface/illustrations/situation/cc_balance_of_power.dds"
+			texture_density = 2
+			spriteType = stretched
+			spriteborder = { 0 0 }
+			modify_texture = {
+				texture = "gfx/interface/component_masks/mask_fade_horizontal_middle.dds"
+				texture_density = 2
+				spriteType = stretched
+				spriteborder = { 250 250 }
+				blend_mode = alphamultiply
+				alpha = 0.4
+			}
+		}
+		background = {
+			using = color_dark_blue_texture
+			alpha = 1
+			margin_top = -140
+			modify_texture = {
+				using = bg_fade_vertical_up_mask_texture
+				blend_mode = alphamultiply
+				alpha = 1
+			}
+		}
+	}
+
+	##################################### SUBHEADER #####################################
+
+	blockoverride "situation_subheader_content" {}
+
+	##################################### MAIN CONTENT #####################################
+
+	blockoverride "situation_panel_main_content" {
+
+		# Equilibrium — three-way power pie with a large central share figure.
+		# The 50/65 threshold explanation lives in the header tooltip / info icon to
+		# keep the pie area uncluttered.
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 40 }
+			using = bg_card_header_01_military
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				margin = { 10 0 }
+				icon = {
+					size = { 24 24 }
+					texture = "gfx/interface/icons/situations/tension.dds"
+					texture_density = 2
+				}
+				text_single = {
+					fontsize = 16
+					text = "CC_BOP_EQUILIBRIUM_HEADER"
+				}
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_icon_texture" {
+								texture = "gfx/interface/icons/situations/tension.dds"
+							}
+							blockoverride "title_text" { text = "CC_BOP_EQUILIBRIUM_HEADER" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 330
+									text = "CC_BOP_EQUILIBRIUM_DESC"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		widget = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 150 }
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+				margin = { 10 8 }
+				spacing = 10
+
+				# --- The pie (three segments, each with its own tooltip) ---
+				widget = {
+					size = { 134 134 }
+
+					background = {
+						texture = "gfx/interface/component_tiles/hud_corners/circle_progress_bg.dds"
+						texture_density = 2
+					}
+
+					piechart = {
+						parentanchor = center
+						size = { 90% 90% }
+						using = piechart_angles
+
+						# Dark backing disc.
+						icon = {
+							size = { 100% 100% }
+							parentanchor = center
+							texture = "gfx/interface/pie_charts/piechart_alpha.dds"
+							texture_density = 2
+							color = { 0 0 0 0.25 }
+						}
+
+						# Preponderant bloc (red).
+						pieslice = {
+							texture = "gfx/interface/pie_charts/piechart_alpha.dds"
+							texture_density = 2
+							alpha = 0.99
+							tagtooltip_enabled = yes
+							value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_pre_frac').GetValue)]"
+							color = { 0.745 0.196 0.196 1 }
+							tooltipwidget = {
+								ContextualTooltipType = {
+									blockoverride "title_text" { text = "CC_BOP_PREPONDERANCE_PANEL_HEADER" }
+									blockoverride "tooltip_content" {
+										text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_PRE_TT" }
+									}
+								}
+							}
+						}
+						# Balancing coalition (blue).
+						pieslice = {
+							texture = "gfx/interface/pie_charts/piechart_alpha.dds"
+							texture_density = 2
+							alpha = 0.99
+							tagtooltip_enabled = yes
+							value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coa_frac').GetValue)]"
+							color = { 0.196 0.353 0.745 1 }
+							tooltipwidget = {
+								ContextualTooltipType = {
+									blockoverride "title_text" { text = "CC_BOP_COALITION_PANEL_HEADER" }
+									blockoverride "tooltip_content" {
+										text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_COA_TT" }
+									}
+								}
+							}
+						}
+						# The unaligned (grey).
+						pieslice = {
+							texture = "gfx/interface/pie_charts/piechart_alpha.dds"
+							texture_density = 2
+							alpha = 0.99
+							tagtooltip_enabled = yes
+							value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_neu_frac').GetValue)]"
+							color = { 0.6 0.6 0.6 1 }
+							tooltipwidget = {
+								ContextualTooltipType = {
+									blockoverride "title_text" { text = "CC_BOP_NEUTRAL_LEGEND" }
+									blockoverride "tooltip_content" {
+										text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_NEU_TT" }
+									}
+								}
+							}
+						}
+					}
+
+					# Central share figure — number centred, label just beneath. Each line is
+					# anchored to the pie centre directly (no wrapping container) and nudged
+					# vertically; transparent to the mouse so the slices stay hoverable.
+					text_single = {
+						parentanchor = center
+						align = center|nobaseline
+						autoresize = yes
+						alwaystransparent = yes
+						position = { 0 -7 }
+						fontsize = 32
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_preponderance_share').GetValue)]%"
+					}
+					text_single = {
+						parentanchor = center
+						align = center|nobaseline
+						autoresize = yes
+						alwaystransparent = yes
+						position = { 0 19 }
+						fontsize = 10
+						default_format = "#weak"
+						text = "CC_BOP_SHARE_SUBLABEL"
+					}
+				}
+
+				# --- Scrollable list of the three camps ---
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					layoutpolicy_vertical = expanding
+
+					background = {
+						using = tile_background_squared_texture
+						modify_texture = { using = color_black_texture }
+						alpha = 0.1
+					}
+
+					scrollarea = {
+						using = layoutpolicy_expanding
+						scrollbarpolicy_horizontal = always_off
+						autoresizescrollarea = yes
+						scrollbar_vertical = {
+							using = Scrollbar_Vertical
+						}
+						scrollwidget = {
+							vbox = {
+								layoutpolicy_horizontal = expanding
+								spacing = 2
+								margin = { 6 4 }
+
+								# Preponderant bloc
+								hbox = {
+									layoutpolicy_horizontal = expanding
+									minimumsize = { -1 30 }
+									spacing = 6
+									margin = { 6 2 }
+									background = { using = color_whiteish_texture  alpha = 0.06 }
+									tooltipwidget = {
+										ContextualTooltipType = {
+											blockoverride "title_text" { text = "CC_BOP_PREPONDERANCE_PANEL_HEADER" }
+											blockoverride "tooltip_content" {
+												text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_PRE_TT" }
+											}
+										}
+									}
+									icon = { size = { 14 14 }  texture = "gfx/interface/colors/red.dds" }
+									text_single = { fontsize = 14  text = "CC_BOP_PREPONDERANCE_LEGEND" }
+									expand = {}
+									text_single = {
+										fontsize = 15
+										raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_pre_pct').GetValue)]%"
+									}
+								}
+
+								# Balancing coalition
+								hbox = {
+									layoutpolicy_horizontal = expanding
+									minimumsize = { -1 30 }
+									spacing = 6
+									margin = { 6 2 }
+									tooltipwidget = {
+										ContextualTooltipType = {
+											blockoverride "title_text" { text = "CC_BOP_COALITION_PANEL_HEADER" }
+											blockoverride "tooltip_content" {
+												text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_COA_TT" }
+											}
+										}
+									}
+									icon = { size = { 14 14 }  texture = "gfx/interface/colors/blue.dds" }
+									text_single = { fontsize = 14  text = "CC_BOP_COALITION_LEGEND" }
+									expand = {}
+									text_single = {
+										fontsize = 15
+										raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coa_pct').GetValue)]%"
+									}
+								}
+
+								# The unaligned
+								hbox = {
+									layoutpolicy_horizontal = expanding
+									minimumsize = { -1 30 }
+									spacing = 6
+									margin = { 6 2 }
+									background = { using = color_whiteish_texture  alpha = 0.06 }
+									tooltipwidget = {
+										ContextualTooltipType = {
+											blockoverride "title_text" { text = "CC_BOP_NEUTRAL_LEGEND" }
+											blockoverride "tooltip_content" {
+												text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOP_NEU_TT" }
+											}
+										}
+									}
+									icon = { size = { 14 14 }  texture = "gfx/interface/colors/grey.dds" }
+									text_single = { fontsize = 14  text = "CC_BOP_NEUTRAL_LEGEND" }
+									expand = {}
+									text_single = {
+										fontsize = 15
+										raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_neu_pct').GetValue)]%"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		# Bloc leaders — shown prominently, outside the collapsible member lists.
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = preferred
+			autoresize = yes
+			minimumsize = { 510 60 }
+			maximumsize = { 510 60 }
+			spacing = 6
+
+			# Aspiring hegemon — leader of the Preponderant Bloc.
+			widget = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+				using = bg_dark_paper_card
+				using = bg_cabinet_card_frame
+				visible = "[Not(IsDataModelEmpty(GetInternationalOrganization('cc_bop_preponderance').GetMembers))]"
+				datacontext = "[GetInternationalOrganization('cc_bop_preponderance').GetLeaderCountry]"
+
+				hbox = {
+					margin = { 8 2 }
+					spacing = 8
+
+					widget = {
+						size = { 4 36 }
+						background = { texture = "gfx/interface/colors/red.dds" }
+					}
+					country_flag_mid = {
+					}
+					vbox = {
+						spacing = 1
+						text_single = {
+							fontsize = 15
+							default_format = "#weak"
+							text = "CC_BOP_PRE_LEADER_LABEL"
+						}
+						text_single = {
+							fontsize = 24
+							maximumsize = { 150 -1 }
+							text = "[Country.GetName]"
+						}
+					}
+					expand = {}
+				}
+			}
+
+			# Chief balancer — leader of the Balancing Coalition.
+			widget = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = fixed
+				using = bg_dark_paper_card
+				using = bg_cabinet_card_frame
+				visible = "[Not(IsDataModelEmpty(GetInternationalOrganization('cc_bop_coalition').GetMembers))]"
+				datacontext = "[GetInternationalOrganization('cc_bop_coalition').GetLeaderCountry]"
+
+				hbox = {
+					margin = { 8 2 }
+					spacing = 8
+
+					widget = {
+						size = { 4 36 }
+						background = { texture = "gfx/interface/colors/blue.dds" }
+					}
+					country_flag_mid = {}
+					vbox = {
+						spacing = 1
+						text_single = {
+							fontsize = 15
+							default_format = "#weak"
+							text = "CC_BOP_COA_LEADER_LABEL"
+						}
+						text_single = {
+							fontsize = 24
+							maximumsize = { 150 -1 }
+							text = "[Country.GetName]"
+						}
+					}
+					expand = {}
+				}
+			}
+		}
+
+		# End Requirements card
+		situation_card_expandable = {
+			blockoverride "header_button_onclick" {
+				onclick = "[LateralView.Vars.Toggle( 'cc_bop_requirements_toggled' )]"
+			}
+			blockoverride "header_text" {
+				text = "END_REQUIREMENTS"
+			}
+			blockoverride "header_icon" {
+				texture = "gfx/interface/icons/disasters/end_requirements_green.dds"
+			}
+			blockoverride "bottom_content" {
+				TooltipRequirementsList = {
+					textcontext = "[SituationView.GetActiveSituation.GetSituation.GetEndConditions]"
+				}
+			}
+			blockoverride "visible_hint" {}
+			blockoverride "onaction_hint" {
+				action_tooltip = {
+					title = "OPEN_HINT"
+					on_action = "[OpenLateralViewWithParams('hints', 'selected_hint = hint_cc_balance_of_power')]"
+				}
+			}
+			blockoverride "bottom_content_onclick" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_requirements_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_yes" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_requirements_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_not" {
+				visible = "[Not(LateralView.Vars.Exists( 'cc_bop_requirements_toggled' ))]"
+			}
+		}
+
+		# Preponderant Bloc card — leader + member flags
+		situation_card_expandable = {
+			blockoverride "header_button_onclick" {
+				onclick = "[LateralView.Vars.Toggle( 'cc_bop_preponderance_toggled' )]"
+			}
+			blockoverride "bottom_content_onclick" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_preponderance_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_yes" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_preponderance_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_not" {
+				visible = "[Not(LateralView.Vars.Exists( 'cc_bop_preponderance_toggled' ))]"
+			}
+			blockoverride "header_icon" {
+				texture = "gfx/interface/icons/alerts_icons/international_organization.dds"
+			}
+			blockoverride "header_text" {
+				text = "CC_BOP_PREPONDERANCE_PANEL_HEADER"
+			}
+			# Clickable shortcut to the bloc's IO view (where leader actions live).
+			blockoverride "header_content_rest" {
+				button = {
+					size = { 24 24 }
+					visible = "[Not(IsDataModelEmpty(GetInternationalOrganization('cc_bop_preponderance').GetMembers))]"
+					onclick = "[OpenInternationalOrganizationView(GetInternationalOrganization('cc_bop_preponderance').Self)]"
+					tooltip = "CC_BOP_OPEN_IO_TT"
+					icon = {
+						size = { 100% 100% }
+						texture = "gfx/interface/icons/alerts_icons/international_organization.dds"
+						texture_density = 2
+					}
+				}
+			}
+			blockoverride "bottom_content" {
+				scrollarea = {
+					layoutpolicy_horizontal = expanding
+					size = { -1 80 }
+					scrollbarpolicy_horizontal = always_off
+					scrollbar_vertical = {
+						using = Scrollbar_Vertical
+					}
+					scrollwidget = {
+						dynamicgridbox = {
+							layoutpolicy_horizontal = expanding
+							flipdirection = yes
+							position = { 10 10 }
+							datamodel_wrap = 14
+							maxhorizontalslots = 14
+							datamodel = "[GetInternationalOrganization('cc_bop_preponderance').GetMembers]"
+							item = {
+								country_flag_small = {}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		# Balancing Coalition card — leader + member flags
+		situation_card_expandable = {
+			blockoverride "header_button_onclick" {
+				onclick = "[LateralView.Vars.Toggle( 'cc_bop_coalition_toggled' )]"
+			}
+			blockoverride "bottom_content_onclick" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_coalition_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_yes" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_coalition_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_not" {
+				visible = "[Not(LateralView.Vars.Exists( 'cc_bop_coalition_toggled' ))]"
+			}
+			blockoverride "header_icon" {
+				texture = "gfx/interface/icons/alerts_icons/international_organization.dds"
+			}
+			blockoverride "header_text" {
+				text = "CC_BOP_COALITION_PANEL_HEADER"
+			}
+			# Clickable shortcut to the bloc's IO view (where leader actions live).
+			blockoverride "header_content_rest" {
+				button = {
+					size = { 24 24 }
+					visible = "[Not(IsDataModelEmpty(GetInternationalOrganization('cc_bop_coalition').GetMembers))]"
+					onclick = "[OpenInternationalOrganizationView(GetInternationalOrganization('cc_bop_coalition').Self)]"
+					tooltip = "CC_BOP_OPEN_IO_TT"
+					icon = {
+						size = { 100% 100% }
+						texture = "gfx/interface/icons/alerts_icons/international_organization.dds"
+						texture_density = 2
+					}
+				}
+			}
+			blockoverride "bottom_content" {
+				scrollarea = {
+					layoutpolicy_horizontal = expanding
+					size = { -1 80 }
+					scrollbarpolicy_horizontal = always_off
+					scrollbar_vertical = {
+						using = Scrollbar_Vertical
+					}
+					scrollwidget = {
+						dynamicgridbox = {
+							layoutpolicy_horizontal = expanding
+							flipdirection = yes
+							position = { 10 10 }
+							datamodel_wrap = 14
+							maxhorizontalslots = 14
+							datamodel = "[GetInternationalOrganization('cc_bop_coalition').GetMembers]"
+							item = {
+								country_flag_small = {}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		# Overview card
+		situation_card_expandable = {
+			blockoverride "header_button_onclick" {
+				onclick = "[LateralView.Vars.Toggle( 'cc_bop_overview_toggled' )]"
+			}
+			blockoverride "bottom_content_onclick" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_overview_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_yes" {
+				visible = "[LateralView.Vars.Exists( 'cc_bop_overview_toggled' )]"
+			}
+			blockoverride "icon_replace_visible_not" {
+				visible = "[Not(LateralView.Vars.Exists( 'cc_bop_overview_toggled' ))]"
+			}
+			blockoverride "header_icon" {
+				texture = "gfx/interface/icons/situations/main_actions.dds"
+			}
+			blockoverride "header_text" {
+				text = "CC_BOP_OVERVIEW_HEADER"
+			}
+			blockoverride "bottom_content" {
+				text_multi = {
+					layoutpolicy_horizontal = expanding
+					autoresize = yes
+					multiline = yes
+					max_width = 480
+					margin = { 10 8 }
+					text = "CC_BOP_OVERVIEW_DESC"
+				}
+			}
+		}
+	}
+}

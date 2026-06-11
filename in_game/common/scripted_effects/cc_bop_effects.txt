@@ -1,0 +1,258 @@
+﻿
+# Balance of Power — shared effects
+
+# Recompute the preponderance share (0-100): the preponderant bloc's summed
+# great-power score as a percentage of both blocs combined. 50 = equilibrium.
+cc_bop_recompute_share = {
+	situation:cc_balance_of_power = {
+		set_variable = { name = cc_bop_pre_strength value = 0 }
+		set_variable = { name = cc_bop_coa_strength value = 0 }
+		set_variable = { name = cc_bop_neu_strength value = 0 }
+	}
+	if = {
+		limit = { exists = international_organization:cc_bop_preponderance }
+		international_organization:cc_bop_preponderance = {
+			every_international_organization_member = {
+				save_scope_as = bop_mem
+				situation:cc_balance_of_power = {
+					change_variable = { name = cc_bop_pre_strength add = scope:bop_mem.great_power_score }
+				}
+			}
+		}
+	}
+	if = {
+		limit = { exists = international_organization:cc_bop_coalition }
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				save_scope_as = bop_mem
+				situation:cc_balance_of_power = {
+					change_variable = { name = cc_bop_coa_strength add = scope:bop_mem.great_power_score }
+				}
+			}
+		}
+	}
+	# Weight of the unaligned — every eligible power watching from the sidelines.
+	every_country = {
+		limit = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+		}
+		save_scope_as = bop_mem
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_neu_strength add = scope:bop_mem.great_power_score }
+		}
+	}
+	situation:cc_balance_of_power = {
+		# Preponderance share (0-100): preponderant bloc vs. the two organised blocs.
+		set_variable = { name = cc_bop_total value = var:cc_bop_pre_strength }
+		change_variable = { name = cc_bop_total add = var:cc_bop_coa_strength }
+		if = {
+			limit = { var:cc_bop_total > 0 }
+			set_variable = { name = cc_bop_preponderance_share value = var:cc_bop_pre_strength }
+			change_variable = { name = cc_bop_preponderance_share multiply = 100 }
+			change_variable = { name = cc_bop_preponderance_share divide = var:cc_bop_total }
+			# Layer on accumulated event momentum (great battles, blockades, uprisings)
+			# on top of the structural baseline, then clamp.
+			if = {
+				limit = { has_variable = cc_bop_share_offset }
+				change_variable = { name = cc_bop_preponderance_share add = var:cc_bop_share_offset }
+			}
+			clamp_variable = { name = cc_bop_preponderance_share min = 0 max = 100 }
+		}
+		else = {
+			set_variable = { name = cc_bop_preponderance_share value = 50 }
+		}
+
+		# Three-way power fractions (0-1) for the panel pie chart: preponderance,
+		# coalition, and the unaligned.
+		set_variable = { name = cc_bop_grand_total value = var:cc_bop_pre_strength }
+		change_variable = { name = cc_bop_grand_total add = var:cc_bop_coa_strength }
+		change_variable = { name = cc_bop_grand_total add = var:cc_bop_neu_strength }
+		if = {
+			limit = { var:cc_bop_grand_total > 0 }
+			set_variable = { name = cc_bop_pre_frac value = var:cc_bop_pre_strength }
+			change_variable = { name = cc_bop_pre_frac divide = var:cc_bop_grand_total }
+			set_variable = { name = cc_bop_coa_frac value = var:cc_bop_coa_strength }
+			change_variable = { name = cc_bop_coa_frac divide = var:cc_bop_grand_total }
+			set_variable = { name = cc_bop_neu_frac value = var:cc_bop_neu_strength }
+			change_variable = { name = cc_bop_neu_frac divide = var:cc_bop_grand_total }
+		}
+		else = {
+			set_variable = { name = cc_bop_pre_frac value = 0.34 }
+			set_variable = { name = cc_bop_coa_frac value = 0.33 }
+			set_variable = { name = cc_bop_neu_frac value = 0.33 }
+		}
+		# Whole-number percentages (0-100) for the panel's group list.
+		set_variable = { name = cc_bop_pre_pct value = var:cc_bop_pre_frac }
+		change_variable = { name = cc_bop_pre_pct multiply = 100 }
+		set_variable = { name = cc_bop_coa_pct value = var:cc_bop_coa_frac }
+		change_variable = { name = cc_bop_coa_pct multiply = 100 }
+		set_variable = { name = cc_bop_neu_pct value = var:cc_bop_neu_frac }
+		change_variable = { name = cc_bop_neu_pct multiply = 100 }
+	}
+}
+
+# Designate the two pole leaders and create their organizations.
+# Builds a pool of eligible great powers, makes the strongest the aspiring hegemon,
+# and the strongest of the rest the chief balancer.
+cc_bop_designate_poles = {
+	clear_global_variable_list = cc_bop_pool
+	every_country = {
+		limit = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			is_great_power = yes
+		}
+		add_to_global_variable_list = { name = cc_bop_pool target = this }
+	}
+	# Aspiring hegemon = strongest great power
+	ordered_in_global_list = {
+		variable = cc_bop_pool
+		order_by = great_power_score
+		max = 1
+		check_range_bounds = no
+		create_international_organization = {
+			type = international_organization_type:cc_bop_preponderance
+			add_country_to_international_organization = prev
+			set_leader_country = prev
+		}
+		set_variable = cc_bop_engaged
+	}
+	# Chief balancer = strongest of the remaining great powers
+	ordered_in_global_list = {
+		variable = cc_bop_pool
+		limit = {
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+		}
+		order_by = great_power_score
+		max = 1
+		check_range_bounds = no
+		create_international_organization = {
+			type = international_organization_type:cc_bop_coalition
+			add_country_to_international_organization = prev
+			set_leader_country = prev
+		}
+		set_variable = cc_bop_engaged
+	}
+}
+
+# Apply the appropriate ending payoffs based on which break flag the situation set.
+cc_bop_apply_ending = {
+	# HEGEMONY — the preponderant leader masters the continent.
+	if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_hegemony } }
+		# A decisive break — the balance is settled for good; never re-forms this game.
+		set_global_variable = cc_bop_concluded
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				add_country_modifier = { modifier = cc_bop_master_of_europe years = 100 }
+				trigger_event_non_silently = cc_balance_of_power.70
+			}
+		}
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+			}
+			add_country_modifier = { modifier = cc_bop_humbled_power years = 40 }
+			trigger_event_non_silently = cc_balance_of_power.71
+		}
+	}
+	# EASTERN DELUGE
+	else_if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_deluge } }
+		set_global_variable = cc_bop_concluded
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				cc_bop_eastern_power = yes
+				is_great_power = yes
+			}
+			add_country_modifier = { modifier = cc_bop_scourge_of_the_west years = 60 }
+			trigger_event_non_silently = cc_balance_of_power.72
+		}
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				cc_bop_eastern_power = no
+			}
+			add_country_modifier = { modifier = cc_bop_western_bulwark years = 40 }
+		}
+	}
+	# REVOLUTION
+	else_if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_revolution } }
+		set_global_variable = cc_bop_concluded
+		every_country = {
+			limit = { cc_bop_eligible_country = yes is_subject = no }
+			add_country_modifier = { modifier = cc_bop_revolutionary_upheaval years = 30 }
+			trigger_event_non_silently = cc_balance_of_power.73
+		}
+	}
+	# CONCERT OF EUROPE (positive) — not a decisive break. The equilibrium is
+	# institutionalised, but a concert may fray; mark the earliest year a new
+	# balance could form (~25 yr cooldown). See cc_bop_concert_cooldown_elapsed.
+	else = {
+		set_global_variable = { name = cc_bop_concert_restart_year value = current_year }
+		change_global_variable = { name = cc_bop_concert_restart_year add = 25 }
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				OR = {
+					is_member_of_international_organization = international_organization:cc_bop_coalition
+					is_member_of_international_organization = international_organization:cc_bop_preponderance
+				}
+			}
+			add_country_modifier = { modifier = cc_bop_concert_of_europe years = 100 }
+			trigger_event_non_silently = cc_balance_of_power.74
+		}
+	}
+}
+
+# Tidy up all situation-scoped variables and global lists on end.
+# Note: the global flags cc_bop_concluded / cc_bop_concert_restart_year are
+# deliberately NOT cleared here — they gate whether the situation may re-form.
+cc_bop_cleanup = {
+	clear_global_variable_list = cc_bop_pool
+	situation:cc_balance_of_power = {
+		remove_variable = cc_bop_pre_strength
+		remove_variable = cc_bop_coa_strength
+		remove_variable = cc_bop_neu_strength
+		remove_variable = cc_bop_total
+		remove_variable = cc_bop_grand_total
+		remove_variable = cc_bop_pre_frac
+		remove_variable = cc_bop_coa_frac
+		remove_variable = cc_bop_neu_frac
+		remove_variable = cc_bop_pre_pct
+		remove_variable = cc_bop_coa_pct
+		remove_variable = cc_bop_neu_pct
+		remove_variable = cc_bop_preponderance_share
+		remove_variable = cc_bop_share_offset
+		remove_variable = cc_bop_hegemony_months
+		remove_variable = cc_bop_flag_hegemony
+		remove_variable = cc_bop_flag_deluge
+		remove_variable = cc_bop_flag_revolution
+		remove_variable = cc_bop_flag_concert
+	}
+	# Wipe the per-country engagement marker (and any stray gauge vars left by the
+	# old on_joined scope bug) so a future re-formation starts from a clean slate.
+	every_country = {
+		limit = {
+			OR = {
+				has_variable = cc_bop_engaged
+				has_variable = cc_bop_ambition
+				has_variable = cc_bop_resolve
+			}
+		}
+		remove_variable = cc_bop_engaged
+		remove_variable = cc_bop_ambition
+		remove_variable = cc_bop_resolve
+	}
+}

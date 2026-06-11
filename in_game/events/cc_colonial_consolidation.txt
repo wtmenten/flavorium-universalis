@@ -292,11 +292,12 @@ cc_colonial.30 = {
 		any_subject = {
 			is_subject_type = colonial_nation
 			is_subject_of = root
-			num_locations >= 10
+			num_locations >= 5
 			any_neighbor_country = {
 				is_subject_type = colonial_nation
 				is_subject_of = root
-				num_locations <= 12
+				capital.region = prev.capital.region
+				num_locations <= 50
 				culture = prev.culture
 			}
 		}
@@ -308,13 +309,18 @@ cc_colonial.30 = {
 			limit = {
 				is_subject_type = colonial_nation
 				is_subject_of = root
-				num_locations >= 10
+				num_locations >= 5
 				any_neighbor_country = {
 					is_subject_type = colonial_nation
 					is_subject_of = root
-					num_locations <= 12
+					capital.region = prev.capital.region
+					num_locations <= 50
 					culture = prev.culture
 				}
+			}
+			weight = {
+				base = 1
+				modifier = {add = num_locations}
 			}
 			save_scope_as = colony_a
 			culture = { save_scope_as = colony_a_culture }
@@ -324,7 +330,8 @@ cc_colonial.30 = {
 				limit = {
 					is_subject_type = colonial_nation
 					is_subject_of = root
-					num_locations <= 12
+					capital.region = prev.capital.region
+					num_locations <= 50
 					culture = scope:colony_a_culture
 				}
 				save_scope_as = colony_b
@@ -339,6 +346,8 @@ cc_colonial.30 = {
 			base = 50
 			modifier = { factor = 2  ruler = { has_trait = efficient_administrator } }
 			modifier = { factor = 1.5  any_cabinet_character = { has_trait = colonial_planner } }
+			modifier = { factor = 1.5  scope:colony_a = {subject_loyalty >= 60} }
+			modifier = { factor = 1.5  scope:colony_b = {subject_loyalty >= 60} }
 		}
 		add_prestige = prestige_mild_penalty
 		trigger_event_silently = { id = cc_colonial.31 days = 30 }
@@ -459,7 +468,7 @@ cc_colonial.33 = {
 
 	illustration_tags = {
 		10 = interior
-		10 = burghers
+		10 = economy
 	}
 
 	trigger = {
@@ -516,11 +525,7 @@ cc_colonial.40 = {
 		any_subject = {
 			is_subject_type = colonial_nation
 			total_population > 40000
-			OR = {
-				capital.continent = continent:north_america
-				capital.continent = continent:south_america
-				capital.continent = continent:america
-			}
+			capital.continent = continent:america
 		}
 	}
 
@@ -530,11 +535,7 @@ cc_colonial.40 = {
 			limit = {
 				is_subject_type = colonial_nation
 				total_population > 40000
-				OR = {
-					capital.continent = continent:north_america
-					capital.continent = continent:south_america
-					capital.continent = continent:america
-				}
+				capital.continent = continent:america
 			}
 			save_scope_as = colony_a
 		}

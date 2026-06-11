@@ -1,0 +1,215 @@
+﻿
+# Balance of Power — The Balancing Coalition
+# The grand alliance of powers determined to prevent any single state from dominating
+# Europe and the Near-East. Created by the cc_balance_of_power situation on_start and
+# led by the chief balancer (the strongest power that fears the aspiring hegemon).
+# Its purpose is to hold cc_bop_preponderance in check; members vote in Congress on
+# collective action (see cc_balance_of_power.50-59).
+
+cc_bop_coalition = {
+	has_target = no
+	unique = yes
+	show_on_diplomatic_map = yes
+
+	expel_members_who_are_targets_of_other_members = yes
+	expel_members_who_are_attackers_at_war_with_other_members = yes
+
+	has_leader_country = yes
+	leader_type = country
+	disband_if_no_leader = yes
+
+	# Bloc members march where they please — through friend, foe, or neutral alike.
+	# In the great game of the balance, the rights of lesser states are not consulted.
+	has_military_access = {
+		scope:actor ?= { is_member_of_international_organization = root }
+	}
+
+	can_declare_war = {
+		trigger_if = {
+			limit = { scope:attacker ?= { is_member_of_international_organization = scope:recipient } }
+			scope:defender ?= { NOT = { is_member_of_international_organization = scope:recipient } }
+		}
+		trigger_else = { always = yes }
+	}
+
+	create_visible_trigger = { always = no }
+	invite_visible_trigger = { always = yes }
+
+	can_lead_trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	can_join_trigger = {
+		is_subject = no
+		is_rebel_country = no
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+		NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+	}
+
+	can_leave_trigger = {
+		NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+	}
+
+	auto_leave_trigger = {
+		is_subject = yes
+	}
+
+	auto_disband_trigger = {
+		total_members < 1
+	}
+
+	disband_minimum_member_count = 0
+
+	# root = the joining/leaving country, scope:recipient = the organization.
+	on_joined = {
+		scope:recipient = {
+			change_variable = { name = cc_bop_resolve add = 5 }
+		}
+		add_country_modifier = {
+			modifier = cc_bop_coalition_partner
+			years = 2
+			mode = add_and_extend
+		}
+	}
+
+	on_left = {
+		scope:recipient = {
+			change_variable = { name = cc_bop_resolve add = -10 }
+		}
+		add_country_modifier = {
+			modifier = cc_bop_defector
+			years = 3
+			mode = add_and_extend
+		}
+	}
+
+	leader_modifier = {
+		monthly_prestige = 0.05
+		diplomatic_reputation = 1
+	}
+
+	non_leader_modifier = {
+		diplomatic_reputation = 1
+	}
+
+	# War footing — the contest is fought without regard for supply niceties.
+	# Members' armies neither starve nor melt away on the march.
+	modifier = {
+		land_unit_attrition = -1
+		army_food_gathering_modifier = 1
+		food_purchase_efficiency = 1
+		global_food_capacity_modifier = 0.5
+	}
+
+	monthly_effect = {
+		if = {
+			limit = { var:cc_bop_resolve >= 70 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_coalition_solidarity
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+		else_if = {
+			limit = { var:cc_bop_resolve < 30 }
+			every_international_organization_member = {
+				add_country_modifier = {
+					modifier = cc_bop_coalition_wavering
+					months = 2
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+
+	variables = {
+		cc_bop_resolve = {
+			format = "CC_BOP_RESOLVE_FORMAT"
+			change_format = "VARIABLE_CHANGE_FORMAT"
+			min = 0
+			max = 100
+			start = 50
+			monthly_change = {
+				add = {
+					desc = "CC_BOP_RESOLVE_NATURAL"
+					value = 0.2
+				}
+				add = {
+					desc = "CC_BOP_RESOLVE_NUMBERS"
+					value = total_members
+					multiply = 0.1
+				}
+				add = {
+					desc = "CC_BOP_RESOLVE_COMMON_THREAT"
+					if = {
+						limit = { leader_country ?= { at_war = yes } }
+						value = 0.5
+					}
+					else = { value = 0 }
+				}
+			}
+		}
+	}
+
+	# root = potential joiner, actor = the chief balancer (potential leader), recipient = existing org
+	ai_desire_to_join = {
+		add = {
+			value = -45
+			desc = BASE_VALUE
+		}
+		# Bystanders stay out of the great game.
+		if = {
+			limit = { NOT = { has_variable = cc_bop_engaged } }
+			add = {
+				desc = "CC_BOP_NOT_ENGAGED"
+				value = -100
+			}
+		}
+		# Fear of the aspiring hegemon is the coalition's gravity.
+		if = {
+			limit = {
+				exists = international_organization:cc_bop_preponderance
+				international_organization:cc_bop_preponderance.leader_country ?= {
+					OR = {
+						is_rival_of = root
+						any_neighbor_country = { this = root }
+					}
+				}
+			}
+			add = { desc = "CC_BOP_FEAR_OF_HEGEMON" value = 55 }
+		}
+		# At war already — seek shelter in numbers.
+		if = {
+			limit = { at_war = yes }
+			add = { desc = "CC_BOP_WAR_URGENCY" value = 40 }
+		}
+		# Kinship with the balancer.
+		if = {
+			limit = { exists = scope:actor  has_royal_marriage_with = scope:actor }
+			add = { desc = "CC_BOP_ROYAL_MARRIAGE" value = 20 }
+		}
+		# Relations with the balancer.
+		if = {
+			limit = { exists = scope:actor }
+			add = {
+				desc = "CC_BOP_LEADER_RELATIONS"
+				scope:actor = { add = { value = this_opinion_of_prev  multiply = 0.2 } }
+			}
+		}
+		# Bribed neutrality.
+		if = {
+			limit = { has_country_modifier = cc_bop_bought_ally }
+			add = { desc = "CC_BOP_BOUGHT_NEUTRALITY" value = -50 }
+		}
+	}
+
+	# root = international organization, actor = potential new member
+	ai_desire_to_allow_new_member = {
+		add = {
+			desc = "WE_WANT_THE_ORGANIZATION_TO_GROW"
+			value = 25
+		}
+	}
+}

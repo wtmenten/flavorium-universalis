@@ -1,0 +1,82 @@
+﻿############################################
+# Flavorium Universalis — Class-Stratified Literacy Religions
+#
+# Converts flat global_max_literacy in religion definition_modifiers
+# into class-stratified versions: upper classes keep (most of) the
+# value, lower classes get less.
+#
+#   orthodox  5  -> upper 5 / lower 2
+#   sanjiao   10 -> upper 8 / lower 3
+#
+# Full religion definitions reproduced; only the literacy line in
+# definition_modifier changes.
+############################################
+
+REPLACE_OR_CREATE:orthodox = {
+	color = religion_orthodox
+	group = christian
+
+	has_patriarchs = yes
+	has_canonization = yes
+	has_autocephalous_patriarchates = yes
+	has_religious_influence = yes
+	use_icons = yes
+
+	clergy_goods_demand_modifier = {
+		incense = 2
+	}
+
+	definition_modifier = {
+		stability_cost_efficiency = 0.2
+		global_nobles_max_literacy = 5
+		global_clergy_max_literacy = 5
+		global_burghers_max_literacy = 5
+		global_laborers_max_literacy = 2
+		global_soldiers_max_literacy = 2
+		global_peasants_max_literacy = 2
+		clergy_estate_cannot_marry = yes
+		maximum_religious_influence = 400
+		country_allow_canonization = yes
+	}
+
+	opinions = {
+		bogomilism = enemy
+		bosnian_church = negative
+		catholic = positive
+		paulicianism = negative
+		sunni = enemy
+		shia = enemy
+		judaism = positive
+	}
+
+	tags = { orthodox_gfx eastern_christian_gfx christian_gfx abrahamic_gfx }
+
+}
+
+REPLACE_OR_CREATE:sanjiao = {
+	color = map_chinese
+	group = buddhist
+
+	language = classical_chinese_language
+
+	max_sects = 3 #2 already 'occupied' by confucianism and daoism
+
+	definition_modifier = {
+		allow_righteousness = yes
+		allow_harmony = yes
+		monthly_legitimacy = 0.1
+		global_nobles_max_literacy = 8
+		global_clergy_max_literacy = 8
+		global_burghers_max_literacy = 8
+		global_laborers_max_literacy = 3
+		global_soldiers_max_literacy = 3
+		global_peasants_max_literacy = 3
+		can_have_monasteries = yes
+	}
+
+	opinions = {
+		mahayana = kindred
+	}
+
+	tags = { buddhist_gfx }
+}

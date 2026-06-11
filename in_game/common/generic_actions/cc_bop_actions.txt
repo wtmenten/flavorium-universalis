@@ -1,0 +1,788 @@
+﻿
+# Flavorium Universalis — Balance of Power Actions
+# Player-driven actions for the European Balance of Power situation, rendered by the
+# engine directly into the situation panel (type = situation) and the IO view
+# (type = internationalorganization). Modelled on cc_invasion_mexico.txt.
+#
+# Engaged unaligned powers can petition a bloc (the leader decides) or take flavorful
+# neutral stances gated on a cabinet minister's duty. Bloc leaders spend their
+# accumulated IO currency — cc_bop_ambition (preponderance) / cc_bop_resolve
+# (coalition) — on coercive or balancing measures. Non-leader members may leave.
+
+################################################################################
+# SITUATION ACTION 1 — Petition the Preponderant Bloc
+# An engaged, unaligned power asks the aspiring hegemon to admit it. The leader
+# decides (event .80).
+################################################################################
+cc_bop_petition_preponderance = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			exists = international_organization:cc_bop_preponderance
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_petitioned }
+			can_join_international_organization = international_organization:cc_bop_preponderance
+		}
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_balance_of_power = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_petitioned value = yes years = 4 }
+			save_scope_as = cc_bop_petitioner
+		}
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			save_scope_as = cc_bop_petition_target_bloc
+			trigger_event_non_silently = { id = cc_balance_of_power.80 days = 3 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = -20
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = {
+				exists = international_organization:cc_bop_preponderance
+				international_organization:cc_bop_preponderance.leader_country ?= { this_opinion_of_prev >= 0 }
+			}
+			add = { desc = "CC_BOP_FRIENDLY_LEADER" value = 30 }
+		}
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+			add = { desc = "CC_BOP_BANDWAGON" value = 25 }
+		}
+	}
+}
+
+################################################################################
+# SITUATION ACTION 2 — Petition the Balancing Coalition
+################################################################################
+cc_bop_petition_coalition = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			exists = international_organization:cc_bop_coalition
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_petitioned }
+			can_join_international_organization = international_organization:cc_bop_coalition
+		}
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_balance_of_power = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_petitioned value = yes years = 4 }
+			save_scope_as = cc_bop_petitioner
+		}
+		international_organization:cc_bop_coalition.leader_country ?= {
+			save_scope_as = cc_bop_petition_target_bloc
+			trigger_event_non_silently = { id = cc_balance_of_power.81 days = 3 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = -20
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 } }
+			add = { desc = "CC_BOP_FEAR_OF_HEGEMON" value = 35 }
+		}
+		if = {
+			limit = { scope:actor = { at_war = yes } }
+			add = { desc = "CC_BOP_WAR_URGENCY" value = 20 }
+		}
+	}
+}
+
+################################################################################
+# SITUATION ACTION 3 — Proclaim Armed Neutrality
+# An unaligned court keeps its hands free. Requires a minister on the Free Hands
+# duty. Fires flavor event .82.
+################################################################################
+cc_bop_proclaim_neutrality = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_neutral_stance }
+			# A minister "keeping our options open" — the Free Hands duty.
+			any_cabinet_character = {
+				has_cabinet_action = yes
+				cabinet_action = cabinet_action:cc_duty_free_hands
+			}
+		}
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_balance_of_power = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_neutral_stance value = yes years = 6 }
+			trigger_event_non_silently = { id = cc_balance_of_power.82 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 5
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# SITUATION ACTION 4 — Play Both Sides
+# A diplomatic gamble by an unaligned court, nudging the balance toward the
+# weaker bloc for profit. Requires a diplomatic minister (mod duty or the vanilla
+# diplomatic corps). Fires flavor event .83.
+################################################################################
+cc_bop_play_both_sides = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			cc_bop_eligible_country = yes
+			is_subject = no
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_played_sides }
+			# A skilled diplomat at work — either the mod's diplomatic mission or the
+			# vanilla diplomatic corps will serve.
+			any_cabinet_character = {
+				has_cabinet_action = yes
+				OR = {
+					cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+					cabinet_action = cabinet_action:cab_diplomatic_corps
+				}
+			}
+		}
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_balance_of_power = this
+			situation_is_active = yes
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_played_sides value = yes years = 5 }
+			trigger_event_non_silently = { id = cc_balance_of_power.83 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = -5
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 1 (PREPONDERANCE) — Intimidate the Unaligned
+# Spend ambition to lean on a wavering court and press the balance upward.
+################################################################################
+cc_bop_io_intimidate = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_intimidated }
+		}
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 25
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_preponderance
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_intimidated value = yes years = 4 }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = -20 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.84 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
+		}
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 55 } }
+			add = { desc = "CC_BOP_BEHIND" value = 15 }
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 2 (PREPONDERANCE) — The Continental System
+# Spend ambition while dominant to blockade the coalition's commerce.
+################################################################################
+cc_bop_io_continental_system = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_blockaded }
+		}
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 40
+		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_preponderance
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_blockaded value = yes years = 5 }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = -30 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.85 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 3 (PREPONDERANCE) — Consolidate Hegemony
+# A capstone push at high ambition: a hard swing of the balance and a confidence
+# bonus to the whole bloc.
+################################################################################
+cc_bop_io_consolidate_hegemony = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_consolidated }
+		}
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 70
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_preponderance
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_consolidated value = yes years = 6 }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = -50 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.86 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 25
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 4 (COALITION) — Subsidise the Allies
+# Spend resolve to harden the coalition's lesser members.
+################################################################################
+cc_bop_io_subsidize_allies = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_subsidized }
+		}
+		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 25
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_coalition
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_subsidized value = yes years = 4 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -20 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.87 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 15
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 5 (COALITION) — Naval Blockade
+# The coalition's mirror of the Continental System — same economic stranglehold
+# on the preponderant bloc, but a reactive measure: cheaper, fuelled by resolve,
+# and opened only once the hegemon is dominant.
+################################################################################
+cc_bop_io_naval_blockade = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_blockaded }
+		}
+		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 35
+		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_coalition
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_blockaded value = yes years = 5 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -25 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.90 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 20
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 6 (COALITION) — Coordinate Strategy
+# Spend resolve while the hegemon is dominant to push the balance back toward
+# equilibrium and steel the coalition.
+################################################################################
+cc_bop_io_coordinate_strategy = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_coordinated }
+		}
+		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
+		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_coalition
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_coordinated value = yes years = 4 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -30 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.88 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 20
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION 7 (COALITION) — Convene a Congress
+# A capstone at high resolve: a decisive swing of the balance toward the coalition.
+################################################################################
+cc_bop_io_convene_congress = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_convened }
+		}
+		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 70
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_coalition
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_convened value = yes years = 6 }
+		}
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -50 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.89 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 25
+			desc = BASE_VALUE
+		}
+	}
+}
+
+################################################################################
+# IO MEMBER ACTION — Leave the Bloc
+# A non-leader member withdraws from its bloc. The engine then runs the bloc's
+# on_left (defector penalty, currency loss).
+################################################################################
+cc_bop_io_leave_bloc = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 12
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			OR = {
+				AND = {
+					is_member_of_international_organization = international_organization:cc_bop_preponderance
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+				}
+				AND = {
+					is_member_of_international_organization = international_organization:cc_bop_coalition
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				}
+			}
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_left_bloc }
+		}
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			scope:actor = { is_member_of_international_organization = root }
+			NOT = { scope:actor = { is_leader_of_international_organization = root } }
+			OR = {
+				international_organization_type = international_organization_type:cc_bop_preponderance
+				international_organization_type = international_organization_type:cc_bop_coalition
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_left_bloc value = yes years = 3 }
+		}
+		scope:recipient = {
+			remove_country_from_international_organization = scope:actor
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = -50
+			desc = BASE_VALUE
+		}
+	}
+}

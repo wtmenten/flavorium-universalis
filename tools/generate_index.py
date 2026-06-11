@@ -271,6 +271,7 @@ body.nav-open .sidebar-overlay{display:block}
     <span class="mod-title">Flavorium Universalis</span>
     <span class="ver-badge">EU5 1.2.*</span>
     <div class="hdr-spacer"></div>
+    <a class="planner-link" href="dev-diaries.html">Dev Diaries &rarr;</a>
     <a class="planner-link" href="planner.html">Advance Planner &rarr;</a>
   </div>
 </header>
