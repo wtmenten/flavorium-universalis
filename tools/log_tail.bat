@@ -178,6 +178,8 @@ $exclusions = @(
     "common/country_interactions/catholic_interactions.txt",
     "common/generic_actions/parliament.txt",
     "common/country_interactions/intervene_in_union_civil_war",
+    "glorp",
+    
 
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",

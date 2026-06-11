@@ -47,6 +47,8 @@ cc_bop_preponderance = {
 
 	can_leave_trigger = {
 		NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+		# No deserting the cause while the guns are firing.
+		at_war = no
 	}
 
 	auto_leave_trigger = {
@@ -178,6 +180,46 @@ cc_bop_preponderance = {
 		if = {
 			limit = { has_country_modifier = cc_bop_bought_ally }
 			add = { desc = "CC_BOP_BOUGHT_NEUTRALITY" value = -50 }
+		}
+		# --- Membership inertia ---
+		# A court already marching under the hegemon's banner does not break ranks on a
+		# whim. This commitment holds a sitting member in place — only an internal pull
+		# toward neutrality, a stalling bandwagon, or festering resentment of the leader
+		# erodes it.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			add = { desc = "CC_BOP_MEMBER_COMMITMENT" value = 60 }
+			# Foreign gold whispering neutrality.
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_NEUTRALIST_PULL" value = -40 }
+			}
+			# A minister keeping our hands free, or a scheming court angling for the exit.
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = {
+								has_cabinet_action = yes
+								cabinet_action = cabinet_action:cc_duty_free_hands
+							}
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_NEUTRALIST_COUNSEL" value = -35 }
+			}
+			# The bandwagon has stalled — the bloc's ambition collapsing.
+			if = {
+				limit = { international_organization:cc_bop_preponderance.var:cc_bop_ambition < 25 }
+				add = { desc = "CC_BOP_BLOC_FALTERING" value = -30 }
+			}
+			# Festering rivalry with the leader gnaws at our loyalty.
+			if = {
+				limit = { exists = scope:actor  is_rival_of = scope:actor }
+				add = { desc = "CC_BOP_RESENT_LEADER" value = -30 }
+			}
 		}
 	}
 

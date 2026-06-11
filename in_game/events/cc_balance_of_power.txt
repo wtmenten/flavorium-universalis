@@ -804,13 +804,43 @@ cc_balance_of_power.46 = {
 	# Come to terms with the hegemon — leave the coalition.
 	option = {
 		name = cc_balance_of_power.46.a
+		# # A court at war cannot simply walk away from its bloc — it must first make peace.
+		# trigger = {
+		# 	custom_tooltip = {
+		# 		text = cc_bop_cannot_leave_at_war_tt
+		# 		at_war = no
+		# 	}
+		# }
 		ai_chance = {
+			# Coming to terms is a last resort, not a reflex — courts hold firm by default.
 			factor = 1
+			modifier = { factor = 0.4  always = yes }
+			# Foreign gold makes the offer hard to refuse.
+			modifier = { factor = 2.5  has_country_modifier = cc_bop_bought_ally }
+			# A neutralist or scheming court is readier to slip away.
 			modifier = {
 				factor = 2
+				any_cabinet_character = {
+					OR = {
+						AND = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_free_hands
+						}
+						has_trait = court_schemer
+						has_trait = cynical_courtier
+					}
+				}
+			}
+			# The cause looks lost — the colossus is overwhelming.
+			modifier = { factor = 2  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 65 } }
+			# A friendly (non-rival) hegemon makes the accommodation easier to swallow.
+			modifier = {
+				factor = 1.5
 				exists = international_organization:cc_bop_coalition
 				international_organization:cc_bop_coalition.leader_country ?= { NOT = { is_rival_of = root } }
 			}
+			# A master balancer at court keeps us true to our allies.
+			modifier = { factor = 0.25  any_cabinet_character = { has_trait = cc_master_balancer } }
 		}
 		hidden_effect = {
 			if = {
@@ -828,7 +858,11 @@ cc_balance_of_power.46 = {
 	# Hold firm — our place is with the coalition.
 	option = {
 		name = cc_balance_of_power.46.b
-		ai_chance = { factor = 1 }
+		# The default course: stand by the coalition, the more so under steady counsel.
+		ai_chance = {
+			factor = 3
+			modifier = { factor = 1.5  any_cabinet_character = { has_trait = cc_master_balancer } }
+		}
 		add_country_modifier = {
 			modifier = cc_bop_coalition_solidarity
 			years = 2
@@ -1091,9 +1125,18 @@ cc_balance_of_power.80 = {
 		}
 		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.91 days = 2 } }
 		ai_chance = {
+			# Generally glad of another sword — but a distant minnow adds little.
 			base = 70
 			modifier = { add = 20  scope:cc_bop_petitioner = { this_opinion_of_prev >= 0 } }
 			modifier = { add = -40  scope:cc_bop_petitioner = { is_rival_of = root } }
+			modifier = {
+				add = -45
+				scope:cc_bop_petitioner = {
+					is_great_power = no
+					NOT = { any_neighbor_country = { this = root } }
+				}
+			}
+			modifier = { add = 15  scope:cc_bop_petitioner = { any_neighbor_country = { this = root } } }
 		}
 	}
 
@@ -1128,8 +1171,17 @@ cc_balance_of_power.81 = {
 		}
 		scope:cc_bop_petitioner ?= { trigger_event_non_silently = { id = cc_balance_of_power.91 days = 2 } }
 		ai_chance = {
+			# The coalition welcomes numbers — but a distant minnow is a liability, not a shield.
 			base = 75
 			modifier = { add = 15  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 } }
+			modifier = {
+				add = -45
+				scope:cc_bop_petitioner = {
+					is_great_power = no
+					NOT = { any_neighbor_country = { this = root } }
+				}
+			}
+			modifier = { add = 15  scope:cc_bop_petitioner = { any_neighbor_country = { this = root } } }
 		}
 	}
 
@@ -1385,6 +1437,13 @@ cc_balance_of_power.100 = {
 	# "Reverse our alliances — cross to the other camp." (the betrayal)
 	option = {
 		name = cc_balance_of_power.100.a
+		# # A bloc closes ranks in wartime — one cannot change sides while under arms.
+		# trigger = {
+		# 	custom_tooltip = {
+		# 		text = cc_bop_cannot_leave_at_war_tt
+		# 		at_war = no
+		# 	}
+		# }
 		ai_chance = {
 			factor = 1
 			modifier = {
@@ -1490,6 +1549,8 @@ cc_balance_of_power.102 = {
 				limit = {
 					is_member_of_international_organization = international_organization:cc_bop_coalition
 					NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+					# Should a court under arms holds fast — no buying its treason mid-war?
+					# at_war = no
 				}
 				save_scope_as = bop_treason_target
 			}
@@ -1499,6 +1560,7 @@ cc_balance_of_power.102 = {
 				limit = {
 					is_member_of_international_organization = international_organization:cc_bop_preponderance
 					NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+					# at_war = no
 				}
 				save_scope_as = bop_treason_target
 			}
@@ -1565,6 +1627,262 @@ cc_balance_of_power.102 = {
 	option = {
 		name = cc_balance_of_power.102.b
 		add_prestige = prestige_weak_bonus
+	}
+}
+
+################################################################################
+# EVENT 76 — The Architect of the Balance (coalition leader, on the Concert close)
+# The chief balancer kept the continent free. Fired from cc_bop_apply_ending's
+# concert branch, this hands the LEADER a unique destiny the other members do not
+# share — to crown its work as Europe's peace-keeper, or to turn its mastery of
+# the coalition into a bid of its own. The paths a court favours are coloured by
+# its ministers, its ruler, and its reforms.
+################################################################################
+cc_balance_of_power.76 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.76.title
+	desc = cc_balance_of_power.76.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = professional }
+
+	# "We are the guarantor of the peace." — the European peace-keeper (diplomatic / mercantile / influence)
+	option = {
+		name = cc_balance_of_power.76.a
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2  has_reform = government_reform:cc_balancer_doctrine_reform }
+			modifier = {
+				factor = 1.5
+				ruler = { OR = { has_trait = silver_tongue  has_trait = charismatic_negotiator } }
+			}
+			modifier = {
+				factor = 1.5
+				any_cabinet_character = {
+					has_cabinet_action = yes
+					cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+				}
+			}
+		}
+		add_country_modifier = { modifier = cc_bop_arbiter_of_europe  years = 60 }
+		add_prestige = prestige_severe_bonus
+		# A standing diplomatic establishment makes the settlement doubly durable.
+		if = {
+			limit = {
+				OR = {
+					has_reform = government_reform:cc_balancer_doctrine_reform
+					any_cabinet_character = {
+						has_cabinet_action = yes
+						cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+					}
+				}
+			}
+			add_country_modifier = { modifier = cc_bop_concert_of_europe  years = 40 }
+		}
+	}
+
+	# "Now Europe will follow our lead." — the next aspiring hegemon (military / influence)
+	option = {
+		name = cc_balance_of_power.76.b
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2  ruler = { has_trait = conqueror } }
+			modifier = { factor = 1.5  has_reform = government_reform:cc_raison_detat_reform }
+			modifier = {
+				factor = 1.5
+				any_cabinet_character = {
+					OR = {
+						has_trait = war_hawk
+						AND = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_war_council
+						}
+					}
+				}
+			}
+		}
+		add_country_modifier = { modifier = cc_bop_aspiring_hegemon  years = 60 }
+		add_prestige = prestige_mild_bonus
+		# A martial court turns the peace dividend straight into mobilisation.
+		if = {
+			limit = {
+				OR = {
+					ruler = { has_trait = conqueror }
+					any_cabinet_character = {
+						has_cabinet_action = yes
+						cabinet_action = cabinet_action:cc_duty_war_council
+					}
+				}
+			}
+			add_country_modifier = { modifier = cc_bop_levee_en_masse  years = 5 }
+		}
+	}
+}
+
+################################################################################
+# THE COALITION TAKES UP ARMS (110-111)
+# The balance is not kept by congresses alone. When the hegemon nears mastery the
+# coalition may strike first; when it falls upon a partner, the union answers the
+# call. Both pull the whole coalition into a single coalition war (cb_coalition,
+# no separate peace) against the aspiring hegemon.
+################################################################################
+
+# EVENT 110 — The Hour of Decision (coalition leader, pre-emptive)
+cc_balance_of_power.110 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.110.title
+	desc = cc_balance_of_power.110.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = military }
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+		exists = international_organization:cc_bop_preponderance
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			NOT = { this = root }
+			NOT = { is_at_war_with = root }
+		}
+	}
+
+	immediate = {
+		international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_hegemon }
+	}
+
+	# "Strike now, before the balance breaks for good."
+	option = {
+		name = cc_balance_of_power.110.a
+		trigger = { exists = scope:bop_hegemon }
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 64 } }
+			modifier = { factor = 1.5  any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+			modifier = { factor = 0.4  at_war = yes }
+		}
+		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
+		declare_war_with_cb = {
+			target = scope:bop_hegemon
+			type = casus_belli:cb_coalition
+		}
+		# Bring the rest of the coalition into the same war as co-attackers.
+		"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_coalition_war }
+		if = {
+			limit = { exists = scope:bop_coalition_war }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					limit = {
+						NOT = { this = root }
+						NOT = { is_at_war_with = scope:bop_hegemon }
+					}
+					join_war_as_attacker = { war = scope:bop_coalition_war  call_in_subjects = yes }
+				}
+				change_variable = { name = cc_bop_resolve add = 10 }
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 5 } }
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 2  mode = add_and_extend }
+			}
+		}
+	}
+
+	# "Not yet — we are not ready to face the colossus."
+	option = {
+		name = cc_balance_of_power.110.b
+		ai_chance = { factor = 1 }
+		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 1 }
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -6 }
+		}
+	}
+}
+
+# EVENT 111 — Honour the Union (coalition leader, defensive)
+# A partner already fights the hegemon; the leader is called to its defence.
+cc_balance_of_power.111 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.111.title
+	desc = cc_balance_of_power.111.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = army }
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+		exists = international_organization:cc_bop_preponderance
+		international_organization:cc_bop_preponderance.leader_country ?= {
+			NOT = { this = root }
+			NOT = { is_at_war_with = root }
+		}
+	}
+
+	immediate = {
+		international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_hegemon }
+		random_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				exists = scope:bop_hegemon
+				is_at_war_with = scope:bop_hegemon
+			}
+			save_scope_as = bop_victim
+		}
+	}
+
+	# "Honour the union — march to their defence."
+	option = {
+		name = cc_balance_of_power.111.a
+		trigger = { exists = scope:bop_victim  exists = scope:bop_hegemon }
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 2  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 62 } }
+			modifier = { factor = 1.5  international_organization:cc_bop_coalition.var:cc_bop_resolve >= 50 }
+			modifier = { factor = 1.5  any_cabinet_character = { has_trait = cc_master_balancer } }
+			modifier = { factor = 0.5  at_war = yes }
+		}
+		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
+		scope:bop_victim = {
+			"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_coalition_war }
+		}
+		if = {
+			limit = { exists = scope:bop_coalition_war }
+			join_war_against = {
+				war = scope:bop_coalition_war
+				target = scope:bop_hegemon
+				call_in_subjects = yes
+			}
+			# Rally the rest of the coalition behind the embattled partner.
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					limit = {
+						NOT = { this = root }
+						NOT = { this = scope:bop_victim }
+						NOT = { is_at_war_with = scope:bop_hegemon }
+					}
+					join_war_against = {
+						war = scope:bop_coalition_war
+						target = scope:bop_hegemon
+						call_in_subjects = yes
+					}
+				}
+				change_variable = { name = cc_bop_resolve add = 10 }
+			}
+		}
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
+	}
+
+	# "We dare not provoke the colossus — they must shift for themselves."
+	option = {
+		name = cc_balance_of_power.111.b
+		ai_chance = { factor = 1 }
+		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 1 }
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -10 }
+		}
+		scope:bop_victim ?= {
+			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
+		}
 	}
 }
 

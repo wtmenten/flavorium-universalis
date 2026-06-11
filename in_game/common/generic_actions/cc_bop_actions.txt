@@ -18,7 +18,7 @@ cc_bop_petition_preponderance = {
 	type = situation
 
 	ai_tick = monthly
-	ai_tick_frequency = 12
+	ai_tick_frequency = 36
 
 	automation_tick = never
 	automation_tick_frequency = 12
@@ -66,20 +66,34 @@ cc_bop_petition_preponderance = {
 	}
 
 	ai_will_do = {
+		# Petitioning is the exception, not the reflex — courts mostly keep to themselves.
 		add = {
-			value = -20
+			value = -40
 			desc = BASE_VALUE
+		}
+		# Great powers play the game readily; lesser courts hang back unless pressed.
+		if = {
+			limit = { scope:actor = { is_great_power = yes } }
+			add = { desc = "CC_BOP_GREAT_POWER" value = 20 }
+		}
+		# Proximity to the aspiring hegemon — a friendly neighbour seeks its protection.
+		if = {
+			limit = {
+				exists = international_organization:cc_bop_preponderance
+				international_organization:cc_bop_preponderance.leader_country ?= { any_neighbor_country = { this = scope:actor } }
+			}
+			add = { desc = "CC_BOP_NEAR_HEGEMON" value = 30 }
 		}
 		if = {
 			limit = {
 				exists = international_organization:cc_bop_preponderance
 				international_organization:cc_bop_preponderance.leader_country ?= { this_opinion_of_prev >= 0 }
 			}
-			add = { desc = "CC_BOP_FRIENDLY_LEADER" value = 30 }
+			add = { desc = "CC_BOP_FRIENDLY_LEADER" value = 25 }
 		}
 		if = {
 			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
-			add = { desc = "CC_BOP_BANDWAGON" value = 25 }
+			add = { desc = "CC_BOP_BANDWAGON" value = 20 }
 		}
 	}
 }
@@ -91,7 +105,7 @@ cc_bop_petition_coalition = {
 	type = situation
 
 	ai_tick = monthly
-	ai_tick_frequency = 12
+	ai_tick_frequency = 36
 
 	automation_tick = never
 	automation_tick_frequency = 12
@@ -139,13 +153,30 @@ cc_bop_petition_coalition = {
 	}
 
 	ai_will_do = {
+		# Petitioning is the exception, not the reflex — courts mostly keep to themselves.
 		add = {
-			value = -20
+			value = -40
 			desc = BASE_VALUE
+		}
+		# Great powers play the game readily; lesser courts hang back unless pressed.
+		if = {
+			limit = { scope:actor = { is_great_power = yes } }
+			add = { desc = "CC_BOP_GREAT_POWER" value = 20 }
+		}
+		# Proximity to the aspiring hegemon — a threatened neighbour runs for the coalition.
+		if = {
+			limit = {
+				exists = international_organization:cc_bop_preponderance
+				OR = {
+					international_organization:cc_bop_preponderance.leader_country ?= { any_neighbor_country = { this = scope:actor } }
+					international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = scope:actor }
+				}
+			}
+			add = { desc = "CC_BOP_NEAR_HEGEMON" value = 40 }
 		}
 		if = {
 			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 } }
-			add = { desc = "CC_BOP_FEAR_OF_HEGEMON" value = 35 }
+			add = { desc = "CC_BOP_FEAR_OF_HEGEMON" value = 25 }
 		}
 		if = {
 			limit = { scope:actor = { at_war = yes } }
@@ -183,9 +214,12 @@ cc_bop_proclaim_neutrality = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_neutral_stance }
 			# A minister "keeping our options open" — the Free Hands duty.
-			any_cabinet_character = {
-				has_cabinet_action = yes
-				cabinet_action = cabinet_action:cc_duty_free_hands
+			custom_tooltip = {
+				text = cc_bop_needs_free_hands_minister_tt
+				any_cabinet_character = {
+					has_cabinet_action = yes
+					cabinet_action = cabinet_action:cc_duty_free_hands
+				}
 			}
 		}
 		situation:cc_balance_of_power = { situation_is_active = yes }
@@ -248,11 +282,14 @@ cc_bop_play_both_sides = {
 			NOT = { has_variable = cc_bop_recently_played_sides }
 			# A skilled diplomat at work — either the mod's diplomatic mission or the
 			# vanilla diplomatic corps will serve.
-			any_cabinet_character = {
-				has_cabinet_action = yes
-				OR = {
-					cabinet_action = cabinet_action:cc_duty_diplomatic_mission
-					cabinet_action = cabinet_action:cab_diplomatic_corps
+			custom_tooltip = {
+				text = cc_bop_needs_diplomat_minister_tt
+				any_cabinet_character = {
+					has_cabinet_action = yes
+					OR = {
+						cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+						cabinet_action = cabinet_action:cab_diplomatic_corps
+					}
 				}
 			}
 		}
@@ -750,6 +787,11 @@ cc_bop_io_leave_bloc = {
 	allow = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_left_bloc }
+			# A bloc closes ranks in wartime — no member may desert while under arms.
+			custom_tooltip = {
+				text = cc_bop_cannot_leave_at_war_tt
+				at_war = no
+			}
 		}
 		situation:cc_balance_of_power = { situation_is_active = yes }
 	}
@@ -780,9 +822,44 @@ cc_bop_io_leave_bloc = {
 	}
 
 	ai_will_do = {
+		# Desertion is near-unthinkable — a member stands by its bloc save for an
+		# internal pull toward neutrality, or a cause it judges already lost.
 		add = {
-			value = -50
+			value = -90
 			desc = BASE_VALUE
+		}
+		# Foreign gold tempting us to the sidelines.
+		if = {
+			limit = { scope:actor = { has_country_modifier = cc_bop_bought_ally } }
+			add = { desc = "CC_BOP_NEUTRALIST_PULL" value = 35 }
+		}
+		# A minister keeping our hands free.
+		if = {
+			limit = {
+				scope:actor = {
+					any_cabinet_character = {
+						has_cabinet_action = yes
+						cabinet_action = cabinet_action:cc_duty_free_hands
+					}
+				}
+			}
+			add = { desc = "CC_BOP_NEUTRALIST_COUNSEL" value = 30 }
+		}
+		# Our bloc is visibly failing — the cause looks lost.
+		if = {
+			limit = {
+				OR = {
+					AND = {
+						scope:actor = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+						international_organization:cc_bop_coalition.var:cc_bop_resolve < 25
+					}
+					AND = {
+						scope:actor = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+						international_organization:cc_bop_preponderance.var:cc_bop_ambition < 25
+					}
+				}
+			}
+			add = { desc = "CC_BOP_BLOC_FALTERING" value = 30 }
 		}
 	}
 }

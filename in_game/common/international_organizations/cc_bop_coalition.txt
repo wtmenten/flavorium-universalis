@@ -48,6 +48,8 @@ cc_bop_coalition = {
 
 	can_leave_trigger = {
 		NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+		# No deserting the cause while the guns are firing.
+		at_war = no
 	}
 
 	auto_leave_trigger = {
@@ -202,6 +204,45 @@ cc_bop_coalition = {
 		if = {
 			limit = { has_country_modifier = cc_bop_bought_ally }
 			add = { desc = "CC_BOP_BOUGHT_NEUTRALITY" value = -50 }
+		}
+		# --- Membership inertia ---
+		# A court that has already cast its lot with the coalition does not walk away
+		# lightly. This commitment keeps a sitting member from deserting on a whim —
+		# only an internal pull toward neutrality, or a visibly failing cause, erodes it.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			add = { desc = "CC_BOP_MEMBER_COMMITMENT" value = 60 }
+			# Foreign gold whispering neutrality.
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_NEUTRALIST_PULL" value = -40 }
+			}
+			# A minister keeping our hands free, or a scheming court angling for the exit.
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = {
+								has_cabinet_action = yes
+								cabinet_action = cabinet_action:cc_duty_free_hands
+							}
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_NEUTRALIST_COUNSEL" value = -35 }
+			}
+			# The coalition is visibly faltering — its resolve collapsing.
+			if = {
+				limit = { international_organization:cc_bop_coalition.var:cc_bop_resolve < 25 }
+				add = { desc = "CC_BOP_BLOC_FALTERING" value = -30 }
+			}
+			# The hegemon is overwhelming — the cause looks all but lost.
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 65 } }
+				add = { desc = "CC_BOP_CAUSE_LOST" value = -25 }
+			}
 		}
 	}
 

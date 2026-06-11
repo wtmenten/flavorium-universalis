@@ -16,6 +16,12 @@ cc_balance_of_power = {
 		has_enabled_situation_trigger = { type = cc_balance_of_power }
 		current_age_or_later = { age = age_5_absolutism }
 		cc_bop_doctrine_or_era = yes
+		# Hold until the earlier crises of the age have run their course — no stable
+		# balance can form while Italy is still contested or the wars of religion rage.
+		# (situation_is_active = no also covers games where these never fired at all,
+		# so the gate can never deadlock.)
+		# situation:italian_wars = { situation_is_active = no }
+		situation:war_of_religions = { situation_is_active = no }
 		# A decisive break (hegemony / deluge / revolution) settles the question for good.
 		NOT = { has_global_variable = cc_bop_concluded }
 		# A prior Concert of Europe may give way to a new balance, but only after its
@@ -576,13 +582,77 @@ cc_balance_of_power = {
 					OR = {
 						has_trait = court_schemer
 						has_trait = cynical_courtier
-						has_cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+						AND = {
+							has_cabinet_action = yes
+							cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+						}
 					}
 				}
 			}
 			random_list = {
 				2 = { trigger_event_non_silently = cc_balance_of_power.102 }
 				198 = { }
+			}
+		}
+
+		# --- The coalition takes up arms against the hegemon ---
+
+		# PRE-EMPTIVE: with the hegemon nearing supremacy, the chief balancer is pressed
+		# to strike before the balance breaks for good. Fires reliably once preponderance
+		# is high and the coalition is not yet at war with the aspiring hegemon.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 }
+				international_organization:cc_bop_coalition = { total_members >= 2 }
+				exists = international_organization:cc_bop_preponderance
+				NOT = { has_variable = cc_bop_recently_engaged_hegemon }
+				international_organization:cc_bop_preponderance.leader_country ?= {
+					NOT = { this = prev }
+					NOT = { is_at_war_with = prev }
+				}
+			}
+			random_list = {
+				# The nearer the hegemon to mastery, the likelier the pre-emptive blow.
+				25 = {
+					modifier = {
+						add = 35
+						situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 64 }
+					}
+					modifier = {
+						add = 15
+						international_organization:cc_bop_coalition.var:cc_bop_resolve >= 55
+					}
+					trigger_event_non_silently = cc_balance_of_power.110
+				}
+				75 = { }
+			}
+		}
+
+		# DEFENSIVE: when the hegemon falls upon a coalition member, the chief balancer is
+		# called to honour the union and come to its defence. Fires while a member already
+		# fights the hegemon and the leader stands aside.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				exists = international_organization:cc_bop_preponderance
+				NOT = { has_variable = cc_bop_recently_engaged_hegemon }
+				international_organization:cc_bop_preponderance.leader_country ?= {
+					NOT = { this = prev }
+					NOT = { is_at_war_with = prev }
+				}
+				any_country = {
+					is_member_of_international_organization = international_organization:cc_bop_coalition
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+					exists = international_organization:cc_bop_preponderance
+					is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+				}
+			}
+			random_list = {
+				60 = { trigger_event_non_silently = cc_balance_of_power.111 }
+				40 = { }
 			}
 		}
 	}
