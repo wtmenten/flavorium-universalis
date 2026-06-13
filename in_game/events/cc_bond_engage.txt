@@ -1,0 +1,174 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Bond Engage Events — cc_bonds.300-306
+# Fired by the Subject Relations Ledger panel's engage buttons (via the
+# scripted_guis in common/scripted_guis/cc_bond_actions.txt). The clicked
+# subject is passed as scope:cc_engage_subject. The confirm option pays the
+# cost, nudges the relevant bond dimension (clamped -5..+5) on the subject and
+# stamps the shared 2-year per-subject cooldown (cc_bond_action_cd); the decline
+# option does nothing. The scripted_gui's is_valid has already verified the
+# game rule, affordability, the dimension cap and the cooldown.
+###############################################################################
+
+# cc_bonds.300 — Underwrite the Local Treasury (Economic +1, -75 gold)
+cc_bonds.300 = {
+	type = country_event
+	title = cc_bonds.300.t
+	desc = cc_bonds.300.d
+	outcome = positive
+	illustration_tags = { 10 = economy }
+
+	option = {
+		name = cc_bonds.300.a
+		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -2 }
+		scope:cc_engage_subject = {
+			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 2 }
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.300.b
+	}
+}
+
+# cc_bonds.301 — Hold a Joint Military Review (Military +1, -50 gold)
+cc_bonds.301 = {
+	type = country_event
+	title = cc_bonds.301.t
+	desc = cc_bonds.301.d
+	outcome = positive
+	illustration_tags = { 10 = military }
+
+	option = {
+		name = cc_bonds.301.a
+		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1.5 }
+		scope:cc_engage_subject = {
+			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost   multiply = 1.5 }
+			change_variable = { name = cc_bond_mil  add = 1 }
+			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.301.b
+	}
+}
+
+# cc_bonds.302 — Confer a Charter of Privileges (Political +1, prestige)
+cc_bonds.302 = {
+	type = country_event
+	title = cc_bonds.302.t
+	desc = cc_bonds.302.d
+	outcome = positive
+	illustration_tags = { 10 = interior }
+
+	option = {
+		name = cc_bonds.302.a
+		add_prestige = prestige_mild_penalty
+		scope:cc_engage_subject = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.302.b
+	}
+}
+
+# cc_bonds.303 — Patronize a Cultural Festival (Cultural +1, -75 gold)
+cc_bonds.303 = {
+	type = country_event
+	title = cc_bonds.303.t
+	desc = cc_bonds.303.d
+	outcome = positive
+	illustration_tags = { 10 = trading }
+
+	option = {
+		name = cc_bonds.303.a
+		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1.5 }
+		scope:cc_engage_subject = {
+			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 1.5 }
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.303.b
+	}
+}
+
+# cc_bonds.304 — Dispatch a Personal Envoy (Personal +1, -50 gold, gains prestige)
+cc_bonds.304 = {
+	type = country_event
+	title = cc_bonds.304.t
+	desc = cc_bonds.304.d
+	outcome = positive
+	illustration_tags = { 10 = interior }
+
+	option = {
+		name = cc_bonds.304.a
+		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1 }
+		add_prestige = prestige_weak_bonus
+		scope:cc_engage_subject = {
+			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 1 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.304.b
+	}
+}
+
+# cc_bonds.305 — Demand Tribute (gain +60 gold, Personal -1)
+cc_bonds.305 = {
+	type = country_event
+	title = cc_bonds.305.t
+	desc = cc_bonds.305.d
+	outcome = negative
+	illustration_tags = { 10 = economy }
+
+	option = {
+		name = cc_bonds.305.a
+		add_gold = scope:cc_engage_subject.cc_bond_tribute_gain
+		scope:cc_engage_subject = {
+			change_variable = { name = cc_bond_per  subtract = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+			add_gold = { value = scope:cc_engage_subject.cc_bond_tribute_gain multiply = -1 }
+		}
+	}
+	option = {
+		name = cc_bonds.305.b
+	}
+}
+
+# cc_bonds.306 — Issue a Stern Reprimand (Political +1, Personal -1)
+cc_bonds.306 = {
+	type = country_event
+	title = cc_bonds.306.t
+	desc = cc_bonds.306.d
+	outcome = negative
+	illustration_tags = { 10 = angry }
+
+	option = {
+		name = cc_bonds.306.a
+		scope:cc_engage_subject = {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  subtract = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
+		}
+	}
+	option = {
+		name = cc_bonds.306.b
+	}
+}

@@ -1,0 +1,186 @@
+﻿# Subject Relations Ledger — engage actions
+# Invoked from in_game/gui/panels/situation/cc_subject_bonds.gui buttons.
+# root  = the overlord (the viewing player), set via GuiScope.SetRoot(Player.MakeScope)
+# scope:subject = the subject country whose row was clicked
+#
+# Each scripted_gui is a thin OPENER: is_shown/is_valid gate the button (game rule,
+# affordability, dimension cap, and a shared per-subject 2-year cooldown), and the
+# effect saves the subject as scope:cc_engage_subject and fires a visible country
+# event (cc_bonds.300-306). The event presents flavor and a confirm/decline choice,
+# and its confirm option applies the cost, the bond change, and the cooldown stamp.
+
+############################ CARROTS — one per dimension ############################
+
+# Economic — Underwrite the Local Treasury (gold) -> cc_bonds.300
+cc_bond_underwrite = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		gold >= scope:subject.cc_bond_gift_cost
+		scope:subject = {
+			var:cc_bond_eco < 5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.300 }
+		}
+	}
+}
+
+# Military — Hold a Joint Military Review (gold) -> cc_bonds.301
+cc_bond_review = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		gold >= scope:subject.cc_bond_gift_cost
+		scope:subject = {
+			var:cc_bond_mil < 5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.301 }
+		}
+	}
+}
+
+# Political — Confer a Charter of Privileges (prestige) -> cc_bonds.302
+cc_bond_charter = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		prestige >= { value = prestige_mild_penalty  multiply = -1 }
+		scope:subject = {
+			var:cc_bond_pol < 5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.302 }
+		}
+	}
+}
+
+# Cultural — Patronize a Cultural Festival (gold) -> cc_bonds.303
+cc_bond_festival = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		gold >= scope:subject.cc_bond_gift_cost
+		scope:subject = {
+			var:cc_bond_cul < 5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.303 }
+		}
+	}
+}
+
+# Personal — Dispatch a Personal Envoy (gold + prestige) -> cc_bonds.304
+cc_bond_envoy = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		gold >= scope:subject.cc_bond_gift_cost
+		scope:subject = {
+			var:cc_bond_per < 5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.304 }
+		}
+	}
+}
+
+############################ STICKS ############################
+
+# Demand Tribute — gold for the Crown, resentment from the subject -> cc_bonds.305
+cc_bond_tribute = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		scope:subject = {
+			var:cc_bond_per > -5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.305 }
+		}
+	}
+}
+
+# Issue a Stern Reprimand — compliance up, warmth down -> cc_bonds.306
+cc_bond_reprimand = {
+	saved_scopes = { subject }
+	is_shown = {
+		has_game_rule = cc_subject_bonds_on
+		scope:subject = { has_variable = cc_bond_initialized }
+	}
+	is_valid = {
+		scope:subject = {
+			var:cc_bond_pol < 5
+			var:cc_bond_per > -5
+			NOT = { has_variable = cc_bond_action_cd }
+		}
+	}
+	effect = {
+		root = {
+			scope:subject = { save_scope_as = cc_engage_subject }
+			trigger_event_silently = { id = cc_bonds.306 }
+		}
+	}
+}
+
+############################ LEDGER VIEW TOGGLE ############################
+
+# Flip the ledger between the short-term (current) and long-term (lifetime
+# average) view. Backed by a flag on the viewing player that the panel reads via
+# .IsSet to switch which score each row renders. root = the viewing player.
+cc_bond_toggle_ltm = {
+	is_shown = { has_game_rule = cc_subject_bonds_on }
+	is_valid = { always = yes }
+	effect = {
+		if = {
+			limit = { has_variable = cc_bond_gui_show_ltm }
+			remove_variable = cc_bond_gui_show_ltm
+		}
+		else = {
+			set_variable = cc_bond_gui_show_ltm
+		}
+	}
+}

@@ -1,0 +1,351 @@
+######################################################################
+# Subject Relations Ledger — situation panel
+# A passive, player-scoped ledger. Lists every subject of the viewing player
+# (Player.GetDiplomacy.GetSubjects) with all five bond dimensions
+# (eco/mil/pol/cul/per, each -5..+5), per-dimension explanatory tooltips, and a
+# row of "engage" actions that call scripted_guis in
+# common/scripted_guis/cc_bond_actions.txt. Reads each subject's own cc_bond_*
+# variables directly, like the vanilla rtr_yuan_allegiance column. Uses the
+# canonical fixedgridbox subject-list layout (addcolumn 100% / fixed addrow) so
+# full-width rows do not collapse in the vertical scroll. Touches no vanilla files.
+#
+# A header toggle (cc_bond_toggle_ltm) flips a flag on the viewing player
+# (cc_bond_gui_show_ltm) that switches each row between the short-term current
+# score (cc_bond_<dim>) and the long-term lifetime average (cc_bond_<dim>_ltm_avg).
+######################################################################
+
+situation_panel = {
+
+	##################################### MAIN IMAGE #####################################
+	# Flat gradient only — no custom illustration art required.
+	blockoverride "situation_panel_image" {
+		background = {
+			using = color_dark_blue_texture
+			spriteType = stretched
+		}
+		background = {
+			using = color_dark_blue_texture
+			alpha = 1
+			margin_top = -140
+			modify_texture = {
+				using = bg_fade_vertical_up_mask_texture
+				blend_mode = alphamultiply
+				alpha = 1
+			}
+		}
+	}
+
+	blockoverride "situation_subheader_content" {}
+
+	##################################### MAIN CONTENT #####################################
+
+	blockoverride "situation_panel_main_content" {
+
+		# Header card
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 40 }
+			using = bg_card_header_01_military
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				margin = { 10 0 }
+				icon = {
+					size = { 24 24 }
+					texture = "gfx/interface/icons/alerts_icons/international_organization.dds"
+					texture_density = 2
+				}
+				text_single = {
+					fontsize = 16
+					text = "CC_BOND_LEDGER_HEADER"
+				}
+				expand = {}
+				# Short-term / long-term view toggle.
+				button = {
+					size = { 92 24 }
+					background = { using = button_regular_texture }
+					text_single = {
+						parentanchor = center  align = center  fontsize = 11
+						visible = "[Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet)]"
+						text = "CC_BOND_VIEW_STM"
+					}
+					text_single = {
+						parentanchor = center  align = center  fontsize = 11
+						visible = "[Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet]"
+						text = "CC_BOND_VIEW_LTM"
+					}
+					tooltip = "CC_BOND_VIEW_TT"
+					action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_VIEW_TOGGLE"  on_action = "[GetScriptedGui('cc_bond_toggle_ltm').Execute(GuiScope.SetRoot(Player.MakeScope).End)]" }
+				}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BOND_LEDGER_HEADER" }
+							blockoverride "tooltip_content" {
+								text_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_BOND_LEDGER_DESC" }
+							}
+						}
+					}
+				}
+			}
+		}
+
+		# Column legend row. Each dimension header is a tooltip link explaining what drives it.
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			minimumsize = { 510 24 }
+			margin = { 10 2 }
+			spacing = 6
+			text_single = { minimumsize = { 150 -1 }  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_SUBJECT" }
+			expand = {}
+			text_single = {
+				minimumsize = { 38 -1 }  align = center  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_ECO"
+				tooltipwidget = { ContextualTooltipType = {
+					blockoverride "title_text" { text = "CC_BOND_COL_ECO" }
+					blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_ECO_TT" } }
+				} }
+			}
+			text_single = {
+				minimumsize = { 38 -1 }  align = center  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_MIL"
+				tooltipwidget = { ContextualTooltipType = {
+					blockoverride "title_text" { text = "CC_BOND_COL_MIL" }
+					blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_MIL_TT" } }
+				} }
+			}
+			text_single = {
+				minimumsize = { 38 -1 }  align = center  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_POL"
+				tooltipwidget = { ContextualTooltipType = {
+					blockoverride "title_text" { text = "CC_BOND_COL_POL" }
+					blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_POL_TT" } }
+				} }
+			}
+			text_single = {
+				minimumsize = { 38 -1 }  align = center  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_CUL"
+				tooltipwidget = { ContextualTooltipType = {
+					blockoverride "title_text" { text = "CC_BOND_COL_CUL" }
+					blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_CUL_TT" } }
+				} }
+			}
+			text_single = {
+				minimumsize = { 38 -1 }  align = center  fontsize = 12  default_format = "#weak"  text = "CC_BOND_COL_PER"
+				tooltipwidget = { ContextualTooltipType = {
+					blockoverride "title_text" { text = "CC_BOND_COL_PER" }
+					blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_PER_TT" } }
+				} }
+			}
+		}
+
+		# Scrollable subject list — canonical fixedgridbox layout (full-width fixed-height rows).
+		widget = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 320 }
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+
+			scrollarea = {
+				size = { 100% 100% }
+				scrollbarpolicy_horizontal = always_off
+				scrollbar_vertical = { using = Scrollbar_Vertical }
+				scrollwidget = {
+					flowcontainer = {
+						wrap_count = 1
+						spacing = 4
+						margin = { 6 6 }
+						datamodel = "[Player.GetDiplomacy.GetSubjects]"
+						ignoreinvisible = yes
+						item = {
+							widget = {
+								size = { 510 64 }
+								widget = {
+									size = { 100% 64 }
+									parentanchor = hcenter
+									background = { using = color_whiteish_texture  alpha = 0.10 }
+
+									vbox = {
+										layoutpolicy_horizontal = expanding
+										layoutpolicy_vertical = expanding
+										margin = { 8 3 }
+										spacing = 2
+
+										# --- Line 1: flag, name, subject type + est. date, five dimension values ---
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											minimumsize = { -1 28 }
+											spacing = 6
+
+											country_flag_small = {}
+											vbox = {
+												minimumsize = { 150 -1 }
+												maximumsize = { 150 -1 }
+												spacing = 0
+												text_single = { fontsize = 14  maximumsize = { 150 -1 }  text = "[Country.GetName]" }
+												hbox = {
+													spacing = 4
+													text_single = { fontsize = 11  default_format = "#weak"  maximumsize = { 110 -1 }  text = "[Country.GetDiplomacy.GetSubjectType.GetNameWithNoTooltip]" }
+													# Establishment date (set on bond init). Rendered from the stored date variable.
+													text_single = { fontsize = 11  default_format = "#weak"  visible = "[Country.MakeScope.GetVariable('cc_bond_established_date').IsSet]"  text = "CC_BOND_EST_SEP" }
+													text_single = { fontsize = 11  default_format = "#weak"  visible = "[Country.MakeScope.GetVariable('cc_bond_established_date').IsSet]"  raw_text = "[Country.MakeScope.GetVariable('cc_bond_established_date').GetValue]" }
+												}
+											}
+											expand = {}
+
+											# ECO
+											widget = {
+												minimumsize = { 38 28 }
+												maximumsize = { 38 28 }
+												tooltipwidget = { ContextualTooltipType = {
+													blockoverride "title_text" { text = "CC_BOND_COL_ECO" }
+													blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_ECO_TT" } }
+												} }
+												# Short-term (current) score
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_eco').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_eco').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_eco').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_eco').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_eco').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+												# Long-term (lifetime average) score
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_eco_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_eco_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_eco_ltm_avg').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_eco_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_eco_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+											}
+											# MIL
+											widget = {
+												minimumsize = { 38 28 }
+												maximumsize = { 38 28 }
+												tooltipwidget = { ContextualTooltipType = {
+													blockoverride "title_text" { text = "CC_BOND_COL_MIL" }
+													blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_MIL_TT" } }
+												} }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_mil').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_mil').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_mil').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_mil').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_mil').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_mil_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_mil_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_mil_ltm_avg').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_mil_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_mil_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+											}
+											# POL
+											widget = {
+												minimumsize = { 38 28 }
+												maximumsize = { 38 28 }
+												tooltipwidget = { ContextualTooltipType = {
+													blockoverride "title_text" { text = "CC_BOND_COL_POL" }
+													blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_POL_TT" } }
+												} }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_pol').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_pol').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_pol').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_pol').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_pol').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_pol_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_pol_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_pol_ltm_avg').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_pol_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_pol_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+											}
+											# CUL
+											widget = {
+												minimumsize = { 38 28 }
+												maximumsize = { 38 28 }
+												tooltipwidget = { ContextualTooltipType = {
+													blockoverride "title_text" { text = "CC_BOND_COL_CUL" }
+													blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_CUL_TT" } }
+												} }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_cul').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_cul').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_cul').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_cul').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_cul').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_cul_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_cul_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_cul_ltm_avg').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_cul_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_cul_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+											}
+											# PER
+											widget = {
+												minimumsize = { 38 28 }
+												maximumsize = { 38 28 }
+												tooltipwidget = { ContextualTooltipType = {
+													blockoverride "title_text" { text = "CC_BOND_COL_PER" }
+													blockoverride "tooltip_content" { text_multi = { autoresize = yes  multiline = yes  max_width = 300  text = "CC_BOND_DIM_PER_TT" } }
+												} }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_per').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_per').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_per').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_per').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Not(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet), EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_per').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_green"  visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_per_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_per_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#color_red"    visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_bond_per_ltm_avg').GetValue))]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_bond_per_ltm_avg').GetValue)]" }
+												text_single = { parentanchor = center  align = center  fontsize = 15  default_format = "#weak"        visible = "[And(Player.MakeScope.GetVariable('cc_bond_gui_show_ltm').IsSet, EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_bond_per_ltm_avg').GetValue, '(CFixedPoint)0'))]"  raw_text = "0" }
+											}
+										}
+
+										# --- Line 2: engage actions (call scripted_guis with this subject) ---
+										# Hidden until the subject's bond tracking is initialized, so the action
+										# is never offered (and its is_valid never reads an unset score variable).
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											minimumsize = { -1 22 }
+											margin = { 0 3 }
+											spacing = 3
+											visible = "[Country.MakeScope.GetVariable('cc_bond_initialized').IsSet]"
+
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  text = "CC_BOND_ACT_ECO" }
+												tooltip = "CC_BOND_ACT_ECO_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_ECO"  on_action = "[GetScriptedGui('cc_bond_underwrite').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  text = "CC_BOND_ACT_MIL" }
+												tooltip = "CC_BOND_ACT_MIL_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_MIL"  on_action = "[GetScriptedGui('cc_bond_review').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  text = "CC_BOND_ACT_POL" }
+												tooltip = "CC_BOND_ACT_POL_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_POL"  on_action = "[GetScriptedGui('cc_bond_charter').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  text = "CC_BOND_ACT_CUL" }
+												tooltip = "CC_BOND_ACT_CUL_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_CUL"  on_action = "[GetScriptedGui('cc_bond_festival').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  text = "CC_BOND_ACT_PER" }
+												tooltip = "CC_BOND_ACT_PER_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_PER"  on_action = "[GetScriptedGui('cc_bond_envoy').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											expand = {}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  default_format = "#color_red"  text = "CC_BOND_ACT_TRIBUTE" }
+												tooltip = "CC_BOND_ACT_TRIBUTE_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_TRIBUTE"  on_action = "[GetScriptedGui('cc_bond_tribute').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+											button = {
+												size = { 64 22 }
+												background = { using = button_regular_texture }
+												text_single = { parentanchor = center  align = center  fontsize = 11  default_format = "#color_red"  text = "CC_BOND_ACT_REPRIMAND" }
+												tooltip = "CC_BOND_ACT_REPRIMAND_TT"
+												action_tooltip = { click_type = left  click_mode = single  click_modifier = default  enabled = yes  title = "CC_BOND_ACT_REPRIMAND"  on_action = "[GetScriptedGui('cc_bond_reprimand').Execute(GuiScope.SetRoot(Player.MakeScope).AddScope('subject', Country.MakeScope).End)]" }
+											}
+										}
+									}
+
+									# Bottom divider — visual separator between subject rows.
+									widget = {
+										parentanchor = bottom
+										size = { 100% 1 }
+										background = { using = color_whiteish_texture  alpha = 0.20 }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

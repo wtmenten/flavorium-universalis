@@ -1,6 +1,6 @@
 ﻿# Override select_interaction_target template to add a description-toggle button.
-# The button is always shown in the panel; it only has visible effect when the
-# panel is displaying cabinet actions (since only cabinet_action_name reads the var).
+# The button is shown only when this picker is the cabinet-action selection panel
+# (detected via the 'cabinet' target flag); only cabinet_action_name reads the var.
 #
 # State is stored as a country variable via scripted_gui (cc_cabinet_ui.txt)
 # so it persists across panel openings and across save/load within a campaign.
@@ -83,10 +83,14 @@ template select_interaction_target {
 			name = "top_widget_container"
 		}
 
-		# Description-toggle button row — only meaningful when cabinet actions are shown
+		# Description-toggle button row — only meaningful when cabinet actions are shown.
+		# Gate on the 'cabinet' target flag (set only when this picker is the cabinet-action
+		# selection panel) so the button doesn't leak onto every other interaction picker.
 		hbox = {
 			layoutpolicy_horizontal = expanding
 			margin = { 10 2 }
+
+			visible = "[SelectInteractionTargetView.GetCurrentParams.GetTargetObjectFromFlag('cabinet').GetCabinet.IsCharacterSet]"
 
 			expand = {}
 

@@ -1,0 +1,48 @@
+﻿
+# Flavorium Universalis — Subject Relations Ledger
+# A quiet, passive situation that exists purely to host the bond-status panel
+# (in_game/gui/panels/situation/cc_subject_bonds.gui). It carries no map colour,
+# no legend, no announcement event and no situation variables — the panel reads
+# each subject's own cc_bond_* variables directly via Player.GetDiplomacy.GetSubjects,
+# so each player only ever sees their own subjects. Visible only to overlords that
+# have at least one bond-tracked subject while the bond game rule is on.
+
+cc_subject_bonds = {
+	# High spawn chance so the ledger appears promptly once an overlord has a tracked bond.
+	monthly_spawn_chance = monthly_spawn_chance_ultimate_high
+
+	can_start = {
+		has_game_rule = cc_subject_bonds_on
+		any_country = {
+			is_overlord = yes
+			any_subject = { has_variable = cc_bond_initialized }
+		}
+	}
+
+	# Lapses when no overlord anywhere still tracks a bond (e.g. game rule turned off
+	# mid-game, or every dependency lost). Re-spawns automatically when one returns.
+	can_end = {
+		end_reason = {
+			trigger = {
+				always = no
+				# NOT = {
+				# 	any_country = {
+				# 		is_overlord = yes
+				# 		any_subject = { has_variable = cc_bond_initialized }
+				# 	}
+				# }
+			}
+			desc = "cc_subject_bonds_end"
+		}
+	}
+
+	# Only overlords with a tracked subject see the header icon / panel. The panel body
+	# is player-scoped (Player.GetDiplomacy.GetSubjects), so nothing leaks between courts.
+	visible = {
+		is_overlord = yes
+		any_subject = { has_variable = cc_bond_initialized }
+	}
+
+	# Deliberately omitted: on_start announcement, map_color, legend_key, tooltip —
+	# this is an informational ledger, not a crisis.
+}

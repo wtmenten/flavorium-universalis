@@ -2254,17 +2254,21 @@ cc.162 = {
 		scope:enclave = {
 			set_variable = { name = cc_enclave_event_cooldown value = yes years = 5 }
 		}
+		cc_spawn_noble_commander = yes
 	}
 
 	# Host a grand tournament — fund it, the realm's knights are honed and a champion emerges
 	option = {
 		name = cc.enclave.tournament.a
-		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
-		cc_spawn_noble_commander = yes
+		add_gold = { value = monthly_income_trade_and_tax multiply = -1 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_enclave_grand_tournament
 			years = 6
 			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			add_trait = trait:master_of_horse
+			move_country = prev
 		}
 		add_prestige = prestige_mild_bonus
 		scope:enclave = { add_liberty_desire = liberty_desire_weak_minus }
@@ -2274,6 +2278,7 @@ cc.162 = {
 	option = {
 		name = cc.enclave.tournament.b
 		scope:enclave = { add_liberty_desire = liberty_desire_weak_plus }
+		hidden_effect = { kill_character_silently = scope:cc_noble_commander }
 	}
 }
 
@@ -3687,17 +3692,21 @@ cc.211 = {
 		scope:ward = {
 			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
 		}
+		cc_spawn_noble_commander = yes
 	}
 
 	# Attend and sponsor the tournament — the count fields his own knights; a champion emerges
 	option = {
 		name = cc.palatinate.tournament.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
-		cc_spawn_noble_commander = yes
 		add_country_modifier = {
 			modifier = cc_palatinate_tournament
 			years = 4
 			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			add_trait = trait:master_of_horse
+			move_country = prev
 		}
 	}
 
@@ -3705,6 +3714,7 @@ cc.211 = {
 	option = {
 		name = cc.palatinate.tournament.b
 		add_prestige = prestige_weak_bonus
+		hidden_effect = { kill_character_silently = scope:cc_noble_commander }
 	}
 }
 
@@ -3968,17 +3978,23 @@ cc.165 = {
 	trigger = {
 		any_subject = { is_subject_type = palatinate }
 	}
+	immediate = {
+		cc_spawn_noble_commander = yes
+	}
 
 	# A magnificent elevation ceremony — the count fields his finest knights
 	option = {
 		name = cc.palatinate.elevated.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -600 }
-		cc_spawn_noble_commander = yes
 		add_prestige = prestige_mild_bonus
 		add_country_modifier = {
 			modifier = cc_palatinate_dynastic_prestige
 			years = 10
 			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			add_trait = trait:master_of_horse
+			move_country = PREV
 		}
 	}
 
@@ -3991,6 +4007,7 @@ cc.165 = {
 			years = 5
 			mode = add_and_extend
 		}
+		hidden_effect = { kill_character_silently = scope:cc_noble_commander }
 	}
 }
 
@@ -5441,5 +5458,185 @@ cc.231 = {
 			set_variable = { name = cc_holy_prot_event_cooldown value = yes years = 5 }
 			add_liberty_desire = liberty_desire_weak_plus
 		}
+	}
+}
+
+###############################################################################
+# CROSS-REALM SUBJECT INTERACTIONS (cc.236 college, cc.240 commune)
+# Scientific Colleges and Artists' Communes are one-per-realm, so "two of a kind"
+# can only interact across borders: your subject meets a nearby foreign overlord's
+# subject of the same type. Seen via the overlord (root). Each event offers a
+# friendly route (collaboration — bonds rise) and a rivalrous route (competition /
+# poaching — cultural gain at the cost of the personal bond and the rival's regard).
+# A 15-year per-overlord cooldown; a border_distance cap keeps far-flung realms apart.
+###############################################################################
+
+# cc.236 — "A Correspondence of Scholars"
+# Your Scientific College and a foreign overlord's College open contact.
+cc.236 = {
+	type = country_event
+	title = cc.college.exchange.title
+	desc = cc.college.exchange.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_college_exchange_cd }
+		any_subject = { is_subject_type = scientific_college }
+		any_country = {
+			NOT = { this = root }
+			is_subject = no
+			"border_distance_to(root)" < 1000
+			any_subject = { is_subject_type = scientific_college }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_college_exchange_cd value = yes years = 15 }
+		random_subject = {
+			limit = { is_subject_type = scientific_college }
+			save_scope_as = cc_my_college
+		}
+		random_country = {
+			limit = {
+				NOT = { this = root }
+				is_subject = no
+				"border_distance_to(root)" < 1000
+				any_subject = { is_subject_type = scientific_college }
+			}
+			save_scope_as = cc_rival_overlord
+			random_subject = {
+				limit = { is_subject_type = scientific_college }
+				save_scope_as = cc_rival_college
+			}
+		}
+	}
+
+	# Friendly — sponsor a joint disputation and scholarly exchange.
+	option = {
+		name = cc.college.exchange.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  max = -40  min = -600 }
+		cc_create_college_treatise = { type = work_of_art_type:treatise quality = 75 }
+		add_country_modifier = { modifier = cc_scholastic_disputation  years = 5  mode = add_and_extend }
+		add_prestige = prestige_mild_bonus
+		scope:cc_my_college = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		scope:cc_rival_overlord = {
+			add_opinion = { target = root  modifier = cc_diplomatic_favor }
+		}
+	}
+
+	# Rivalrous — drive your college to outshine the rival and poach its masters.
+	option = {
+		name = cc.college.exchange.b
+		cc_create_college_treatise = { type = work_of_art_type:treatise quality = 85 }
+		add_country_modifier = { modifier = cc_internalized_scholarship  years = 4  mode = add_and_extend }
+		add_prestige = prestige_weak_bonus
+		scope:cc_my_college = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  subtract = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		scope:cc_rival_overlord = {
+			add_opinion = { target = root  modifier = opinion_harshly_treated }
+		}
+	}
+
+	# Stay aloof — let the scholars correspond as they will.
+	option = {
+		name = cc.college.exchange.c
+	}
+}
+
+# cc.240 — "A Confluence of Artists"
+# Your Artists' Commune and a foreign overlord's Commune come into contact.
+cc.240 = {
+	type = country_event
+	title = cc.commune.exchange.title
+	desc = cc.commune.exchange.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_commune_exchange_cd }
+		any_subject = { is_subject_type = artists_commune }
+		any_country = {
+			NOT = { this = root }
+			is_subject = no
+			"border_distance_to(root)" < 1000
+			any_subject = { is_subject_type = artists_commune }
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_commune_exchange_cd value = yes years = 15 }
+		random_subject = {
+			limit = { is_subject_type = artists_commune }
+			save_scope_as = cc_my_commune
+		}
+		random_country = {
+			limit = {
+				NOT = { this = root }
+				is_subject = no
+				"border_distance_to(root)" < 1000
+				any_subject = { is_subject_type = artists_commune }
+			}
+			save_scope_as = cc_rival_overlord
+			random_subject = {
+				limit = { is_subject_type = artists_commune }
+				save_scope_as = cc_rival_commune
+			}
+		}
+	}
+
+	# Friendly — host a shared exhibition celebrating both schools.
+	option = {
+		name = cc.commune.exchange.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  max = -40  min = -600 }
+		cc_create_commune_artwork = { type = work_of_art_type:painting quality = 75 }
+		add_country_modifier = { modifier = cc_artistic_patronage  years = 5  mode = add_and_extend }
+		add_prestige = prestige_mild_bonus
+		scope:cc_my_commune = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		scope:cc_rival_overlord = {
+			add_opinion = { target = root  modifier = cc_diplomatic_favor }
+		}
+	}
+
+	# Rivalrous — set your masters against theirs and lure away their talent.
+	option = {
+		name = cc.commune.exchange.b
+		cc_create_commune_artwork = { type = work_of_art_type:statue quality = 85 }
+		add_country_modifier = { modifier = cc_artistic_feud  years = 5  mode = add_and_extend }
+		add_prestige = prestige_weak_bonus
+		scope:cc_my_commune = {
+			change_variable = { name = cc_bond_cul  add = 1 }
+			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  subtract = 1 }
+			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+		}
+		scope:cc_rival_overlord = {
+			add_opinion = { target = root  modifier = opinion_harshly_treated }
+		}
+	}
+
+	# Stay aloof — let the artists keep their own company.
+	option = {
+		name = cc.commune.exchange.c
 	}
 }

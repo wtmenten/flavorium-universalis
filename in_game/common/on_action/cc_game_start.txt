@@ -155,7 +155,23 @@ cc_on_game_start = {
 			}
 		}
 
-		# --- AI Personality Monitor Variable Initialization ---
+		# --- Subject Bond Backfill ---
+			# Subjects that exist at game start (or in saves predating the bond system) never
+			# fire on_dependency_gained, so they lack cc_bond_initialized and the cc_bond_*
+			# scores. Initialize them now so the Subject Relations Ledger never reads an unset
+			# variable. Establishment date anchors to the current (start) date, the best
+			# available approximation for pre-existing relationships.
+			if = {
+				limit = { has_game_rule = cc_subject_bonds_on }
+				every_country = {
+					every_subject = {
+						limit = { NOT = { has_variable = cc_bond_initialized } }
+						cc_bonds_initialize_subject = yes
+					}
+				}
+			}
+
+			# --- AI Personality Monitor Variable Initialization ---
 		# Pre-set all counter variables to 0 so var: comparisons in limits and
 		# ai_chance blocks never fire before the monthly monitor has run once.
 		if = {

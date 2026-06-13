@@ -29,6 +29,12 @@ cc_bonds.1 = {
 				limit = { has_variable = cc_bond_initialized }
 				save_scope_as = cc_sync_subj
 
+					# --- 0. Upgrade subjects from saves predating the LTM system ---
+					if = {
+						limit = { NOT = { has_variable = cc_bond_ltm_sweeps } }
+						cc_bonds_ensure_ltm_stores = yes
+					}
+
 				# --- 1. Foreign buildings → eco ±1 ---
 				set_local_variable = { name = lv_invest  value = 0 }
 				prev = {
@@ -217,24 +223,34 @@ cc_bonds.1 = {
 					remove_variable = cc_bond_revolutionary_primed
 				}
 
-				# --- 8. Sync scores to overlord variable maps ---
-				set_local_variable = { name = lv_eco  value = var:cc_bond_eco }
-				set_local_variable = { name = lv_mil  value = var:cc_bond_mil }
-				set_local_variable = { name = lv_pol  value = var:cc_bond_pol }
-				set_local_variable = { name = lv_cul  value = var:cc_bond_cul }
-				set_local_variable = { name = lv_per  value = var:cc_bond_per }
-				prev = {
-					remove_from_variable_map = { name = cc_bond_eco_map  key = scope:cc_sync_subj }
-					add_to_variable_map = { name = cc_bond_eco_map  key = scope:cc_sync_subj  value = local_var:lv_eco }
-					remove_from_variable_map = { name = cc_bond_mil_map  key = scope:cc_sync_subj }
-					add_to_variable_map = { name = cc_bond_mil_map  key = scope:cc_sync_subj  value = local_var:lv_mil }
-					remove_from_variable_map = { name = cc_bond_pol_map  key = scope:cc_sync_subj }
-					add_to_variable_map = { name = cc_bond_pol_map  key = scope:cc_sync_subj  value = local_var:lv_pol }
-					remove_from_variable_map = { name = cc_bond_cul_map  key = scope:cc_sync_subj }
-					add_to_variable_map = { name = cc_bond_cul_map  key = scope:cc_sync_subj  value = local_var:lv_cul }
-					remove_from_variable_map = { name = cc_bond_per_map  key = scope:cc_sync_subj }
-					add_to_variable_map = { name = cc_bond_per_map  key = scope:cc_sync_subj  value = local_var:lv_per }
+				# --- 7b. Long-term memory: peak tracking (every cycle) + sweep (long cadence) ---
+				cc_bonds_track_peak = { DIM = eco }
+				cc_bonds_track_peak = { DIM = mil }
+				cc_bonds_track_peak = { DIM = pol }
+				cc_bonds_track_peak = { DIM = cul }
+				cc_bonds_track_peak = { DIM = per }
+				if = {
+					limit = { NOT = { has_variable = cc_bond_ltm_sweep_cd } }
+					change_variable = { name = cc_bond_ltm_sweeps  add = 1 }
+					cc_bonds_sweep_dimension = { DIM = eco }
+					cc_bonds_sweep_dimension = { DIM = mil }
+					cc_bonds_sweep_dimension = { DIM = pol }
+					cc_bonds_sweep_dimension = { DIM = cul }
+					cc_bonds_sweep_dimension = { DIM = per }
+					# Next sweep in 60-80 years (jittered so subjects do not all sweep at once).
+					random_list = {
+						33 = { set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 60 } }
+						34 = { set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 70 } }
+						33 = { set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 80 } }
+					}
 				}
+
+				# --- 8. Sync scores (STM + effective + peak-low) to overlord variable maps ---
+				cc_bonds_sync_dimension = { DIM = eco }
+				cc_bonds_sync_dimension = { DIM = mil }
+				cc_bonds_sync_dimension = { DIM = pol }
+				cc_bonds_sync_dimension = { DIM = cul }
+				cc_bonds_sync_dimension = { DIM = per }
 			}
 		}
 	}

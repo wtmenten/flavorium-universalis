@@ -37,6 +37,7 @@ yearly_country_pulse = {
 	}
 
 	on_actions = {
+		cc_bonds_backfill_pulse
 		cc_bonds_reveal_pulse
 		cc_bonds_colonial_pulse
 		cc_bonds_governorate_pulse
@@ -309,42 +310,31 @@ cc_bonds_first_subject_on_action = {
 
 cc_bonds_on_dependency_gained = {
 	effect = {
+		# root = the newly-gained subject. Init logic lives in the shared
+		# cc_bonds_initialize_subject effect (also used by the backfills below).
 		if = {
 			limit = { has_game_rule = cc_subject_bonds_on }
-			scope:overlord = {
-				# Add to registry if not already tracked
-				if = {
-					limit = {
-						NOT = {
-							any_key_in_variable_map = {
-								variable = cc_subject_registry_map
-								THIS = root
-							}
-						}
-					}
-					add_to_variable_map = { name = cc_subject_registry_map  key = root  value = root }
-					add_to_variable_map = { name = cc_bond_eco_map  key = root  value = 0 }
-					add_to_variable_map = { name = cc_bond_mil_map  key = root  value = 0 }
-					add_to_variable_map = { name = cc_bond_pol_map  key = root  value = 0 }
-					add_to_variable_map = { name = cc_bond_cul_map  key = root  value = 0 }
-					add_to_variable_map = { name = cc_bond_per_map  key = root  value = 0 }
-				}
+			cc_bonds_initialize_subject = yes
+		}
+	}
+}
+
+###############################################################################
+# SAFETY BACKFILL — initialize any subject that predates bond tracking
+# Catches subjects gained while the game rule was off (then toggled on); the
+# registry-driven monitor only touches already-initialized subjects, so it
+# cannot self-heal these. Runs from yearly_country_pulse (root = overlord).
+###############################################################################
+cc_bonds_backfill_pulse = {
+	effect = {
+		if = {
+			limit = {
+				has_game_rule = cc_subject_bonds_on
+				any_subject = { NOT = { has_variable = cc_bond_initialized } }
 			}
-			# Reset subject-side scores (fresh relationship with new overlord)
-			set_variable = { name = cc_bond_eco  value = 0 }
-			set_variable = { name = cc_bond_mil  value = 0 }
-			set_variable = { name = cc_bond_pol  value = 0 }
-			set_variable = { name = cc_bond_cul  value = 0 }
-			set_variable = { name = cc_bond_per  value = 0 }
-			set_variable = { name = cc_bond_war_calls  value = 0 }
-			set_variable = { name = cc_bond_unjust_wars  value = 0 }
-			set_variable = { name = cc_bond_betrayal_count  value = 0 }
-			set_variable = { name = cc_bond_init_provinces  value = num_provinces }
-			set_variable = { name = cc_bond_initialized  value = yes }
-			# Record if cultures differ at start (for culture conversion detection)
-			if = {
-				limit = { NOT = { culture = scope:overlord.culture } }
-				set_variable = { name = cc_bond_mem_cultures_differ  value = yes }
+			every_subject = {
+				limit = { NOT = { has_variable = cc_bond_initialized } }
+				cc_bonds_initialize_subject = yes
 			}
 		}
 	}

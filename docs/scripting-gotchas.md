@@ -311,6 +311,18 @@ If two files each define `on_game_start = { effect = {} }`, the engine warns "mo
 
 ---
 
+## Trait Allow blocks
+
+Vanilla traits use an `allow = { alway = no }` in many traits. This causes them to be dead code and un-assignable - even in events, despite them being commented otherwise.
+
+---
+
+## Character Creation in Events
+
+Characters cannot be created within options of events they must be created beforehand in an immediate block. then moved into the country again in the 'keep' options and killed in any discard options with a hidden_effect = { kill_character_silently = scope:char_scope }
+
+---
+
 ## Opinion Modifiers (Biases)
 
 `add_opinion = { target = X modifier = my_modifier }` — the modifier must be defined in `common/biases/` first. "Unknown bias type" in the log means it's missing from that folder.

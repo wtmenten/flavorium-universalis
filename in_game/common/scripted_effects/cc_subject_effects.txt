@@ -48,6 +48,10 @@ cc_create_college_treatise = {
 # Saves the new character as scope:cc_noble_commander for follow-up effects/localization.
 cc_spawn_noble_commander = {
 	create_character = {
+		important_character_counts = none
+		skip_update_inheritance = yes
+		skip_on_created_action = yes
+		use_random_core_location = yes
 		estate = estate_type:nobles_estate
 		culture = root.culture
 		religion = root.religion
@@ -55,8 +59,164 @@ cc_spawn_noble_commander = {
 		adm = { 30 55 }
 		dip = { 35 65 }
 		mil = { 70 95 }
-		create_in_limbo = yes
-		add_trait = trait:hussar_commander
+		# Match vanilla train_general: keep them out of the cabinet so they read as a recruited general.
+		add_character_modifier = {
+			modifier = recruited_in_the_military
+			mode = add_and_extend
+		}
+		add_trait = trait:hussar_commander # this doesnt work
 		save_scope_as = cc_noble_commander
+	}
+}
+
+###############################################################################
+# Overlord-Subject Bond System — shared init / memory effects
+###############################################################################
+
+# Initialize (or re-initialize) bond tracking for a subject.
+# Called in SUBJECT scope (this = the subject); derives the overlord from the
+# subject's own overlord link, so it is safe from any call site (on_dependency_gained,
+# game-start backfill, yearly safety backfill) regardless of the surrounding root.
+# Registers the subject in the overlord's maps, resets the -5..+5 STM scores, stamps
+# the establishment date, and zeroes the long-term-memory (LTM) stores.
+cc_bonds_initialize_subject = {
+	save_temporary_scope_as = cc_init_subj
+	if = {
+		limit = { exists = overlord }
+		overlord = {
+			# Add to the registry + score maps only if not already tracked.
+			if = {
+				limit = {
+					NOT = {
+						any_key_in_variable_map = {
+							variable = cc_subject_registry_map
+							THIS = scope:cc_init_subj
+						}
+					}
+				}
+				add_to_variable_map = { name = cc_subject_registry_map  key = scope:cc_init_subj  value = scope:cc_init_subj }
+				add_to_variable_map = { name = cc_bond_eco_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_mil_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_pol_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_cul_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_per_map  key = scope:cc_init_subj  value = 0 }
+				# Effective (LTM-primary + STM-nudge) maps the AoR payoffs read.
+				add_to_variable_map = { name = cc_bond_eco_eff_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_mil_eff_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_pol_eff_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_cul_eff_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_per_eff_map  key = scope:cc_init_subj  value = 0 }
+				# Worst-ever (peak-low) maps for the AoR "extreme memory" branches.
+				add_to_variable_map = { name = cc_bond_eco_ltm_min_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_mil_ltm_min_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_pol_ltm_min_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_cul_ltm_min_map  key = scope:cc_init_subj  value = 0 }
+				add_to_variable_map = { name = cc_bond_per_ltm_min_map  key = scope:cc_init_subj  value = 0 }
+			}
+		}
+		# Reset subject-side STM scores (fresh relationship with this overlord).
+		set_variable = { name = cc_bond_eco  value = 0 }
+		set_variable = { name = cc_bond_mil  value = 0 }
+		set_variable = { name = cc_bond_pol  value = 0 }
+		set_variable = { name = cc_bond_cul  value = 0 }
+		set_variable = { name = cc_bond_per  value = 0 }
+		set_variable = { name = cc_bond_war_calls  value = 0 }
+		set_variable = { name = cc_bond_unjust_wars  value = 0 }
+		set_variable = { name = cc_bond_betrayal_count  value = 0 }
+		set_variable = { name = cc_bond_init_provinces  value = num_provinces }
+		set_variable = { name = cc_bond_initialized  value = yes }
+		set_variable = { name = cc_bond_established_date  value = current_date }
+		# Long-term memory stores (sum + sweep counter + running average + peak extremes).
+		cc_bonds_ensure_ltm_stores = yes
+		# Record if cultures differ at start (for culture conversion detection).
+		if = {
+			limit = { NOT = { culture = overlord.culture } }
+			set_variable = { name = cc_bond_mem_cultures_differ  value = yes }
+		}
+	}
+}
+
+# Zero the subject-side long-term-memory stores (sum + sweep counter + running
+# average + peak extremes) and arm the first sweep ~70 years out. Called in SUBJECT
+# scope from cc_bonds_initialize_subject and, defensively, from the monitor to
+# upgrade subjects from saves that predate the LTM system. Non-destructive to STM.
+cc_bonds_ensure_ltm_stores = {
+	set_variable = { name = cc_bond_ltm_sweeps  value = 0 }
+	set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 70 }
+	set_variable = { name = cc_bond_eco_ltm  value = 0 }
+	set_variable = { name = cc_bond_mil_ltm  value = 0 }
+	set_variable = { name = cc_bond_pol_ltm  value = 0 }
+	set_variable = { name = cc_bond_cul_ltm  value = 0 }
+	set_variable = { name = cc_bond_per_ltm  value = 0 }
+	set_variable = { name = cc_bond_eco_ltm_avg  value = 0 }
+	set_variable = { name = cc_bond_mil_ltm_avg  value = 0 }
+	set_variable = { name = cc_bond_pol_ltm_avg  value = 0 }
+	set_variable = { name = cc_bond_cul_ltm_avg  value = 0 }
+	set_variable = { name = cc_bond_per_ltm_avg  value = 0 }
+	set_variable = { name = cc_bond_eco_ltm_max  value = 0 }
+	set_variable = { name = cc_bond_mil_ltm_max  value = 0 }
+	set_variable = { name = cc_bond_pol_ltm_max  value = 0 }
+	set_variable = { name = cc_bond_cul_ltm_max  value = 0 }
+	set_variable = { name = cc_bond_per_ltm_max  value = 0 }
+	set_variable = { name = cc_bond_eco_ltm_min  value = 0 }
+	set_variable = { name = cc_bond_mil_ltm_min  value = 0 }
+	set_variable = { name = cc_bond_pol_ltm_min  value = 0 }
+	set_variable = { name = cc_bond_cul_ltm_min  value = 0 }
+	set_variable = { name = cc_bond_per_ltm_min  value = 0 }
+}
+
+# Update the long-term peak extremes for one dimension from the current STM score.
+# Called in SUBJECT scope each monitor cycle. $DIM$ = eco|mil|pol|cul|per.
+cc_bonds_track_peak = {
+	if = {
+		limit = { var:cc_bond_$DIM$ > var:cc_bond_$DIM$_ltm_max }
+		set_variable = { name = cc_bond_$DIM$_ltm_max  value = var:cc_bond_$DIM$ }
+	}
+	if = {
+		limit = { var:cc_bond_$DIM$ < var:cc_bond_$DIM$_ltm_min }
+		set_variable = { name = cc_bond_$DIM$_ltm_min  value = var:cc_bond_$DIM$ }
+	}
+}
+
+# Sweep one dimension's short-term memory into long-term memory.
+# Called in SUBJECT scope during a sweep, AFTER cc_bond_ltm_sweeps has been
+# incremented for this cycle. $DIM$ = eco|mil|pol|cul|per.
+# Folds the full current STM into the LTM sum, decays STM toward zero by half
+# (rounded outward — evaluated against the snapshot so both thresholds see the
+# original value), then recomputes the running average.
+cc_bonds_sweep_dimension = {
+	set_local_variable = { name = lv_s  value = var:cc_bond_$DIM$ }
+	change_variable = { name = cc_bond_$DIM$_ltm  add = local_var:lv_s }
+	# Outward-rounded halving: one step toward zero at |stm| >= 2 and again at |stm| >= 4.
+	if = { limit = { local_var:lv_s >= 2 }   change_variable = { name = cc_bond_$DIM$  add = -1 } }
+	if = { limit = { local_var:lv_s >= 4 }   change_variable = { name = cc_bond_$DIM$  add = -1 } }
+	if = { limit = { local_var:lv_s <= -2 }  change_variable = { name = cc_bond_$DIM$  add = 1 } }
+	if = { limit = { local_var:lv_s <= -4 }  change_variable = { name = cc_bond_$DIM$  add = 1 } }
+	# Running average = LTM sum / sweep count (sweeps already >= 1 this cycle).
+	set_variable = { name = cc_bond_$DIM$_ltm_avg  value = var:cc_bond_$DIM$_ltm }
+	change_variable = { name = cc_bond_$DIM$_ltm_avg  divide = var:cc_bond_ltm_sweeps }
+}
+
+# Sync one dimension's scores from the subject into the overlord's variable maps.
+# Called in SUBJECT scope from the monitor's per-subject loop; root = overlord,
+# scope:cc_sync_subj = this subject (the map key). $DIM$ = eco|mil|pol|cul|per.
+# Writes three maps: the raw STM score, the effective AoR score
+# (effective = ltm_avg + stm*0.5, LTM-primary with a recent-mood nudge), and the
+# worst-ever peak low for the "extreme memory" AoR branches.
+cc_bonds_sync_dimension = {
+	set_local_variable = { name = lv_stm  value = var:cc_bond_$DIM$ }
+	set_local_variable = { name = lv_min  value = var:cc_bond_$DIM$_ltm_min }
+	set_local_variable = { name = lv_avg  value = var:cc_bond_$DIM$_ltm_avg }
+	# effective = ltm_avg + (stm * 0.5)
+	set_local_variable = { name = lv_eff  value = var:cc_bond_$DIM$ }
+	change_local_variable = { name = lv_eff  multiply = 0.5 }
+	change_local_variable = { name = lv_eff  add = local_var:lv_avg }
+	root = {
+		remove_from_variable_map = { name = cc_bond_$DIM$_map  key = scope:cc_sync_subj }
+		add_to_variable_map = { name = cc_bond_$DIM$_map  key = scope:cc_sync_subj  value = local_var:lv_stm }
+		remove_from_variable_map = { name = cc_bond_$DIM$_eff_map  key = scope:cc_sync_subj }
+		add_to_variable_map = { name = cc_bond_$DIM$_eff_map  key = scope:cc_sync_subj  value = local_var:lv_eff }
+		remove_from_variable_map = { name = cc_bond_$DIM$_ltm_min_map  key = scope:cc_sync_subj }
+		add_to_variable_map = { name = cc_bond_$DIM$_ltm_min_map  key = scope:cc_sync_subj  value = local_var:lv_min }
 	}
 }
