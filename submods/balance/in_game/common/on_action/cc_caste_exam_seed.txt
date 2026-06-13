@@ -1,0 +1,127 @@
+﻿############################################
+# Flavorium Universalis (Balance) — Caste / Examination on-actions
+#
+# Registers named sub-on-actions (the list-merge pattern used in
+# in_game/common/on_action/cc_game_start.txt) so we append to vanilla /
+# main-mod hooks rather than clobbering them.
+#
+#  on_game_start          — seed every in-region country.
+#  on_new_country_formed  — seed a freshly formed in-region country.
+#  on_released_country    — a break-away inherits its progenitor's settlement
+#                           (reformed if the overlord reformed, else seeded).
+#  yearly_country_pulse   — offer the reform chain to eligible human realms.
+############################################
+
+on_game_start = {
+	on_actions = { cc_balance_caste_exam_game_start }
+}
+
+on_new_country_formed = {
+	on_actions = { cc_balance_caste_exam_new_country }
+}
+
+on_released_country = {
+	on_actions = { cc_balance_caste_exam_released }
+}
+
+yearly_country_pulse = {
+	on_actions = { cc_balance_caste_exam_reform_offer }
+}
+
+# ---------------------------------------------------------------------------
+# Game start: seed the historical baseline across the whole world.
+# ---------------------------------------------------------------------------
+cc_balance_caste_exam_game_start = {
+	effect = {
+		every_country = {
+			limit = {
+				OR = {
+					cc_is_indian_realm_trigger = yes
+					cc_is_chinese_realm_trigger = yes
+				}
+			}
+			hidden_effect = { cc_seed_caste_exam_effect = yes }
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
+# on_new_country_formed: root = the newly formed country.
+# ---------------------------------------------------------------------------
+cc_balance_caste_exam_new_country = {
+	effect = {
+		hidden_effect = { cc_seed_caste_exam_effect = yes }
+	}
+}
+
+# ---------------------------------------------------------------------------
+# on_released_country: root = released country, scope:overlord = overlord.
+# Propagate the progenitor's settlement before seeding: if the overlord
+# already dismantled the order, the break-away starts reformed; otherwise
+# the seed effect grants it the historical privileges.
+# ---------------------------------------------------------------------------
+cc_balance_caste_exam_released = {
+	effect = {
+		if = {
+			limit = {
+				cc_is_indian_realm_trigger = yes
+				NOT = { has_variable = cc_caste_dismantled }
+				scope:overlord ?= { has_variable = cc_caste_dismantled }
+			}
+			set_variable = cc_caste_dismantled
+			add_country_modifier = { modifier = cc_caste_reformed }
+		}
+		if = {
+			limit = {
+				cc_is_chinese_realm_trigger = yes
+				NOT = { has_variable = cc_keju_dismantled }
+				scope:overlord ?= { has_variable = cc_keju_dismantled }
+			}
+			set_variable = cc_keju_dismantled
+			add_country_modifier = { modifier = cc_keju_reformed }
+		}
+		hidden_effect = { cc_seed_caste_exam_effect = yes }
+	}
+}
+
+# ---------------------------------------------------------------------------
+# yearly_country_pulse: offer the reform chain to a human realm that still
+# carries the old order and has reached a modernising threshold. AI keeps the
+# historical order. A declined offer goes on a cooldown so it doesn't nag.
+# ---------------------------------------------------------------------------
+cc_balance_caste_exam_reform_offer = {
+	trigger = {
+		is_human = yes
+		cc_can_modernize_trigger = yes
+		OR = {
+			AND = {
+				NOT = { has_variable = cc_caste_dismantled }
+				NOT = { has_variable = cc_caste_reform_cooldown }
+				has_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy
+			}
+			AND = {
+				NOT = { has_variable = cc_keju_dismantled }
+				NOT = { has_variable = cc_keju_reform_cooldown }
+				has_estate_privilege = estate_privilege:cc_scholar_gentry_examination
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = {
+				NOT = { has_variable = cc_caste_dismantled }
+				NOT = { has_variable = cc_caste_reform_cooldown }
+				has_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy
+			}
+			trigger_event_silently = { id = cc_caste.1 }
+		}
+		else_if = {
+			limit = {
+				NOT = { has_variable = cc_keju_dismantled }
+				NOT = { has_variable = cc_keju_reform_cooldown }
+				has_estate_privilege = estate_privilege:cc_scholar_gentry_examination
+			}
+			trigger_event_silently = { id = cc_keju.1 }
+		}
+	}
+}

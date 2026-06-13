@@ -6,6 +6,9 @@ yearly_country_pulse = {
 		cc_subject_drawbacks_pulse
 		cc_subjects_yearly_pulse
 		cc_holy_protectorate_pulse
+		cc_scientific_college_pulse
+		cc_noble_domain_pulse
+		cc_artists_commune_pulse
 		cc_union_partnership_pulse
 		cc_ward_long_term_pulse
 		cc_colonial_consolidation_pulse
@@ -33,7 +36,6 @@ cc_colonial_consolidation_pulse = {
 cc_subjects_yearly_pulse = {
 
 	random_events = {
-		10 = cc.106        # The Artisans' Charter
 		10 = cc.108        # Naval Dominion
 		10 = cc.110        # The Holy League
 
@@ -42,17 +44,9 @@ cc_subjects_yearly_pulse = {
 		10 = cc.192        # Military Exercises
 		10 = cc.193        # Whispers at Court (pseudo-random intrigue)
 
-		# Elite Enclave — Versailles theme
-		10 = cc.194        # Nobles Compete for Court Positions
-
-		# Artists' Commune events (ADM Age 2)
-		10 = cc.197        # The Maestro's Commission
-		10 = cc.198        # Artistic Rivalry
-		10 = cc.199        # Cultural Export
-
-		# Palatinate events (DIP Age 4)
-		10 = cc.210        # The Palatinate Demands Recognition
-		10 = cc.211        # The Palatinate Tournament
+		# NOTE: Artists' commune (cc.106 creation + cc.197/198/199) moved to the dedicated
+		# cc_artists_commune_pulse; elite enclave (cc.194) and palatinate (cc.210/cc.211)
+		# moved to cc_noble_domain_pulse — each so they have their own cadence.
 
 		chance_to_happen = 10 # yearly_pulse@10% = 10yr mean & ~10yr std
 	}
@@ -106,13 +100,100 @@ cc_holy_protectorate_pulse = {
 		}
 	}
 	random_events = {
-		10 = cc.195        # The Faith Under Threat
+		9 = cc.195        # The Faith Under Threat
 		10 = cc.196        # Voices Across the Frontier
-		10 = cc.229        # The Holy See Takes Notice (catholic-gated internally)
-		10 = cc.230        # A Shepherd for the Flock
-		10 = cc.231        # The Wandering Preacher
+		9 = cc.229        # The Holy See Takes Notice (catholic-gated internally)
+		11 = cc.230        # A Shepherd for the Flock
+		11 = cc.231        # The Wandering Preacher
 
-		chance_to_happen = 25
+		chance_to_happen = 18
+	}
+}
+
+# Scientific College periodic events — scholasticism & theology. Own cadence so they
+# don't compete with the shared subject pool. cc.235 self-gates on is_protestant internally.
+# Also re-offers the creation event (cc.104) while the college can still be founded — each
+# event self-gates internally on whether a college exists.
+cc_scientific_college_pulse = {
+	trigger = {
+		OR = {
+			any_subject = { is_subject_type = scientific_college }
+			has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
+		}
+	}
+	random_events = {
+		10 = cc.104        # The Scholars Seek a Home (creation — gates on no college yet)
+
+		10 = cc.232        # The Great Disputation
+		10 = cc.233        # A Doctrine in Question
+		10 = cc.234        # The Scholarly Synthesis
+		10 = cc.235        # The Reformed Academy (Protestant/Reformed only)
+
+		chance_to_happen = 18
+	}
+}
+
+# Elite enclave / palatinate periodic events — nobility, prestige, autonomy & cavalry flavor.
+# Own cadence so they don't compete in the shared pool. The palatinate sub-pool is deliberately
+# larger (it is the bigger, more rambunctious, more prestigious subject). Events self-gate
+# internally on subject type and per-subject cooldowns; cc.215 self-gates on bordering a
+# non-overlord neighbor.
+cc_noble_domain_pulse = {
+	trigger = {
+		OR = {
+			any_subject = {
+				OR = {
+					is_subject_type = elite_enclave
+					is_subject_type = palatinate
+				}
+			}
+			has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+		}
+	}
+	random_events = {
+		# Creation event — re-offered while the enclave can still be founded (gates internally)
+		10 = cc.112        # A Seat for the Nobility (creation)
+
+		# One-shot creation / elevation confirmations (fire_only_once, self-disable)
+		10 = cc.164        # The Enclave Established
+		10 = cc.165        # The Palatinate Elevated
+
+		# Elite enclave pool
+		10 = cc.160        # The Enclave Lord's Cultural Patronage
+		10 = cc.162        # The Grand Tournament
+		10 = cc.163        # A Noble Feud
+		10 = cc.194        # Nobles Compete for Court Positions
+
+		# Palatinate pool (larger — rambunctious & prestigious)
+		10 = cc.161        # The Palatinate Demands Recognition
+		10 = cc.210        # Dynastic Recognition
+		10 = cc.211        # The Palatinate Tournament
+		10 = cc.213        # The Palatinate Answers the Call
+		10 = cc.214        # The Count Palatine Overreaches
+		10 = cc.215        # The Palatinate Provokes a Neighbor
+
+		chance_to_happen = 20
+	}
+}
+
+# Artists' commune periodic events — culture, prestige & patronage. Own cadence so they don't
+# compete in the shared pool. Also re-offers the creation event (cc.106) while the commune can
+# still be founded — each event self-gates internally on whether a commune exists.
+cc_artists_commune_pulse = {
+	trigger = {
+		OR = {
+			any_subject = { is_subject_type = artists_commune }
+			has_estate_privilege = estate_privilege:ep_noble_patronage_arts
+		}
+	}
+	random_events = {
+		10 = cc.106        # The Artisans' Charter (creation — gates on no commune yet)
+
+		10 = cc.197        # The Maestro's Commission
+		10 = cc.198        # Artistic Rivalry
+		10 = cc.199        # Cultural Export
+
+		chance_to_happen = 19
 	}
 }
 

@@ -1,0 +1,100 @@
+﻿############################################
+# Flavorium Universalis (Balance) — Caste / Examination seeding effect
+#
+# Grants the historical baseline privileges to an in-region country, for
+# whichever estates it actually has. Idempotent (skips privileges already
+# held) and guarded so it never re-grants after the order is dismantled.
+# Called from on_game_start, on_new_country_formed and on_released_country.
+# Country scope.
+############################################
+
+cc_seed_caste_exam_effect = {
+	# --- India: the caste order ---
+	if = {
+		limit = {
+			NOT = { has_variable = cc_caste_dismantled }
+			cc_is_indian_realm_trigger = yes
+		}
+		if = {
+			limit = {
+				any_estate = { estate_type = estate_type:clergy_estate }
+				NOT = { has_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy }
+			}
+			grant_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy
+		}
+		if = {
+			limit = {
+				any_estate = { estate_type = estate_type:nobles_estate }
+				NOT = { has_estate_privilege = estate_privilege:cc_kshatriya_warrior_caste }
+			}
+			grant_estate_privilege = estate_privilege:cc_kshatriya_warrior_caste
+		}
+		if = {
+			limit = {
+				any_estate = { estate_type = estate_type:peasants_estate }
+				NOT = { has_estate_privilege = estate_privilege:cc_jati_occupational_order }
+			}
+			grant_estate_privilege = estate_privilege:cc_jati_occupational_order
+		}
+	}
+
+	# --- China: the examination order ---
+	if = {
+		limit = {
+			NOT = { has_variable = cc_keju_dismantled }
+			cc_is_chinese_realm_trigger = yes
+		}
+		if = {
+			limit = {
+				any_estate = { estate_type = estate_type:clergy_estate }
+				NOT = { has_estate_privilege = estate_privilege:cc_scholar_gentry_examination }
+			}
+			grant_estate_privilege = estate_privilege:cc_scholar_gentry_examination
+		}
+		if = {
+			limit = {
+				any_estate = { estate_type = estate_type:burghers_estate }
+				NOT = { has_estate_privilege = estate_privilege:cc_examination_lineage }
+			}
+			grant_estate_privilege = estate_privilege:cc_examination_lineage
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Dismantle effects, called by the reform event chains. Revoke the old
+# privileges first (while their potential is still valid), then raise the
+# dismantled guard (which hides/locks them for good) and apply the temporary
+# upheaval (duration = $years$) plus the permanent reformed order.
+# ---------------------------------------------------------------------------
+cc_dismantle_caste_effect = {
+	if = {
+		limit = { has_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy }
+		revoke_estate_privilege = estate_privilege:cc_brahmin_ritual_primacy
+	}
+	if = {
+		limit = { has_estate_privilege = estate_privilege:cc_kshatriya_warrior_caste }
+		revoke_estate_privilege = estate_privilege:cc_kshatriya_warrior_caste
+	}
+	if = {
+		limit = { has_estate_privilege = estate_privilege:cc_jati_occupational_order }
+		revoke_estate_privilege = estate_privilege:cc_jati_occupational_order
+	}
+	set_variable = cc_caste_dismantled
+	add_country_modifier = { modifier = cc_caste_upheaval years = $years$ }
+	add_country_modifier = { modifier = cc_caste_reformed }
+}
+
+cc_dismantle_keju_effect = {
+	if = {
+		limit = { has_estate_privilege = estate_privilege:cc_scholar_gentry_examination }
+		revoke_estate_privilege = estate_privilege:cc_scholar_gentry_examination
+	}
+	if = {
+		limit = { has_estate_privilege = estate_privilege:cc_examination_lineage }
+		revoke_estate_privilege = estate_privilege:cc_examination_lineage
+	}
+	set_variable = cc_keju_dismantled
+	add_country_modifier = { modifier = cc_keju_upheaval years = $years$ }
+	add_country_modifier = { modifier = cc_keju_reformed }
+}

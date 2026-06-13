@@ -142,6 +142,7 @@ cc_cabinet_diplomatic_influence = {
 	}
 
 	antagonism_received_modifier = -0.05
+	diplomatic_reputation = 0.1
 }
 
 # Added by province interaction events — local development bonus
@@ -230,6 +231,46 @@ cc_scholarly_exchange_modifier = {
 
 	research_speed = 0.05
 	global_disease_resistance = 0.05
+}
+
+# Applied by cc.232/cc.233 — a celebrated scholastic disputation enriches the realm
+cc_scholastic_disputation = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	research_speed = 0.10
+	monthly_religious_influence = 0.05
+	global_monthly_literacy = 0.03
+	tolerance_heretic = 1
+}
+
+# Applied by cc.233 when a bold doctrine is condemned — a decaying intellectual blight
+cc_theological_condemnation = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	research_speed = -0.2
+	monthly_religious_influence = -0.1
+	tolerance_heretic = -1
+	global_monthly_literacy = -0.03
+}
+
+# Applied by cc.235 (Protestant/Reformed) — the Reformed academy leads scholastic theology
+cc_reformed_scholarship = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	research_speed = 0.12
+	global_monthly_literacy = 0.05
+	global_institution_growth_modifier = 0.10
+	tolerance_heretic = 2
+	monthly_religious_influence = 0.05
 }
 
 cc_thriving_port_modifier = {
@@ -743,6 +784,22 @@ cc_artistic_patronage = {
 
 	cultural_influence_modifier = 0.10
 	global_monthly_literacy = 0.02
+
+	skill_of_new_artists = 0.10
+	hire_artist_cost_modifier = -0.15
+	invite_artist_cost_modifier = -0.15
+	artist_salary_modifier = -0.15
+}
+
+# Applied by cc.198 when artistic rivalry sours into a destructive feud
+cc_artistic_feud = {
+	game_data = {
+		category = country
+		decaying = yes
+	}
+
+	research_speed = -0.3
+	cultural_influence = -20
 }
 
 ########################
@@ -982,6 +1039,41 @@ cc_palatinate_tournament = {
 	game_data = { category = country decaying = yes }
 	monthly_prestige = 0.15
 	cultural_influence = 50
+}
+
+# Applied when the overlord hosts a grand tournament at an elite enclave — prestige & the
+# realm's knights are honed. Cavalry-leaning per the nobility/cav theme.
+cc_enclave_grand_tournament = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = 0.10
+	army_heavy_cavalry_power = 0.10
+	land_morale = 0.03
+}
+
+# Applied when the noble levy answers the call — the realm's cavalry takes the field in force.
+cc_noble_levy_call = {
+	game_data = { category = country decaying = yes }
+	army_heavy_cavalry_power = 0.10
+	army_light_cavalry_power = 0.10
+	discipline = 0.03
+	land_morale = 0.05
+}
+
+# Applied when the overlord grants the palatinate dynastic recognition — prestige & legitimacy.
+cc_palatinate_dynastic_prestige = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = 0.15
+	monthly_legitimacy = 0.05
+	diplomatic_reputation = 1
+}
+
+# FAILURE PATH: a noble feud or an over-mighty palatinate left unchecked — prestige bleeds,
+# discipline suffers, and the nobles seethe.
+cc_noble_feud = {
+	game_data = { category = country decaying = yes }
+	monthly_prestige = -0.10
+	discipline = -0.03
+	nobles_estate_target_satisfaction = -0.05
 }
 
 # Applied when a holy protectorate successfully defends the faith — religious boost
@@ -1580,6 +1672,24 @@ cc_bop_subsidized = {
 	game_data = { category = country  decaying = yes }
 	land_morale = 0.05
 	global_manpower_modifier = 0.10
+}
+
+# SUBSIDY STRAIN: applied to the coalition leader that bankrolls the allies. (event .87)
+cc_bop_subsidy_strain = {
+	game_data = { category = country  decaying = yes }
+	court_spending_efficiency = -0.08
+	tax_income_efficiency = -0.05
+	monthly_inflation = 0.0003
+}
+
+# WAR FOOTING: engaged-but-unaligned participants forage freely and march without attrition,
+# mirroring the supply benefits the IO modifier blocks grant bloc members. (situation on_monthly)
+cc_bop_war_footing = {
+	game_data = { category = country  decaying = no }
+	land_unit_attrition = -1
+	army_food_gathering_modifier = 1
+	food_purchase_efficiency = 1
+	global_food_capacity_modifier = 0.5
 }
 
 # The acknowledged balancer of Europe — prestige of the indispensable power.

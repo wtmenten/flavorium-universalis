@@ -1,0 +1,39 @@
+﻿############################################
+# Flavorium Universalis (Balance) — Caste & Examination gating triggers
+#
+# Shared region/culture gating used by the caste / examination privileges,
+# reforms, the game-start (and break-away) seeding effect, and the reform
+# offer pulse. Country scope.
+############################################
+
+cc_is_indian_realm_trigger = {
+	OR = {
+		culture = { has_culture_group = culture_group:indian_group }
+		AND = {
+			exists = capital
+			capital.sub_continent = sub_continent:south_asia
+			religion.group = religion_group:dharmic
+		}
+	}
+}
+
+cc_is_chinese_realm_trigger = {
+	OR = {
+		culture = { has_culture_group = culture_group:chinese_group }
+		AND = {
+			exists = capital
+			capital.sub_continent = sub_continent:east_asia
+		}
+	}
+}
+
+# Modernising signal that unlocks the reform offer — the printing press, the
+# Enlightenment, or simply the later, more reformist ages of the game.
+cc_can_modernize_trigger = {
+	OR = {
+		has_embraced_institution = institution:enlightenment
+		has_advance = printing_press_advance
+		current_age = age_5_absolutism
+		current_age = age_6_revolutions
+	}
+}

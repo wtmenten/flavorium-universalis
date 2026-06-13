@@ -612,6 +612,12 @@ elite_enclave = {
 	visible = {
 		has_advance = noble_patronage_advance
 		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+	}
+
+	creation_visible = {
+		has_advance = noble_patronage_advance
+		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+		scope:target ?= { culture = root.culture }
 		# Limited to one of this type or its upgrade
 		NOT = {
 			any_subject = {
@@ -621,11 +627,6 @@ elite_enclave = {
 				}
 			}
 		}
-		scope:target = { culture = root.culture }
-	}
-	creation_visible = {
-		has_advance = noble_patronage_advance
-		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
 	}
 	only_overlord_or_kindred_culture = yes
 
@@ -655,9 +656,9 @@ elite_enclave = {
 	overlord_modifier = {
 		monthly_prestige = 0.1
 		power_projection = 20
-		cultural_influence = 100
-		cultural_tradition = 100
-		nobles_estate_target_satisfaction = 0.05
+		cultural_influence = 8
+		cultural_tradition = 8
+		nobles_estate_target_satisfaction = 0.10
 	}
 	subject_modifier = {
 		monthly_legitimacy = 0.2
@@ -1045,15 +1046,31 @@ artists_commune = {
 
 	visible = {
 		has_advance = artistic_patronage_advance
-		# Limited to one subject of this type
-		NOT = {
-			any_subject = { is_subject_type = artists_commune }
-		}
 		scope:target = { culture = root.culture }
 	}
 	creation_visible = {
 		has_advance = artistic_patronage_advance
+		scope:target ?= { culture = root.culture }
+		# Limited to one subject of this type
+		NOT = {
+			any_subject = { is_subject_type = artists_commune }
+		}
 	}
+
+	# An artists' commune is a single town — hand every location but the capital
+	# back to the overlord when the subject is created (however it was created).
+	on_enable = {
+		capital = { save_scope_as = cc_commune_seat }
+		every_owned_location = {
+			limit = { NOT = { this = scope:cc_commune_seat } }
+			add_to_list = cc_commune_ceded_locations
+		}
+		every_in_list = {
+			list = cc_commune_ceded_locations
+			change_location_owner = scope:future_overlord
+		}
+	}
+
 	only_overlord_or_kindred_culture = yes
 
 	has_limited_diplomacy = yes
@@ -1080,13 +1097,18 @@ artists_commune = {
 	subject_pays = subject_pays_artists_commune
 
 	overlord_modifier = {
-		cultural_influence = 100
-		cultural_influence_modifier = 1.0
-		research_speed = 0.2
+		cultural_influence = 10
+		cultural_influence_modifier = 0.25
+		research_speed = 0.12
 	}
 	subject_modifier = {
 		monthly_legitimacy = 0.12
 		monthly_rebel_growth = -0.02
+		skill_of_new_artists = 0.33
+		hire_artist_cost_modifier = -0.5
+		num_possible_artists = 2
+		invite_artist_cost_modifier = -0.5
+		artist_salary_modifier = -0.75
 	}
 
 	minimum_opinion_for_offer = 75
@@ -1133,21 +1155,42 @@ scientific_college = {
 	visible = {
 		has_advance = scholarly_orders_advance
 		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
-		# Limited to one subject of this type
-		NOT = {
-			any_subject = { is_subject_type = scientific_college }
-		}
-		scope:target = {
+		scope:target ?= {
 			government_type = government_type:theocracy
 		}
-		scope:target = { culture = root.culture }
+		scope:target ?= { culture = root.culture }
 	}
 	creation_visible = {
 		has_advance = scholarly_orders_advance
 		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
+		# Limited to one subject of this type
+		NOT = {
+			any_subject = { is_subject_type = scientific_college }
+		}
 	}
 	enabled = {
 		scope:target = { government_type = government_type:theocracy }
+	}
+	# A college is a single town — hand every location but the capital
+	# back to the overlord when the subject is created (however it was created).
+	on_enable = {
+		capital = { save_scope_as = cc_commune_seat }
+		if = {
+			limit = { 
+				capital = {
+					location_rank = location_rank:rural_settlement
+				}
+			}
+			capital = { change_location_rank = location_rank:town }
+		}
+		every_owned_location = {
+			limit = { NOT = { this = scope:cc_commune_seat } }
+			add_to_list = cc_commune_ceded_locations
+		}
+		every_in_list = {
+			list = cc_commune_ceded_locations
+			change_location_owner = scope:future_overlord
+		}
 	}
 	only_overlord_or_kindred_culture = yes
 

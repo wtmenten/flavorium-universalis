@@ -1,0 +1,85 @@
+﻿############################################
+# Flavorium Universalis (Balance) — Caste & Examination reform chains
+#
+# The player's lever to alter the historical situation. Offered by
+# cc_balance_caste_exam_reform_offer (yearly_country_pulse) once a realm that
+# still carries the old order reaches a modernising threshold.
+############################################
+
+namespace = cc_caste
+
+# ---------------------------------------------------------------------------
+# cc_caste.1 — Reform the Caste Order
+# ---------------------------------------------------------------------------
+cc_caste.1 = {
+	type = country_event
+	title = cc_caste.1.title
+	desc = cc_caste.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	# A measured loosening — sanskritisation and reformist currents.
+	option = {
+		name = cc_caste.1.a
+		cc_dismantle_caste_effect = { years = 6 }
+	}
+
+	# A sweeping abolition — greater mobility, greater upheaval.
+	option = {
+		name = cc_caste.1.b
+		cc_dismantle_caste_effect = { years = 12 }
+	}
+
+	# Uphold the varna order for now.
+	option = {
+		name = cc_caste.1.c
+		set_variable = {
+			name = cc_caste_reform_cooldown
+			value = yes
+			years = 10
+		}
+	}
+}
+
+namespace = cc_keju
+
+# ---------------------------------------------------------------------------
+# cc_keju.1 — Reform the Examinations
+# ---------------------------------------------------------------------------
+cc_keju.1 = {
+	type = country_event
+	title = cc_keju.1.title
+	desc = cc_keju.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	# Broaden the curriculum — practical statecraft alongside the classics.
+	option = {
+		name = cc_keju.1.a
+		cc_dismantle_keju_effect = { years = 6 }
+	}
+
+	# Abolish the examinations — open office to talent and patronage alike.
+	option = {
+		name = cc_keju.1.b
+		cc_dismantle_keju_effect = { years = 12 }
+	}
+
+	# Keep the keju as it is.
+	option = {
+		name = cc_keju.1.c
+		set_variable = {
+			name = cc_keju_reform_cooldown
+			value = yes
+			years = 10
+		}
+	}
+}

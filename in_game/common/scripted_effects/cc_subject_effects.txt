@@ -1,0 +1,62 @@
+﻿
+# Artists' commune — shared effects
+
+# Creates an actual work of art in the overlord's capital, attributed to a court
+# artist if one is available, otherwise the ruler. root = overlord country.
+# Params: $type$ = work_of_art_type:X, $quality$ = quality value (script value or int)
+cc_create_commune_artwork = {
+	if = {
+		limit = { any_artist = { always = yes } }
+		random_artist = { save_temporary_scope_as = cc_artwork_artist }
+	}
+	else = {
+		last_valid_ruler = { save_temporary_scope_as = cc_artwork_artist }
+	}
+	capital = {
+		create_art = {
+			artist = scope:cc_artwork_artist
+			type = $type$
+			quality = $quality$
+		}
+	}
+}
+
+# Scientific college — creates a theological work of art in the overlord's capital,
+# attributed to a court scholar/artist if available, otherwise the ruler. root = overlord.
+# Params: $type$ = work_of_art_type:X (e.g. treatise/scripture/motet), $quality$ = quality value
+cc_create_college_treatise = {
+	if = {
+		limit = { any_artist = { always = yes } }
+		random_artist = { save_temporary_scope_as = cc_treatise_artist }
+	}
+	else = {
+		last_valid_ruler = { save_temporary_scope_as = cc_treatise_artist }
+	}
+	capital = {
+		create_art = {
+			artist = scope:cc_treatise_artist
+			type = $type$
+			quality = $quality$
+		}
+	}
+}
+
+# Elite enclave / palatinate — signature mechanic.
+# Spawns a martial noble cavalry commander (the count's finest knight) into the overlord's
+# court, available to be appointed general. Themed on the nobility/cavalry flavor — analogous
+# to the artists' commune / scientific college art-generation effects above. root = overlord.
+# Saves the new character as scope:cc_noble_commander for follow-up effects/localization.
+cc_spawn_noble_commander = {
+	create_character = {
+		estate = estate_type:nobles_estate
+		culture = root.culture
+		religion = root.religion
+		trait_category = general
+		adm = { 30 55 }
+		dip = { 35 65 }
+		mil = { 70 95 }
+		create_in_limbo = yes
+		add_trait = trait:hussar_commander
+		save_scope_as = cc_noble_commander
+	}
+}

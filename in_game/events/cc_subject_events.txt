@@ -123,35 +123,158 @@ cc.104 = {
 		10 = interior
 	}
 
+	# Re-offered from cc_scientific_college_pulse while the college can still be founded, and
+	# fired immediately from ep_clergy_scholarly_college on_activate.
 	trigger = {
 		has_estate_privilege = estate_privilege:ep_clergy_scholarly_college
-		"estate_power(estate_type:clergy_estate)" >= 0.50
+		"estate_power(estate_type:clergy_estate)" >= 0.30
+		NOT = { any_subject = { is_subject_type = scientific_college } }
+		NOT = { has_variable = cc_college_creation_cd }
+		any_owned_location = {
+			NOT = { is_capital = yes }
+			dominant_culture = root.culture
+			is_connected_to_through_realm = root.capital
+		}
 	}
 
+	# EU5 does not permit releasing a subject in a cored (dominant-culture) location through
+	# normal diplomacy — and a scientific college must share our culture. So we offer up to
+	# three candidate seats here: locations of our dominant culture, connected to the capital,
+	# excluding the capital. Selection is randomized but weighted heavily toward development,
+	# so the great cities are favored without being guaranteed. A rural seat is granted town
+	# rights on founding so the college has a proper urban home.
 	immediate = {
-		random_neighbor_country = {
-			limit = { government_type = government_type:theocracy }
-			save_scope_as = college_candidate
+		if = {
+			limit = {
+				NOT = { any_subject = { is_subject_type = scientific_college } }
+			}
+			# Draw three distinct seats, each weighted by development.
+			random_owned_location = {
+				limit = {
+					NOT = { is_capital = yes }
+					dominant_culture = root.culture
+					is_connected_to_through_realm = root.capital
+				}
+				weight = {
+					base = 1
+					modifier = { add = { value = development multiply = 2 } }
+				}
+				save_scope_as = college_loc_1
+			}
+			if = {
+				limit = { exists = scope:college_loc_1 }
+				random_owned_location = {
+					limit = {
+						NOT = { is_capital = yes }
+						dominant_culture = root.culture
+						is_connected_to_through_realm = root.capital
+						NOT = { this = scope:college_loc_1 }
+					}
+					weight = {
+						base = 1
+						modifier = { add = { value = development multiply = 2 } }
+					}
+					save_scope_as = college_loc_2
+				}
+			}
+			if = {
+				limit = { exists = scope:college_loc_2 }
+				random_owned_location = {
+					limit = {
+						NOT = { is_capital = yes }
+						dominant_culture = root.culture
+						is_connected_to_through_realm = root.capital
+						NOT = { this = scope:college_loc_1 }
+						NOT = { this = scope:college_loc_2 }
+					}
+					weight = {
+						base = 1
+						modifier = { add = { value = development multiply = 2 } }
+					}
+					save_scope_as = college_loc_3
+				}
+			}
 		}
 	}
 
+	# Found the college at the first candidate seat
 	option = {
-		name = cc.clergy.college.1.a
-		trigger = {
-			exists = scope:college_candidate
+		name = cc.clergy.college.1.opt1
+		trigger = { exists = scope:college_loc_1 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:college_loc_1 = {
+			if = {
+				limit = { location_rank = location_rank:rural_settlement }
+				change_location_rank = location_rank:town
+			}
+			create_country_from_location = {
+				set_capital = prev
+				change_government_type = government_type:theocracy
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:scientific_college }
+				save_scope_as = new_college
+			}
 		}
-		scope:college_candidate = {
-			add_opinion = { target = root modifier = cc_diplomatic_favor }
-		}
-		custom_tooltip = cc.clergy.college.1.a.tt
 		trigger_event_non_silently = { id = cc.105 years = 2 }
 	}
 
+	# Found the college at the second candidate seat
+	option = {
+		name = cc.clergy.college.1.opt2
+		trigger = { exists = scope:college_loc_2 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:college_loc_2 = {
+			if = {
+				limit = { location_rank = location_rank:rural_settlement }
+				change_location_rank = location_rank:town
+			}
+			create_country_from_location = {
+				set_capital = prev
+				change_government_type = government_type:theocracy
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:scientific_college }
+				save_scope_as = new_college
+			}
+		}
+		trigger_event_non_silently = { id = cc.105 years = 2 }
+	}
+
+	# Found the college at the third candidate seat
+	option = {
+		name = cc.clergy.college.1.opt3
+		trigger = { exists = scope:college_loc_3 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:college_loc_3 = {
+			if = {
+				limit = { location_rank = location_rank:rural_settlement }
+				change_location_rank = location_rank:town
+			}
+			create_country_from_location = {
+				set_capital = prev
+				change_government_type = government_type:theocracy
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:scientific_college }
+				save_scope_as = new_college
+			}
+		}
+		trigger_event_non_silently = { id = cc.105 years = 2 }
+	}
+
+	# Encourage the scholars to remain within our own institutions for now (re-offered later).
 	option = {
 		name = cc.clergy.college.1.b
+		set_variable = { name = cc_college_creation_cd value = yes years = 5 }
 		add_country_modifier = {
 			modifier = cc_internalized_scholarship
 			years = 10
+			mode = add_and_extend
+		}
+		add_country_modifier = {
+			modifier = cc_scholarly_exchange_modifier
+			years = 5
 			mode = add_and_extend
 		}
 	}
@@ -180,6 +303,7 @@ cc.105 = {
 			years = 20
 			mode = add_and_extend
 		}
+		cc_create_college_treatise = { type = work_of_art_type:treatise quality = 70 }
 		every_subject = {
 			limit = { is_subject_type = scientific_college }
 			add_prestige = prestige_mild_bonus
@@ -188,6 +312,12 @@ cc.105 = {
 
 	option = {
 		name = cc.clergy.college.2.b
+		add_country_modifier = {
+			modifier = cc_internalized_scholarship
+			years = 8
+			mode = add_and_extend
+		}
+		add_prestige = prestige_weak_bonus
 	}
 }
 
@@ -207,26 +337,132 @@ cc.106 = {
 		10 = interior
 	}
 
+	# Re-offered from cc_artists_commune_pulse while the commune can still be founded, and
+	# fired immediately from ep_noble_patronage_arts on_activate.
 	trigger = {
-		has_advance = artistic_patronage_advance
-		"estate_power(estate_type:burghers_estate)" >= 0.30
-		NOT = { has_variable = cc_arts_event_fired }
+		has_estate_privilege = estate_privilege:ep_noble_patronage_arts
+		NOT = { any_subject = { is_subject_type = artists_commune } }
+		NOT = { has_variable = cc_commune_creation_cd }
+		any_owned_location = {
+			NOT = { is_capital = yes }
+			NOT = { location_rank = location_rank:rural_settlement }
+			dominant_culture = root.culture
+			is_connected_to_through_realm = root.capital
+		}
 	}
 
+	# EU5 does not permit releasing a subject in a cored (dominant-culture) location through
+	# normal diplomacy — and an artists' commune must share our culture. So we offer up to
+	# three candidate seats: urban locations of our dominant culture, connected to the capital,
+	# excluding the capital. Selection is randomized but weighted heavily toward burgher
+	# population, so the great artisan cities are favored without being guaranteed.
 	immediate = {
-		set_variable = { name = cc_arts_event_fired value = yes }
+		random_owned_location = {
+			limit = {
+				NOT = { is_capital = yes }
+				NOT = { location_rank = location_rank:rural_settlement }
+				dominant_culture = root.culture
+				is_connected_to_through_realm = root.capital
+			}
+			weight = {
+				base = 1
+				modifier = { add = { value = num_pop_type:burghers multiply = 2 } }
+			}
+			save_scope_as = commune_loc_1
+		}
+		if = {
+			limit = { exists = scope:commune_loc_1 }
+			random_owned_location = {
+				limit = {
+					NOT = { is_capital = yes }
+					NOT = { location_rank = location_rank:rural_settlement }
+					dominant_culture = root.culture
+					is_connected_to_through_realm = root.capital
+					NOT = { this = scope:commune_loc_1 }
+				}
+				weight = {
+					base = 1
+					modifier = { add = { value = num_pop_type:burghers multiply = 2 } }
+				}
+				save_scope_as = commune_loc_2
+			}
+		}
+		if = {
+			limit = { exists = scope:commune_loc_2 }
+			random_owned_location = {
+				limit = {
+					NOT = { is_capital = yes }
+					NOT = { location_rank = location_rank:rural_settlement }
+					dominant_culture = root.culture
+					is_connected_to_through_realm = root.capital
+					NOT = { this = scope:commune_loc_1 }
+					NOT = { this = scope:commune_loc_2 }
+				}
+				weight = {
+					base = 1
+					modifier = { add = { value = num_pop_type:burghers multiply = 2 } }
+				}
+				save_scope_as = commune_loc_3
+			}
+		}
 	}
 
+	# Charter the commune at the first candidate seat
 	option = {
-		name = cc.arts.1.a
-		custom_tooltip = cc.arts.1.a.tt
+		name = cc.arts.1.opt1
+		trigger = { exists = scope:commune_loc_1 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:commune_loc_1 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:artists_commune }
+				save_scope_as = new_commune
+			}
+		}
 		trigger_event_non_silently = { id = cc.107 months = 6 }
 	}
 
+	# Charter the commune at the second candidate seat
+	option = {
+		name = cc.arts.1.opt2
+		trigger = { exists = scope:commune_loc_2 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:commune_loc_2 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:artists_commune }
+				save_scope_as = new_commune
+			}
+		}
+		trigger_event_non_silently = { id = cc.107 months = 6 }
+	}
+
+	# Charter the commune at the third candidate seat
+	option = {
+		name = cc.arts.1.opt3
+		trigger = { exists = scope:commune_loc_3 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -250 min = -750 }
+		scope:commune_loc_3 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:artists_commune }
+				save_scope_as = new_commune
+			}
+		}
+		trigger_event_non_silently = { id = cc.107 months = 6 }
+	}
+
+	# Not now — keep the guild masters within our own walls for the time being
 	option = {
 		name = cc.arts.1.b
-		add_estate_satisfaction = { type = estate_type:burghers_estate value = -0.05 }
-		culture = { add_cultural_tradition = -20 }
+		set_variable = { name = cc_commune_creation_cd value = yes years = 5 }
+		custom_tooltip = cc.arts.1.b.tt
 	}
 }
 
@@ -458,10 +694,135 @@ cc.112 = {
 		10 = interior
 	}
 
+	# Re-offered from cc_noble_domain_pulse while the enclave can still be founded, and fired
+	# immediately from ep_noble_elite_enclave on_activate.
+	trigger = {
+		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
+		NOT = { any_subject = { OR = { is_subject_type = elite_enclave is_subject_type = palatinate } } }
+		NOT = { has_variable = cc_enclave_creation_cd }
+		any_owned_location = {
+			NOT = { is_capital = yes }
+			NOT = { location_rank = location_rank:rural_settlement }
+			dominant_culture = root.culture
+			is_connected_to_through_realm = root.capital
+		}
+	}
+
+	# EU5 does not permit releasing a subject in a cored (dominant-culture) location through
+	# normal diplomacy — and an elite enclave must share our culture. So we offer up to three
+	# candidate seats here: urban locations of our dominant culture, connected to the capital,
+	# excluding the capital. Selection is randomized but weighted heavily toward noble
+	# population, so the great noble cities are favored without being guaranteed.
+	immediate = {
+		if = {
+			limit = {
+				NOT = { any_subject = { OR = { is_subject_type = elite_enclave is_subject_type = palatinate } } }
+			}
+			# Draw three distinct seats, each weighted by noble population.
+			random_owned_location = {
+				limit = {
+					NOT = { is_capital = yes }
+					NOT = { location_rank = location_rank:rural_settlement }
+					dominant_culture = root.culture
+					is_connected_to_through_realm = root.capital
+				}
+				weight = {
+					base = 1
+					modifier = { add = { value = num_pop_type:nobles multiply = 2 } }
+				}
+				save_scope_as = enclave_loc_1
+			}
+			if = {
+				limit = { exists = scope:enclave_loc_1 }
+				random_owned_location = {
+					limit = {
+						NOT = { is_capital = yes }
+						NOT = { location_rank = location_rank:rural_settlement }
+						dominant_culture = root.culture
+						is_connected_to_through_realm = root.capital
+						NOT = { this = scope:enclave_loc_1 }
+					}
+					weight = {
+						base = 1
+						modifier = { add = { value = num_pop_type:nobles multiply = 2 } }
+					}
+					save_scope_as = enclave_loc_2
+				}
+			}
+			if = {
+				limit = { exists = scope:enclave_loc_2 }
+				random_owned_location = {
+					limit = {
+						NOT = { is_capital = yes }
+						NOT = { location_rank = location_rank:rural_settlement }
+						dominant_culture = root.culture
+						is_connected_to_through_realm = root.capital
+						NOT = { this = scope:enclave_loc_1 }
+						NOT = { this = scope:enclave_loc_2 }
+					}
+					weight = {
+						base = 1
+						modifier = { add = { value = num_pop_type:nobles multiply = 2 } }
+					}
+					save_scope_as = enclave_loc_3
+				}
+			}
+		}
+	}
+
+	# Establish the enclave at the first candidate seat
 	option = {
-		name = cc.noble.enclave.1.a
+		name = cc.noble.enclave.1.opt1
+		trigger = { exists = scope:enclave_loc_1 }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
-		custom_tooltip = cc.noble.enclave.1.a.tt
+		scope:enclave_loc_1 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:elite_enclave }
+				save_scope_as = new_enclave
+			}
+		}
+	}
+
+	# Establish the enclave at the second candidate seat
+	option = {
+		name = cc.noble.enclave.1.opt2
+		trigger = { exists = scope:enclave_loc_2 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		scope:enclave_loc_2 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:elite_enclave }
+				save_scope_as = new_enclave
+			}
+		}
+	}
+
+	# Establish the enclave at the third candidate seat
+	option = {
+		name = cc.noble.enclave.1.opt3
+		trigger = { exists = scope:enclave_loc_3 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		scope:enclave_loc_3 = {
+			create_country_from_location = {
+				set_capital = prev
+				change_culture = ROOT.culture
+				change_religion = ROOT.religion
+				make_subject_of = { target = ROOT type = subject_type:elite_enclave }
+				save_scope_as = new_enclave
+			}
+		}
+	}
+
+	# Not yet — keep the privilege, found no enclave for now (re-offered after a delay)
+	option = {
+		name = cc.noble.enclave.1.b
+		set_variable = { name = cc_enclave_creation_cd value = yes years = 5 }
+		custom_tooltip = cc.noble.enclave.1.b.tt
 	}
 }
 
@@ -1795,16 +2156,18 @@ cc.152 = {
 }
 
 ###############################################################################
-# ELITE ENCLAVE / PALATINATE EVENTS (cc.160–cc.161)
+# ELITE ENCLAVE EVENTS (cc.160, cc.162, cc.163) + PALATINATE RECOGNITION (cc.161)
+# Nobility, prestige, autonomy & cavalry flavor. Fire from cc_noble_domain_pulse.
+# Enclave events share the cc_enclave_event_cooldown (5y); palatinate events share
+# cc_palatinate_event_cooldown (6y).
 ###############################################################################
 
 # "The Enclave Lord's Cultural Patronage"
 # An elite enclave subject is producing remarkable cultural output.
-# Cooldown: 10 years per subject.
 cc.160 = {
 	type = country_event
-	title = cc.enclave.1.title
-	desc = cc.enclave.1.desc
+	title = cc.enclave.patronage.title
+	desc = cc.enclave.patronage.desc
 	outcome = positive
 
 	illustration_tags = {
@@ -1814,7 +2177,7 @@ cc.160 = {
 	trigger = {
 		any_subject = {
 			is_subject_type = elite_enclave
-			NOT = { has_variable = cc_enclave_culture_cooldown }
+			NOT = { has_variable = cc_enclave_event_cooldown }
 		}
 	}
 
@@ -1822,38 +2185,164 @@ cc.160 = {
 		random_subject = {
 			limit = {
 				is_subject_type = elite_enclave
-				NOT = { has_variable = cc_enclave_culture_cooldown }
+				NOT = { has_variable = cc_enclave_event_cooldown }
 			}
 			save_scope_as = enclave
 		}
 		scope:enclave = {
-			set_variable = { name = cc_enclave_culture_cooldown value = yes years = 10 }
+			set_variable = { name = cc_enclave_event_cooldown value = yes years = 5 }
 		}
 	}
 
-	# Fund the cultural project — tradition grows, enclave is grateful
+	# Fund the cultural project — tradition grows, enclave is grateful; quality varies
 	option = {
-		name = cc.enclave.1.a
+		name = cc.enclave.patronage.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
 		culture = { add_cultural_tradition = cultural_tradition_mild_bonus }
 		scope:enclave = { add_liberty_desire = liberty_desire_mild_minus }
+		random_list = {
+			60 = {
+				# A celebrated triumph — the enclave's masters outdo themselves
+				add_prestige = prestige_mild_bonus
+				add_country_modifier = {
+					modifier = cc_enclave_court_favour
+					years = 4
+					mode = add_and_extend
+				}
+			}
+			40 = {
+				# A respectable effort, nothing more
+				add_prestige = prestige_weak_bonus
+			}
+		}
 	}
 
 	# Absorb the talent into the capital — prestige, enclave chafes
 	option = {
-		name = cc.enclave.1.b
+		name = cc.enclave.patronage.b
 		add_prestige = prestige_mild_bonus
 		scope:enclave = { add_liberty_desire = liberty_desire_weak_plus }
 	}
 }
 
+# "The Grand Tournament" — the enclave hosts a great tourney; signature commander mechanic.
+cc.162 = {
+	type = country_event
+	title = cc.enclave.tournament.title
+	desc = cc.enclave.tournament.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = elite_enclave
+			NOT = { has_variable = cc_enclave_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = elite_enclave
+				NOT = { has_variable = cc_enclave_event_cooldown }
+			}
+			save_scope_as = enclave
+		}
+		scope:enclave = {
+			set_variable = { name = cc_enclave_event_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Host a grand tournament — fund it, the realm's knights are honed and a champion emerges
+	option = {
+		name = cc.enclave.tournament.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
+		cc_spawn_noble_commander = yes
+		add_country_modifier = {
+			modifier = cc_enclave_grand_tournament
+			years = 6
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+		scope:enclave = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+
+	# Decline to attend — the nobles take the snub poorly
+	option = {
+		name = cc.enclave.tournament.b
+		scope:enclave = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+}
+
+# "A Noble Feud" — rival houses within the enclave come to blows. Failure-path event.
+cc.163 = {
+	type = country_event
+	title = cc.enclave.feud.title
+	desc = cc.enclave.feud.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = elite_enclave
+			NOT = { has_variable = cc_enclave_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = elite_enclave
+				NOT = { has_variable = cc_enclave_event_cooldown }
+			}
+			save_scope_as = enclave
+		}
+		scope:enclave = {
+			set_variable = { name = cc_enclave_event_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Mediate the dispute — spend gold and prestige to broker a peace
+	option = {
+		name = cc.enclave.feud.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.15 max = -30 min = -400 }
+		add_prestige = prestige_weak_bonus
+		scope:enclave = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+
+	# Let them settle it themselves — risky; the feud may fester
+	option = {
+		name = cc.enclave.feud.b
+		random_list = {
+			50 = {
+				# Honor is satisfied without bloodshed
+				add_prestige = prestige_weak_bonus
+			}
+			50 = {
+				# The feud turns vicious — a lasting blight on the realm's nobility
+				add_country_modifier = {
+					modifier = cc_noble_feud
+					years = 5
+					mode = add_and_extend
+				}
+				scope:enclave = { add_liberty_desire = liberty_desire_weak_plus }
+			}
+		}
+	}
+}
+
 # "The Palatinate Demands Recognition"
 # A palatinate subject wants expanded noble privileges formally granted.
-# Cooldown: 12 years per subject.
 cc.161 = {
 	type = country_event
-	title = cc.palatinate.1.title
-	desc = cc.palatinate.1.desc
+	title = cc.palatinate.recognition.title
+	desc = cc.palatinate.recognition.desc
 	outcome = neutral
 
 	illustration_tags = {
@@ -1863,7 +2352,7 @@ cc.161 = {
 	trigger = {
 		any_subject = {
 			is_subject_type = palatinate
-			NOT = { has_variable = cc_palatinate_recognition_cooldown }
+			NOT = { has_variable = cc_palatinate_event_cooldown }
 		}
 	}
 
@@ -1871,32 +2360,32 @@ cc.161 = {
 		random_subject = {
 			limit = {
 				is_subject_type = palatinate
-				NOT = { has_variable = cc_palatinate_recognition_cooldown }
+				NOT = { has_variable = cc_palatinate_event_cooldown }
 			}
 			save_scope_as = palatinate_lord
 		}
 		scope:palatinate_lord = {
-			set_variable = { name = cc_palatinate_recognition_cooldown value = yes years = 12 }
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
 		}
 	}
 
 	# Grant expanded noble privileges — nobles satisfied, palatinate loyal
 	option = {
-		name = cc.palatinate.1.a
+		name = cc.palatinate.recognition.a
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
 		scope:palatinate_lord = { add_liberty_desire = liberty_desire_mild_minus }
 	}
 
 	# Refuse — the palatinate grows restless
 	option = {
-		name = cc.palatinate.1.b
+		name = cc.palatinate.recognition.b
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
 		scope:palatinate_lord = { add_liberty_desire = liberty_desire_mild_plus }
 	}
 
 	# Negotiate a middle path — cost gold, partial satisfaction
 	option = {
-		name = cc.palatinate.1.c
+		name = cc.palatinate.recognition.c
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		scope:palatinate_lord = { add_liberty_desire = liberty_desire_weak_minus }
 	}
@@ -2337,8 +2826,8 @@ cc.193 = {
 
 cc.194 = {
 	type = country_event
-	title = cc.enclave.1.title
-	desc = cc.enclave.1.desc
+	title = cc.enclave.court.title
+	desc = cc.enclave.court.desc
 	outcome = neutral
 
 	illustration_tags = {
@@ -2348,7 +2837,7 @@ cc.194 = {
 	trigger = {
 		any_subject = {
 			is_subject_type = elite_enclave
-			NOT = { has_variable = cc_enclave_nobles_cooldown }
+			NOT = { has_variable = cc_enclave_event_cooldown }
 		}
 	}
 
@@ -2356,30 +2845,41 @@ cc.194 = {
 		random_subject = {
 			limit = {
 				is_subject_type = elite_enclave
-				NOT = { has_variable = cc_enclave_nobles_cooldown }
+				NOT = { has_variable = cc_enclave_event_cooldown }
 			}
 			save_scope_as = ward
 		}
 		scope:ward = {
-			set_variable = { name = cc_enclave_nobles_cooldown value = yes years = 5 }
+			set_variable = { name = cc_enclave_event_cooldown value = yes years = 5 }
 		}
 	}
 
 	# Grant court positions — nobles satisfied, their independent power curtailed
 	option = {
-		name = cc.enclave.1.a
+		name = cc.enclave.court.a
 		add_country_modifier = {
 			modifier = cc_enclave_court_favour
 			years = 4
 			mode = add_and_extend
 		}
-		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_bonus }
+	}
+
+	# Set them to a great cavalry muster instead — the realm's horse is drilled to perfection
+	option = {
+		name = cc.enclave.court.c
+		add_country_modifier = {
+			modifier = cc_noble_levy_call
+			years = 5
+			mode = add_and_extend
+		}
+		scope:ward = { add_liberty_desire = liberty_desire_weak_minus }
 	}
 
 	# Refuse — keep positions under direct royal control; nobles displeased
 	option = {
-		name = cc.enclave.1.b
-		add_estate_satisfaction = { type = estate_type:nobles_estate value = -0.05 }
+		name = cc.enclave.court.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
 	}
 }
 
@@ -2669,6 +3169,7 @@ cc.197 = {
 	option = {
 		name = cc.artists.1.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
+		cc_create_commune_artwork = { type = work_of_art_type:painting quality = 85 }
 		add_country_modifier = {
 			modifier = cc_artistic_patronage
 			years = 6
@@ -2731,6 +3232,7 @@ cc.198 = {
 		random_list = {
 			60 = {
 				# Competition produces a masterwork
+				cc_create_commune_artwork = { type = work_of_art_type:statue quality = 70 }
 				add_prestige = prestige_mild_bonus
 				add_country_modifier = {
 					modifier = cc_artistic_patronage
@@ -2739,8 +3241,13 @@ cc.198 = {
 				}
 			}
 			40 = {
-				# Rivalry sours into feud; commune loses productivity
+				# Rivalry sours into a destructive feud — a decaying curse on the realm
 				add_prestige = prestige_weak_penalty
+				add_country_modifier = {
+					modifier = cc_artistic_feud
+					years = 5
+					mode = add_and_extend
+				}
 				scope:ward = {
 					add_liberty_desire = liberty_desire_weak_plus
 				}
@@ -2803,15 +3310,305 @@ cc.199 = {
 }
 
 ###############################################################################
-# PALATINATE EVENTS (DIP Age 4)
-# cc.210 — The Palatinate Demands Recognition
-# cc.211 — The Palatinate Tournament
+# SCIENTIFIC COLLEGE EVENTS (Scholasticism & Theology)
+# cc.232 — The Great Disputation
+# cc.233 — A Doctrine in Question
+# cc.234 — The Scholarly Synthesis
+# cc.235 — The Reformed Academy (Protestant/Reformed only)
+###############################################################################
+
+cc.232 = {
+	type = country_event
+	title = cc.college.1.title
+	desc = cc.college.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = scientific_college
+			NOT = { has_variable = cc_scientific_college_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = scientific_college
+				NOT = { has_variable = cc_scientific_college_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_scientific_college_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Sponsor the disputation — fund the scholars, who produce a celebrated treatise
+	option = {
+		name = cc.college.1.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -750 }
+		cc_create_college_treatise = { type = work_of_art_type:treatise quality = 80 }
+		add_country_modifier = {
+			modifier = cc_scholastic_disputation
+			years = 6
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+		# Reformed realms led the scholastic revival — a deeper intellectual dividend
+		if = {
+			limit = { is_protestant = yes }
+			add_country_modifier = {
+				modifier = cc_scholastic_disputation
+				years = 4
+				mode = add_and_extend
+			}
+			add_prestige = prestige_weak_bonus
+		}
+	}
+
+	# Let the colleges debate privately — modest gains, the scholars feel trusted
+	option = {
+		name = cc.college.1.b
+		add_country_modifier = {
+			modifier = cc_internalized_scholarship
+			years = 4
+			mode = add_and_extend
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+}
+
+cc.233 = {
+	type = country_event
+	title = cc.college.2.title
+	desc = cc.college.2.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = scientific_college
+			NOT = { has_variable = cc_scientific_college_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = scientific_college
+				NOT = { has_variable = cc_scientific_college_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_scientific_college_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Champion the bold doctrine — vindication or condemnation
+	option = {
+		name = cc.college.2.a
+		if = {
+			limit = { is_protestant = yes }
+			random_list = {
+				70 = {
+					# Vindicated — the doctrine becomes a celebrated work of scripture
+					cc_create_college_treatise = { type = work_of_art_type:scripture quality = 85 }
+					add_country_modifier = {
+						modifier = cc_scholastic_disputation
+						years = 6
+						mode = add_and_extend
+					}
+					add_prestige = prestige_mild_bonus
+				}
+				30 = {
+					# Condemned — a decaying intellectual blight upon the realm
+					add_country_modifier = {
+						modifier = cc_theological_condemnation
+						years = 5
+						mode = add_and_extend
+					}
+					add_prestige = prestige_weak_penalty
+					scope:ward = {
+						add_liberty_desire = liberty_desire_weak_plus
+					}
+				}
+			}
+		}
+		else = {
+			random_list = {
+				60 = {
+					cc_create_college_treatise = { type = work_of_art_type:scripture quality = 85 }
+					add_country_modifier = {
+						modifier = cc_scholastic_disputation
+						years = 6
+						mode = add_and_extend
+					}
+					add_prestige = prestige_mild_bonus
+				}
+				40 = {
+					add_country_modifier = {
+						modifier = cc_theological_condemnation
+						years = 5
+						mode = add_and_extend
+					}
+					add_prestige = prestige_weak_penalty
+					scope:ward = {
+						add_liberty_desire = liberty_desire_weak_plus
+					}
+				}
+			}
+		}
+	}
+
+	# Suppress the doctrine — assert orthodoxy and religious authority
+	option = {
+		name = cc.college.2.b
+		add_country_modifier = {
+			modifier = cc_holy_league_modifier
+			years = 3
+			mode = add_and_extend
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_plus
+		}
+	}
+}
+
+cc.234 = {
+	type = country_event
+	title = cc.college.3.title
+	desc = cc.college.3.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = scientific_college
+			NOT = { has_variable = cc_scientific_college_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = scientific_college
+				NOT = { has_variable = cc_scientific_college_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_scientific_college_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Disseminate the synthesis widely — institutions and learning spread
+	option = {
+		name = cc.college.3.a
+		cc_create_college_treatise = { type = work_of_art_type:motet quality = 70 }
+		add_country_modifier = {
+			modifier = cc_scholarly_exchange_modifier
+			years = 8
+			mode = add_and_extend
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Keep the synthesis within the church — concentrated study at home
+	option = {
+		name = cc.college.3.b
+		add_country_modifier = {
+			modifier = cc_internalized_scholarship
+			years = 8
+			mode = add_and_extend
+		}
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# Protestant/Reformed only — self-gated, safe to sit in the shared college pool.
+cc.235 = {
+	type = country_event
+	title = cc.college.4.title
+	desc = cc.college.4.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		is_protestant = yes
+		any_subject = {
+			is_subject_type = scientific_college
+			NOT = { has_variable = cc_scientific_college_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = scientific_college
+				NOT = { has_variable = cc_scientific_college_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_scientific_college_cooldown value = yes years = 5 }
+		}
+	}
+
+	# Embrace the Reformed academy — the realm becomes a beacon of scholastic theology
+	option = {
+		name = cc.college.4.a
+		cc_create_college_treatise = { type = work_of_art_type:scripture quality = 90 }
+		add_country_modifier = {
+			modifier = cc_reformed_scholarship
+			years = 8
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+	}
+
+	# Endow it lavishly — pour treasury into the academy for an enduring legacy
+	option = {
+		name = cc.college.4.b
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.35 max = -75 min = -1000 }
+		cc_create_college_treatise = { type = work_of_art_type:treatise quality = 85 }
+		add_country_modifier = {
+			modifier = cc_reformed_scholarship
+			years = 12
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+###############################################################################
+# PALATINATE EVENTS (DIP Age 4) — fire from cc_noble_domain_pulse.
+# The palatinate is larger, more autonomous, more prestigious and more rambunctious than
+# the enclave, so it has a deeper event pool. All share cc_palatinate_event_cooldown (6y).
+# cc.210 — Dynastic Recognition          cc.213 — The Palatinate Answers the Call
+# cc.211 — The Palatinate Tournament     cc.214 — The Count Palatine Overreaches
+#                                        cc.215 — The Palatinate Provokes a Neighbor
 ###############################################################################
 
 cc.210 = {
 	type = country_event
-	title = cc.palatinate.1.title
-	desc = cc.palatinate.1.desc
+	title = cc.palatinate.dynastic.title
+	desc = cc.palatinate.dynastic.desc
 	outcome = neutral
 
 	illustration_tags = {
@@ -2834,17 +3631,17 @@ cc.210 = {
 			save_scope_as = ward
 		}
 		scope:ward = {
-			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 7 }
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
 		}
 	}
 
-	# Grant dynastic recognition — prestige and a claim
+	# Grant dynastic recognition — prestige, legitimacy and a lasting bond
 	option = {
-		name = cc.palatinate.1.a
+		name = cc.palatinate.dynastic.a
 		add_prestige = prestige_mild_bonus
 		add_country_modifier = {
-			modifier = cc_cultural_ally_modifier
-			years = 5
+			modifier = cc_palatinate_dynastic_prestige
+			years = 8
 			mode = add_and_extend
 		}
 		scope:ward = {
@@ -2852,9 +3649,10 @@ cc.210 = {
 		}
 	}
 
-	# Refuse — subject's pride is wounded
+	# Refuse — the count's pride is wounded and the dynasty sulks
 	option = {
-		name = cc.palatinate.1.b
+		name = cc.palatinate.dynastic.b
+		add_prestige = prestige_weak_penalty
 		scope:ward = {
 			add_liberty_desire = liberty_desire_mild_plus
 		}
@@ -2863,8 +3661,8 @@ cc.210 = {
 
 cc.211 = {
 	type = country_event
-	title = cc.palatinate.2.title
-	desc = cc.palatinate.2.desc
+	title = cc.palatinate.tournament.title
+	desc = cc.palatinate.tournament.desc
 	outcome = positive
 
 	illustration_tags = {
@@ -2887,14 +3685,15 @@ cc.211 = {
 			save_scope_as = ward
 		}
 		scope:ward = {
-			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 7 }
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
 		}
 	}
 
-	# Attend and sponsor the tournament
+	# Attend and sponsor the tournament — the count fields his own knights; a champion emerges
 	option = {
-		name = cc.palatinate.2.a
+		name = cc.palatinate.tournament.a
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
+		cc_spawn_noble_commander = yes
 		add_country_modifier = {
 			modifier = cc_palatinate_tournament
 			years = 4
@@ -2904,8 +3703,294 @@ cc.211 = {
 
 	# Send a delegation — modest benefit at no cost
 	option = {
-		name = cc.palatinate.2.b
+		name = cc.palatinate.tournament.b
 		add_prestige = prestige_weak_bonus
+	}
+}
+
+# "The Palatinate Answers the Call" — muster the count's cavalry levy.
+cc.213 = {
+	type = country_event
+	title = cc.palatinate.levy.title
+	desc = cc.palatinate.levy.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = army
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Call up the noble cavalry — the realm's horse takes the field in force
+	option = {
+		name = cc.palatinate.levy.a
+		add_country_modifier = {
+			modifier = cc_noble_levy_call
+			years = 6
+			mode = add_and_extend
+		}
+		scope:ward = { add_liberty_desire = liberty_desire_weak_plus }
+	}
+
+	# Spare the count's retainers — respect his autonomy, earn his goodwill
+	option = {
+		name = cc.palatinate.levy.b
+		add_prestige = prestige_weak_bonus
+		scope:ward = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+}
+
+# "The Count Palatine Overreaches" — the over-mighty vassal asserts near-sovereign airs.
+cc.214 = {
+	type = country_event
+	title = cc.palatinate.overreach.title
+	desc = cc.palatinate.overreach.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_event_cooldown }
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_event_cooldown }
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
+		}
+	}
+
+	# Indulge his pretensions — prestige flows, but the count grows ever bolder
+	option = {
+		name = cc.palatinate.overreach.a
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_palatinate_dynastic_prestige
+			years = 6
+			mode = add_and_extend
+		}
+		scope:ward = { add_liberty_desire = liberty_desire_mild_plus }
+	}
+
+	# Rein him in — assert your authority; the nobles bristle but the count is checked
+	option = {
+		name = cc.palatinate.overreach.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
+		scope:ward = { add_liberty_desire = liberty_desire_mild_minus }
+	}
+
+	# Look the other way — let it ride; unchecked ambition may curdle into open feud
+	option = {
+		name = cc.palatinate.overreach.c
+		random_list = {
+			55 = {
+				# The count's airs come to nothing of consequence
+				add_prestige = prestige_weak_bonus
+			}
+			45 = {
+				# His overreach sparks a destructive feud among the high nobility
+				add_country_modifier = {
+					modifier = cc_noble_feud
+					years = 5
+					mode = add_and_extend
+				}
+				scope:ward = { add_liberty_desire = liberty_desire_mild_plus }
+			}
+		}
+	}
+}
+
+# "The Palatinate Provokes a Neighbor" — the rambunctious count picks a fight on the border.
+# Gated on the palatinate bordering a non-overlord, non-subject country (cc.126 pattern).
+cc.215 = {
+	type = country_event
+	title = cc.palatinate.neighbor.title
+	desc = cc.palatinate.neighbor.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = exterior
+	}
+
+	trigger = {
+		any_subject = {
+			is_subject_type = palatinate
+			NOT = { has_variable = cc_palatinate_event_cooldown }
+			any_neighbor_country = {
+				NOT = { is_subject_of = root }
+				NOT = { is_at_war_with = root }
+			}
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				is_subject_type = palatinate
+				NOT = { has_variable = cc_palatinate_event_cooldown }
+				any_neighbor_country = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+			}
+			save_scope_as = ward
+		}
+		scope:ward = {
+			set_variable = { name = cc_palatinate_event_cooldown value = yes years = 6 }
+			random_neighbor_country = {
+				limit = {
+					NOT = { is_subject_of = root }
+					NOT = { is_at_war_with = root }
+				}
+				save_scope_as = provoked_neighbor
+			}
+		}
+	}
+
+	# Back the count — prestige, but his quarrel becomes our war
+	option = {
+		name = cc.palatinate.neighbor.a
+		add_prestige = prestige_mild_bonus
+		scope:provoked_neighbor = {
+			add_opinion = { modifier = opinion_backed_aggressor target = root }
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_minus
+			declare_war_with_cb = {
+				target = scope:provoked_neighbor
+				type = casus_belli:cb_humiliate_rival
+			}
+		}
+	}
+
+	# Restrain him — the neighbor is mollified, but the count chafes at the leash
+	option = {
+		name = cc.palatinate.neighbor.b
+		scope:provoked_neighbor = {
+			add_opinion = { modifier = opinion_mediated target = root }
+		}
+		scope:ward = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+	}
+
+	# Buy him off — spend gold to redirect his energies; a costly middle path
+	option = {
+		name = cc.palatinate.neighbor.c
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
+		scope:ward = {
+			add_liberty_desire = liberty_desire_weak_minus
+		}
+	}
+}
+
+###############################################################################
+# CREATION / ELEVATION CONFIRMATION EVENTS (one-shot)
+# cc.164 — The Enclave Established (first elite_enclave)
+# cc.165 — The Palatinate Elevated (first palatinate)
+# Mirror the artists' commune (cc.107) / scientific college (cc.105) confirmation step.
+###############################################################################
+
+cc.164 = {
+	type = country_event
+	title = cc.enclave.established.title
+	desc = cc.enclave.established.desc
+	outcome = positive
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = { is_subject_type = elite_enclave }
+	}
+
+	# A grand investiture — honor the new enclave at great expense
+	option = {
+		name = cc.enclave.established.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_enclave_court_favour
+			years = 6
+			mode = add_and_extend
+		}
+	}
+
+	# A quiet recognition — dignified and inexpensive
+	option = {
+		name = cc.enclave.established.b
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+cc.165 = {
+	type = country_event
+	title = cc.palatinate.elevated.title
+	desc = cc.palatinate.elevated.desc
+	outcome = positive
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = happy
+	}
+
+	trigger = {
+		any_subject = { is_subject_type = palatinate }
+	}
+
+	# A magnificent elevation ceremony — the count fields his finest knights
+	option = {
+		name = cc.palatinate.elevated.a
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -600 }
+		cc_spawn_noble_commander = yes
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_palatinate_dynastic_prestige
+			years = 10
+			mode = add_and_extend
+		}
+	}
+
+	# A dignified, modest ceremony — recognition without extravagance
+	option = {
+		name = cc.palatinate.elevated.b
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_palatinate_dynastic_prestige
+			years = 5
+			mode = add_and_extend
+		}
 	}
 }
 

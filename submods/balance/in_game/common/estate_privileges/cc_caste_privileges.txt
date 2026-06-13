@@ -1,0 +1,64 @@
+﻿############################################
+# Flavorium Universalis (Balance) — Indian Caste Privileges
+#
+# The hereditary varna/jati order, expressed as three estate privileges.
+# Each is a kiss-curse: estate power + a flavour bonus, paid for with a
+# pop-promotion-speed malus (rigid castes => little social mobility).
+#
+# Seeded onto Indian-region AI at game start (and onto break-away /
+# released Indian states mid-game) by cc_caste_exam_seed.txt.
+# The player dismantles them via the cc_caste.* reform chain, which sets
+# cc_caste_dismantled and revokes them; the guard in potential keeps them
+# from being re-granted afterwards.
+############################################
+
+cc_brahmin_ritual_primacy = {
+	estate = clergy_estate
+
+	potential = {
+		NOT = { has_variable = cc_caste_dismantled }
+		cc_is_indian_realm_trigger = yes
+	}
+
+	country_modifier = {
+		global_clergy_estate_power = 0.33
+		clergy_estate_target_satisfaction = medium_privilege_target_satisfaction
+		monthly_religious_influence = 0.05
+		global_pop_promotion_speed_modifier = -0.15
+		monthly_towards_traditionalist = societal_value_monthly_move
+	}
+}
+
+cc_kshatriya_warrior_caste = {
+	estate = nobles_estate
+
+	potential = {
+		NOT = { has_variable = cc_caste_dismantled }
+		cc_is_indian_realm_trigger = yes
+	}
+
+	country_modifier = {
+		global_nobles_estate_power = 0.33
+		nobles_estate_target_satisfaction = medium_privilege_target_satisfaction
+		land_morale_modifier = 0.05
+		discipline = 0.01
+		global_pop_promotion_speed_modifier = -0.10
+		monthly_towards_serfdom = societal_value_monthly_move
+	}
+}
+
+cc_jati_occupational_order = {
+	estate = peasants_estate
+
+	potential = {
+		NOT = { has_variable = cc_caste_dismantled }
+		cc_is_indian_realm_trigger = yes
+	}
+
+	country_modifier = {
+		global_peasants_estate_power = 0.25
+		peasants_estate_target_satisfaction = medium_privilege_target_satisfaction
+		peasants_estate_max_tax = 0.05
+		global_pop_promotion_speed_modifier = -0.10
+	}
+}

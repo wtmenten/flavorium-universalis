@@ -259,7 +259,7 @@ cc_balance_of_power.20 = {
 	option = {
 		name = cc_balance_of_power.20.b
 		ai_chance = { factor = 1 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.50  min = -150 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.50  min = -150  max = -10 }
 		scope:bop_target = {
 			add_country_modifier = {
 				modifier = cc_bop_bought_ally
@@ -338,7 +338,7 @@ cc_balance_of_power.40 = {
 	option = {
 		name = cc_balance_of_power.40.a
 		ai_chance = { factor = 1 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -120 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -120  max = -10 }
 		random_country = {
 			limit = {
 				is_member_of_international_organization = international_organization:cc_bop_coalition
@@ -414,7 +414,7 @@ cc_balance_of_power.50 = {
 	option = {
 		name = cc_balance_of_power.50.a
 		ai_chance = { factor = 1 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.60  min = -200 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.60  min = -200  max = -15 }
 		international_organization:cc_bop_coalition = {
 			every_international_organization_member = {
 				add_country_modifier = {
@@ -518,7 +518,7 @@ cc_balance_of_power.41 = {
 	option = {
 		name = cc_balance_of_power.41.a
 		ai_chance = { factor = 1 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -150 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.40  min = -150  max = -10 }
 		situation:cc_balance_of_power = {
 			change_variable = { name = cc_bop_share_offset add = -6 }
 		}
@@ -642,7 +642,7 @@ cc_balance_of_power.43 = {
 	option = {
 		name = cc_balance_of_power.43.a
 		ai_chance = { factor = 1 }
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.35  min = -120 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2.5  min = -400  max = -120 }
 		add_country_modifier = {
 			modifier = cc_bop_hegemonic_overstretch
 			months = 12
@@ -1240,7 +1240,53 @@ cc_balance_of_power.83 = {
 	illustration_tags = { 10 = interior  10 = trading }
 	option = {
 		name = cc_balance_of_power.83.a
-		add_gold = 25
+		# Shake down BOTH bloc leaders: each pays 20% of its treasury, floored at 2.5x our
+		# own monthly income; we pocket the combined sum.
+		set_variable = { name = cc_bop_extort_total value = 0 }
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				save_scope_as = bop_payer
+				root = {
+					set_variable = {
+						name = cc_bop_extort_side
+						value = {
+							value = scope:bop_payer.gold
+							multiply = 0.2
+							min = { value = monthly_income_trade_and_tax  multiply = 2.5 }
+						}
+					}
+					change_variable = { name = cc_bop_extort_total add = var:cc_bop_extort_side }
+				}
+				add_gold = { value = root.var:cc_bop_extort_side  multiply = -1 }
+			}
+		}
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition.leader_country ?= {
+				save_scope_as = bop_payer
+				root = {
+					set_variable = {
+						name = cc_bop_extort_side
+						value = {
+							value = scope:bop_payer.gold
+							multiply = 0.2
+							min = { value = monthly_income_trade_and_tax  multiply = 2.5 }
+						}
+					}
+					change_variable = { name = cc_bop_extort_total add = var:cc_bop_extort_side }
+				}
+				add_gold = { value = root.var:cc_bop_extort_side  multiply = -1 }
+			}
+		}
+		# Fallback if somehow neither bloc has a leader.
+		if = {
+			limit = { var:cc_bop_extort_total = 0 }
+			change_variable = { name = cc_bop_extort_total add = 25 }
+		}
+		add_gold = { value = var:cc_bop_extort_total }
+		remove_variable = cc_bop_extort_total
+		remove_variable = cc_bop_extort_side
 		if = {
 			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 50 } }
 			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 3 } }
@@ -1320,6 +1366,25 @@ cc_balance_of_power.87 = {
 	illustration_tags = { 10 = interior  10 = economy }
 	option = {
 		name = cc_balance_of_power.87.a
+		# Bankrolling the allies costs ~6 months of their combined income — the wealthier and
+		# more numerous the coalition, the heavier the bill on the leader's treasury.
+		set_variable = { name = cc_bop_subsidy_cost value = 0 }
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					limit = { NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition } }
+					save_scope_as = sub_mem
+					root = { change_variable = { name = cc_bop_subsidy_cost add = scope:sub_mem.monthly_income_trade_and_tax } }
+				}
+			}
+		}
+		change_variable = { name = cc_bop_subsidy_cost multiply = 6 }
+		clamp_variable = { name = cc_bop_subsidy_cost min = 50 max = 1500 }
+		add_gold = { value = var:cc_bop_subsidy_cost  multiply = -1 }
+		remove_variable = cc_bop_subsidy_cost
+		# The drain of the war-chest tells on the leader's own finances.
+		add_country_modifier = { modifier = cc_bop_subsidy_strain  years = 4  mode = add_and_extend }
 		if = {
 			limit = { exists = international_organization:cc_bop_coalition }
 			international_organization:cc_bop_coalition = {
@@ -1453,7 +1518,17 @@ cc_balance_of_power.100 = {
 				}
 			}
 			modifier = { factor = 0.2  any_cabinet_character = { has_trait = cc_master_balancer } }
-			modifier = { factor = 1.5  is_at_war = yes }
+			modifier = { factor = 1.5  at_war = yes }
+		}
+		# A wartime defection: if we are still under arms against our new patron, make peace
+		# FIRST so we may cross the lines without being expelled from the bloc we are joining.
+		if = {
+			limit = { exists = scope:bop_new_leader  is_at_war_with = scope:bop_new_leader }
+			"war_with_country(scope:bop_new_leader)" ?= { save_scope_as = bop_switch_war }
+			if = {
+				limit = { exists = scope:bop_switch_war }
+				white_peace = scope:bop_switch_war
+			}
 		}
 		# Leave our bloc (on_left brands us a defector) and cross to the other.
 		if = {
@@ -1473,8 +1548,10 @@ cc_balance_of_power.100 = {
 			}
 			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 8 } }
 		}
-		# Our new patron pays handsomely; our betrayed former allies seethe.
-		add_gold = 100
+		# Complete the betrayal a month later (giving our armies time to disengage and re-form).
+		trigger_event_silently = { id = cc_balance_of_power.103 days = 30 }
+		# Our new patron pays handsomely (scaled to our economy); our betrayed former allies seethe.
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 8  min = 50  max = 400 }
 		scope:bop_old_leader ?= {
 			add_opinion = { target = root  modifier = cc_bop_concert_betrayal }
 			trigger_event_non_silently = { id = cc_balance_of_power.101 days = 3 }
@@ -1529,6 +1606,100 @@ cc_balance_of_power.101 = {
 				}
 			}
 		}
+	}
+}
+
+# EVENT 103 — Complete the Betrayal (the defector, a month after crossing over)
+# Fired 30 days after .100.a so the defector's armies have disengaged and re-formed. The
+# scopes from .100 may have lapsed, so the old enemy is re-derived from current membership:
+# the defector now sits in its new bloc, and the opposite bloc is its former camp.
+cc_balance_of_power.103 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.103.title
+	desc = cc_balance_of_power.103.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = military }
+
+	trigger = {
+		OR = {
+			is_member_of_international_organization = international_organization:cc_bop_preponderance
+			is_member_of_international_organization = international_organization:cc_bop_coalition
+		}
+	}
+
+	immediate = {
+		# Identify our former camp's leader (the opposite bloc) as the target.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_coalition.leader_country ?= { save_scope_as = bop_old_target }
+		}
+		else = {
+			international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_old_target }
+		}
+		# Find our new bloc's existing war against that leader, if any.
+		if = {
+			limit = { exists = scope:bop_old_target  is_at_war_with = scope:bop_old_target }
+			"war_with_country(scope:bop_old_target)" ?= { save_scope_as = bop_betrayal_war }
+		}
+	}
+
+	# "Take up arms against our former allies." — complete the wartime betrayal.
+	option = {
+		name = cc_balance_of_power.103.a
+		trigger = { exists = scope:bop_old_target }
+		ai_chance = {
+			# Having taken the new patron's gold, the court is strongly inclined to earn it.
+			base = 80
+			modifier = {
+				add = 15
+				any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } }
+			}
+		}
+		if = {
+			limit = { exists = scope:bop_betrayal_war }
+			join_war_against = {
+				war = scope:bop_betrayal_war
+				target = scope:bop_old_target
+				call_in_subjects = yes
+			}
+		}
+		else = {
+			declare_war_with_cb = {
+				target = scope:bop_old_target
+				type = casus_belli:cb_coalition
+			}
+		}
+		# The turncoat's weight tips the scale toward its new bloc.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 4 } }
+		}
+		else = {
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
+		}
+	}
+
+	# "A double game — keep our own counsel." — betray the new patron too and go it alone.
+	option = {
+		name = cc_balance_of_power.103.b
+		ai_chance = {
+			base = 20
+			modifier = {
+				add = 25
+				any_cabinet_character = { OR = { has_trait = court_schemer  has_trait = cynical_courtier } }
+			}
+		}
+		# Slip out of the bloc we only just joined — distrusted by all, beholden to none.
+		if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance = { remove_country_from_international_organization = root }
+		}
+		else_if = {
+			limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition = { remove_country_from_international_organization = root }
+		}
+		add_prestige = prestige_weak_bonus
 	}
 }
 
@@ -1590,18 +1761,32 @@ cc_balance_of_power.102 = {
 				any_cabinet_character = { OR = { has_trait = court_schemer  has_trait = cynical_courtier } }
 			}
 		}
-		add_gold = -150
+		# The bribe scales with the buyer's economy — a great power's purse, a great power's price.
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -6  min = -500  max = -40 }
 		if = {
 			limit = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
 			international_organization:cc_bop_preponderance = { change_variable = { name = cc_bop_ambition add = -40 } }
 			scope:bop_treason_target = {
 				if = {
-					limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
-					international_organization:cc_bop_coalition = { remove_country_from_international_organization = scope:bop_treason_target }
+					# Under arms: gold buys them out of the war and out of their bloc, but a court
+					# cannot cross the lines mid-conflict — it falls to non-alignment instead.
+					limit = { at_war = yes }
+					if = { limit = { is_at_war_with = root }  "war_with_country(root)" ?= { save_scope_as = bop_treason_war } }
+					if = { limit = { exists = scope:bop_treason_war }  white_peace = scope:bop_treason_war }
+					if = {
+						limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+						international_organization:cc_bop_coalition = { remove_country_from_international_organization = scope:bop_treason_target }
+					}
 				}
-				if = {
-					limit = { can_join_international_organization = international_organization:cc_bop_preponderance }
-					international_organization:cc_bop_preponderance = { add_country_to_international_organization = scope:bop_treason_target }
+				else = {
+					if = {
+						limit = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+						international_organization:cc_bop_coalition = { remove_country_from_international_organization = scope:bop_treason_target }
+					}
+					if = {
+						limit = { can_join_international_organization = international_organization:cc_bop_preponderance }
+						international_organization:cc_bop_preponderance = { add_country_to_international_organization = scope:bop_treason_target }
+					}
 				}
 			}
 			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset add = 8 } }
@@ -1610,12 +1795,23 @@ cc_balance_of_power.102 = {
 			international_organization:cc_bop_coalition = { change_variable = { name = cc_bop_resolve add = -40 } }
 			scope:bop_treason_target = {
 				if = {
-					limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
-					international_organization:cc_bop_preponderance = { remove_country_from_international_organization = scope:bop_treason_target }
+					limit = { at_war = yes }
+					if = { limit = { is_at_war_with = root }  "war_with_country(root)" ?= { save_scope_as = bop_treason_war } }
+					if = { limit = { exists = scope:bop_treason_war }  white_peace = scope:bop_treason_war }
+					if = {
+						limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+						international_organization:cc_bop_preponderance = { remove_country_from_international_organization = scope:bop_treason_target }
+					}
 				}
-				if = {
-					limit = { can_join_international_organization = international_organization:cc_bop_coalition }
-					international_organization:cc_bop_coalition = { add_country_to_international_organization = scope:bop_treason_target }
+				else = {
+					if = {
+						limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+						international_organization:cc_bop_preponderance = { remove_country_from_international_organization = scope:bop_treason_target }
+					}
+					if = {
+						limit = { can_join_international_organization = international_organization:cc_bop_coalition }
+						international_organization:cc_bop_coalition = { add_country_to_international_organization = scope:bop_treason_target }
+					}
 				}
 			}
 			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 8 } }
@@ -1793,7 +1989,7 @@ cc_balance_of_power.110 = {
 		ai_chance = { factor = 1 }
 		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 1 }
 		international_organization:cc_bop_coalition = {
-			change_variable = { name = cc_bop_resolve add = -6 }
+			change_variable = { name = cc_bop_resolve add = -12 }
 		}
 	}
 }
@@ -1880,6 +2076,8 @@ cc_balance_of_power.111 = {
 		international_organization:cc_bop_coalition = {
 			change_variable = { name = cc_bop_resolve add = -10 }
 		}
+		add_prestige = prestige_severe_penalty
+		add_legitimacy = legitimacy_severe_penalty
 		scope:bop_victim ?= {
 			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
 		}

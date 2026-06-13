@@ -18,10 +18,16 @@ cc_bop_coalition = {
 	leader_type = country
 	disband_if_no_leader = yes
 
-	# Bloc members march where they please — through friend, foe, or neutral alike.
-	# In the great game of the balance, the rights of lesser states are not consulted.
+	# Every participant in the great game marches freely across the theatre — through this
+	# bloc's lands whether friend, rival, or unaligned. The rights of lesser states are not consulted.
 	has_military_access = {
-		scope:actor ?= { is_member_of_international_organization = root }
+		scope:actor ?= {
+			OR = {
+				is_member_of_international_organization = international_organization:cc_bop_preponderance
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				has_variable = cc_bop_engaged
+			}
+		}
 	}
 
 	can_declare_war = {
