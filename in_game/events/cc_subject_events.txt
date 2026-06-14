@@ -5640,3 +5640,57 @@ cc.240 = {
 		name = cc.commune.exchange.c
 	}
 }
+
+###############################################################################
+# SPECIAL ONE-LOCATION SUBJECT — ANNEXATION STALL (cc.249 hidden handler + cc.250 popup)
+# cc.249 is fired every month from on_annexing_subject_monthly_pulse (cc_subject_pulse.txt)
+# while an annexation is in progress. root = overlord, scope:target = subject.
+# It continuously suppresses the subject's opinion of the overlord below the subject type's
+# annexation_stall_opinion so AI annexation never completes, and — for a human overlord —
+# periodically surfaces the buy-out choice (cc.250). The AI never sees cc.250, so AI
+# annexation of these subjects stays stalled indefinitely.
+###############################################################################
+
+cc.250 = {
+	type = country_event
+	title = cc.annex.resist.title
+	desc = cc.annex.resist.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	# Respect their autonomy — the annexation stays stalled (the pulse keeps
+	# suppressing opinion). The AI weight makes this the default if it ever fired.
+	option = {
+		name = cc.annex.resist.a
+		ai_chance = { factor = 100 }
+	}
+
+	# Pay to force the integration through — gold scaled to the subject's tax base.
+	option = {
+		name = cc.annex.resist.b
+		ai_chance = { factor = 0 }
+		add_gold = {
+			value = country_tax_base
+			min = scope:target.country_tax_base
+			multiply = -10
+		}
+		scope:target = {
+			set_variable = { name = cc_annex_pushing value = yes years = 5 }
+			add_opinion = { target = root modifier = cc_annex_pressure }
+		}
+	}
+
+	# Spend prestige instead — lean on dynastic and diplomatic weight.
+	option = {
+		name = cc.annex.resist.c
+		ai_chance = { factor = 0 }
+		add_prestige = prestige_severe_penalty
+		scope:target = {
+			set_variable = { name = cc_annex_pushing value = yes years = 5 }
+			add_opinion = { target = root modifier = cc_annex_pressure }
+		}
+	}
+}

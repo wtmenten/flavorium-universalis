@@ -5,8 +5,10 @@
 # into class-stratified versions: upper classes keep (most of) the
 # value, lower classes get less.
 #
-#   orthodox  5  -> upper 5 / lower 2
-#   sanjiao   10 -> upper 8 / lower 3
+#   orthodox          5  -> upper 5 / lower 2
+#   sanjiao           10 -> upper 8 / lower 3
+#   shinto            10 -> upper 8 / lower 3
+#   tibetan_buddhism  5  -> upper 5 / lower 2
 #
 # Full religion definitions reproduced; only the literacy line in
 # definition_modifier changes.
@@ -76,6 +78,71 @@ REPLACE_OR_CREATE:sanjiao = {
 
 	opinions = {
 		mahayana = kindred
+	}
+
+	tags = { buddhist_gfx }
+}
+
+REPLACE_OR_CREATE:shinto = {
+	color = color_shinto
+	group = buddhist
+
+	language = japanese_language
+
+	has_purity = yes
+	has_honor = yes
+	max_sects = 1
+
+	clergy_goods_demand_modifier = {
+		wine = 10
+	}
+
+	definition_modifier = {
+		global_nobles_max_literacy = 8
+		global_clergy_max_literacy = 8
+		global_burghers_max_literacy = 8
+		global_laborers_max_literacy = 3
+		global_soldiers_max_literacy = 3
+		global_peasants_max_literacy = 3
+		tolerance_heretic = 1
+		tolerance_heathen = 1
+		can_have_monasteries = yes
+	}
+
+	factions = {
+		imperial_court
+		shogunate_court
+		ikko_ikki
+		religious_sects
+		kirishitan_monks
+	}
+
+	tags = { shinto_gfx buddhist_gfx }
+}
+
+REPLACE_OR_CREATE:tibetan_buddhism = {
+	color = map_TIB
+	group = buddhist
+
+	has_karma = yes
+	max_sects = 1
+
+	language = tibetan_language
+
+	definition_modifier = {
+		monthly_war_exhaustion = -0.05
+		monthly_karma = 0.1
+		global_nobles_max_literacy = 5
+		global_clergy_max_literacy = 5
+		global_burghers_max_literacy = 5
+		global_laborers_max_literacy = 2
+		global_soldiers_max_literacy = 2
+		global_peasants_max_literacy = 2
+		can_have_monasteries = yes
+	}
+
+	opinions = {
+		bon = positive
 	}
 
 	tags = { buddhist_gfx }

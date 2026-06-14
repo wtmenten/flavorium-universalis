@@ -1,0 +1,67 @@
+﻿# Subject Relations Ledger — engage-action modifiers
+# Named country modifiers granted by the carrot actions in
+# in_game/events/cc_bond_engage.txt (cc_bonds.300-304). Applied via
+#   add_country_modifier = { modifier = X  months = 120  mode = add_and_extend }
+# so re-engaging refreshes the duration rather than stacking the magnitude.
+# All reuse vanilla modifier keys, so no modifier_type_definitions are required.
+
+# Economic — Underwrite the Local Treasury (granted to the SUBJECT).
+# The crown backs the subject's finances: cheaper credit and a richer mint.
+cc_bond_underwritten = {
+	game_data = {
+		category = country
+	}
+	bank_interest = -0.01
+	minting_income_factor = 0.10
+}
+
+# Military — Joint Military Review (granted to BOTH overlord and subject).
+# Shared drill and logistics trim the upkeep of both armies and fleets.
+cc_bond_drilled = {
+	game_data = {
+		category = country
+	}
+	army_maintenance_efficiency = 0.10
+	navy_maintenance_efficiency = 0.10
+}
+
+# Political — Charter of Privileges (granted to the SUBJECT).
+# Trade freedoms and a guaranteed standing buy loyalty.
+cc_bond_chartered = {
+	game_data = {
+		category = country
+	}
+	export_efficiency = 0.10
+	import_efficiency = 0.10
+	loyalty_to_overlord = 10
+}
+
+# Political — Charter of Privileges (overlord tradeoff).
+# The autonomy conceded by the charter costs the crown some subject revenue.
+cc_bond_charter_granted = {
+	game_data = {
+		category = country
+	}
+	subject_income_modifier = -0.05
+}
+
+# Cultural — Cultural Festival (granted to the OVERLORD, as host).
+# The crown's prestige and cultural pull grow from a celebrated festival.
+cc_bond_festival_host = {
+	game_data = {
+		category = country
+	}
+	cultural_influence = 2
+	diplomatic_reputation = 1
+	monthly_prestige = 0.05
+}
+
+# Personal — Personal Envoy (granted to the SUBJECT).
+# A resident envoy keeps the subject in the crown's orbit (loyalty stands in for
+# the missing direct liberty-desire modifier).
+cc_bond_envoy_received = {
+	game_data = {
+		category = country
+	}
+	loyalty_to_overlord = 15
+}

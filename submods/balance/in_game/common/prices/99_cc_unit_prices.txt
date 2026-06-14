@@ -1,0 +1,36 @@
+﻿# Flavorium Universalis - Naval Build Price Rebalance (balance submod)
+# Overrides vanilla game/in_game/common/prices/02_units.txt naval *_build gold cost.
+#
+# NOTE: the gold build price is keyed PER CATEGORY, not per tier. The engine has
+# no per-tier gold key, so incremental tier-to-tier scaling is handled entirely by
+# the lumber/goods values in 99_cc_navy_demands.txt (construction_demand). This file
+# only sets the flat per-category BASE gold cost, ordered to match the tier-1 lumber
+# bases: light cheapest, transport a bit more, galley more, heavy most expensive.
+#
+# Ordering (base gold):  light 60  <  transport 80  <  galley 110  <  heavy 180
+# Vanilla was:           light 100 =  transport 100 =  galley 100  <  heavy 200
+# reinforce/maintenance gold left at vanilla.
+
+# Light Ship - cheapest base
+REPLACE_OR_CREATE:navy_light_ship_build = {
+	gold = 30
+	sailors = 1
+}
+
+# Transport - a bit more than light (down from vanilla 100)
+REPLACE_OR_CREATE:navy_transport_build = {
+	gold = 30
+	sailors = 1
+}
+
+# Galley - more expensive than transport
+REPLACE_OR_CREATE:navy_galley_build = {
+	gold = 70
+	sailors = 1
+}
+
+# Heavy Ship - highest base
+REPLACE_OR_CREATE:navy_heavy_ship_build = {
+	gold = 120
+	sailors = 1
+}

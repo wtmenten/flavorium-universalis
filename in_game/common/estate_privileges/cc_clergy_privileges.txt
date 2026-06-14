@@ -29,4 +29,17 @@ ep_clergy_scholarly_college = {
 	on_activate = {
 		trigger_event_non_silently = { id = cc.104 }
 	}
+
+	# Bias adoption toward large realms so scientific colleges stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 25
+		}
+	}
 }

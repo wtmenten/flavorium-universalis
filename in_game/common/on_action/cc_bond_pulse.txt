@@ -408,7 +408,7 @@ cc_bonds_on_accepted_call_to_arms = {
 				}
 				else = {
 					scope:recipient = {
-						change_variable = { name = cc_bond_mil  add = -2 }
+						change_variable = { name = cc_bond_mil  add = -1 }
 						clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
 					}
 					if = {
@@ -429,9 +429,9 @@ cc_bonds_on_accepted_call_to_arms = {
 					}
 				}
 				scope:actor = {
-					change_variable = { name = cc_bond_mil  add = 2 }
+					change_variable = { name = cc_bond_mil  add = 1 }
 					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
-					change_variable = { name = cc_bond_per  add = 2 }
+					change_variable = { name = cc_bond_per  add = 1 }
 					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 			}
@@ -460,13 +460,13 @@ cc_bonds_on_rejected_call_to_arms = {
 				scope:recipient = {
 					change_variable = { name = cc_bond_pol  add = 1 }
 					clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
-					change_variable = { name = cc_bond_per  add = -2 }
+					change_variable = { name = cc_bond_per  add = -1 }
 					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 				if = {
 					limit = { scope:war = { is_civil_war_for = scope:actor } }
 					scope:recipient = {
-						change_variable = { name = cc_bond_per  add = -2 }
+						change_variable = { name = cc_bond_per  add = -1 }
 						clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 					}
 				}
@@ -481,17 +481,69 @@ cc_bonds_on_rejected_call_to_arms = {
 					}
 				}
 				scope:actor = {
-					change_variable = { name = cc_bond_mil  add = -2 }
+					change_variable = { name = cc_bond_mil  add = -1 }
 					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
-					change_variable = { name = cc_bond_per  add = -3 }
+					change_variable = { name = cc_bond_per  add = -2 }
 					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 				if = {
 					limit = { scope:war = { is_a_defender = scope:actor } }
 					scope:actor = {
-						change_variable = { name = cc_bond_per  add = -2 }
+						change_variable = { name = cc_bond_per  add = -1 }
 						clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 					}
+				}
+			}
+		}
+	}
+}
+
+###############################################################################
+# GIFT SENT — Economic / personal dimension signal
+# scope:actor = sender, scope:recipient = receiver, scope:target = gold amount
+# A 4-year per-subject cooldown (cc_bond_gift_cd) stops gift-spam from pinning the
+# score; the monitor's per-cycle decay caps the long-run resting value.
+###############################################################################
+
+on_gift_sent = {
+	on_actions = {
+		cc_bonds_on_gift_sent
+	}
+}
+cc_bonds_on_gift_sent = {
+	effect = {
+		if = {
+			limit = { has_game_rule = cc_subject_bonds_on }
+
+			# Overlord gifts its subject → economic goodwill
+			if = {
+				limit = {
+					scope:recipient = {
+						is_subject_of = scope:actor
+						has_variable = cc_bond_initialized
+						NOT = { has_variable = cc_bond_gift_cd }
+					}
+				}
+				scope:recipient = {
+					set_variable = { name = cc_bond_gift_cd  value = yes  years = 4 }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+			}
+
+			# Subject gifts its overlord → personal goodwill
+			if = {
+				limit = {
+					scope:actor = {
+						is_subject_of = scope:recipient
+						has_variable = cc_bond_initialized
+						NOT = { has_variable = cc_bond_gift_cd }
+					}
+				}
+				scope:actor = {
+					set_variable = { name = cc_bond_gift_cd  value = yes  years = 4 }
+					change_variable = { name = cc_bond_per  add = 1 }
+					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 			}
 		}
@@ -522,9 +574,9 @@ cc_bonds_on_join_war = {
 					}
 				}
 			}
-			change_variable = { name = cc_bond_mil  add = -2 }
+			change_variable = { name = cc_bond_mil  add = -1 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
-			change_variable = { name = cc_bond_pol  add = -2 }
+			change_variable = { name = cc_bond_pol  add = -1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 			change_variable = { name = cc_bond_betrayal_count  add = 1 }
 		}
@@ -555,7 +607,7 @@ cc_bonds_on_religion_changed = {
 				}
 				if = {
 					limit = { var:cc_bond_cul <= -2 }
-					change_variable = { name = cc_bond_cul  add = -2 }
+					change_variable = { name = cc_bond_cul  add = -1 }
 					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 					set_variable = { name = cc_bond_mem_religion_forced  value = yes }
 				}
@@ -614,7 +666,7 @@ cc_bonds_on_royal_marriage = {
 					}
 				}
 				scope:actor = {
-					change_variable = { name = cc_bond_per  add = 2 }
+					change_variable = { name = cc_bond_per  add = 1 }
 					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 			}
@@ -627,7 +679,7 @@ cc_bonds_on_royal_marriage = {
 					}
 				}
 				scope:recipient = {
-					change_variable = { name = cc_bond_per  add = 2 }
+					change_variable = { name = cc_bond_per  add = 1 }
 					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 				}
 			}

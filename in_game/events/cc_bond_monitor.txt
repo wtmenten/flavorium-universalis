@@ -35,6 +35,24 @@ cc_bonds.1 = {
 						cc_bonds_ensure_ltm_stores = yes
 					}
 
+				# --- 0b. Per-cycle regression toward zero (BEFORE this cycle's drivers) ---
+				# Decay first, then apply drivers: a quiet subject rests at 0, a single
+				# sustained +1 driver rests at ~+1, and event spikes bleed off over time.
+				cc_bonds_decay_dimension = { DIM = eco }
+				cc_bonds_decay_dimension = { DIM = mil }
+				cc_bonds_decay_dimension = { DIM = pol }
+				cc_bonds_decay_dimension = { DIM = cul }
+				cc_bonds_decay_dimension = { DIM = per }
+
+				# --- 0c. Subsidies → eco (sustained while the overlord subsidizes the subject) ---
+				# opinion_subsidies is held by the recipient toward the subsidizer, so the
+				# subject holds it toward root (the overlord) while subsidies are active.
+				if = {
+					limit = { has_opinion = { target = root  modifier = opinion_subsidies } }
+					change_variable = { name = cc_bond_eco  add = 1 }
+					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
+				}
+
 				# --- 1. Foreign buildings → eco ±1 ---
 				set_local_variable = { name = lv_invest  value = 0 }
 				prev = {
@@ -61,7 +79,7 @@ cc_bonds.1 = {
 						culture = prev.culture
 					}
 					# Cultures now match — likely forced conversion
-					change_variable = { name = cc_bond_cul  add = -3 }
+					change_variable = { name = cc_bond_cul  add = -2 }
 					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 					remove_variable = cc_bond_mem_cultures_differ
 				}
@@ -96,7 +114,9 @@ cc_bonds.1 = {
 					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 				}
 				else_if = {
-					limit = { var:cc_bond_war_calls = 0 }
+					# Recovery only: a peaceful decade nudges mil back toward neutral, but
+					# never builds a standing positive (otherwise near-every subject pins +mil).
+					limit = { var:cc_bond_war_calls = 0  var:cc_bond_mil < 0 }
 					change_variable = { name = cc_bond_mil  add = 1 }
 					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
 				}
@@ -191,16 +211,16 @@ cc_bonds.1 = {
 					limit = {
 						OR = {
 							AND = {
-								var:cc_bond_eco <= -3
-								var:cc_bond_pol <= -3
+								var:cc_bond_eco <= -2
+								var:cc_bond_pol <= -2
 							}
 							AND = {
-								var:cc_bond_eco <= -3
-								var:cc_bond_cul <= -3
+								var:cc_bond_eco <= -2
+								var:cc_bond_cul <= -2
 							}
 							AND = {
-								var:cc_bond_mil <= -3
-								var:cc_bond_pol <= -3
+								var:cc_bond_mil <= -2
+								var:cc_bond_pol <= -2
 							}
 						}
 					}
@@ -208,8 +228,8 @@ cc_bonds.1 = {
 					remove_variable = cc_bond_loyal_primed
 					if = {
 						limit = {
-							var:cc_bond_eco <= -3
-							var:cc_bond_cul <= -3
+							var:cc_bond_eco <= -2
+							var:cc_bond_cul <= -2
 						}
 						set_variable = { name = cc_bond_revolutionary_primed  value = yes }
 					}

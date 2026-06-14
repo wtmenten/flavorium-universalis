@@ -12,7 +12,9 @@ namespace = cc_bonds
 # game rule, affordability, the dimension cap and the cooldown.
 ###############################################################################
 
-# cc_bonds.300 — Underwrite the Local Treasury (Economic +1, -75 gold)
+# cc_bonds.300 — Underwrite the Local Treasury (Economic +1)
+# Overlord funds the subject's finances: the subject gains cheaper credit and a
+# richer mint (cc_bond_underwritten). Overlord pays the scaled gift cost.
 cc_bonds.300 = {
 	type = country_event
 	title = cc_bonds.300.t
@@ -24,7 +26,7 @@ cc_bonds.300 = {
 		name = cc_bonds.300.a
 		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -2 }
 		scope:cc_engage_subject = {
-			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 2 }
+			add_country_modifier = { modifier = cc_bond_underwritten  months = 120  mode = set_to_largest_and_extend }
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
@@ -35,7 +37,9 @@ cc_bonds.300 = {
 	}
 }
 
-# cc_bonds.301 — Hold a Joint Military Review (Military +1, -50 gold)
+# cc_bonds.301 — Hold a Joint Military Review (Military +1)
+# Shared drill trims army and navy upkeep for BOTH crown and subject
+# (cc_bond_drilled). Overlord pays the scaled gift cost to host.
 cc_bonds.301 = {
 	type = country_event
 	title = cc_bonds.301.t
@@ -46,8 +50,9 @@ cc_bonds.301 = {
 	option = {
 		name = cc_bonds.301.a
 		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1.5 }
+		add_country_modifier = { modifier = cc_bond_drilled  months = 120  mode = set_to_largest_and_extend }
 		scope:cc_engage_subject = {
-			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost   multiply = 1.5 }
+			add_country_modifier = { modifier = cc_bond_drilled  months = 120  mode = set_to_largest_and_extend }
 			change_variable = { name = cc_bond_mil  add = 1 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
 			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
@@ -58,7 +63,10 @@ cc_bonds.301 = {
 	}
 }
 
-# cc_bonds.302 — Confer a Charter of Privileges (Political +1, prestige)
+# cc_bonds.302 — Confer a Charter of Privileges (Political +1)
+# The subject gains trade freedoms and loyalty (cc_bond_chartered); the crown
+# concedes some subject revenue for the autonomy (cc_bond_charter_granted) and
+# spends prestige to issue the charter.
 cc_bonds.302 = {
 	type = country_event
 	title = cc_bonds.302.t
@@ -69,7 +77,9 @@ cc_bonds.302 = {
 	option = {
 		name = cc_bonds.302.a
 		add_prestige = prestige_mild_penalty
+		add_country_modifier = { modifier = cc_bond_charter_granted  months = 120  mode = set_to_largest_and_extend }
 		scope:cc_engage_subject = {
+			add_country_modifier = { modifier = cc_bond_chartered  months = 120  mode = set_to_largest_and_extend }
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
 			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
@@ -80,7 +90,9 @@ cc_bonds.302 = {
 	}
 }
 
-# cc_bonds.303 — Patronize a Cultural Festival (Cultural +1, -75 gold)
+# cc_bonds.303 — Patronize a Cultural Festival (Cultural +1)
+# As host, the crown reaps cultural influence, diplomatic reputation and prestige
+# (cc_bond_festival_host). Overlord pays the scaled gift cost.
 cc_bonds.303 = {
 	type = country_event
 	title = cc_bonds.303.t
@@ -91,8 +103,8 @@ cc_bonds.303 = {
 	option = {
 		name = cc_bonds.303.a
 		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1.5 }
+		add_country_modifier = { modifier = cc_bond_festival_host  months = 120  mode = set_to_largest_and_extend }
 		scope:cc_engage_subject = {
-			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 1.5 }
 			change_variable = { name = cc_bond_cul  add = 1 }
 			clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
 			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }
@@ -103,7 +115,9 @@ cc_bonds.303 = {
 	}
 }
 
-# cc_bonds.304 — Dispatch a Personal Envoy (Personal +1, -50 gold, gains prestige)
+# cc_bonds.304 — Dispatch a Personal Envoy (Personal +1)
+# A resident envoy keeps the subject loyal (cc_bond_envoy_received) and warms its
+# opinion of the crown (cc_bond_envoy_warmth). Overlord pays gold and gains prestige.
 cc_bonds.304 = {
 	type = country_event
 	title = cc_bonds.304.t
@@ -116,7 +130,8 @@ cc_bonds.304 = {
 		add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1 }
 		add_prestige = prestige_weak_bonus
 		scope:cc_engage_subject = {
-			add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost multiply = 1 }
+			add_country_modifier = { modifier = cc_bond_envoy_received  months = 120  mode = set_to_largest_and_extend }
+			add_opinion = { target = root  modifier = cc_bond_envoy_warmth }
 			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
 			set_variable = { name = cc_bond_action_cd  value = yes  years = 2 }

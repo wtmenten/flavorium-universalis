@@ -28,6 +28,19 @@ ep_noble_elite_enclave = {
 	on_activate = {
 		trigger_event_non_silently = { id = cc.112 }
 	}
+
+	# Bias adoption toward large realms so elite enclaves stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 50
+		}
+	}
 }
 
 ep_noble_patronage_arts = {
@@ -48,12 +61,25 @@ ep_noble_patronage_arts = {
 	country_modifier = {
 		global_nobles_estate_power = 0.25
 		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
-		cultural_tradition = 50
+		cultural_tradition = 20
 		cultural_influence_modifier = 0.1
 	}
 
 	on_activate = {
 		trigger_event_non_silently = { id = cc.106 }
+	}
+
+	# Bias adoption toward large realms so artists' communes stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 50
+		}
 	}
 }
 
@@ -70,6 +96,22 @@ ep_noble_shadow_network = {
 		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
 		power_projection = 5
 		diplomatic_reputation = 1
+	}
+
+	# Bias adoption toward large realms so artists' communes stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+				any_subject = {
+					is_subject_type = shadow_state
+				}
+			}
+			add = 50
+		}
 	}
 }
 

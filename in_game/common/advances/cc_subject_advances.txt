@@ -10,6 +10,20 @@ royal_union_network_advance = {
 
 	unlock_subject_type = junior_partner
 	unlock_subject_type = lesser_partner
+
+	# Bias research toward large realms so these subjects stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+				exists = union
+			}
+			add = 100
+		}
+	}
 }
 
 shadow_diplomacy_advance = {
@@ -20,6 +34,20 @@ shadow_diplomacy_advance = {
 
 	unlock_subject_type = shadow_state
 	unlock_estate_privilege = ep_noble_shadow_network
+
+	# Bias research toward large realms so these flavorful one-location subjects
+	# stay rare and we don't see a swarm of tiny communes on small nations.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 artistic_patronage_advance = {
@@ -30,6 +58,20 @@ artistic_patronage_advance = {
 
 	unlock_subject_type = artists_commune
 	unlock_estate_privilege = ep_noble_patronage_arts
+
+	# Bias research toward large realms so these flavorful one-location subjects
+	# stay rare and we don't see a swarm of tiny communes on small nations.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 noble_patronage_advance = {
@@ -40,6 +82,19 @@ noble_patronage_advance = {
 
 	unlock_subject_type = elite_enclave
 	unlock_estate_privilege = ep_noble_elite_enclave
+
+	# Bias research toward large realms (see artistic_patronage_advance).
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 republican_patronage_advance = {
@@ -49,6 +104,22 @@ republican_patronage_advance = {
 	requires = renaissance_thought
 
 	unlock_subject_type = associated_republic
+
+	# Bias research toward large realms so these subjects stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+					any_neighbor_country = {
+						government_type = government_type:republic
+					}
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 dynastic_governance_advance = {
@@ -58,6 +129,19 @@ dynastic_governance_advance = {
 	requires = power_projection_advance_2
 
 	unlock_subject_type = crown_dependency
+	# Bias research toward large realms so these subjects stay rare.
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+				exists = union
+			}
+			add = 100
+		}
+	}
 }
 
 ############################
@@ -71,6 +155,20 @@ client_state_advance = {
 	requires = crown_power_advance_discovery
 
 	unlock_subject_type = client_state
+
+	# Bias research toward large realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+					has_advance = shadow_diplomacy_advance
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 naval_charter_advance = {
@@ -81,6 +179,19 @@ naval_charter_advance = {
 
 	unlock_subject_type = naval_administration
 	unlock_estate_privilege = ep_burgher_naval_charter
+
+	# Bias research toward large realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 protectorate_rights_advance = {
@@ -90,6 +201,18 @@ protectorate_rights_advance = {
 	requires = power_projection_advance_4
 
 	unlock_subject_type = protectorate
+	# Bias research toward large realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 ############################
@@ -104,6 +227,19 @@ scholarly_orders_advance = {
 
 	unlock_subject_type = scientific_college
 	unlock_estate_privilege = ep_clergy_scholarly_college
+
+	# Bias research toward large realms (see artistic_patronage_advance).
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 palatinate_advance = {
@@ -113,6 +249,19 @@ palatinate_advance = {
 	requires = power_projection_advance_3
 
 	unlock_subject_type = palatinate
+
+	# Bias research toward large realms (see artistic_patronage_advance).
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 holy_patronage_advance = {
@@ -122,6 +271,18 @@ holy_patronage_advance = {
 	requires = power_projection_advance_2
 
 	unlock_subject_type = holy_protectorate
+	# Bias research toward large realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 military_academy_advance = {
@@ -132,6 +293,18 @@ military_academy_advance = {
 
 	unlock_subject_type = military_academy
 	unlock_estate_privilege = ep_nobles_academy_charter
+	# Bias research toward large realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 ############################
@@ -152,6 +325,22 @@ naval_administration_advance = {
 	}
 
 	unlock_government_reform = cc_naval_administration_reform
+
+	# Bias research toward large colonial realms 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+					any_subject = {
+						is_subject_type = colonial_nation
+					}
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 puppet_state_advance = {
@@ -174,6 +363,22 @@ puppet_state_advance = {
 	}
 
 	unlock_subject_type = puppet_state
+
+	
+	# Bias research toward large realms and those with prior techs 
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+					has_advance = shadow_diplomacy_advance
+					has_advance = client_state_advance
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 chartered_company_advance = {
@@ -196,6 +401,19 @@ late_governorate_advance = {
 	unlock_subject_type = provincial_governorate
 	unlock_estate_privilege = ep_nobles_governorate_charter
 	unlock_government_reform = cc_governorate_reform
+
+	# Bias research toward large realms
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 tax_farming_advance = {
@@ -207,6 +425,19 @@ tax_farming_advance = {
 	unlock_subject_type = tax_farm
 	unlock_estate_privilege = ep_burghers_tax_charter
 	unlock_government_reform = cc_tax_farming_reform
+	
+	# Bias research toward large realms
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 military_march_advance = {
@@ -232,6 +463,19 @@ military_march_advance = {
 	unlock_subject_type = military_march
 	unlock_estate_privilege = ep_nobles_march_charter
 	unlock_government_reform = cc_march_charter_reform
+	
+	# Bias research toward large realms
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					is_great_power = yes
+					is_regional_power = yes
+				}
+			}
+			add = 100
+		}
+	}
 }
 
 #####################################

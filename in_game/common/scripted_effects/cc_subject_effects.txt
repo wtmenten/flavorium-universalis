@@ -178,20 +178,25 @@ cc_bonds_track_peak = {
 	}
 }
 
+# Regress one dimension's short-term memory one step toward zero.
+# Called in SUBJECT scope at the TOP of each monitor cycle, BEFORE this cycle's
+# drivers are applied. This is the primary STM regression: a quiet subject decays
+# to 0 and stays there; a single sustained +1 driver (subsidies, foreign buildings,
+# institution overlap) rests at ~+1; between-cycle event spikes bleed off 1/cycle.
+# $DIM$ = eco|mil|pol|cul|per.
+cc_bonds_decay_dimension = {
+	if = { limit = { var:cc_bond_$DIM$ >= 1 }   change_variable = { name = cc_bond_$DIM$  add = -1 } }
+	if = { limit = { var:cc_bond_$DIM$ <= -1 }  change_variable = { name = cc_bond_$DIM$  add = 1 } }
+}
+
 # Sweep one dimension's short-term memory into long-term memory.
 # Called in SUBJECT scope during a sweep, AFTER cc_bond_ltm_sweeps has been
 # incremented for this cycle. $DIM$ = eco|mil|pol|cul|per.
-# Folds the full current STM into the LTM sum, decays STM toward zero by half
-# (rounded outward — evaluated against the snapshot so both thresholds see the
-# original value), then recomputes the running average.
+# Folds the full current STM into the LTM sum, then recomputes the running average.
+# STM regression is handled per-cycle by cc_bonds_decay_dimension, so the sweep no
+# longer decays STM itself (that would double-count).
 cc_bonds_sweep_dimension = {
-	set_local_variable = { name = lv_s  value = var:cc_bond_$DIM$ }
-	change_variable = { name = cc_bond_$DIM$_ltm  add = local_var:lv_s }
-	# Outward-rounded halving: one step toward zero at |stm| >= 2 and again at |stm| >= 4.
-	if = { limit = { local_var:lv_s >= 2 }   change_variable = { name = cc_bond_$DIM$  add = -1 } }
-	if = { limit = { local_var:lv_s >= 4 }   change_variable = { name = cc_bond_$DIM$  add = -1 } }
-	if = { limit = { local_var:lv_s <= -2 }  change_variable = { name = cc_bond_$DIM$  add = 1 } }
-	if = { limit = { local_var:lv_s <= -4 }  change_variable = { name = cc_bond_$DIM$  add = 1 } }
+	change_variable = { name = cc_bond_$DIM$_ltm  add = var:cc_bond_$DIM$ }
 	# Running average = LTM sum / sweep count (sweeps already >= 1 this cycle).
 	set_variable = { name = cc_bond_$DIM$_ltm_avg  value = var:cc_bond_$DIM$_ltm }
 	change_variable = { name = cc_bond_$DIM$_ltm_avg  divide = var:cc_bond_ltm_sweeps }

@@ -217,3 +217,56 @@ cc_ward_long_term_pulse = {
 		chance_to_happen = 15
 	}
 }
+
+###############################################################################
+# SPECIAL ONE-LOCATION SUBJECT ANNEXATION STALL
+# Hooks the vanilla monthly annexation pulse (root = overlord, scope:target = subject).
+# Fires only while an annexation is in progress. For the four special one-location
+# subjects we continuously suppress the subject's opinion of the overlord below the
+# subject type's annexation_stall_opinion, so AI annexation never completes. A human
+# overlord is periodically offered a buy-out (cc.250) to push the integration through.
+###############################################################################
+
+# Driven through an event (cc.249) fired from the pulse's events list — events fired this
+# way reliably inherit scope:target (the subject being annexed), the same way vanilla's own
+# subject_interaction_events.46/47/48 do. The effect={} field of this on_action does NOT
+# register scope:target for the script validator, which caused the load error.
+on_annexing_subject_monthly_pulse = {
+	on_actions = { cc_special_annexing_subject_monthly_pulse }
+}
+
+cc_special_annexing_subject_monthly_pulse = {
+	effect = {
+		if = {
+			limit = {
+				scope:target ?= {
+					OR = {
+						is_subject_type = artists_commune
+						is_subject_type = scientific_college
+						is_subject_type = elite_enclave
+						is_subject_type = palatinate
+					}
+					# Skip the stall while the overlord has paid to push integration through.
+					NOT = { has_variable = cc_annex_pushing }
+				}
+			}
+			# Continuous stall: drag the subject's opinion of the overlord below the
+			# annexation_stall_opinion threshold. Refreshed monthly while annexing.
+			scope:target = {
+				add_opinion = { target = root modifier = cc_annex_resistance }
+			}
+
+			# Human overlord: periodically offer the buy-out choice (throttled per subject).
+			if = {
+				limit = {
+					root = { is_ai = no }
+					scope:target = { NOT = { has_variable = cc_annex_prompt_cd } }
+				}
+				scope:target = {
+					set_variable = { name = cc_annex_prompt_cd value = yes years = 2 }
+				}
+				trigger_event_non_silently = { id = cc.250 }
+			}
+		}
+	}
+}

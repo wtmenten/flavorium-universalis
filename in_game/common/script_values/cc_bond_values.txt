@@ -1,29 +1,47 @@
 ﻿###############################################################################
 # Subject Relations Ledger — scaled gold magnitudes
-# Both values are evaluated in SUBJECT scope (reference the subject's `overlord`
-# link for the overlord-side income), so they can be invoked identically from
-# the scripted_gui is_valid (subject = scope:subject) and from the engage events
+# Evaluated in SUBJECT scope (reference the subject's `overlord` link for the
+# overlord-side income), so they invoke identically from the scripted_gui
+# is_valid (subject = scope:subject) and the engage events
 # (subject = scope:cc_engage_subject), e.g.:
 #   gold >= scope:subject.cc_bond_gift_cost
 #   add_gold = { value = scope:cc_engage_subject.cc_bond_gift_cost  multiply = -1 }
+#
+# Operators evaluate linearly top-to-bottom; min = floor, max = ceiling.
 ###############################################################################
 
 # Gift cost a gracious overlord pays a subject (underwrite / review / festival / envoy).
-# Scales off the overlord's monthly income, clamped to a sane band of the subject's
-# own monthly income so the gesture is never trivial nor ruinous relative to the subject.
+# Scales off the overlord's monthly income, clamped to a band of the subject's own
+# monthly income so the gesture is never trivial nor ruinous relative to the subject.
 cc_bond_gift_cost = {
 	value = overlord.monthly_income_total
 	multiply = 3
-	min = { value = monthly_income_total  multiply = 2 add = 100 }
-	max = { value = monthly_income_total  multiply = 12 }
+	min = {
+		value = monthly_income_total
+		multiply = 2
+		add = 100
+	}
+	max = {
+		value = monthly_income_total
+		multiply = 12
+		add = 100
+	}
 }
 
 # Tribute the overlord squeezes from a subject (demand tribute).
 # Scales off the subject's current treasury, clamped by the subject's monthly income
-# so a cash-poor subject still yields a little and a hoard cannot be drained in one demand.
+# so a cash-poor subject still yields a little and a hoard cannot be drained at once.
 cc_bond_tribute_gain = {
 	value = gold
 	multiply = 0.20
-	min = { value = monthly_income_total  multiply = 1 add = 50 }
-	max = { value = monthly_income_total  multiply = 8 }
+	min = {
+		value = monthly_income_total
+		multiply = 1
+		add = 50
+	}
+	max = {
+		value = monthly_income_total
+		multiply = 8
+		add = 50
+	}
 }
