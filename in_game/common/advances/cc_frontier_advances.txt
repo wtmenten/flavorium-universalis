@@ -1,0 +1,50 @@
+﻿###############################################################################
+# Frontier Administration — branch-independent advance (no `for =` line)
+# Unlocks the lesser local governor building plus the four estate "frontier"
+# privileges, and grants the first frontier-governor pool slot. AI research is
+# biased toward frontier-prone realms (steppe / mountain / vast interior) and the
+# named historical examples (Muscovy, Novgorod, Ottomans, the Mandate holder).
+###############################################################################
+
+cc_frontier_administration_advance = {
+	age = age_2_renaissance
+	icon = local_nobility
+	requires = crown_power_advance_renaissance
+
+	cc_num_frontier_governors = 1
+
+	unlock_building = cc_lesser_local_governor
+	unlock_estate_privilege = ep_frontier_governance     # nobles  — extra pool slot + area control
+	unlock_estate_privilege = ep_frontier_missions       # clergy  — area conversion
+	unlock_estate_privilege = ep_frontier_markets        # burghers — area markets
+	unlock_estate_privilege = ep_frontier_settlement     # peasants — area growth / promotion
+
+	ai_weight = {
+		# Geography: realms that expand into hard-to-urbanize frontiers.
+		# num_* is hard for the AI to value, so mirror vanilla local_governor_advance's heavy +200.
+		if = {
+			limit = {
+				OR = {
+					capital = { sub_continent = sub_continent:eastern_europe }
+					capital = { sub_continent = sub_continent:central_asia }
+					capital = { sub_continent = sub_continent:north_asia }
+					capital = { sub_continent = sub_continent:middle_east }
+					capital = { sub_continent = sub_continent:east_asia }
+				}
+			}
+			add = 50
+		}
+		# Named historical examples + the Mandate of Heaven holder.
+		if = {
+			limit = {
+				OR = {
+					tag = MOS
+					tag = NOV
+					tag = TUR
+					is_leader_of_international_organization = international_organization:middle_kingdom
+				}
+			}
+			add = 100
+		}
+	}
+}

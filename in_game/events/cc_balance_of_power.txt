@@ -1629,16 +1629,31 @@ cc_balance_of_power.103 = {
 	}
 
 	immediate = {
-		# Identify our former camp's leader (the opposite bloc) as the target.
+		# Identify our former camp's leader (the opposite bloc) as the target, and our
+		# new patron (the bloc we just joined) whose banner we now march under.
 		if = {
 			limit = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
 			international_organization:cc_bop_coalition.leader_country ?= { save_scope_as = bop_old_target }
+			international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_new_patron }
 		}
 		else = {
 			international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = bop_old_target }
+			international_organization:cc_bop_coalition.leader_country ?= { save_scope_as = bop_new_patron }
 		}
-		# Find our new bloc's existing war against that leader, if any.
+		# Prefer the bloc's existing war against that leader, led by our new patron — we fall
+		# in behind it rather than open a separate war of our own.
 		if = {
+			limit = {
+				exists = scope:bop_old_target
+				exists = scope:bop_new_patron
+				scope:bop_new_patron = { is_at_war_with = scope:bop_old_target }
+			}
+			scope:bop_new_patron = {
+				"war_with_country(scope:bop_old_target)" ?= { save_scope_as = bop_betrayal_war }
+			}
+		}
+		# Failing that, a war we are already drawn into ourselves.
+		else_if = {
 			limit = { exists = scope:bop_old_target  is_at_war_with = scope:bop_old_target }
 			"war_with_country(scope:bop_old_target)" ?= { save_scope_as = bop_betrayal_war }
 		}
@@ -1656,18 +1671,15 @@ cc_balance_of_power.103 = {
 				any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } }
 			}
 		}
+		# Fall in behind the bloc's war if one is being fought; otherwise the turncoat does
+		# NOT open a lone war on its former patron — that only splinters the front into a
+		# dozen separate coalition wars. The betrayal still tells through the diplomacy below.
 		if = {
 			limit = { exists = scope:bop_betrayal_war }
 			join_war_against = {
 				war = scope:bop_betrayal_war
 				target = scope:bop_old_target
 				call_in_subjects = yes
-			}
-		}
-		else = {
-			declare_war_with_cb = {
-				target = scope:bop_old_target
-				type = casus_belli:cb_coalition
 			}
 		}
 		# The turncoat's weight tips the scale toward its new bloc.
@@ -1938,6 +1950,8 @@ cc_balance_of_power.110 = {
 		international_organization:cc_bop_preponderance.leader_country ?= {
 			NOT = { this = root }
 			NOT = { is_at_war_with = root }
+			# A truce binds the leader's hands — it cannot strike, so do not call the council.
+			NOT = { has_truce_with = root }
 		}
 	}
 
@@ -1955,15 +1969,16 @@ cc_balance_of_power.110 = {
 			modifier = { factor = 1.5  any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
 			modifier = { factor = 0.4  at_war = yes }
 		}
-		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
 		declare_war_with_cb = {
 			target = scope:bop_hegemon
 			type = casus_belli:cb_coalition
 		}
-		# Bring the rest of the coalition into the same war as co-attackers.
 		"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_coalition_war }
 		if = {
+			# The war actually opened — commit the coalition and pay out the cooldown in full.
 			limit = { exists = scope:bop_coalition_war }
+			set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
+			# Bring the rest of the coalition into the same war as co-attackers.
 			international_organization:cc_bop_coalition = {
 				every_international_organization_member = {
 					limit = {
@@ -1973,13 +1988,15 @@ cc_balance_of_power.110 = {
 					join_war_as_attacker = { war = scope:bop_coalition_war  call_in_subjects = yes }
 				}
 				change_variable = { name = cc_bop_resolve add = 10 }
+				every_international_organization_member = {
+					add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 2  mode = add_and_extend }
+				}
 			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 5 } }
 		}
-		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 5 } }
-		international_organization:cc_bop_coalition = {
-			every_international_organization_member = {
-				add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 2  mode = add_and_extend }
-			}
+		else = {
+			# The blow could not land (truce or other bar) — short cooldown, try again soon.
+			set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 1 }
 		}
 	}
 
@@ -2010,6 +2027,8 @@ cc_balance_of_power.111 = {
 		international_organization:cc_bop_preponderance.leader_country ?= {
 			NOT = { this = root }
 			NOT = { is_at_war_with = root }
+			# A truce bars the leader from joining the war — do not raise a call it cannot answer.
+			NOT = { has_truce_with = root }
 		}
 	}
 
@@ -2037,7 +2056,6 @@ cc_balance_of_power.111 = {
 			modifier = { factor = 1.5  any_cabinet_character = { has_trait = cc_master_balancer } }
 			modifier = { factor = 0.5  at_war = yes }
 		}
-		set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
 		scope:bop_victim = {
 			"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_coalition_war }
 		}
@@ -2048,12 +2066,27 @@ cc_balance_of_power.111 = {
 				target = scope:bop_hegemon
 				call_in_subjects = yes
 			}
-			# Rally the rest of the coalition behind the embattled partner.
+		}
+		if = {
+			# The leader is now in the war — commit the bloc and pay the cooldown in full.
+			limit = { is_at_war_with = scope:bop_hegemon }
+			set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 3 }
+			# As coalition leader, assume command of every partner's war on the hegemon,
+			# folding their separate fights under a single banner.
 			international_organization:cc_bop_coalition = {
 				every_international_organization_member = {
 					limit = {
 						NOT = { this = root }
-						NOT = { this = scope:bop_victim }
+						is_at_war_with = scope:bop_hegemon
+					}
+					root = { take_over_all_wars = prev }
+				}
+			}
+			# Rally the members not yet under arms behind the now-unified war.
+			international_organization:cc_bop_coalition = {
+				every_international_organization_member = {
+					limit = {
+						NOT = { this = root }
 						NOT = { is_at_war_with = scope:bop_hegemon }
 					}
 					join_war_against = {
@@ -2064,8 +2097,12 @@ cc_balance_of_power.111 = {
 				}
 				change_variable = { name = cc_bop_resolve add = 10 }
 			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
 		}
-		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
+		else = {
+			# Could not join (truce or other bar) — short cooldown, the call may come again.
+			set_variable = { name = cc_bop_recently_engaged_hegemon value = yes years = 1 }
+		}
 	}
 
 	# "We dare not provoke the colossus — they must shift for themselves."

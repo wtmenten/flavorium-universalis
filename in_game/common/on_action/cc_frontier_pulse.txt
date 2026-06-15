@@ -1,0 +1,26 @@
+﻿###############################################################################
+# Frontier Governance — Yearly Area Pulse
+# Merges into yearly_country_pulse (on_actions are additive across files). For each
+# country that owns at least one lesser local governor, refreshes the estate-flavored
+# area buffs around every governor based on which frontier privileges the country holds.
+###############################################################################
+
+yearly_country_pulse = {
+	on_actions = {
+		cc_frontier_governor_pulse
+	}
+}
+
+cc_frontier_governor_pulse = {
+	effect = {
+		if = {
+			limit = {
+				any_owned_location = { has_building = building_type:cc_lesser_local_governor }
+			}
+			every_owned_location = {
+				limit = { has_building = building_type:cc_lesser_local_governor }
+				cc_apply_frontier_area_buffs = yes
+			}
+		}
+	}
+}

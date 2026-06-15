@@ -1,0 +1,149 @@
+﻿###############################################################################
+# Frontier Estate Privileges
+# Optional secondary privileges, all unlocked by cc_frontier_administration_advance.
+# Each lets one estate enhance the AREA around every lesser local governor via the
+# yearly cc_frontier_governor_pulse (see on_action/cc_frontier_pulse.txt):
+#   nobles   -> +1 governor pool slot, and area control
+#   clergy   -> periodic conversion toward the state religion
+#   burghers -> area market / trade
+#   peasants -> area pop growth and promotion
+# The pulse only applies a buff while the country holds the matching privilege AND
+# owns at least one governor, and the location modifiers self-expire if either is lost.
+###############################################################################
+
+# NOBLES — the resident noble governor pool, and a firm hand on local control.
+ep_frontier_governance = {
+	estate = nobles_estate
+
+	allow = {
+		has_advance = cc_frontier_administration_advance
+		"estate_power(estate_type:nobles_estate)" >= 0.25
+	}
+
+	country_modifier = {
+		cc_num_frontier_governors = 1
+		global_nobles_estate_power = 0.10
+		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
+	}
+
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					capital = { sub_continent = sub_continent:eastern_europe }
+					capital = { sub_continent = sub_continent:central_asia }
+					capital = { sub_continent = sub_continent:north_asia }
+					capital = { sub_continent = sub_continent:middle_east }
+					capital = { sub_continent = sub_continent:east_asia }
+					tag = MOS
+					tag = NOV
+					tag = TUR
+					is_leader_of_international_organization = international_organization:middle_kingdom
+				}
+			}
+			add = 100
+		}
+	}
+}
+
+# CLERGY — frontier missions that convert the borderlands toward the state faith.
+ep_frontier_missions = {
+	estate = clergy_estate
+
+	allow = {
+		has_advance = cc_frontier_administration_advance
+		"estate_power(estate_type:clergy_estate)" >= 0.12
+	}
+
+	country_modifier = {
+		global_clergy_estate_power = 0.10
+		clergy_estate_target_satisfaction = small_privilege_target_satisfaction
+	}
+
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					capital = { sub_continent = sub_continent:eastern_europe }
+					capital = { sub_continent = sub_continent:central_asia }
+					capital = { sub_continent = sub_continent:north_asia }
+					capital = { sub_continent = sub_continent:middle_east }
+					capital = { sub_continent = sub_continent:east_asia }
+					tag = MOS
+					tag = NOV
+					tag = TUR
+					is_leader_of_international_organization = international_organization:middle_kingdom
+				}
+			}
+			add = 300
+		}
+	}
+}
+
+# BURGHERS — chartered frontier markets that draw trade through the governor's seat.
+ep_frontier_markets = {
+	estate = burghers_estate
+
+	allow = {
+		has_advance = cc_frontier_administration_advance
+		"estate_power(estate_type:burghers_estate)" >= 0.12
+	}
+
+	country_modifier = {
+		global_burghers_estate_power = 0.10
+		burghers_estate_target_satisfaction = small_privilege_target_satisfaction
+	}
+
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					capital = { sub_continent = sub_continent:eastern_europe }
+					capital = { sub_continent = sub_continent:central_asia }
+					capital = { sub_continent = sub_continent:north_asia }
+					capital = { sub_continent = sub_continent:middle_east }
+					capital = { sub_continent = sub_continent:east_asia }
+					tag = MOS
+					tag = NOV
+					tag = TUR
+					is_leader_of_international_organization = international_organization:middle_kingdom
+				}
+			}
+			add = 150
+		}
+	}
+}
+
+# PEASANTS — settlement of the marches: faster growth and promotion in the frontier.
+ep_frontier_settlement = {
+	estate = peasants_estate
+
+	allow = {
+		has_advance = cc_frontier_administration_advance
+		"estate_power(estate_type:peasants_estate)" >= 0.10
+	}
+
+	country_modifier = {
+		global_peasants_estate_power = 0.10
+		peasants_estate_target_satisfaction = small_privilege_target_satisfaction
+	}
+
+	ai_weight = {
+		if = {
+			limit = {
+				OR = {
+					capital = { sub_continent = sub_continent:eastern_europe }
+					capital = { sub_continent = sub_continent:central_asia }
+					capital = { sub_continent = sub_continent:north_asia }
+					capital = { sub_continent = sub_continent:middle_east }
+					capital = { sub_continent = sub_continent:east_asia }
+					tag = MOS
+					tag = NOV
+					tag = TUR
+					is_leader_of_international_organization = international_organization:middle_kingdom
+				}
+			}
+			add = 200
+		}
+	}
+}

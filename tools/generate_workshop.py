@@ -323,7 +323,7 @@ def table_block(headers: list[str], rows: list[list[str]]) -> str:
 # Keys in advance blocks that are metadata, not country modifiers.
 ADVANCE_META_KEYS = frozenset({
     "age", "icon", "for", "depth", "requires",
-    "unlock_subject_type", "unlock_estate_privilege", "unlock_government_reform",
+    "unlock_subject_type", "unlock_estate_privilege", "unlock_government_reform", "unlock_building",
     "potential", "allow", "on_activate", "on_complete", "on_start",
 })
 
@@ -389,9 +389,12 @@ MODIFIER_DISPLAY: dict[str, tuple[str, str]] = {
     "global_nobles_estate_power":             ("noble power",               "flat"),
     "global_burghers_estate_power":           ("burgher power",             "flat"),
     "global_clergy_estate_power":             ("clergy power",              "flat"),
+    "global_peasants_estate_power":           ("peasant power",             "flat"),
+    "cc_num_frontier_governors":              ("frontier governors",        "flat"),
     "nobles_estate_target_satisfaction":      ("",                          "skip"),
     "burghers_estate_target_satisfaction":    ("",                          "skip"),
     "clergy_estate_target_satisfaction":      ("",                          "skip"),
+    "peasants_estate_target_satisfaction":    ("",                          "skip"),
     "nobles_estate_agenda_impact":            ("noble agenda",              "percent"),
     "burghers_estate_agenda_impact":          ("burgher agenda",            "percent"),
     "monthly_towards_naval":                  ("",                          "skip"),
@@ -652,7 +655,7 @@ def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
     by_age: dict[str, list[tuple[str, list]]] = {}
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
@@ -753,7 +756,7 @@ def _load_privilege_data() -> dict[str, dict]:
     """Return {priv_id: {modifiers: [str], allow: [(k,v)]}} for all mod privileges."""
     priv_dir = MOD_ROOT / "in_game" / "common" / "estate_privileges"
     data: dict[str, dict] = {}
-    for fname in ["cc_nobles_privileges.txt", "cc_burghers_privileges.txt", "cc_clergy_privileges.txt"]:
+    for fname in ["cc_nobles_privileges.txt", "cc_burghers_privileges.txt", "cc_clergy_privileges.txt", "cc_frontier_privileges.txt"]:
         path = priv_dir / fname
         if not path.exists():
             continue
@@ -794,7 +797,7 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
     privileges: list[tuple[str, str, str]] = []   # (name, from_adv, priv_id)
     reforms: list[tuple[str, str, str, str]] = []  # (name, desc, from_adv, reform_id)
 
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue

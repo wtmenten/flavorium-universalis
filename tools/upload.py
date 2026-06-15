@@ -33,6 +33,9 @@ CONFIG_PATH = os.path.join(SCRIPT_DIR, "config.toml")
 METADATA_PATH = os.path.join(ROOT_DIR, ".metadata", "metadata.json")
 WORKSHOP_DESCRIPTION_PATH = os.path.join(ROOT_DIR, "WORKSHOP_DESCRIPTION_steam.bbcode")
 CHANGE_NOTES_PATH = os.path.join(ROOT_DIR, "assets", "workshop", "change-notes.bbcode")
+# Per-version change notes live in docs/change_notes/<version>.bbcode and are preferred
+# over the shared multi-version file above when a matching file exists.
+CHANGE_NOTES_DIR = os.path.join(ROOT_DIR, "docs", "change_notes")
 TRANSLATIONS_DIR = os.path.join(ROOT_DIR, "assets", "workshop", "translations")
 APP_ID = 3450310
 CREATE_ITEM_TIMEOUT_SECONDS = 30
@@ -657,7 +660,11 @@ def upload_submods(steam, config, version_gate_enabled=False, version_cache=None
 
         if upload_change_notes:
             submod_change_notes_path = os.path.join(mod_dir, "workshop", "change-notes.bbcode")
-            submod_change_note = load_change_notes(submod_change_notes_path, workshop_id, version=version)
+            submod_change_notes_dir = os.path.join(mod_dir, "workshop", "change_notes")
+            submod_change_note = load_change_notes(
+                submod_change_notes_path, workshop_id, version=version,
+                individual_dir=submod_change_notes_dir,
+            )
             if submod_change_note is None:
                 print(f"Warning: No change notes found for submod '{mod_id}' version '{version}'. Skipping change notes.")
             else:
@@ -946,12 +953,64 @@ def get_latest_change_notes_version(text):
             return m.group('ver').strip()
     return None
 
-def load_change_notes(path, item_id, version=None):
-    """Load change notes from a bbcode file.
+def normalize_change_note(content, version):
+    """Normalize a standalone per-version note to the canonical ``[b]vX:[/b]`` + body shape
+    used by entries parsed from the shared multi-version file.
 
-    Returns empty string if file is missing/empty.
-    Returns None if version headers exist but no entry matches the requested version.
+    - If it already starts with a recognized version header, run it through the shared
+      parser so the output matches exactly.
+    - If it starts with an ``[h1]…[/h1]`` title (the per-version file convention), swap that
+      title for the canonical version header (avoids a duplicate version line).
+    - Otherwise, prepend the version header.
     """
+    content = content.strip()
+    if not content:
+        return content
+
+    lines = content.splitlines()
+    first = lines[0].strip()
+
+    if CHANGE_NOTES_VERSION_RE.match(first):
+        parsed = parse_change_notes_entry(content, version=None)
+        if parsed is not None:
+            return parsed
+
+    header = f"[b]v{version}:[/b]"
+    if re.match(r"^\[h1\].*\[/h1\]$", first):
+        rest = "\n".join(lines[1:]).strip()
+        return f"{header}\n{rest}" if rest else header
+    return f"{header}\n{content}"
+
+def load_individual_change_note(individual_dir, version, item_id):
+    """Load a standalone per-version note from ``<individual_dir>/<version>.bbcode``.
+
+    The whole file is the note; it is normalized to the canonical ``[b]vX:[/b]`` header form
+    and has the $item-id$ token applied. Returns None if there is no directory/version or no
+    such (non-empty) file — letting the caller fall back to the shared multi-version file.
+    """
+    if not individual_dir or not version:
+        return None
+    note_path = os.path.join(individual_dir, f"{version}.bbcode")
+    text = read_text(note_path)
+    if text is None or not text.strip():
+        return None
+    return apply_workshop_item_id(normalize_change_note(text, version), item_id)
+
+def load_change_notes(path, item_id, version=None, individual_dir=None):
+    """Load change notes for a version, preferring individual per-version files.
+
+    Resolution order:
+      1. ``<individual_dir>/<version>.bbcode``, if a directory is given and the file exists
+         (the per-release notes — main mod: docs/change_notes/; submod: workshop/change_notes/).
+      2. The shared multi-version file at ``path``, parsed for the matching entry.
+
+    Returns empty string if the shared file is missing/empty.
+    Returns None if the shared file has version headers but no entry matches the request.
+    """
+    individual = load_individual_change_note(individual_dir, version, item_id)
+    if individual is not None:
+        return individual
+
     text = read_text(path)
     if text is None or not text.strip():
         return ""
@@ -1179,7 +1238,8 @@ def build_change_notes_updates(config, item_id, version=None):
     if source_language is None:
         return None
 
-    base_change_notes = load_change_notes(CHANGE_NOTES_PATH, item_id, version=version)
+    base_change_notes = load_change_notes(CHANGE_NOTES_PATH, item_id, version=version,
+                                          individual_dir=CHANGE_NOTES_DIR)
     if base_change_notes is None:
         print(f"Warning: No change notes found for version '{version}'.")
         return []
@@ -1361,7 +1421,8 @@ def main():
         # Load source language change note for the mod content upload.
         change_note = ""
         if upload_change_notes:
-            change_note = load_change_notes(CHANGE_NOTES_PATH, item_id, version=main_version) or ""
+            change_note = load_change_notes(CHANGE_NOTES_PATH, item_id, version=main_version,
+                                            individual_dir=CHANGE_NOTES_DIR) or ""
 
         if upload_mod_effective:
             if not upload_release(steam, release_dir, preview_path, item_id,

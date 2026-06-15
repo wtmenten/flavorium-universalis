@@ -13,6 +13,8 @@ EU V Modding Documentation: https://eu5.paradoxwikis.com/Modding
 2. [docs/offline-wiki/](docs/offline-wiki/) — Offline copy of EU5 Paradox Wiki modding pages (40 pages, ~1.5MB)
 3. [tools/wiki_search.py](tools/wiki_search.py) — Fast search tool for offline docs
 
+**Shipping a release?** Follow [docs/release-process.md](docs/release-process.md) — the full checklist for version bump, change note, workshop/web-docs description generators (which read fixed file lists you must register new content in), and upload. Do not hand-edit `*_upload.*` files, `docs/*.html`, or content inside `<!-- GEN:… -->` markers; rerun the generators instead.
+
 # lookup tools
 
 ## Vanilla game file search

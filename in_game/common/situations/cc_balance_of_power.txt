@@ -626,6 +626,8 @@ cc_balance_of_power = {
 				international_organization:cc_bop_preponderance.leader_country ?= {
 					NOT = { this = prev }
 					NOT = { is_at_war_with = prev }
+					# A truce ties the leader's hands — hold the call until it lapses.
+					NOT = { has_truce_with = prev }
 				}
 			}
 			random_list = {
@@ -657,6 +659,8 @@ cc_balance_of_power = {
 				international_organization:cc_bop_preponderance.leader_country ?= {
 					NOT = { this = prev }
 					NOT = { is_at_war_with = prev }
+					# A truce bars the leader from joining — hold the call until it lapses.
+					NOT = { has_truce_with = prev }
 				}
 				any_country = {
 					is_member_of_international_organization = international_organization:cc_bop_coalition

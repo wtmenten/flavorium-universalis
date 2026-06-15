@@ -1,0 +1,52 @@
+﻿###############################################################################
+# Frontier Governance — area buff application
+# cc_apply_frontier_area_buffs runs in LOCATION scope (a location holding
+# cc_lesser_local_governor); root = owner. "The area" = every owned location in the
+# governor's own province plus every owned location in each neighboring province.
+# Each estate's buff applies only while the country holds the matching frontier
+# privilege. Location modifiers use mode = set_to_largest_and_extend (years = 2) so
+# they refresh yearly and self-expire when the governor or privilege is gone.
+###############################################################################
+
+# Applies $MODIFIER$ to every owned location in the governor's province and in each
+# neighboring province. Called in the governor's LOCATION scope; root = owner.
+cc_apply_frontier_area_modifier = {
+	province_definition = {
+		every_location_in_province_definition = {
+			limit = { owner ?= root }
+			add_location_modifier = { modifier = $MODIFIER$ years = 2 mode = set_to_largest_and_extend }
+		}
+		every_neighbor_province_definition = {
+			every_location_in_province_definition = {
+				limit = { owner ?= root }
+				add_location_modifier = { modifier = $MODIFIER$ years = 2 mode = set_to_largest_and_extend }
+			}
+		}
+	}
+}
+
+cc_apply_frontier_area_buffs = {
+	# NOBLES — area control
+	if = {
+		limit = { root = { has_estate_privilege = estate_privilege:ep_frontier_governance } }
+		cc_apply_frontier_area_modifier = { MODIFIER = cc_frontier_control_buff }
+	}
+
+	# BURGHERS — area markets
+	if = {
+		limit = { root = { has_estate_privilege = estate_privilege:ep_frontier_markets } }
+		cc_apply_frontier_area_modifier = { MODIFIER = cc_frontier_market_buff }
+	}
+
+	# PEASANTS — area growth / promotion
+	if = {
+		limit = { root = { has_estate_privilege = estate_privilege:ep_frontier_settlement } }
+		cc_apply_frontier_area_modifier = { MODIFIER = cc_frontier_growth_buff }
+	}
+
+	# CLERGY — faster conversion toward the state religion in the area
+	if = {
+		limit = { root = { has_estate_privilege = estate_privilege:ep_frontier_missions } }
+		cc_apply_frontier_area_modifier = { MODIFIER = cc_frontier_conversion_buff }
+	}
+}
