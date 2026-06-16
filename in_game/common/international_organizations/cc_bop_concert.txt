@@ -1,0 +1,98 @@
+﻿
+# The Concert of Europe — the great-power directorate born of a coalition victory.
+# Founded by cc_bop_form_concert when the Balancing Coalition wins the final war with the
+# policy:cc_bop_enact_concert in force. The five strongest victors take seats; the chief
+# balancer becomes founding president, and the chair thereafter rotates by vote. The defeated
+# former hegemon is readmitted decades later (cc_concert_readmission_pulse). The members govern
+# the post-war peace through the laws in laws/cc_bop_concert_laws.txt and the collective actions
+# in parliament_issues/cc_bop_concert_issues.txt.
+cc_bop_concert = {
+	has_target = no
+	unique = yes
+	show_on_diplomatic_map = yes
+
+	has_leader_country = yes
+	leader_type = country
+	disband_if_no_leader = no
+	# The presidency rotates: a timed election among the members (and an on-demand vote to
+	# depose the sitting president — see cc_concert_pi_depose_president).
+	leader_change_trigger_type = timed
+	leader_change_method = vote
+	leadership_election_resolution = cc_concert_election
+	months_between_leader_changes = 120
+
+	has_parliament = yes
+	parliament_type = cc_concert_assembly
+	resolution_widget = parliament
+	alert_view_tab = parliament
+	special_statuses_implemented = { cc_concert_president cc_concert_seat }
+	can_initiate_policy_votes = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	laws = {
+		cc_concert_doctrine_law = cc_concert_balance_of_power
+		cc_concert_security_law = cc_concert_ad_hoc
+		cc_concert_congress_law = cc_concert_dormant
+	}
+
+	# A closed directorate: there is no walking in off the street. New powers are admitted only
+	# by a vote of the congress (cc_concert_pi_admit_power), which adds them directly.
+	create_visible_trigger = { always = no }
+	invite_visible_trigger = { always = no }
+
+	can_lead_trigger = {
+		is_member_of_international_organization = international_organization:cc_bop_concert
+	}
+
+	can_join_trigger = {
+		always = no
+	}
+
+	can_leave_trigger = {
+		NOT = { is_leader_of_international_organization = international_organization:cc_bop_concert }
+		at_war = no
+	}
+
+	auto_leave_trigger = {
+		is_subject = yes
+	}
+
+	auto_disband_trigger = {
+		total_members < 2
+	}
+
+	disband_minimum_member_count = 0
+
+	# Diplomacy among the powers is warmer for sitting at the same table.
+	opinion_bonus = 20
+
+	on_joined = {
+		add_country_modifier = {
+			modifier = cc_concert_member
+			years = 10
+			mode = add_and_extend
+		}
+	}
+
+	leader_modifier = {
+		monthly_prestige = 0.05
+		diplomatic_reputation = 1
+		diplomatic_capacity = 2
+	}
+
+	non_leader_modifier = {
+		diplomatic_reputation = 1
+	}
+
+	modifier = {
+		diplomatic_capacity = 1
+	}
+
+	# root = international organization, actor = potential new member
+	ai_desire_to_allow_new_member = {
+		add = {
+			desc = "WE_WANT_THE_ORGANIZATION_TO_GROW"
+			value = 10
+		}
+	}
+}

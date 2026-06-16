@@ -1,0 +1,233 @@
+﻿
+# Balance of Power — the Balancing Coalition's parliament actions (collective consensus).
+# Unlike the leader's unilateral IO actions (generic_actions/cc_bop_actions.txt), these are
+# motions the chief balancer (special_status = cc_bop_chief_balancer) tables before the whole
+# congress; a simple majority of members must carry them. They become available only once the
+# congress has been convened (parliament_type = cc_bop_coalition_assembly). The set draws on
+# the alliance statecraft of the Stately Quadrille and the Napoleonic coalitions: pooled
+# subsidies (Pitt's gold), the Treaty of Chaumont's pledge of no separate peace, a unified
+# command (the Pragmatic Army), a joint démarche, and an agreed partition of the spoils.
+#
+# Scopes (parliament_issues, type = international_organization):
+#   potential / allow / on_debate_passed : root = the international organization
+#   selectable_for                        : root = country selecting, scope:recipient = IO
+#   wants_this_parliament_issue_bias      : root = voting country, scope:recipient = IO
+
+############################ PITT'S GOLD ############################
+# Pooled war subsidies: the members fund a common chest in the leader's hands and the lesser
+# powers are propped up for the campaign.
+cc_bop_pi_coalition_subsidies = {
+	type = international_organization
+	special_status = cc_bop_chief_balancer
+	chance = 10
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+		parliament_type = parliament_type:cc_bop_coalition_assembly
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+	allow = {
+		NOT = { has_variable = cc_bop_pi_subsidies_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_bop_pi_subsidies_cd value = yes years = 6 }
+		change_variable = { name = cc_bop_resolve add = 8 }
+		leader_country ?= { save_scope_as = cc_bop_chest_holder }
+		if = {
+			limit = { exists = scope:cc_bop_chest_holder }
+			transfer_yearly_gold_from_all_members = {
+				value = 0.03
+				target = scope:cc_bop_chest_holder
+			}
+		}
+		# The lesser members are hardened by the common purse.
+		every_international_organization_member = {
+			limit = { NOT = { is_leader_of_international_organization = root } }
+			add_country_modifier = { modifier = cc_bop_subsidized  years = 4  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -10 }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 50 } }
+			add = { desc = "CC_BOP_HEGEMON_RISING" value = 25 }
+		}
+		# The wealthy resent footing the bill; the poor welcome the purse.
+		if = {
+			limit = { is_great_power = yes }
+			add = { desc = "CC_BOP_VOTE_GREAT_POWER_CAUTION" value = -10 }
+		}
+		else = {
+			add = { desc = "CC_BOP_VOTE_SEEKS_PROTECTION" value = 20 }
+		}
+	}
+}
+
+############################ TREATY OF CHAUMONT ############################
+# A binding pledge of no separate peace. While it holds the bloc is steadier; a deserter still
+# suffers the standing cc_bop_defector penalty applied by the IO's on_left.
+cc_bop_pi_no_separate_peace = {
+	type = international_organization
+	special_status = cc_bop_chief_balancer
+	chance = 10
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+		parliament_type = parliament_type:cc_bop_coalition_assembly
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+	allow = {
+		NOT = { has_variable = cc_bop_pi_chaumont_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_bop_pi_chaumont_cd value = yes years = 8 }
+		change_variable = { name = cc_bop_resolve add = 12 }
+		every_international_organization_member = {
+			add_country_modifier = { modifier = cc_bop_chaumont_pledge  years = 6  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -15 }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+			add = { desc = "CC_BOP_HEGEMON_RISING" value = 35 }
+		}
+		if = {
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed } }
+			add = { desc = "CC_BOP_RECKONING" value = 60 }
+		}
+		# A court bought toward neutrality dreads being bound.
+		if = {
+			limit = { has_country_modifier = cc_bop_bought_ally }
+			add = { desc = "CC_BOP_VOTE_BOUGHT" value = -30 }
+		}
+	}
+}
+
+############################ THE PRAGMATIC ARMY ############################
+# A unified command for the duration of the war — a real fighting bonus across the bloc.
+cc_bop_pi_combined_command = {
+	type = international_organization
+	special_status = cc_bop_chief_balancer
+	chance = 10
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+		parliament_type = parliament_type:cc_bop_coalition_assembly
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+	allow = {
+		NOT = { has_variable = cc_bop_pi_command_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_bop_pi_command_cd value = yes years = 5 }
+		change_variable = { name = cc_bop_resolve add = 5 }
+		every_international_organization_member = {
+			add_country_modifier = { modifier = cc_bop_combined_command  years = 3  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -5 }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 50 } }
+			add = { desc = "CC_BOP_HEGEMON_RISING" value = 25 }
+		}
+		if = {
+			limit = { any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+			add = { desc = "CC_BOP_VOTE_HAWKISH_COURT" value = 15 }
+		}
+	}
+}
+
+############################ THE JOINT DÉMARCHE ############################
+# A collective ultimatum to the aspirant: a public rebuke that shifts the momentum of the
+# contest toward the coalition and sours every member's standing with the hegemon.
+cc_bop_pi_collective_demarche = {
+	type = international_organization
+	special_status = cc_bop_chief_balancer
+	chance = 10
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+		parliament_type = parliament_type:cc_bop_coalition_assembly
+		situation:cc_balance_of_power = { situation_is_active = yes }
+		exists = international_organization:cc_bop_preponderance.leader_country
+	}
+	allow = {
+		NOT = { has_variable = cc_bop_pi_demarche_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_bop_pi_demarche_cd value = yes years = 5 }
+		change_variable = { name = cc_bop_resolve add = 4 }
+		situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 5 } }
+		international_organization:cc_bop_preponderance.leader_country ?= { save_scope_as = cc_bop_demarche_target }
+		if = {
+			limit = { exists = scope:cc_bop_demarche_target }
+			every_international_organization_member = {
+				add_opinion = { target = scope:cc_bop_demarche_target  modifier = cc_bop_op_demarche }
+			}
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -10 }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 52 } }
+			add = { desc = "CC_BOP_HEGEMON_RISING" value = 30 }
+		}
+		if = {
+			limit = { international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root } }
+			add = { desc = "CC_BOP_VOTE_RIVAL_HEGEMON" value = 20 }
+		}
+	}
+}
+
+############################ THE PARTITION TREATY ############################
+# The powers agree their war aims in advance — the prospect of gain binds the bloc and steels
+# its resolve for the reckoning.
+cc_bop_pi_war_aims = {
+	type = international_organization
+	special_status = cc_bop_chief_balancer
+	chance = 8
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+		parliament_type = parliament_type:cc_bop_coalition_assembly
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+	allow = {
+		NOT = { has_variable = cc_bop_pi_war_aims_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_bop_pi_war_aims_cd value = yes years = 8 }
+		change_variable = { name = cc_bop_resolve add = 10 }
+		every_international_organization_member = {
+			add_country_modifier = { modifier = cc_bop_war_aims_committed  years = 6  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -5 }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 45 } }
+			add = { desc = "CC_BOP_LAW_ASCENDANT" value = 35 }
+		}
+		if = {
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+			add = { desc = "CC_BOP_RECKONING" value = 50 }
+		}
+	}
+}

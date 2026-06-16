@@ -509,6 +509,77 @@ cc_bop_io_consolidate_hegemony = {
 }
 
 ################################################################################
+# IO LEADER ACTION (COALITION) — Convene the Congress
+# A structural act: the chief balancer calls the dormant congress into session, swapping the
+# coalition's parliament form to the standing assembly. Only then can the bloc vote on laws
+# and table parliament issues. Requires a quorum of members. Unilateral — the leader convenes,
+# the bloc deliberates thereafter.
+################################################################################
+cc_bop_io_convene_the_congress = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_coalition
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+		international_organization:cc_bop_coalition = {
+			parliament_type = parliament_type:cc_bop_coalition_dormant
+		}
+	}
+
+	allow = {
+		# A congress needs a quorum of powers to be worth convening.
+		international_organization:cc_bop_coalition = {
+			total_members >= 3
+		}
+		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 20
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_coalition
+		}
+	}
+
+	effect = {
+		international_organization:cc_bop_coalition = {
+			set_parliament_type = parliament_type:cc_bop_coalition_assembly
+			# Calling the powers together rallies the cause.
+			change_variable = { name = cc_bop_resolve add = 5 }
+		}
+		scope:actor = {
+			trigger_event_non_silently = { id = cc_balance_of_power.93 days = 2 }
+		}
+	}
+
+	ai_will_do = {
+		add = {
+			value = 25
+			desc = BASE_VALUE
+		}
+		# The more the coalition is threatened, the keener the leader is to organise it.
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 52 } }
+			add = { desc = "CC_BOP_HEGEMON_RISING" value = 25 }
+		}
+	}
+}
+
+################################################################################
 # IO LEADER ACTION 4 (COALITION) — Subsidise the Allies
 # Spend resolve to harden the coalition's lesser members.
 ################################################################################
@@ -632,11 +703,12 @@ cc_bop_io_naval_blockade = {
 }
 
 ################################################################################
-# IO LEADER ACTION 6 (COALITION) — Coordinate Strategy
-# Spend resolve while the hegemon is dominant to push the balance back toward
-# equilibrium and steel the coalition.
+# IO LEADER ACTION 6 (COALITION) — Assume Supreme Command ("Take the Field")
+# A unilateral stroke: the chief balancer personally assumes command of the allied effort,
+# lending its prestige to steel the coalition and push the balance back toward equilibrium.
+# Spends resolve; no congress vote required — this is the leader's own initiative.
 ################################################################################
-cc_bop_io_coordinate_strategy = {
+cc_bop_io_assume_supreme_command = {
 	type = internationalorganization
 
 	ai_tick = monthly
@@ -656,10 +728,6 @@ cc_bop_io_coordinate_strategy = {
 	allow = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_coordinated }
-		}
-		# Unlocked only once the congress has voted itself standing powers.
-		international_organization:cc_bop_coalition = {
-			international_organization_has_policy = policy:cc_bop_congress_empowered
 		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
 		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
@@ -698,10 +766,12 @@ cc_bop_io_coordinate_strategy = {
 }
 
 ################################################################################
-# IO LEADER ACTION 7 (COALITION) — Convene a Congress
-# A capstone at high resolve: a decisive swing of the balance toward the coalition.
+# IO LEADER ACTION 7 (COALITION) — Diplomatic Revolution ("Renversement des Alliances")
+# A capstone personal stroke at high resolve: the chief balancer engineers a dramatic
+# realignment, a decisive one-off swing of the balance toward the coalition. Unilateral —
+# the work of the leader's own cabinet, not a motion before the congress.
 ################################################################################
-cc_bop_io_convene_congress = {
+cc_bop_io_diplomatic_revolution = {
 	type = internationalorganization
 
 	ai_tick = monthly
@@ -721,10 +791,6 @@ cc_bop_io_convene_congress = {
 	allow = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_convened }
-		}
-		# Unlocked only once the congress has voted itself standing powers.
-		international_organization:cc_bop_coalition = {
-			international_organization_has_policy = policy:cc_bop_congress_empowered
 		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 70
 		situation:cc_balance_of_power = { situation_is_active = yes }

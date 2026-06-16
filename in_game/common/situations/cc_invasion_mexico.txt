@@ -51,23 +51,17 @@ cc_invasion_mexico = {
 	}
 
 	can_end = {
-		end_reason = {
-			trigger = { current_year > 1600 }
-			desc = "ccim_end_year_limit"
-		}
-		end_reason = {
-			trigger = {
-				# All independent native powers in mesoamerica are subjugated or gone
-				NOT = {
-					region:mesoamerica_region = {
-						any_country_with_capital_in_geography = {
-							is_capital_mesoamerica = yes
-							is_subject = no
-						}
+		OR = {
+			current_year > 1600
+			# All independent native powers in mesoamerica are subjugated or gone
+			NOT = {
+				region:mesoamerica_region = {
+					any_country_with_capital_in_geography = {
+						is_capital_mesoamerica = yes
+						is_subject = no
 					}
 				}
 			}
-			desc = "ccim_end_natives_subjugated"
 		}
 	}
 
@@ -501,11 +495,11 @@ cc_invasion_mexico = {
 					is_member_of_international_organization = international_organization:cc_mesoamerican_confederation
 				}
 			}
-			value = rgb { 0 160 80 }
+			value = ccim_confederation_color
 		}
 		else_if = {
 			limit = { owner ?= { is_capital_mesoamerica = yes } }
-			value = rgb { 200 140 40 }
+			value = ccim_native_color
 		}
 		else_if = {
 			limit = {
@@ -519,12 +513,12 @@ cc_invasion_mexico = {
 	}
 
 	legend_key = {
-		color = rgb { 0 160 80 }
+		color = ccim_confederation_color
 		require_color_on_map = yes
 		desc = CCIM_CONFEDERATION_LEGEND
 	}
 	legend_key = {
-		color = rgb { 200 140 40 }
+		color = ccim_native_color
 		require_color_on_map = yes
 		desc = CCIM_NATIVE_UNAFFILIATED_LEGEND
 	}

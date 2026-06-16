@@ -1,0 +1,46 @@
+﻿
+# Concert of Europe — the readmission of the former hegemon.
+# When the Concert is founded (cc_bop_form_concert) the defeated aspirant is left outside and a
+# return year is stamped 50-75 years out. This chains a check into the yearly country pulse,
+# gated to fire only for the Concert's president (so it runs once a year), that readmits the old
+# adversary once the stamped year arrives — provided it still exists and still matters as a great
+# power. Modelled on France's readmission to the Congress system at Aix-la-Chapelle (1818).
+#
+# on_actions sub-lists are additive across files (see CLAUDE.md) — this merges, it does not clobber.
+yearly_country_pulse = {
+	on_actions = {
+		cc_concert_readmission_pulse
+	}
+}
+
+cc_concert_readmission_pulse = {
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_concert
+		has_global_variable = cc_concert_readmit_year
+		has_global_variable = cc_concert_pending_readmit_tag
+		current_year >= global_var:cc_concert_readmit_year
+	}
+	effect = {
+		if = {
+			limit = {
+				exists = global_var:cc_concert_pending_readmit_tag
+				global_var:cc_concert_pending_readmit_tag = {
+					# Still a power that matters, and a free agent.
+					is_subject = no
+					is_great_power = yes
+					cc_bop_eligible_country = yes
+					NOT = { is_member_of_international_organization = international_organization:cc_bop_concert }
+				}
+			}
+			international_organization:cc_bop_concert = {
+				add_country_to_international_organization = global_var:cc_concert_pending_readmit_tag
+			}
+			global_var:cc_concert_pending_readmit_tag = {
+				trigger_event_non_silently = { id = cc_balance_of_power.94 days = 3 }
+			}
+		}
+		# Whether or not it returned, the question is now closed.
+		remove_global_variable = cc_concert_readmit_year
+		remove_global_variable = cc_concert_pending_readmit_tag
+	}
+}

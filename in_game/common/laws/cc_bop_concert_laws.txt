@@ -1,0 +1,222 @@
+﻿
+# Concert of Europe — the directorate's policies, voted in congress (cc_concert_assembly:
+# president two votes, members one, simple majority). Three questions face the powers: the
+# guiding doctrine of the age, the architecture of collective security, and whether the congress
+# sits in permanence. Drawn from the Congress System, Victorian balance-of-power statecraft, and
+# the collective-security ideal that would later animate the League of Nations.
+
+############################ DOCTRINE ############################
+# The animating principle of the Concert.
+cc_concert_doctrine_law = {
+	type = international_organization
+	law_category = diplomatic
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default — classic balance of power: keep any one power from dominating, and keep talking.
+	cc_concert_balance_of_power = {
+		non_leader_modifier = {
+			diplomatic_reputation = 1
+		}
+		leader_modifier = {
+			diplomatic_reputation = 1
+			monthly_prestige = 0.03
+		}
+		wants_propose_policy = {
+			subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = {
+						OR = {
+							international_organization_has_policy = policy:cc_concert_principle_of_intervention
+							international_organization_has_policy = policy:cc_concert_liberal_internationalism
+						}
+					}
+				}
+				subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_CONCERT_BASE" value = 10 } }
+	}
+
+	# The Holy Alliance / Troppau Protocol — legitimist reaction: suppress revolution, shore up
+	# the thrones, at the cost of friction with the liberal and the restless.
+	cc_concert_principle_of_intervention = {
+		on_activate = {}
+		non_leader_modifier = {
+			monthly_legitimacy = 0.02
+			monthly_prestige = 0.02
+		}
+		leader_modifier = {
+			monthly_legitimacy = 0.03
+			monthly_prestige = 0.03
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 0 }
+			# Conservative monarchies embrace it; republics and the liberal recoil.
+			if = {
+				limit = { government_type = government_type:monarchy }
+				add = { desc = "CC_CONCERT_LEGITIMIST" value = 20 }
+			}
+			else = {
+				subtract = { desc = "CC_CONCERT_LIBERAL_COURT" value = 25 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { government_type = government_type:monarchy }
+				add = { desc = "CC_CONCERT_LEGITIMIST" value = 15 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_CONCERT_KEEP" value = 20 } }
+	}
+
+	# Canningite non-intervention, looking toward Wilsonian internationalism — national
+	# self-determination and free commerce over the old dynastic order.
+	cc_concert_liberal_internationalism = {
+		on_activate = {}
+		non_leader_modifier = {
+			global_trade_center_power = 0.05
+			diplomatic_capacity = 1
+		}
+		leader_modifier = {
+			global_trade_center_power = 0.05
+			diplomatic_capacity = 1
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 0 }
+			if = {
+				limit = { government_type = government_type:republic }
+				add = { desc = "CC_CONCERT_LIBERAL_COURT" value = 25 }
+			}
+			else = {
+				subtract = { desc = "CC_CONCERT_LEGITIMIST" value = 10 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { government_type = government_type:republic }
+				add = { desc = "CC_CONCERT_LIBERAL_COURT" value = 15 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_CONCERT_KEEP" value = 20 } }
+	}
+}
+
+############################ COLLECTIVE SECURITY ############################
+# How far the powers will bind themselves to one another's defence.
+cc_concert_security_law = {
+	type = international_organization
+	law_category = diplomatic
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default — concerts are convened as need arises; no standing obligation.
+	cc_concert_ad_hoc = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_concert_mutual_guarantee }
+				}
+				subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_CONCERT_BASE" value = 10 } }
+	}
+
+	# The Quadruple Alliance's mutual guarantee, hardening into collective security: an attack on
+	# one is an attack on all, and no member may make war on another without just cause.
+	cc_concert_mutual_guarantee = {
+		join_defensive_wars_auto_call = {
+			custom_tooltip = { text = JOIN_WARS_DEFAULT_REASON  always = yes }
+		}
+		international_organization_modifier = {
+			cannot_declare_no_cb_wars_on_members = yes
+		}
+		non_leader_modifier = {
+			diplomatic_reputation = 1
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 5 }
+			# The smaller powers crave the guarantee; the strongest are warier of the obligation.
+			if = {
+				limit = { is_great_power = yes }
+				subtract = { desc = "CC_CONCERT_GREAT_POWER_CAUTION" value = 10 }
+			}
+			else = {
+				add = { desc = "CC_CONCERT_SEEKS_PROTECTION" value = 20 }
+			}
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_CONCERT_BASE" value = 5 }
+		}
+		wants_keep_policy = { add = { desc = "CC_CONCERT_KEEP" value = 20 } }
+	}
+}
+
+############################ THE CONGRESS SYSTEM ############################
+# Whether the Concert sits as a standing congress — the apparatus for collective mediation.
+cc_concert_congress_law = {
+	type = international_organization
+	law_category = diplomatic
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+	}
+	allow = { always = yes }
+	locked = {}
+
+	cc_concert_dormant = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_concert_standing_congress }
+				}
+				subtract = { desc = "CC_CONCERT_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_CONCERT_BASE" value = 10 } }
+	}
+
+	# A standing congress: the powers sit in permanence and may mediate the quarrels of Europe
+	# (unlocks the cc_concert_pi_mediate_dispute parliament issue).
+	cc_concert_standing_congress = {
+		non_leader_modifier = {
+			diplomatic_capacity = 1
+		}
+		leader_modifier = {
+			diplomatic_capacity = 1
+			monthly_prestige = 0.02
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_CONCERT_BASE" value = 5 }
+			if = {
+				limit = { is_great_power = yes }
+				add = { desc = "CC_CONCERT_GREAT_POWER" value = 10 }
+			}
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_CONCERT_BASE" value = 5 }
+		}
+		wants_keep_policy = { add = { desc = "CC_CONCERT_KEEP" value = 20 } }
+	}
+}

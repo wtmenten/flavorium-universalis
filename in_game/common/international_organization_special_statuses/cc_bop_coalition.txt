@@ -1,0 +1,23 @@
+﻿
+# Balance of Power — the Balancing Coalition's leadership status.
+# The chief balancer is the power that tables motions before the congress. The status exists
+# chiefly to gate who may raise the coalition's parliament issues (special_status = on each
+# issue) and to give the leader a distinct map colour and title. Voting itself stays one vote
+# per member (the assembly adds no participation restrictions — see cc_bop_parliament.txt),
+# so this status carries no extra voting weight.
+cc_bop_chief_balancer = {
+	max_countries = 1
+	priority = 15
+	leader = yes
+	can_bestow_trigger = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	auto_rescind_trigger = {
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_LEADER_COLOR
+	special_status_power = 1
+}

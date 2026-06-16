@@ -198,6 +198,68 @@ cc_bop_designate_poles = {
 	}
 }
 
+# Found the Concert of Europe out of a victorious coalition that voted policy:cc_bop_enact_concert.
+# The chief balancer becomes founding president; the five greatest coalition powers take the
+# seats. The defeated former hegemon is NOT admitted now — it is readmitted decades later via the
+# cc_concert_readmission_pulse (cf. France at Aix-la-Chapelle, 1818). The two old poles, their
+# purpose served, are dissolved. Call this BEFORE cc_bop_cleanup.
+cc_bop_form_concert = {
+	if = {
+		limit = { exists = international_organization:cc_bop_coalition.leader_country }
+		international_organization:cc_bop_coalition.leader_country = { save_scope_as = cc_concert_president }
+		# Remember the defeated aspirant for its eventual readmission.
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+			international_organization:cc_bop_preponderance.leader_country = { save_scope_as = cc_concert_former_hegemon }
+		}
+		# Pool the victorious coalition's members, strongest first.
+		clear_global_variable_list = cc_bop_pool
+		international_organization:cc_bop_coalition = {
+			every_international_organization_member = {
+				add_to_global_variable_list = { name = cc_bop_pool target = this }
+			}
+		}
+		# Found the Concert under the chief balancer.
+		scope:cc_concert_president = {
+			create_international_organization = {
+				type = international_organization_type:cc_bop_concert
+				add_country_to_international_organization = this
+				set_leader_country = this
+			}
+		}
+		# Admit the next four strongest powers — five seats in all.
+		ordered_in_global_list = {
+			variable = cc_bop_pool
+			order_by = great_power_score
+			max = 4
+			check_range_bounds = no
+			limit = { NOT = { this = scope:cc_concert_president } }
+			save_scope_as = cc_concert_new_seat
+			international_organization:cc_bop_concert ?= {
+				add_country_to_international_organization = scope:cc_concert_new_seat
+			}
+		}
+		clear_global_variable_list = cc_bop_pool
+		# Schedule the former hegemon's eventual return to the European family (50-75 years).
+		if = {
+			limit = { exists = scope:cc_concert_former_hegemon }
+			set_global_variable = { name = cc_concert_pending_readmit_tag value = scope:cc_concert_former_hegemon }
+			set_global_variable = { name = cc_concert_readmit_year value = current_year }
+			change_global_variable = { name = cc_concert_readmit_year add = 50 }
+			random_list = {
+				20 = { }
+				20 = { change_global_variable = { name = cc_concert_readmit_year add = 5 } }
+				20 = { change_global_variable = { name = cc_concert_readmit_year add = 12 } }
+				20 = { change_global_variable = { name = cc_concert_readmit_year add = 19 } }
+				20 = { change_global_variable = { name = cc_concert_readmit_year add = 25 } }
+			}
+		}
+		# The old poles are superseded by the new institution.
+		destroy_international_organization = { target = international_organization:cc_bop_preponderance }
+		destroy_international_organization = { target = international_organization:cc_bop_coalition }
+	}
+}
+
 # Apply the appropriate ending payoffs based on which break flag the situation set.
 cc_bop_apply_ending = {
 	# HEGEMONY — the preponderant leader masters the continent.
@@ -281,6 +343,17 @@ cc_bop_apply_ending = {
 				add_country_modifier = { modifier = cc_bop_cut_down_to_size years = 40 }
 			}
 		}
+		# If the congress voted to institutionalise the peace, found the Concert of Europe
+		# (this also dissolves the two old poles — keep it last in the branch).
+		if = {
+			limit = {
+				exists = international_organization:cc_bop_coalition
+				international_organization:cc_bop_coalition = {
+					international_organization_has_policy = policy:cc_bop_enact_concert
+				}
+			}
+			cc_bop_form_concert = yes
+		}
 	}
 	# STAGNATION — the aspirant never broke through and was quietly overtaken. A neutral,
 	# non-decisive dissolution: no bloc wins. Allows a fresh balance after the cooldown.
@@ -357,6 +430,7 @@ cc_bop_cleanup = {
 		remove_variable = cc_bop_neu_pct
 		remove_variable = cc_bop_preponderance_share
 		remove_variable = cc_bop_share_offset
+		remove_variable = cc_bop_situation_months
 		remove_variable = cc_bop_hegemony_months
 		remove_variable = cc_bop_coalition_months
 		remove_variable = cc_bop_stagnation_months

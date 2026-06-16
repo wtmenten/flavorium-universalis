@@ -1,0 +1,148 @@
+﻿
+# Concert of Europe — election of the President.
+# Modelled on swiss_election. Members vote; the winner takes the chair. Triggered both on a
+# timed cadence (leader_change_method = vote on the Concert IO) and on demand by the
+# cc_concert_pi_depose_president parliament issue (international_organization_chooses_new_leader).
+cc_concert_election = {
+	potential = { always = yes }
+	allow = { always = yes }
+
+	ai_tick = monthly
+
+	is_live = {
+		scope:recipient ?= {
+			international_organization_has_leader = no
+		}
+	}
+	can_vote = {
+		scope:actor = {
+			is_member_of_international_organization = scope:recipient
+		}
+	}
+	votes = {
+		add = {
+			desc = "[elector|e]"
+			value = 1
+		}
+	}
+	total_votes_needed = {
+		add = {
+			value = scope:total_votes_available
+			multiply = 0.5
+		}
+	}
+	requires_explicit_votes = no
+
+	should_finalize_vote = {
+		custom_tooltip = {
+			text = OVER_HALF_OF_VOTES
+			scope:recipient = {
+				not = { exists = leader_country }
+			}
+			scope:highest_vote >= scope:total_votes_needed
+		}
+	}
+	select_trigger = {
+		looking_for_a = international_organization
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = {
+			data = name
+		}
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_concert
+		}
+		enabled = {
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		source = recipient
+		target_flag = vote
+		allow_self = yes
+		name = "election_select_country"
+		none_available_msg_key = "election_select_no_countries"
+		default_sort = tax_base
+		column = {
+			data = name
+		}
+		column = {
+			data = tax_base
+		}
+		visible = {
+			can_lead_international_organization = scope:recipient
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				scope:vote ?= { can_lead_international_organization = scope:recipient }
+			}
+			scope:recipient = { set_leader_country = scope:vote }
+		}
+	}
+
+	ai_will_do = {
+		scope:vote = {
+			if = {
+				limit = {
+					this = scope:actor
+				}
+				add = {
+					desc = "LEADERSHIP_VOTE_FOR_SELF"
+					value = 25
+				}
+			}
+			add = {
+				desc = "game_concept_rival"
+				if = {
+					limit = {
+						is_rival_of = scope:actor
+					}
+					value = -1000
+				}
+			}
+			add = {
+				desc = "game_concept_war"
+				if = {
+					limit = {
+						is_at_war_with = scope:actor
+					}
+					value = -1000
+				}
+			}
+			add = {
+				desc = "rank_empire"
+				if = {
+					limit = {
+						country_rank = country_rank:rank_empire
+					}
+					value = 50
+				}
+			}
+			add = {
+				desc = "rank_kingdom"
+				if = {
+					limit = {
+						country_rank = country_rank:rank_kingdom
+					}
+					value = 25
+				}
+			}
+			add = {
+				desc = "game_concept_opinion"
+				if = {
+					limit = {
+						not = { this = scope:actor }
+					}
+					scope:actor = {
+						value = this_opinion_of_prev
+						divide = 4
+					}
+				}
+			}
+		}
+	}
+}

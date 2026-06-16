@@ -18,13 +18,17 @@ cc_bop_coalition = {
 	leader_type = country
 	disband_if_no_leader = yes
 
-	# The congress: a lightweight international parliament. The bloc begins weak on every
-	# law and must vote itself teeth as the aspirant grows dangerous. The chief balancer
-	# tables the motions; a simple majority of members carries them.
+	# The congress: a lightweight international parliament. It begins DORMANT — an alliance of
+	# convenience with no sitting assembly — and the chief balancer must formally convene it
+	# (the cc_bop_io_convene_the_congress leader action swaps the parliament form to
+	# cc_bop_coalition_assembly) before any law or parliament-issue vote can take place. The
+	# bloc then begins weak on every law and must vote itself teeth as the aspirant grows
+	# dangerous. The chief balancer tables the motions; a simple majority of members carries them.
 	has_parliament = yes
-	parliament_type = cc_bop_coalition_assembly
+	parliament_type = cc_bop_coalition_dormant
 	resolution_widget = parliament
 	alert_view_tab = parliament
+	special_statuses_implemented = { cc_bop_chief_balancer }
 	can_initiate_policy_votes = {
 		is_leader_of_international_organization = scope:recipient
 	}
@@ -33,6 +37,7 @@ cc_bop_coalition = {
 		cc_bop_offense_law = cc_bop_no_offense
 		cc_bop_congress_powers_law = cc_bop_congress_dormant
 		cc_bop_coup_law = cc_bop_coup_restrained
+		cc_bop_settlement_law = cc_bop_settlement_dissolution
 	}
 
 	# Every participant in the great game marches freely across the theatre — through this

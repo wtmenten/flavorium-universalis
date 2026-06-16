@@ -1,0 +1,42 @@
+﻿
+# Concert of Europe — voting statuses.
+# Voting is weighted: the president speaks with two voices, every other member with one
+# (special_status_power below; the assembly's parliament type lists both as participants and
+# sets uses_parliament_for_law_votes so vote weight flows from these powers). The president is
+# whichever power leads the Concert; the chair rotates by vote (see cc_concert_election and the
+# cc_concert_pi_depose_president parliament issue).
+cc_concert_president = {
+	max_countries = 1
+	priority = 15
+	leader = yes
+	can_bestow_trigger = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	auto_rescind_trigger = {
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_LEADER_COLOR
+	special_status_power = 2
+}
+
+cc_concert_seat = {
+	priority = 5
+	can_bestow_trigger = {
+		is_member_of_international_organization = scope:recipient
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	auto_rescind_trigger = {
+		OR = {
+			NOT = { is_member_of_international_organization = scope:recipient }
+			is_leader_of_international_organization = scope:recipient
+		}
+	}
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_TIER1_COLOR
+	special_status_power = 1
+}

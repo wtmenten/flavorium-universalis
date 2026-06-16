@@ -1,0 +1,194 @@
+﻿
+# Concert of Europe — the directorate's collective actions, voted in congress.
+# The president tables most motions; the powers vote (president two voices, members one). One
+# motion — the vote of no confidence — is raised by the members against the chair. Scopes match
+# the coalition issues: potential/allow/on_debate_passed root = the IO; selectable_for root =
+# the country selecting (scope:recipient = IO); wants_this_parliament_issue_bias root = voter.
+
+############################ CONGRESS MEDIATION ############################
+# With a standing congress, the powers may impose a general peace on a member's wars — the great
+# achievement of the Congress System.
+cc_concert_pi_mediate_dispute = {
+	type = international_organization
+	special_status = cc_concert_president
+	chance = 10
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+		international_organization_has_policy = policy:cc_concert_standing_congress
+	}
+	allow = {
+		NOT = { has_variable = cc_concert_pi_mediate_cd }
+		any_international_organization_member = { at_war = yes }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_concert_pi_mediate_cd value = yes years = 5 }
+		custom_tooltip = {
+			text = cc_concert_pi_mediate_dispute_tt
+			every_international_organization_member = {
+				limit = { at_war = yes }
+				every_current_war = {
+					limit = {
+						# Only wars against outsiders — the Concert does not unmake its own quarrels here.
+						any_war_participant = {
+							is_war_leader_of = prev
+							NOT = { is_member_of_international_organization = root }
+						}
+					}
+					white_peace = this
+				}
+			}
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = 10 }
+	}
+}
+
+############################ COLLECTIVE INTERVENTION ############################
+# A coordinated show of force to uphold the settled order — stronger where the powers have
+# embraced the Principle of Intervention.
+cc_concert_pi_collective_intervention = {
+	type = international_organization
+	special_status = cc_concert_president
+	chance = 8
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+	}
+	allow = {
+		NOT = { has_variable = cc_concert_pi_intervention_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_concert_pi_intervention_cd value = yes years = 6 }
+		every_international_organization_member = {
+			add_country_modifier = { modifier = cc_concert_intervention_mandate  years = 4  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -5 }
+		if = {
+			limit = { scope:recipient = { international_organization_has_policy = policy:cc_concert_principle_of_intervention } }
+			add = { desc = "CC_CONCERT_INTERVENTIONIST" value = 25 }
+		}
+	}
+}
+
+############################ THE EASTERN QUESTION ############################
+# The powers manage the partition of a declining sphere — a Victorian set-piece. The chair gains
+# prestige for stewarding the settlement; the members affirm their spheres.
+cc_concert_pi_eastern_question = {
+	type = international_organization
+	special_status = cc_concert_president
+	chance = 6
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+	}
+	allow = {
+		NOT = { has_variable = cc_concert_pi_eastern_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_concert_pi_eastern_cd value = yes years = 10 }
+		leader_country ?= { add_prestige = prestige_mild_bonus }
+		every_international_organization_member = {
+			add_country_modifier = { modifier = cc_concert_sphere_of_influence  years = 6  mode = add_and_extend }
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = 5 }
+	}
+}
+
+############################ ADMIT A POWER ############################
+# A rising power is admitted to the directorate — the strongest eligible outsider takes a seat.
+cc_concert_pi_admit_power = {
+	type = international_organization
+	special_status = cc_concert_president
+	chance = 6
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+		any_country = {
+			is_great_power = yes
+			is_subject = no
+			NOT = { is_member_of_international_organization = international_organization:cc_bop_concert }
+		}
+	}
+	allow = {
+		NOT = { has_variable = cc_concert_pi_admit_cd }
+	}
+	selectable_for = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_concert_pi_admit_cd value = yes years = 10 }
+		ordered_country = {
+			limit = {
+				is_great_power = yes
+				is_subject = no
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_concert }
+			}
+			order_by = great_power_score
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_concert_admitted
+		}
+		if = {
+			limit = { exists = scope:cc_concert_admitted }
+			add_country_to_international_organization = scope:cc_concert_admitted
+		}
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -10 }
+	}
+}
+
+############################ VOTE OF NO CONFIDENCE ############################
+# The members may unseat the sitting president and elect a new chair — the explicit vote to swap
+# the leader (cf. the HRE's force-the-emperor-to-abdicate). Raised by a member, not the chair.
+cc_concert_pi_depose_president = {
+	type = international_organization
+	special_status = cc_concert_seat
+	chance = 5
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_concert
+		international_organization_has_leader = yes
+	}
+	allow = {
+		NOT = { has_variable = cc_concert_pi_depose_cd }
+	}
+	selectable_for = {
+		NOT = { is_leader_of_international_organization = scope:recipient }
+		is_member_of_international_organization = scope:recipient
+	}
+	on_debate_passed = {
+		set_variable = { name = cc_concert_pi_depose_cd value = yes years = 8 }
+		international_organization_chooses_new_leader = this
+	}
+	on_debate_failed = {}
+	wants_this_parliament_issue_bias = {
+		add = { desc = "VOTE_BASE_VALUE" value = -5 }
+		# A power that dislikes the chair is readier to unseat it.
+		if = {
+			limit = {
+				exists = scope:recipient.leader_country
+				NOT = { this = scope:recipient.leader_country }
+			}
+			add = {
+				desc = "CC_CONCERT_OPINION_OF_CHAIR"
+				value = "root.opinion(scope:recipient.leader_country)"
+				multiply = -0.3
+			}
+		}
+	}
+}

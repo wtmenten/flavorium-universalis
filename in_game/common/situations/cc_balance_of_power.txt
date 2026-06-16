@@ -45,29 +45,15 @@ cc_balance_of_power = {
 	}
 
 	can_end = {
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_hegemony } }
-			desc = "cc_bop_end_hegemony"
-		}
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_coalition } }
-			desc = "cc_bop_end_coalition"
-		}
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_stagnation } }
-			desc = "cc_bop_end_stagnation"
-		}
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_deluge } }
-			desc = "cc_bop_end_deluge"
-		}
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_revolution } }
-			desc = "cc_bop_end_revolution"
-		}
-		end_reason = {
-			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_concert } }
-			desc = "cc_bop_end_concert"
+		situation:cc_balance_of_power = {
+			OR = {
+				has_variable = cc_bop_flag_hegemony
+				has_variable = cc_bop_flag_coalition
+				has_variable = cc_bop_flag_stagnation
+				has_variable = cc_bop_flag_deluge
+				has_variable = cc_bop_flag_revolution
+				has_variable = cc_bop_flag_concert
+			}
 		}
 	}
 
@@ -110,6 +96,9 @@ cc_balance_of_power = {
 			# Event-driven momentum layered on top of the structural share by
 			# cc_bop_recompute_share; starts neutral and decays toward 0 monthly.
 			set_variable = { name = cc_bop_share_offset value = 0 }
+			# How long the contest has run (months). Drives the rising appetite for a durable
+			# settlement — see the cc_bop_enact_concert policy's wants_propose_policy.
+			set_variable = { name = cc_bop_situation_months value = 0 }
 		}
 		cc_bop_recompute_share = yes
 
@@ -165,6 +154,18 @@ cc_balance_of_power = {
 
 	on_monthly = {
 		cc_bop_recompute_share = yes
+
+		# Tally the months the contest has run — fuels the rising appetite for a durable
+		# settlement (the cc_bop_enact_concert policy weights itself by this).
+		situation:cc_balance_of_power = {
+			if = {
+				limit = { has_variable = cc_bop_situation_months }
+				change_variable = { name = cc_bop_situation_months add = 1 }
+			}
+			else = {
+				set_variable = { name = cc_bop_situation_months value = 1 }
+			}
+		}
 
 		# Reset the Call-to-Arms escalation once the hegemon-coalition war is over, so the
 		# next war's first call-in starts cheap again.
@@ -1005,33 +1006,33 @@ cc_balance_of_power = {
 	map_color = {
 		if = {
 			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_preponderance } }
-			value = rgb { 190 50 50 }
+			value = cc_bop_preponderance_color
 		}
 		else_if = {
 			limit = { owner ?= { is_member_of_international_organization = international_organization:cc_bop_coalition } }
-			value = rgb { 50 90 190 }
+			value = cc_bop_coalition_color
 		}
 		else_if = {
 			limit = { owner ?= { cc_bop_eligible_country = yes } }
-			value = rgb { 190 190 190 }
+			value = cc_bop_neutral_color
 		}
 		else = {
-			value = rgb { 120 120 120 }
+			value = define:NMapColors|DEFAULT_COLOR
 		}
 	}
 
 	legend_key = {
-		color = rgb { 190 50 50 }
+		color = cc_bop_preponderance_color
 		require_color_on_map = yes
 		desc = CC_BOP_PREPONDERANCE_LEGEND
 	}
 	legend_key = {
-		color = rgb { 50 90 190 }
+		color = cc_bop_coalition_color
 		require_color_on_map = yes
 		desc = CC_BOP_COALITION_LEGEND
 	}
 	legend_key = {
-		color = rgb { 190 190 190 }
+		color = cc_bop_neutral_color
 		require_color_on_map = yes
 		desc = CC_BOP_NEUTRAL_LEGEND
 	}

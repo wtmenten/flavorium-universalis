@@ -521,3 +521,90 @@ cc_bop_coup_law = {
 		wants_keep_policy = { add = { desc = "CC_BOP_LAW_KEEP" value = 20 } }
 	}
 }
+
+############################ THE SETTLEMENT ############################
+# What the coalition resolves to do with its victory. If cc_bop_enact_concert is in force when
+# the bloc wins the final war, the situation founds a lasting Concert of Europe (see
+# cc_bop_form_concert); otherwise the alliance simply disperses. Because law votes can only
+# happen once the congress is convened (parliament_type:cc_bop_coalition_assembly — the dormant
+# form carries no parliament), enacting the Concert inherently requires an enabled parliament.
+cc_bop_settlement_law = {
+	type = international_organization
+	law_category = diplomatic
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default — the alliance of convenience dissolves with the peace.
+	cc_bop_settlement_dissolution = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_enact_concert }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_BOP_LAW_BASE" value = 10 } }
+	}
+
+	# Institutionalise the peace into a standing Concert of Europe.
+	cc_bop_enact_concert = {
+		# Belt-and-suspenders: the congress must be sitting (it cannot vote otherwise anyway).
+		allow = {
+			exists = international_organization:cc_bop_coalition
+			international_organization:cc_bop_coalition = {
+				parliament_type = parliament_type:cc_bop_coalition_assembly
+			}
+		}
+		on_activate = {
+			scope:recipient ?= { change_variable = { name = cc_bop_resolve add = 5 } }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 0 }
+			# The longer the contest has dragged on, the keener the powers are to bind the
+			# peace into something durable (≈ +1 per year, capped).
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_situation_months } }
+				add = {
+					desc = "CC_BOP_LAW_WAR_WEARINESS"
+					value = situation:cc_balance_of_power.var:cc_bop_situation_months
+					multiply = 0.083
+					max = 40
+				}
+			}
+			# A winning bloc plans the settlement; a faltering one does not.
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 45 } }
+				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 25 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 40 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_situation_months } }
+				add = {
+					desc = "CC_BOP_LAW_WAR_WEARINESS"
+					value = situation:cc_balance_of_power.var:cc_bop_situation_months
+					multiply = 0.083
+					max = 40
+				}
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 40 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_BOP_LAW_KEEP" value = 25 } }
+	}
+}
