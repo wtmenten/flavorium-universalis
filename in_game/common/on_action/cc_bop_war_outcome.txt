@@ -1,0 +1,53 @@
+﻿
+# Balance of Power — final-war outcome capture.
+# Hooks the engine's war-end on_actions (via the merge-safe on_actions sub-list, exactly as
+# cc_bond_pulse hooks on_join_war) to record who actually won the primed reckoning war, so the
+# situation resolves on the real treaty rather than a proxy. Records on the situation:
+#   cc_bop_final_war_outcome = 1  -> the aspiring hegemon prevailed
+#   cc_bop_final_war_outcome = 2  -> the aspiring hegemon was defeated
+# A white peace sets nothing, and the situation treats that as inconclusive (the win is denied).
+# scope:winner / scope:loser / scope:war are provided by the engine.
+
+on_winning_war = {
+	on_actions = {
+		cc_bop_on_war_concluded
+	}
+}
+
+on_losing_war = {
+	on_actions = {
+		cc_bop_on_war_concluded
+	}
+}
+
+cc_bop_on_war_concluded = {
+	effect = {
+		if = {
+			limit = {
+				situation:cc_balance_of_power = {
+					situation_is_active = yes
+					has_variable = cc_bop_final_war_called
+					OR = {
+						has_variable = cc_bop_hegemony_primed
+						has_variable = cc_bop_coalition_primed
+					}
+				}
+				exists = international_organization:cc_bop_preponderance
+				exists = international_organization:cc_bop_preponderance.leader_country
+				# Only the reckoning war between the aspirant and the balancer counts.
+				OR = {
+					scope:winner ?= international_organization:cc_bop_preponderance.leader_country
+					scope:loser ?= international_organization:cc_bop_preponderance.leader_country
+				}
+			}
+			if = {
+				limit = { scope:winner ?= international_organization:cc_bop_preponderance.leader_country }
+				situation:cc_balance_of_power = { set_variable = { name = cc_bop_final_war_outcome value = 1 } }
+			}
+			else_if = {
+				limit = { scope:loser ?= international_organization:cc_bop_preponderance.leader_country }
+				situation:cc_balance_of_power = { set_variable = { name = cc_bop_final_war_outcome value = 2 } }
+			}
+		}
+	}
+}

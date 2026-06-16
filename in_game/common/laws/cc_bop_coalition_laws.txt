@@ -1,0 +1,523 @@
+﻿
+# Balance of Power — the Balancing Coalition's parliamentary policies.
+# Voted on in the coalition congress (parliament_type:cc_bop_coalition_assembly). The bloc
+# starts weak on every law and must escalate as the aspiring hegemon's preponderance grows.
+# Policy keys are referenced elsewhere as policy:<key> — notably the situation's coalition
+# coup gate checks policy:cc_bop_coup_de_grace.
+
+############################ DEFENCE ############################
+# How readily the coalition rallies to a member under attack.
+cc_bop_defense_law = {
+	type = international_organization
+	law_category = military
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Weak default — every state for itself.
+	cc_bop_no_defense = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = {
+						OR = {
+							international_organization_has_policy = policy:cc_bop_possible_defense
+							international_organization_has_policy = policy:cc_bop_mutual_defense
+						}
+					}
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = {
+			subtract = { desc = "CC_BOP_LAW_BASE" value = 10 }
+		}
+	}
+
+	# Members may be called to a partner's defensive wars.
+	cc_bop_possible_defense = {
+		join_defensive_wars_can_call = {
+			custom_tooltip = { text = JOIN_WARS_DEFAULT_REASON  always = yes }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 15 }
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 35 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_FALLING" value = -45 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 45 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 30 }
+			}
+			# --- How this court reads the threat (per-voter disposition, moderate) ---
+			# Fear and loathing of the aspiring hegemon: a hostile court wants real teeth,
+			# a friendly or bound one shrinks from provoking its patron.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = {
+					desc = "CC_BOP_VOTE_OPINION_OF_HEGEMON"
+					value = "root.opinion(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.3
+				}
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root } }
+				add = { desc = "CC_BOP_VOTE_RIVAL_HEGEMON" value = 20 }
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { has_royal_marriage_with = root } }
+				add = { desc = "CC_BOP_VOTE_KIN_HEGEMON" value = -15 }
+			}
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_VOTE_BOUGHT" value = -25 }
+			}
+			# Proximity: a court with the colossus near its borders dreads it most and backs
+			# binding measures; that dread is eroded by every league of distance between them.
+			# (border_distance_to grows with the gap, so it enters as a negative.)
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = { desc = "CC_BOP_VOTE_PROXIMITY_BASE" value = 15 }
+				add = {
+					desc = "CC_BOP_VOTE_DISTANCE_FROM_HEGEMON"
+					value = "border_distance_to(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.1
+					min = -30
+					max = 0
+				}
+			}
+			# Realist caution: a great power is wary of binding itself to lesser quarrels;
+			# small members crave the shelter such a pact would give them.
+			if = {
+				limit = { is_great_power = yes }
+				add = { desc = "CC_BOP_VOTE_GREAT_POWER_CAUTION" value = -12 }
+			}
+			else = {
+				add = { desc = "CC_BOP_VOTE_SEEKS_PROTECTION" value = 10 }
+			}
+			# The temper of the court.
+			if = {
+				limit = { any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+				add = { desc = "CC_BOP_VOTE_HAWKISH_COURT" value = 12 }
+			}
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = { has_cabinet_action = yes  cabinet_action = cabinet_action:cc_duty_free_hands }
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_VOTE_RELUCTANT_COURT" value = -12 }
+			}
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_mutual_defense }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_mutual_defense }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BOP_LAW_KEEP" value = 20 }
+		}
+	}
+
+	# Members are automatically called to every member's defensive war — and the bond is
+	# strong enough to empower the coalition's standing solidarity (see the IO monthly_effect).
+	cc_bop_mutual_defense = {
+		join_defensive_wars_auto_call = {
+			custom_tooltip = { text = JOIN_WARS_DEFAULT_REASON  always = yes }
+		}
+		on_activate = {
+			scope:recipient ?= { change_variable = { name = cc_bop_resolve add = 8 } }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 35 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_FALLING" value = -45 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 45 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 80 }
+			}
+			# --- How this court reads the threat (per-voter disposition, strong) ---
+			# A binding pact divides the bloc sharply: the threatened embrace it, the secure resist.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = {
+					desc = "CC_BOP_VOTE_OPINION_OF_HEGEMON"
+					value = "root.opinion(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.3
+				}
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root } }
+				add = { desc = "CC_BOP_VOTE_RIVAL_HEGEMON" value = 20 }
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { has_royal_marriage_with = root } }
+				add = { desc = "CC_BOP_VOTE_KIN_HEGEMON" value = -15 }
+			}
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_VOTE_BOUGHT" value = -25 }
+			}
+			# Proximity: the nearer the colossus, the more a court craves an automatic guarantee.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = { desc = "CC_BOP_VOTE_PROXIMITY_BASE" value = 18 }
+				add = {
+					desc = "CC_BOP_VOTE_DISTANCE_FROM_HEGEMON"
+					value = "border_distance_to(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.12
+					min = -36
+					max = 0
+				}
+			}
+			# Realist caution, sharpened: a great power will not surrender its sword to an
+			# automatic call-up over a lesser member's quarrel; small members crave the shield.
+			if = {
+				limit = { is_great_power = yes }
+				add = { desc = "CC_BOP_VOTE_GREAT_POWER_CAUTION" value = -25 }
+			}
+			else = {
+				add = { desc = "CC_BOP_VOTE_SEEKS_PROTECTION" value = 12 }
+			}
+			if = {
+				limit = { any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+				add = { desc = "CC_BOP_VOTE_HAWKISH_COURT" value = 12 }
+			}
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = { has_cabinet_action = yes  cabinet_action = cabinet_action:cc_duty_free_hands }
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_VOTE_RELUCTANT_COURT" value = -12 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 52 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 30 }
+			}
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BOP_LAW_KEEP" value = 25 }
+		}
+	}
+}
+
+############################ OFFENCE ############################
+# Whether the coalition may strike first, pre-emptively, against the aspirant.
+cc_bop_offense_law = {
+	type = international_organization
+	law_category = military
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+	}
+	allow = { always = yes }
+	locked = {}
+
+	cc_bop_no_offense = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_preemptive_doctrine }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_BOP_LAW_BASE" value = 10 } }
+	}
+
+	# Members may be called into a partner's offensive war against the aspirant — the
+	# political basis for the pre-emptive strike (event .110) and the desperation strikes.
+	cc_bop_preemptive_doctrine = {
+		join_offensive_wars_can_call = {
+			custom_tooltip = { text = JOIN_WARS_DEFAULT_REASON  always = yes }
+		}
+		on_activate = {
+			scope:recipient ?= { change_variable = { name = cc_bop_resolve add = 6 } }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 5 }
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 45 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 80 }
+			}
+			# --- How this court reads the threat (per-voter disposition, strong) ---
+			# Striking first is the most divisive measure of all — only the truly menaced will it.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = {
+					desc = "CC_BOP_VOTE_OPINION_OF_HEGEMON"
+					value = "root.opinion(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.3
+				}
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root } }
+				add = { desc = "CC_BOP_VOTE_RIVAL_HEGEMON" value = 20 }
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { has_royal_marriage_with = root } }
+				add = { desc = "CC_BOP_VOTE_KIN_HEGEMON" value = -15 }
+			}
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_VOTE_BOUGHT" value = -25 }
+			}
+			# Proximity: a court at the colossus's gates would rather strike than be struck.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = { desc = "CC_BOP_VOTE_PROXIMITY_BASE" value = 18 }
+				add = {
+					desc = "CC_BOP_VOTE_DISTANCE_FROM_HEGEMON"
+					value = "border_distance_to(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.12
+					min = -36
+					max = 0
+				}
+			}
+			# Realist caution: a great power is loath to commit to a war of aggression on a
+			# partner's account; small members, with less to lose, are bolder.
+			if = {
+				limit = { is_great_power = yes }
+				add = { desc = "CC_BOP_VOTE_GREAT_POWER_CAUTION" value = -25 }
+			}
+			else = {
+				add = { desc = "CC_BOP_VOTE_SEEKS_PROTECTION" value = 12 }
+			}
+			if = {
+				limit = { any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+				add = { desc = "CC_BOP_VOTE_HAWKISH_COURT" value = 12 }
+			}
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = { has_cabinet_action = yes  cabinet_action = cabinet_action:cc_duty_free_hands }
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_VOTE_RELUCTANT_COURT" value = -12 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 53 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 35 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_BOP_LAW_KEEP" value = 20 } }
+	}
+}
+
+############################ CONGRESS POWERS ############################
+# Whether the congress has voted itself the standing apparatus for collective action —
+# gating the coalition's special IO leader actions and the empowered solidarity bond.
+cc_bop_congress_powers_law = {
+	type = international_organization
+	law_category = diplomatic
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+	}
+	allow = { always = yes }
+	locked = {}
+
+	cc_bop_congress_dormant = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_congress_empowered }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_BOP_LAW_BASE" value = 10 } }
+	}
+
+	cc_bop_congress_empowered = {
+		on_activate = {
+			scope:recipient ?= { change_variable = { name = cc_bop_resolve add = 10 } }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 5 }
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 35 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_FALLING" value = -40 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 40 }
+			}
+			# --- How this court reads the threat (per-voter disposition, moderate) ---
+			# Standing congress powers find their keenest backers among the menaced and the small.
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = {
+					desc = "CC_BOP_VOTE_OPINION_OF_HEGEMON"
+					value = "root.opinion(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.3
+				}
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { is_rival_of = root } }
+				add = { desc = "CC_BOP_VOTE_RIVAL_HEGEMON" value = 20 }
+			}
+			if = {
+				limit = { international_organization:cc_bop_preponderance.leader_country ?= { has_royal_marriage_with = root } }
+				add = { desc = "CC_BOP_VOTE_KIN_HEGEMON" value = -15 }
+			}
+			if = {
+				limit = { has_country_modifier = cc_bop_bought_ally }
+				add = { desc = "CC_BOP_VOTE_BOUGHT" value = -25 }
+			}
+			if = {
+				limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+				add = { desc = "CC_BOP_VOTE_PROXIMITY_BASE" value = 15 }
+				add = {
+					desc = "CC_BOP_VOTE_DISTANCE_FROM_HEGEMON"
+					value = "border_distance_to(international_organization:cc_bop_preponderance.leader_country)"
+					multiply = -0.1
+					min = -30
+					max = 0
+				}
+			}
+			# Realist caution: a great power is wary of a congress that might bind its hand.
+			if = {
+				limit = { is_great_power = yes }
+				add = { desc = "CC_BOP_VOTE_GREAT_POWER_CAUTION" value = -12 }
+			}
+			else = {
+				add = { desc = "CC_BOP_VOTE_SEEKS_PROTECTION" value = 10 }
+			}
+			if = {
+				limit = { any_cabinet_character = { OR = { has_trait = war_hawk  has_trait = cc_master_balancer } } }
+				add = { desc = "CC_BOP_VOTE_HAWKISH_COURT" value = 12 }
+			}
+			if = {
+				limit = {
+					any_cabinet_character = {
+						OR = {
+							AND = { has_cabinet_action = yes  cabinet_action = cabinet_action:cc_duty_free_hands }
+							has_trait = court_schemer
+							has_trait = cynical_courtier
+						}
+					}
+				}
+				add = { desc = "CC_BOP_VOTE_RELUCTANT_COURT" value = -12 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 30 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_BOP_LAW_KEEP" value = 25 } }
+	}
+}
+
+############################ COUP DE GRÂCE ############################
+# The late capstone: a standing mandate to deliver the decisive, cut-down-to-size blow.
+# Until enacted, a primed coalition (cc_bop_coalition_primed) cannot force its final war.
+cc_bop_coup_law = {
+	type = international_organization
+	law_category = military
+	potential = {
+		international_organization_type = international_organization_type:cc_bop_coalition
+	}
+	allow = { always = yes }
+	locked = {}
+
+	cc_bop_coup_restrained = {
+		wants_propose_policy = {
+			subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 10 }
+			if = {
+				limit = {
+					exists = scope:recipient
+					scope:recipient = { international_organization_has_policy = policy:cc_bop_coup_de_grace }
+				}
+				subtract = { desc = "CC_BOP_LAW_HAVE_BETTER" value = 1000 }
+			}
+		}
+		wants_keep_policy = { subtract = { desc = "CC_BOP_LAW_BASE" value = 10 } }
+	}
+
+	cc_bop_coup_de_grace = {
+		on_activate = {
+			scope:recipient ?= { change_variable = { name = cc_bop_resolve add = 12 } }
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BOP_LAW_BASE" value = 0 }
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 40 } }
+				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 50 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 100 }
+			}
+		}
+		wants_propose_policy = {
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 25 } }
+				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 50 }
+			}
+			if = {
+				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				add = { desc = "CC_BOP_LAW_RECKONING" value = 60 }
+			}
+		}
+		wants_keep_policy = { add = { desc = "CC_BOP_LAW_KEEP" value = 20 } }
+	}
+}

@@ -657,6 +657,10 @@ cc_bop_io_coordinate_strategy = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_coordinated }
 		}
+		# Unlocked only once the congress has voted itself standing powers.
+		international_organization:cc_bop_coalition = {
+			international_organization_has_policy = policy:cc_bop_congress_empowered
+		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
 		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
 		situation:cc_balance_of_power = { situation_is_active = yes }
@@ -717,6 +721,10 @@ cc_bop_io_convene_congress = {
 	allow = {
 		scope:actor = {
 			NOT = { has_variable = cc_bop_recently_convened }
+		}
+		# Unlocked only once the congress has voted itself standing powers.
+		international_organization:cc_bop_coalition = {
+			international_organization_has_policy = policy:cc_bop_congress_empowered
 		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 70
 		situation:cc_balance_of_power = { situation_is_active = yes }

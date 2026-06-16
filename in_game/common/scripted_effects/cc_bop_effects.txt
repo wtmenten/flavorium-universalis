@@ -92,6 +92,66 @@ cc_bop_recompute_share = {
 		set_variable = { name = cc_bop_neu_pct value = var:cc_bop_neu_frac }
 		change_variable = { name = cc_bop_neu_pct multiply = 100 }
 	}
+
+	# Eclipse threshold for the Stagnation ending: the aspirant's own great-power score
+	# raised by a 10% margin. cc_bop_hegemon_eclipsed compares every other eligible power
+	# against this, so a rival must clearly overtake the aspirant — not merely edge ahead.
+	# Stored on the situation so the trigger can read it cheaply.
+	if = {
+		limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+		international_organization:cc_bop_preponderance.leader_country = { save_scope_as = bop_aspirant_lead }
+		situation:cc_balance_of_power = {
+			set_variable = { name = cc_bop_eclipse_target value = scope:bop_aspirant_lead.great_power_score }
+			change_variable = { name = cc_bop_eclipse_target multiply = 1.1 }
+		}
+	}
+	else = {
+		situation:cc_balance_of_power = { remove_variable = cc_bop_eclipse_target }
+	}
+}
+
+# Ignite the decisive reckoning: the chief balancer falls upon the aspirant and the whole
+# coalition piles in as co-attackers. Shared by the primed hegemony reckoning (the
+# coalition's last stand) and the primed coalition coup-de-grâce. Sets cc_bop_final_war_called
+# on the situation only if a war actually opened, so the monthly resolver can tell a fought
+# war from a stillborn one.
+cc_bop_ignite_final_war = {
+	if = {
+		limit = {
+			exists = international_organization:cc_bop_coalition.leader_country
+			exists = international_organization:cc_bop_preponderance.leader_country
+		}
+		international_organization:cc_bop_coalition.leader_country = {
+			if = {
+				limit = {
+					NOT = { this = international_organization:cc_bop_preponderance.leader_country }
+					NOT = { is_at_war_with = international_organization:cc_bop_preponderance.leader_country }
+					NOT = { has_truce_with = international_organization:cc_bop_preponderance.leader_country }
+					can_declare_war_on = international_organization:cc_bop_preponderance.leader_country
+				}
+				international_organization:cc_bop_preponderance.leader_country = { save_scope_as = bop_hegemon }
+				declare_war_with_cb = {
+					target = scope:bop_hegemon
+					type = casus_belli:cb_coalition
+				}
+				"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_coalition_war }
+				if = {
+					limit = { exists = scope:bop_coalition_war }
+					international_organization:cc_bop_coalition = {
+						every_international_organization_member = {
+							limit = { NOT = { is_at_war_with = scope:bop_hegemon } }
+							join_war_as_attacker = { war = scope:bop_coalition_war  call_in_subjects = yes }
+						}
+						change_variable = { name = cc_bop_resolve add = 10 }
+						every_international_organization_member = {
+							add_country_modifier = { modifier = cc_bop_coalition_solidarity  years = 2  mode = add_and_extend }
+						}
+					}
+					situation:cc_balance_of_power = { set_variable = cc_bop_final_war_called }
+				}
+			}
+		}
+	}
 }
 
 # Designate the two pole leaders and create their organizations.
@@ -195,6 +255,63 @@ cc_bop_apply_ending = {
 			trigger_event_non_silently = cc_balance_of_power.73
 		}
 	}
+	# COALITION VICTORY — the balancing bloc cut the aspirant down to size in a final war.
+	else_if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_coalition } }
+		set_global_variable = cc_bop_concluded
+		if = {
+			limit = { exists = international_organization:cc_bop_coalition }
+			international_organization:cc_bop_coalition.leader_country ?= {
+				add_country_modifier = { modifier = cc_bop_vindicated_balancer years = 60 }
+				trigger_event_non_silently = cc_balance_of_power.77
+			}
+			every_country = {
+				limit = {
+					cc_bop_eligible_country = yes
+					is_subject = no
+					is_member_of_international_organization = international_organization:cc_bop_coalition
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
+				}
+				add_country_modifier = { modifier = cc_bop_concert_of_europe years = 60 }
+			}
+		}
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				add_country_modifier = { modifier = cc_bop_cut_down_to_size years = 40 }
+			}
+		}
+	}
+	# STAGNATION — the aspirant never broke through and was quietly overtaken. A neutral,
+	# non-decisive dissolution: no bloc wins. Allows a fresh balance after the cooldown.
+	else_if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_stagnation } }
+		set_global_variable = { name = cc_bop_concert_restart_year value = current_year }
+		change_global_variable = { name = cc_bop_concert_restart_year add = 25 }
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				add_country_modifier = { modifier = cc_bop_faded_ambition years = 30 }
+				trigger_event_non_silently = cc_balance_of_power.78
+			}
+		}
+		# The power risen in the aspirant's shadow earns a modest boon.
+		if = {
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_eclipse_target } }
+			ordered_country = {
+				limit = {
+					cc_bop_eligible_country = yes
+					is_subject = no
+					NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+					great_power_score >= situation:cc_balance_of_power.var:cc_bop_eclipse_target
+				}
+				order_by = great_power_score
+				max = 1
+				check_range_bounds = no
+				add_country_modifier = { modifier = cc_bop_risen_in_shadow years = 40 }
+			}
+		}
+	}
 	# CONCERT OF EUROPE (positive) — not a decisive break. The equilibrium is
 	# institutionalised, but a concert may fray; mark the earliest year a new
 	# balance could form (~25 yr cooldown). See cc_bop_concert_cooldown_elapsed.
@@ -241,7 +358,18 @@ cc_bop_cleanup = {
 		remove_variable = cc_bop_preponderance_share
 		remove_variable = cc_bop_share_offset
 		remove_variable = cc_bop_hegemony_months
+		remove_variable = cc_bop_coalition_months
+		remove_variable = cc_bop_stagnation_months
+		remove_variable = cc_bop_hegemony_primed
+		remove_variable = cc_bop_coalition_primed
+		remove_variable = cc_bop_final_war_called
+		remove_variable = cc_bop_final_war_outcome
+		remove_variable = cc_bop_final_war_grace
+		remove_variable = cc_bop_eclipse_target
+		remove_variable = cc_bop_callins_this_war
 		remove_variable = cc_bop_flag_hegemony
+		remove_variable = cc_bop_flag_coalition
+		remove_variable = cc_bop_flag_stagnation
 		remove_variable = cc_bop_flag_deluge
 		remove_variable = cc_bop_flag_revolution
 		remove_variable = cc_bop_flag_concert

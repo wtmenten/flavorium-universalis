@@ -177,6 +177,135 @@ situation_panel = {
 			}
 		}
 
+		# --- The Reckoning — end-state tickers, each filling toward 60 months. The hegemony
+		# bar is always shown; the coalition and stagnation bars appear only once running.
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 40 }
+			using = bg_card_header_01_military
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				margin = { 10 0 }
+				icon = {
+					size = { 24 24 }
+					texture = "gfx/interface/icons/situations/tension.dds"
+					texture_density = 2
+				}
+				text_single = {
+					fontsize = 16
+					text = "CC_BOP_RECKONING_HEADER"
+				}
+				expand = {}
+			}
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 8
+
+			# Hegemony ticker — the aspirant's road to mastery (always visible).
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BOP_HEGEMONY_TICKER_LABEL" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_hegemony_months').GetValue)]/60"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 60
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_hegemony_months').GetValue)]"
+					tooltip = "CC_BOP_HEGEMONY_TICKER_TT"
+				}
+				text_single = {
+					fontsize = 13
+					text = "CC_BOP_FINAL_WAR_LABEL"
+					tooltip = "CC_BOP_FINAL_WAR_TT"
+					visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_hegemony_primed').IsSet]"
+				}
+			}
+
+			# Coalition ticker — the bloc's road to cutting the aspirant down (shown when running).
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				visible = "[GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coalition_months').GetValue, '(CFixedPoint)0')]"
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BOP_COALITION_TICKER_LABEL" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coalition_months').GetValue)]/60"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_blue_alt.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 60
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coalition_months').GetValue)]"
+					tooltip = "CC_BOP_COALITION_TICKER_TT"
+				}
+				text_single = {
+					fontsize = 13
+					text = "CC_BOP_COALITION_WAR_LABEL"
+					tooltip = "CC_BOP_FINAL_WAR_TT"
+					visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_coalition_primed').IsSet]"
+				}
+			}
+
+			# Stagnation ticker — the aspirant fading, eclipsed (shown when running).
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				visible = "[GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_stagnation_months').GetValue, '(CFixedPoint)0')]"
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BOP_STAGNATION_TICKER_LABEL" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_stagnation_months').GetValue)]/60"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_yellow.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 60
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_bop_stagnation_months').GetValue)]"
+					tooltip = "CC_BOP_STAGNATION_TICKER_TT"
+				}
+			}
+		}
+
 		widget = {
 			layoutpolicy_horizontal = expanding
 			size = { 510 150 }

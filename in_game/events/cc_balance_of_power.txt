@@ -1094,6 +1094,28 @@ cc_balance_of_power.74 = {
 	option = { name = cc_balance_of_power.74.a  add_prestige = prestige_mild_bonus }
 }
 
+# Coalition victory — the chief balancer, having cut the aspirant down to size.
+cc_balance_of_power.77 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.77.title
+	desc = cc_balance_of_power.77.desc
+	outcome = positive
+	illustration_tags = { 10 = exterior  10 = military }
+	option = { name = cc_balance_of_power.77.a  add_prestige = prestige_extreme_bonus }
+}
+
+# Stagnation — the aspirant's moment passes, overtaken and forgotten.
+cc_balance_of_power.78 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.78.title
+	desc = cc_balance_of_power.78.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = angry }
+	option = { name = cc_balance_of_power.78.a }
+}
+
 ################################################################################
 # ACTION EVENTS (80-90)
 # Fired by the generic_actions in cc_bop_actions.txt. The .80/.81 join requests
@@ -1947,6 +1969,10 @@ cc_balance_of_power.110 = {
 	trigger = {
 		is_leader_of_international_organization = international_organization:cc_bop_coalition
 		exists = international_organization:cc_bop_preponderance
+		# The bloc must have voted itself the pre-emptive doctrine before it may strike first.
+		international_organization:cc_bop_coalition = {
+			international_organization_has_policy = policy:cc_bop_preemptive_doctrine
+		}
 		international_organization:cc_bop_preponderance.leader_country ?= {
 			NOT = { this = root }
 			NOT = { is_at_war_with = root }
@@ -2024,6 +2050,13 @@ cc_balance_of_power.111 = {
 	trigger = {
 		is_leader_of_international_organization = international_organization:cc_bop_coalition
 		exists = international_organization:cc_bop_preponderance
+		# The bloc must have voted itself at least a defensive pact before the union answers.
+		international_organization:cc_bop_coalition = {
+			OR = {
+				international_organization_has_policy = policy:cc_bop_possible_defense
+				international_organization_has_policy = policy:cc_bop_mutual_defense
+			}
+		}
 		international_organization:cc_bop_preponderance.leader_country ?= {
 			NOT = { this = root }
 			NOT = { is_at_war_with = root }
@@ -2082,19 +2115,30 @@ cc_balance_of_power.111 = {
 					root = { take_over_all_wars = prev }
 				}
 			}
-			# Rally the members not yet under arms behind the now-unified war.
-			international_organization:cc_bop_coalition = {
-				every_international_organization_member = {
-					limit = {
-						NOT = { this = root }
-						NOT = { is_at_war_with = scope:bop_hegemon }
-					}
-					join_war_against = {
-						war = scope:bop_coalition_war
-						target = scope:bop_hegemon
-						call_in_subjects = yes
+			# Under MUTUAL DEFENCE the call is binding: rally every member not yet under arms
+			# behind the now-unified war. Under POSSIBLE DEFENCE only the leader and the members
+			# already fighting unite — the uncommitted "may be called, but need not answer".
+			if = {
+				limit = {
+					international_organization:cc_bop_coalition = {
+						international_organization_has_policy = policy:cc_bop_mutual_defense
 					}
 				}
+				international_organization:cc_bop_coalition = {
+					every_international_organization_member = {
+						limit = {
+							NOT = { this = root }
+							NOT = { is_at_war_with = scope:bop_hegemon }
+						}
+						join_war_against = {
+							war = scope:bop_coalition_war
+							target = scope:bop_hegemon
+							call_in_subjects = yes
+						}
+					}
+				}
+			}
+			international_organization:cc_bop_coalition = {
 				change_variable = { name = cc_bop_resolve add = 10 }
 			}
 			situation:cc_balance_of_power = { change_variable = { name = cc_bop_share_offset subtract = 4 } }
@@ -2118,6 +2162,203 @@ cc_balance_of_power.111 = {
 		scope:bop_victim ?= {
 			add_opinion = { target = root  modifier = cc_bop_coerced_resentment }
 		}
+	}
+}
+
+# EVENT 112 — The Final Reckoning (announcement to every engaged court)
+# Fired the month a hegemony or coalition counter fills and primes a decisive war. Pure
+# narration: the situation logic (cc_bop_ignite_final_war) forces and resolves the war.
+cc_balance_of_power.112 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.112.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed } }
+				desc = cc_balance_of_power.112.desc_hegemony
+			}
+			triggered_desc = {
+				trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				desc = cc_balance_of_power.112.desc_coalition
+			}
+			triggered_desc = { trigger = { always = yes }  desc = cc_balance_of_power.112.desc_hegemony }
+		}
+	}
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = military }
+	option = { name = cc_balance_of_power.112.a }
+}
+
+# EVENT 120 — Coffers Too Bare (preponderant Call to Arms could not be paid)
+cc_balance_of_power.120 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.120.title
+	desc = cc_balance_of_power.120.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = economy }
+	option = { name = cc_balance_of_power.120.a }
+}
+
+# EVENT 121 — A War Chest Laid (preponderant subsidies scattered in advance)
+cc_balance_of_power.121 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.121.title
+	desc = cc_balance_of_power.121.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = economy }
+	option = { name = cc_balance_of_power.121.a }
+}
+
+# EVENT 122 — The Grand War (preponderant strikes first at the coalition)
+cc_balance_of_power.122 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.122.title
+	desc = cc_balance_of_power.122.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = military }
+	option = { name = cc_balance_of_power.122.a }
+}
+
+# EVENT 130 — Desperate Measures (coalition leader, hegemon nearing the threshold)
+# Unlocked once the congress is empowered; offers extreme expedients to redress the balance.
+cc_balance_of_power.130 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.130.title
+	desc = cc_balance_of_power.130.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = military }
+
+	trigger = {
+		is_leader_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	# "Buy a foreign sword into the war." — only when there is a live war to throw it into
+	# and a strong outsider to be bought in.
+	option = {
+		name = cc_balance_of_power.130.a
+		trigger = {
+			exists = international_organization:cc_bop_preponderance.leader_country
+			any_country = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+			}
+			any_country = {
+				cc_bop_eligible_country = no
+				is_subject = no
+				is_great_power = yes
+				NOT = { is_at_war_with = international_organization:cc_bop_preponderance.leader_country }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+			}
+		}
+		ai_chance = {
+			factor = 1
+			modifier = { factor = 1.5  situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 63 } }
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -8  min = -500  max = -60 }
+		international_organization:cc_bop_preponderance.leader_country = { save_scope_as = bop_hegemon }
+		# Find the coalition's war against the hegemon.
+		random_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				is_at_war_with = scope:bop_hegemon
+			}
+			"war_with_country(scope:bop_hegemon)" ?= { save_scope_as = bop_foreign_war }
+		}
+		# Buy the strongest available outsider into that war against the hegemon.
+		if = {
+			limit = { exists = scope:bop_foreign_war }
+			ordered_country = {
+				limit = {
+					cc_bop_eligible_country = no
+					is_subject = no
+					is_great_power = yes
+					NOT = { is_at_war_with = scope:bop_hegemon }
+					NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+					NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+				}
+				order_by = great_power_score
+				max = 1
+				check_range_bounds = no
+				join_war_against = {
+					war = scope:bop_foreign_war
+					target = scope:bop_hegemon
+					call_in_subjects = yes
+				}
+				add_opinion = { target = root  modifier = cc_bop_grateful_for_support }
+			}
+			situation:cc_balance_of_power = {
+				change_variable = { name = cc_bop_share_offset subtract = 6 }
+				clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+			}
+		}
+		international_organization:cc_bop_coalition = { change_variable = { name = cc_bop_resolve add = 8 } }
+		set_variable = { name = cc_bop_recently_desperate value = yes years = 4 }
+	}
+
+	# "Call a general mobilisation across the bloc."
+	option = {
+		name = cc_balance_of_power.130.b
+		ai_chance = { factor = 1 }
+		international_organization:cc_bop_coalition = {
+			change_variable = { name = cc_bop_resolve add = -15 }
+			every_international_organization_member = {
+				add_country_modifier = { modifier = cc_bop_coalition_solidarity_empowered  years = 2  mode = add_and_extend }
+			}
+		}
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset subtract = 3 }
+			clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+		}
+		set_variable = { name = cc_bop_recently_desperate value = yes years = 4 }
+	}
+
+	# "Stay our hand — the cost is too dear."
+	option = {
+		name = cc_balance_of_power.130.c
+		ai_chance = { factor = 0.4 }
+		set_variable = { name = cc_bop_recently_desperate value = yes years = 1 }
+	}
+}
+
+# EVENT 131 — The Last Ditch (coalition member, reckoning primed)
+# The colossus closes in; a member chooses how to make its stand.
+cc_balance_of_power.131 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.131.title
+	desc = cc_balance_of_power.131.desc
+	outcome = neutral
+	illustration_tags = { 10 = exterior  10 = army }
+
+	trigger = {
+		is_member_of_international_organization = international_organization:cc_bop_coalition
+	}
+
+	# "Burn the bridges — scorched earth before them."
+	option = {
+		name = cc_balance_of_power.131.a
+		ai_chance = { factor = 1 }
+		add_country_modifier = { modifier = cc_bop_coalition_solidarity_empowered  years = 2  mode = add_and_extend }
+		situation:cc_balance_of_power = {
+			change_variable = { name = cc_bop_share_offset subtract = 2 }
+			clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+		}
+		set_variable = { name = cc_bop_recently_desperate value = yes years = 3 }
+	}
+
+	# "Raise a grand levy — every hand to arms."
+	option = {
+		name = cc_balance_of_power.131.b
+		ai_chance = { factor = 1 }
+		add_country_modifier = { modifier = cc_bop_coalition_solidarity_empowered  years = 2  mode = add_and_extend }
+		international_organization:cc_bop_coalition = { change_variable = { name = cc_bop_resolve add = 6 } }
+		set_variable = { name = cc_bop_recently_desperate value = yes years = 3 }
 	}
 }
 

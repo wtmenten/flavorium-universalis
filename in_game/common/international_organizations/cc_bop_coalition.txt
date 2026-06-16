@@ -18,6 +18,23 @@ cc_bop_coalition = {
 	leader_type = country
 	disband_if_no_leader = yes
 
+	# The congress: a lightweight international parliament. The bloc begins weak on every
+	# law and must vote itself teeth as the aspirant grows dangerous. The chief balancer
+	# tables the motions; a simple majority of members carries them.
+	has_parliament = yes
+	parliament_type = cc_bop_coalition_assembly
+	resolution_widget = parliament
+	alert_view_tab = parliament
+	can_initiate_policy_votes = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	laws = {
+		cc_bop_defense_law = cc_bop_no_defense
+		cc_bop_offense_law = cc_bop_no_offense
+		cc_bop_congress_powers_law = cc_bop_congress_dormant
+		cc_bop_coup_law = cc_bop_coup_restrained
+	}
+
 	# Every participant in the great game marches freely across the theatre — through this
 	# bloc's lands whether friend, rival, or unaligned. The rights of lesser states are not consulted.
 	has_military_access = {
@@ -112,11 +129,30 @@ cc_bop_coalition = {
 	monthly_effect = {
 		if = {
 			limit = { var:cc_bop_resolve >= 70 }
-			every_international_organization_member = {
-				add_country_modifier = {
-					modifier = cc_bop_coalition_solidarity
-					months = 2
-					mode = add_and_extend
+			# A coalition that has voted itself real teeth (mutual defence or congress powers)
+			# binds far tighter than a paper alliance — apply the empowered solidarity instead.
+			if = {
+				limit = {
+					OR = {
+						international_organization_has_policy = policy:cc_bop_mutual_defense
+						international_organization_has_policy = policy:cc_bop_congress_empowered
+					}
+				}
+				every_international_organization_member = {
+					add_country_modifier = {
+						modifier = cc_bop_coalition_solidarity_empowered
+						months = 2
+						mode = add_and_extend
+					}
+				}
+			}
+			else = {
+				every_international_organization_member = {
+					add_country_modifier = {
+						modifier = cc_bop_coalition_solidarity
+						months = 2
+						mode = add_and_extend
+					}
 				}
 			}
 		}

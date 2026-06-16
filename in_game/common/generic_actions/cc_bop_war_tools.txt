@@ -1,0 +1,276 @@
+﻿
+# Balance of Power — preponderant war tools.
+# The aspiring hegemon's instruments for forcing the issue by arms: dragging bloc members
+# into its wars (cost scaled by their size, so only one or two are ever affordable), laying
+# a war chest to cheapen the next call-in, and a capstone grand war on the coalition.
+
+################################################################################
+# IO LEADER ACTION (PREPONDERANCE) — Call to Arms
+# Haul a bloc member into the hegemon's war against the coalition. The bill scales with
+# the ally's tax base and doubles with each repeat call-in this war; a war chest halves it.
+################################################################################
+cc_bop_io_call_to_arms = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+			exists = international_organization:cc_bop_coalition
+			is_at_war_with = international_organization:cc_bop_coalition.leader_country
+		}
+	}
+
+	allow = {
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 20
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_balance_of_power = this
+			situation_is_active = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		target_flag = bop_callin_target
+		name = "choose_country"
+		none_available_msg_key = "no_valid_countries"
+		column = { data = name }
+		visible = {
+			is_member_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			exists = international_organization:cc_bop_coalition
+			NOT = { is_at_war_with = international_organization:cc_bop_coalition.leader_country }
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			# Base bill, scaled by the ally's size so only one or two are ever affordable.
+			set_variable = { name = cc_bop_callin_cost value = scope:bop_callin_target.country_tax_base }
+			change_variable = { name = cc_bop_callin_cost multiply = 1.5 }
+			change_variable = { name = cc_bop_callin_cost add = 40 }
+			# Each repeat call-in within the same war costs double.
+			if = {
+				limit = { situation:cc_balance_of_power = { var:cc_bop_callins_this_war >= 1 } }
+				change_variable = { name = cc_bop_callin_cost multiply = 2 }
+			}
+			# A pre-laid war chest halves the bill, then is spent.
+			if = {
+				limit = { has_country_modifier = cc_bop_war_subsidies }
+				change_variable = { name = cc_bop_callin_cost multiply = 0.5 }
+				remove_country_modifier = cc_bop_war_subsidies
+			}
+		}
+		if = {
+			limit = {
+				scope:actor = { gold >= var:cc_bop_callin_cost }
+				international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 20
+			}
+			scope:actor = { add_gold = { value = var:cc_bop_callin_cost  multiply = -1 } }
+			international_organization:cc_bop_preponderance = {
+				change_variable = { name = cc_bop_ambition add = -20 }
+			}
+			scope:actor = {
+				"war_with_country(international_organization:cc_bop_coalition.leader_country)" ?= { save_scope_as = bop_callin_war }
+			}
+			if = {
+				limit = { exists = scope:bop_callin_war }
+				scope:bop_callin_target = {
+					join_war_against = {
+						war = scope:bop_callin_war
+						target = international_organization:cc_bop_coalition.leader_country
+						call_in_subjects = yes
+					}
+					add_country_modifier = { modifier = cc_bop_dragged_to_war  years = 3 }
+				}
+				situation:cc_balance_of_power = { change_variable = { name = cc_bop_callins_this_war add = 1 } }
+			}
+			scope:actor = { remove_variable = cc_bop_callin_cost }
+		}
+		else = {
+			scope:actor = {
+				remove_variable = cc_bop_callin_cost
+				trigger_event_non_silently = { id = cc_balance_of_power.120 days = 1 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 10  desc = BASE_VALUE }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 60 } }
+			add = { desc = "CC_BOP_BEHIND" value = 20 }
+		}
+		# Restrain the AI from emptying its war chest on a third or fourth ally.
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_callins_this_war >= 2 } }
+			add = { desc = "CC_BOP_OVEREXTENDED" value = -40 }
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION (PREPONDERANCE) — Lay a War Chest
+# Spend ambition and gold to scatter subsidies in advance, halving the next call-in.
+################################################################################
+cc_bop_io_war_chest = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_warchest }
+			NOT = { has_country_modifier = cc_bop_war_subsidies }
+		}
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 30
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_preponderance
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_warchest value = yes years = 3 }
+			add_country_modifier = { modifier = cc_bop_war_subsidies  years = 8 }
+			add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -150  max = -15 }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = -30 }
+		}
+		scope:actor = { trigger_event_non_silently = { id = cc_balance_of_power.121 days = 2 } }
+	}
+
+	ai_will_do = {
+		add = { value = 8  desc = BASE_VALUE }
+		if = {
+			limit = { scope:actor = { is_at_war_with = international_organization:cc_bop_coalition.leader_country } }
+			add = { desc = "CC_BOP_AT_WAR" value = 15 }
+		}
+	}
+}
+
+################################################################################
+# IO LEADER ACTION (PREPONDERANCE) — Grand War on the Coalition
+# A capstone: the aspirant strikes first, declaring its own coalition-buster and bringing
+# the whole bloc to bear. A hard swing of the balance in its favour.
+################################################################################
+cc_bop_io_grand_war = {
+	type = internationalorganization
+
+	ai_tick = monthly
+	ai_tick_frequency = 6
+
+	automation_tick = never
+	automation_tick_frequency = 12
+
+	potential = {
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_bop_preponderance
+			NOT = { country_type = pop }
+			NOT = { country_type = building }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			NOT = { has_variable = cc_bop_recently_grand_war }
+			exists = international_organization:cc_bop_coalition.leader_country
+			NOT = { is_at_war_with = international_organization:cc_bop_coalition.leader_country }
+			NOT = { has_truce_with = international_organization:cc_bop_coalition.leader_country }
+			can_declare_war_on = international_organization:cc_bop_coalition.leader_country
+		}
+		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 70
+		situation:cc_balance_of_power = { situation_is_active = yes }
+	}
+
+	select_trigger = {
+		looking_for_a = international_organization
+		source = actor
+		target_flag = recipient
+		name = "choose_international_organization"
+		column = { data = name }
+		visible = {
+			international_organization_type = international_organization_type:cc_bop_preponderance
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_bop_recently_grand_war value = yes years = 6 }
+		}
+		international_organization:cc_bop_preponderance = {
+			change_variable = { name = cc_bop_ambition add = -60 }
+		}
+		international_organization:cc_bop_coalition.leader_country = { save_scope_as = bop_grand_target }
+		scope:actor = {
+			declare_war_with_cb = {
+				target = scope:bop_grand_target
+				type = casus_belli:cb_coalition
+			}
+			"war_with_country(scope:bop_grand_target)" ?= { save_scope_as = bop_grand_war }
+		}
+		if = {
+			limit = { exists = scope:bop_grand_war }
+			international_organization:cc_bop_preponderance = {
+				every_international_organization_member = {
+					limit = { NOT = { is_at_war_with = scope:bop_grand_target } }
+					join_war_as_attacker = { war = scope:bop_grand_war  call_in_subjects = yes }
+				}
+			}
+			situation:cc_balance_of_power = {
+				change_variable = { name = cc_bop_share_offset add = 6 }
+				clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+			}
+		}
+		scope:actor = { trigger_event_non_silently = { id = cc_balance_of_power.122 days = 2 } }
+	}
+
+	ai_will_do = {
+		add = { value = 6  desc = BASE_VALUE }
+		if = {
+			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 58 } }
+			add = { desc = "CC_BOP_ASCENDANT" value = 20 }
+		}
+		if = {
+			limit = { scope:actor = { any_cabinet_character = { has_trait = war_hawk } } }
+			add = { desc = "CC_BOP_WARLIKE" value = 10 }
+		}
+	}
+}

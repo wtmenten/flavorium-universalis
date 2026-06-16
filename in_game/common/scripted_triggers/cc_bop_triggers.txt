@@ -34,6 +34,22 @@ cc_bop_concert_cooldown_elapsed = {
 	current_year >= global_var:cc_bop_concert_restart_year
 }
 
+# The aspiring hegemon has been individually eclipsed: some other eligible power has grown
+# to outweigh it in raw great-power score by a clear margin (cc_bop_eclipse_target, recomputed
+# monthly = aspirant score x 1.10). Drives the neutral "Stagnation" ending — the would-be
+# hegemon fades into irrelevance, overtaken by a power risen in its shadow.
+cc_bop_hegemon_eclipsed = {
+	exists = international_organization:cc_bop_preponderance
+	exists = international_organization:cc_bop_preponderance.leader_country
+	situation:cc_balance_of_power = { has_variable = cc_bop_eclipse_target }
+	any_country = {
+		cc_bop_eligible_country = yes
+		is_subject = no
+		NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+		great_power_score >= situation:cc_balance_of_power.var:cc_bop_eclipse_target
+	}
+}
+
 # True once a great power has the doctrine, or the revolutionary era has opened.
 cc_bop_doctrine_or_era = {
 	OR = {

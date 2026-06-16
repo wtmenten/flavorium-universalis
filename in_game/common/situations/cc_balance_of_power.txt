@@ -50,6 +50,14 @@ cc_balance_of_power = {
 			desc = "cc_bop_end_hegemony"
 		}
 		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_coalition } }
+			desc = "cc_bop_end_coalition"
+		}
+		end_reason = {
+			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_stagnation } }
+			desc = "cc_bop_end_stagnation"
+		}
+		end_reason = {
 			trigger = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_deluge } }
 			desc = "cc_bop_end_deluge"
 		}
@@ -93,7 +101,12 @@ cc_balance_of_power = {
 		}
 
 		situation:cc_balance_of_power = {
+			# Three end-state tickers (0-60). See on_monthly for the band logic.
 			set_variable = { name = cc_bop_hegemony_months value = 0 }
+			set_variable = { name = cc_bop_coalition_months value = 0 }
+			set_variable = { name = cc_bop_stagnation_months value = 0 }
+			# Escalating-cost counter for the preponderant's Call to Arms (resets per war).
+			set_variable = { name = cc_bop_callins_this_war value = 0 }
 			# Event-driven momentum layered on top of the structural share by
 			# cc_bop_recompute_share; starts neutral and decays toward 0 monthly.
 			set_variable = { name = cc_bop_share_offset value = 0 }
@@ -153,6 +166,22 @@ cc_balance_of_power = {
 	on_monthly = {
 		cc_bop_recompute_share = yes
 
+		# Reset the Call-to-Arms escalation once the hegemon-coalition war is over, so the
+		# next war's first call-in starts cheap again.
+		if = {
+			limit = {
+				situation:cc_balance_of_power = { var:cc_bop_callins_this_war > 0 }
+				NOT = {
+					any_country = {
+						is_member_of_international_organization = international_organization:cc_bop_coalition
+						exists = international_organization:cc_bop_preponderance
+						is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+					}
+				}
+			}
+			situation:cc_balance_of_power = { set_variable = { name = cc_bop_callins_this_war value = 0 } }
+		}
+
 		# War footing for the unaligned: engaged-but-unaligned participants forage freely and
 		# march without attrition, just as the bloc IO modifiers grant their members. Refreshed
 		# monthly (2-month window); once such a court joins a bloc the IO modifier takes over and
@@ -184,21 +213,235 @@ cc_balance_of_power = {
 			clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
 		}
 
-		# Track sustained hegemony and raise the hegemony break flag.
+		# ============================================================================
+		# END-STATE TICKERS — three roads can break the balance, each tracked by its own
+		# 0-60 months counter. INVARIANT: the share bands are disjoint (>=65 hegemony,
+		# <=35 coalition, the 35<share<65 middle ground for stagnation), so at most one
+		# counter climbs in any month; the others bleed back toward 0. A *primed* reckoning
+		# (a full hegemony/coalition counter) FREEZES all three counters until its final
+		# war resolves, and no break flag may be set while another flag is set or a counter
+		# is primed — guaranteeing the two victory races can never advance or fire together.
+		# ============================================================================
+
+		# --- Counters: fill in-band, bleed out-of-band; frozen while a reckoning is primed.
 		situation:cc_balance_of_power = {
 			if = {
-				limit = { var:cc_bop_preponderance_share >= 65 }
-				change_variable = { name = cc_bop_hegemony_months add = 1 }
+				limit = {
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
+				}
+				# Hegemony — the aspirant holds preponderance.
+				if = {
+					limit = { var:cc_bop_preponderance_share >= 65 }
+					change_variable = { name = cc_bop_hegemony_months add = 1 }
+				}
+				else = {
+					change_variable = { name = cc_bop_hegemony_months subtract = 1 }
+				}
+				clamp_variable = { name = cc_bop_hegemony_months min = 0 max = 60 }
+
+				# Coalition — the balancing bloc is ascendant.
+				if = {
+					limit = { var:cc_bop_preponderance_share <= 35 }
+					change_variable = { name = cc_bop_coalition_months add = 1 }
+				}
+				else = {
+					change_variable = { name = cc_bop_coalition_months subtract = 1 }
+				}
+				clamp_variable = { name = cc_bop_coalition_months min = 0 max = 60 }
 			}
-			else = {
-				set_variable = { name = cc_bop_hegemony_months value = 0 }
+		}
+
+		# Stagnation — the aspirant individually eclipsed in the middle band (country-scope check).
+		if = {
+			limit = {
+				situation:cc_balance_of_power = {
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
+					var:cc_bop_preponderance_share > 35
+					var:cc_bop_preponderance_share < 65
+				}
+				cc_bop_hegemon_eclipsed = yes
+			}
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_stagnation_months add = 1 } }
+		}
+		else = {
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_stagnation_months subtract = 1 } }
+		}
+		situation:cc_balance_of_power = { clamp_variable = { name = cc_bop_stagnation_months min = 0 max = 60 } }
+
+		# --- Priming: a full counter does not end the game outright. Hegemony and coalition
+		# prime a decisive war; stagnation simply ends the contest, quietly.
+		situation:cc_balance_of_power = {
+			if = {
+				limit = {
+					var:cc_bop_hegemony_months >= 60
+					years_since_situation_start > 5
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
+					NOT = { has_variable = cc_bop_flag_coalition }
+					NOT = { has_variable = cc_bop_flag_stagnation }
+				}
+				set_variable = cc_bop_hegemony_primed
+				set_variable = { name = cc_bop_final_war_grace value = 0 }
+				remove_variable = cc_bop_final_war_called
+			}
+			else_if = {
+				limit = {
+					var:cc_bop_coalition_months >= 60
+					years_since_situation_start > 5
+					NOT = { has_variable = cc_bop_coalition_primed }
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_flag_hegemony }
+					NOT = { has_variable = cc_bop_flag_stagnation }
+				}
+				set_variable = cc_bop_coalition_primed
+				set_variable = { name = cc_bop_final_war_grace value = 0 }
+				remove_variable = cc_bop_final_war_called
+			}
+			else_if = {
+				limit = {
+					var:cc_bop_stagnation_months >= 60
+					years_since_situation_start > 5
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
+					NOT = { has_variable = cc_bop_flag_hegemony }
+					NOT = { has_variable = cc_bop_flag_coalition }
+				}
+				set_variable = cc_bop_flag_stagnation
+			}
+		}
+
+		# Announce the reckoning the month it is primed (one-shot, all engaged courts).
+		if = {
+			limit = {
+				situation:cc_balance_of_power = {
+					OR = {
+						has_variable = cc_bop_hegemony_primed
+						has_variable = cc_bop_coalition_primed
+					}
+					var:cc_bop_final_war_grace = 0
+				}
+			}
+			every_country = {
+				limit = { cc_bop_eligible_country = yes is_subject = no can_see_situation = root }
+				trigger_event_non_silently = cc_balance_of_power.112
+			}
+		}
+
+		# --- HEGEMONY reckoning: force the coalition's last stand, then resolve by share.
+		if = {
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed } }
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_final_war_grace add = 1 } }
+			# Light the fire while no coalition member yet fights the hegemon.
+			if = {
+				limit = {
+					situation:cc_balance_of_power = { NOT = { has_variable = cc_bop_final_war_called } }
+					exists = international_organization:cc_bop_preponderance
+					exists = international_organization:cc_bop_coalition
+					NOT = {
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_coalition
+							exists = international_organization:cc_bop_preponderance
+							is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+						}
+					}
+				}
+				cc_bop_ignite_final_war = yes
+			}
+			# Resolve once the fought war has ended, on the real treaty (cc_bop_final_war_outcome,
+			# set by on_winning_war / on_losing_war). Outcome 1 = the aspirant prevailed; anything
+			# else — a coalition victory (2) or a white peace (unset) — denies the bid.
+			if = {
+				limit = {
+					situation:cc_balance_of_power = { has_variable = cc_bop_final_war_called }
+					NOT = {
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_coalition
+							exists = international_organization:cc_bop_preponderance
+							is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+						}
+					}
+				}
+				if = {
+					limit = { situation:cc_balance_of_power = { var:cc_bop_final_war_outcome = 1 } }
+					situation:cc_balance_of_power = { set_variable = cc_bop_flag_hegemony }
+				}
+				else = {
+					# The coalition won or fought the colossus to a standstill — deny and fight on.
+					situation:cc_balance_of_power = {
+						remove_variable = cc_bop_hegemony_primed
+						remove_variable = cc_bop_final_war_called
+						remove_variable = cc_bop_final_war_outcome
+						set_variable = { name = cc_bop_hegemony_months value = 30 }
+						change_variable = { name = cc_bop_share_offset subtract = 8 }
+						clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+					}
+				}
+			}
+			# Safety valve: if no war could be forced for two years, the colossus wins by default.
+			if = {
+				limit = {
+					situation:cc_balance_of_power = {
+						NOT = { has_variable = cc_bop_final_war_called }
+						var:cc_bop_final_war_grace >= 24
+					}
+				}
+				situation:cc_balance_of_power = { set_variable = cc_bop_flag_hegemony }
+			}
+		}
+
+		# --- COALITION reckoning: the cut-down-to-size coup. Requires the coalition to have
+		# enacted its coup-de-grâce policy; until then the primed state holds and the bloc is
+		# pressed to pass it (see the congress pulse). Then force the war and resolve by share.
+		if = {
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+			situation:cc_balance_of_power = { change_variable = { name = cc_bop_final_war_grace add = 1 } }
+			if = {
+				limit = {
+					situation:cc_balance_of_power = { NOT = { has_variable = cc_bop_final_war_called } }
+					exists = international_organization:cc_bop_preponderance
+					exists = international_organization:cc_bop_coalition
+					international_organization:cc_bop_coalition = {
+						international_organization_has_policy = policy:cc_bop_coup_de_grace
+					}
+					NOT = {
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_coalition
+							exists = international_organization:cc_bop_preponderance
+							is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+						}
+					}
+				}
+				cc_bop_ignite_final_war = yes
 			}
 			if = {
 				limit = {
-					var:cc_bop_hegemony_months >= 36
-					years_since_situation_start > 5
+					situation:cc_balance_of_power = { has_variable = cc_bop_final_war_called }
+					NOT = {
+						any_country = {
+							is_member_of_international_organization = international_organization:cc_bop_coalition
+							exists = international_organization:cc_bop_preponderance
+							is_at_war_with = international_organization:cc_bop_preponderance.leader_country
+						}
+					}
 				}
-				set_variable = cc_bop_flag_hegemony
+				if = {
+					# The aspirant was beaten on the field (outcome 2) → cut down to size.
+					limit = { situation:cc_balance_of_power = { var:cc_bop_final_war_outcome = 2 } }
+					situation:cc_balance_of_power = { set_variable = cc_bop_flag_coalition }
+				}
+				else = {
+					# The aspirant prevailed or held to a draw — deny the coup and fight on.
+					situation:cc_balance_of_power = {
+						remove_variable = cc_bop_coalition_primed
+						remove_variable = cc_bop_final_war_called
+						remove_variable = cc_bop_final_war_outcome
+						set_variable = { name = cc_bop_coalition_months value = 30 }
+						change_variable = { name = cc_bop_share_offset add = 8 }
+						clamp_variable = { name = cc_bop_share_offset min = -25 max = 25 }
+					}
+				}
 			}
 		}
 
@@ -208,6 +451,9 @@ cc_balance_of_power = {
 				situation:cc_balance_of_power = {
 					years_since_situation_start > 5
 					var:cc_bop_preponderance_share >= 62
+					# Yield to a reckoning already under way.
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
 				}
 				any_country = {
 					cc_bop_eligible_country = yes
@@ -233,6 +479,9 @@ cc_balance_of_power = {
 					years_since_situation_start > 40
 					var:cc_bop_preponderance_share >= 40
 					var:cc_bop_preponderance_share <= 60
+					# Yield to a reckoning already under way.
+					NOT = { has_variable = cc_bop_hegemony_primed }
+					NOT = { has_variable = cc_bop_coalition_primed }
 				}
 			}
 			situation:cc_balance_of_power = { set_variable = cc_bop_flag_concert }
@@ -621,6 +870,10 @@ cc_balance_of_power = {
 				can_see_situation = root
 				situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 }
 				international_organization:cc_bop_coalition = { total_members >= 2 }
+				# Only with the pre-emptive doctrine voted in may the bloc strike first.
+				international_organization:cc_bop_coalition = {
+					international_organization_has_policy = policy:cc_bop_preemptive_doctrine
+				}
 				exists = international_organization:cc_bop_preponderance
 				NOT = { has_variable = cc_bop_recently_engaged_hegemon }
 				international_organization:cc_bop_preponderance.leader_country ?= {
@@ -656,6 +909,13 @@ cc_balance_of_power = {
 				can_see_situation = root
 				exists = international_organization:cc_bop_preponderance
 				NOT = { has_variable = cc_bop_recently_engaged_hegemon }
+				# The bloc must have voted itself at least a defensive pact to answer the call.
+				international_organization:cc_bop_coalition = {
+					OR = {
+						international_organization_has_policy = policy:cc_bop_possible_defense
+						international_organization_has_policy = policy:cc_bop_mutual_defense
+					}
+				}
 				international_organization:cc_bop_preponderance.leader_country ?= {
 					NOT = { this = prev }
 					NOT = { is_at_war_with = prev }
@@ -672,6 +932,50 @@ cc_balance_of_power = {
 			random_list = {
 				60 = { trigger_event_non_silently = cc_balance_of_power.111 }
 				40 = { }
+			}
+		}
+
+		# --- Acts of desperation ---
+		# As the hegemon nears the threshold, the empowered congress reaches for extreme
+		# measures: a foreign sword bought into the war, a general mobilisation. Gated on the
+		# bloc having voted itself congress powers.
+		every_country = {
+			limit = {
+				is_leader_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				situation:cc_balance_of_power = {
+					var:cc_bop_preponderance_share >= 60
+					NOT = { has_variable = cc_bop_hegemony_primed }
+				}
+				international_organization:cc_bop_coalition = {
+					international_organization_has_policy = policy:cc_bop_congress_empowered
+				}
+				NOT = { has_variable = cc_bop_recently_desperate }
+			}
+			random_list = {
+				6 = {
+					modifier = {
+						add = 6
+						situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 63 }
+					}
+					trigger_event_non_silently = cc_balance_of_power.130
+				}
+				94 = { }
+			}
+		}
+
+		# Once the reckoning is primed, the last-ditch measures unlock bloc-wide: scorched
+		# earth and a grand levy as the colossus closes in. Feeds the final-war resolution.
+		every_country = {
+			limit = {
+				is_member_of_international_organization = international_organization:cc_bop_coalition
+				can_see_situation = root
+				situation:cc_balance_of_power = { has_variable = cc_bop_hegemony_primed }
+				NOT = { has_variable = cc_bop_recently_desperate }
+			}
+			random_list = {
+				12 = { trigger_event_non_silently = cc_balance_of_power.131 }
+				88 = { }
 			}
 		}
 	}
