@@ -115,7 +115,7 @@ TEMPLATE = """\
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flavorium Universalis — EU5 Mod</title>
+<title>Flavorium Universalis | EU5 Mod</title>
 <style>
 :root{
   --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
@@ -151,15 +151,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;background:var(--panel-bg);border-right:1px solid var(--card-border);padding:16px 0 40px}
 .sidebar-label{padding:10px 18px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim)}
 .nav-sec{margin-bottom:2px}
-.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-h2:hover{color:var(--text);background:var(--hover-bg)}
-.nav-h2.active{color:var(--text);border-left-color:var(--nav-color,var(--adm))}
-.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.7}
+.nav-h2.active{color:var(--text);background:var(--hover-bg)}
+.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.55}
 .nav-h2.active .nav-h2-dot{opacity:1}
 .nav-sub{display:flex;flex-direction:column}
-.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;border-left:3px solid transparent;transition:color .1s,background .1s,border-color .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-h3:hover{color:var(--text-mid);background:var(--hover-bg)}
-.nav-h3.active{color:var(--text-mid);border-left-color:var(--text-dim)}
+.nav-h3.active{color:var(--text-mid);background:var(--hover-bg)}
 /* section accent colors for nav dots */
 .nav-sec[data-sec="0"]  .nav-h2{--nav-color:var(--gold)}
 .nav-sec[data-sec="1"]  .nav-h2{--nav-color:var(--adm)}
@@ -182,8 +182,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .content h1{font-size:32px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em}
 .content h1::after{content:'';display:block;width:52px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-top:12px}
 
-/* ----- section h2 — colored panel bar ----- */
-.content h2{font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:12px 18px;background:var(--panel-bg);border-radius:var(--radius);border-left:4px solid var(--s-color,var(--text-mid));color:var(--text)}
+/* ----- section h2: panel bar with accent underline rule ----- */
+.content h2{position:relative;font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:13px 18px 15px;background:var(--panel-bg);border:1px solid var(--card-border);border-radius:var(--radius);color:var(--text)}
+.content h2::after{content:'';position:absolute;left:18px;bottom:8px;width:34px;height:2px;border-radius:2px;background:var(--s-color,var(--text-mid))}
 .content h2[data-sec="0"] {--s-color:var(--gold)}
 .content h2[data-sec="1"] {--s-color:var(--adm)}
 .content h2[data-sec="2"] {--s-color:var(--gold)}
@@ -197,13 +198,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .content h2[data-sec="10"]{--s-color:var(--text-mid)}
 .content h2[data-sec="11"]{--s-color:var(--mil)}
 
-/* ----- h3 sections — editorial border-left style ----- */
-.h3-group{padding-left:18px;border-left:3px solid var(--g-color,var(--adm));margin:24px 0 28px}
-.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:10px;margin-top:0}
+/* ----- h3 sections: editorial style with accent underline rule ----- */
+.h3-group{margin:24px 0 28px}
+.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:12px;margin-top:0;padding-bottom:8px;border-bottom:1px solid var(--card-border);position:relative}
+.h3-group h3::after{content:'';position:absolute;left:0;bottom:-1px;width:30px;height:2px;border-radius:2px;background:var(--g-color,var(--adm))}
 
 /* ----- Features section: 2-col grid tiles ----- */
 .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0;align-items:start}
-.feat-grid .h3-group{border-left:none;padding-left:0;margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-top:3px solid var(--g-color,var(--adm));border-radius:var(--radius);padding:16px 18px}
+.feat-grid .h3-group{margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px 18px}
 .feat-grid .h3-group h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
 /* suppress bbcode <br> newline artifacts inside grid tiles */
 .feat-grid .h3-group br{display:none}
@@ -221,7 +223,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .content ul ul,.content ol ul{margin-top:4px}
 
 /* ----- blockquote ----- */
-.content blockquote{margin:14px 0;padding:12px 18px;background:rgba(212,168,67,.05);border-left:3px solid rgba(212,168,67,.45);border-radius:0 var(--radius) var(--radius) 0;font-size:14px;line-height:1.6}
+.content blockquote{margin:14px 0;padding:12px 18px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);font-size:14px;line-height:1.6}
 .content blockquote,.content blockquote p{color:var(--text-mid)}
 .content blockquote p:last-child{margin-bottom:0}
 
@@ -259,7 +261,6 @@ body.nav-open .sidebar-overlay{display:block}
 }
 @media(max-width:480px){
   .content{padding:18px 14px 60px}
-  .h3-group{padding-left:14px}
 }
 </style>
 </head>

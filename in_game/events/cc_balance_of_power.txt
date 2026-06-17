@@ -1424,14 +1424,22 @@ cc_balance_of_power.87 = {
 			international_organization:cc_bop_coalition = {
 				every_international_organization_member = {
 					limit = { NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition } }
+					# Read the member's income as a native property in its own scope, then hand a clean
+					# variable back to root. A cross-scope scriptvalue dot-chain in an `add` field can
+					# resolve to none and poison the accumulator (then var:cc_bop_subsidy_cost reads none).
+					set_variable = { name = cc_bop_member_income value = monthly_income_trade_and_tax }
 					save_scope_as = sub_mem
-					root = { change_variable = { name = cc_bop_subsidy_cost add = scope:sub_mem.monthly_income_trade_and_tax } }
+					root = { change_variable = { name = cc_bop_subsidy_cost add = scope:sub_mem.var:cc_bop_member_income } }
+					remove_variable = cc_bop_member_income
 				}
 			}
 		}
 		change_variable = { name = cc_bop_subsidy_cost multiply = 6 }
 		clamp_variable = { name = cc_bop_subsidy_cost min = 50 max = 1500 }
-		add_gold = { value = var:cc_bop_subsidy_cost  multiply = -1 }
+		if = {
+			limit = { has_variable = cc_bop_subsidy_cost }
+			add_gold = { value = var:cc_bop_subsidy_cost  multiply = -1 }
+		}
 		remove_variable = cc_bop_subsidy_cost
 		# The drain of the war-chest tells on the leader's own finances.
 		add_country_modifier = { modifier = cc_bop_subsidy_strain  years = 4  mode = add_and_extend }

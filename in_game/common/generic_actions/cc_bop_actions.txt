@@ -92,7 +92,7 @@ cc_bop_petition_preponderance = {
 			add = { desc = "CC_BOP_FRIENDLY_LEADER" value = 25 }
 		}
 		if = {
-			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 55 } }
 			add = { desc = "CC_BOP_BANDWAGON" value = 20 }
 		}
 	}
@@ -175,7 +175,7 @@ cc_bop_petition_coalition = {
 			add = { desc = "CC_BOP_NEAR_HEGEMON" value = 40 }
 		}
 		if = {
-			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 } }
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 60 } }
 			add = { desc = "CC_BOP_FEAR_OF_HEGEMON" value = 25 }
 		}
 		if = {
@@ -380,7 +380,7 @@ cc_bop_io_intimidate = {
 			desc = BASE_VALUE
 		}
 		if = {
-			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 55 } }
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share < 55 } }
 			add = { desc = "CC_BOP_BEHIND" value = 15 }
 		}
 	}
@@ -412,8 +412,8 @@ cc_bop_io_continental_system = {
 			NOT = { has_variable = cc_bop_recently_blockaded }
 		}
 		international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 40
-		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
 		situation:cc_balance_of_power = { situation_is_active = yes }
+		situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 55 }
 	}
 
 	select_trigger = {
@@ -531,7 +531,7 @@ cc_bop_io_convene_the_congress = {
 			NOT = { country_type = building }
 		}
 		international_organization:cc_bop_coalition = {
-			parliament_type = parliament_type:cc_bop_coalition_dormant
+			parliament_type ?= parliament_type:cc_bop_coalition_dormant
 		}
 	}
 
@@ -573,7 +573,7 @@ cc_bop_io_convene_the_congress = {
 		}
 		# The more the coalition is threatened, the keener the leader is to organise it.
 		if = {
-			limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 52 } }
+			limit = { situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 52 } }
 			add = { desc = "CC_BOP_HEGEMON_RISING" value = 25 }
 		}
 	}
@@ -667,8 +667,8 @@ cc_bop_io_naval_blockade = {
 			NOT = { has_variable = cc_bop_recently_blockaded }
 		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 35
-		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
 		situation:cc_balance_of_power = { situation_is_active = yes }
+		situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 55 }
 	}
 
 	select_trigger = {
@@ -730,8 +730,8 @@ cc_bop_io_assume_supreme_command = {
 			NOT = { has_variable = cc_bop_recently_coordinated }
 		}
 		international_organization:cc_bop_coalition.var:cc_bop_resolve >= 40
-		situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 }
 		situation:cc_balance_of_power = { situation_is_active = yes }
+		situation:cc_balance_of_power = { has_variable = cc_bop_preponderance_share var:cc_bop_preponderance_share >= 55 }
 	}
 
 	select_trigger = {

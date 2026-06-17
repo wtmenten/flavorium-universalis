@@ -779,7 +779,11 @@ cc_balance_of_power = {
 						NOT = { is_leader_of_international_organization = international_organization:cc_bop_coalition }
 						OR = {
 							international_organization:cc_bop_coalition.var:cc_bop_resolve < 35
-							international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 60
+							# Cross-bloc read: the rival pole may have dissolved, so guard its existence first.
+							AND = {
+								exists = international_organization:cc_bop_preponderance
+								international_organization:cc_bop_preponderance = { var:cc_bop_ambition >= 60 }
+							}
 							situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 60 }
 						}
 					}
@@ -788,7 +792,11 @@ cc_balance_of_power = {
 						NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
 						OR = {
 							international_organization:cc_bop_preponderance.var:cc_bop_ambition < 35
-							international_organization:cc_bop_coalition.var:cc_bop_resolve >= 60
+							# Cross-bloc read: the rival pole may have dissolved, so guard its existence first.
+							AND = {
+								exists = international_organization:cc_bop_coalition
+								international_organization:cc_bop_coalition = { var:cc_bop_resolve >= 60 }
+							}
 							situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 40 }
 						}
 					}

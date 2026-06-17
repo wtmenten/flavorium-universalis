@@ -75,13 +75,18 @@ cc_bop_preponderance = {
 	}
 
 	on_left = {
-		scope:recipient = {
-			change_variable = { name = cc_bop_ambition add = -8 }
-		}
-		add_country_modifier = {
-			modifier = cc_bop_defector
-			years = 3
-			mode = add_and_extend
+		# Skip the penalty when the bloc is being dissolved at situation end — that
+		# fires on_left for every member and would brand the whole bloc as defectors.
+		if = {
+			limit = { NOT = { has_global_variable = cc_bop_dissolving } }
+			scope:recipient = {
+				change_variable = { name = cc_bop_ambition add = -8 }
+			}
+			add_country_modifier = {
+				modifier = cc_bop_defector
+				years = 3
+				mode = add_and_extend
+			}
 		}
 	}
 

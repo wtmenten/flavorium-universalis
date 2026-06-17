@@ -1,0 +1,37 @@
+﻿## Not hardcoded
+# Modifiers in this file will automatically be applied to all countries
+#	- Tooltips will also be generated
+#	- The AI will also understand them
+
+
+
+REPLACE:num_locations_impact = {
+	# scales_with = {
+	# 	value = num_provinces
+	# 	multiply = 0.2
+	# }
+	scales_with = {
+		value = num_locations
+		divide = 20
+	}
+	
+	fort_limit = 1
+}
+
+REPLACE:over_fort_limit = {
+	potential_trigger = { 
+		used_fort_limit_percentage > 1.0
+	}
+
+	scales_with = {
+		value = used_fort_limit_percentage
+		subtract = 1.0
+	}
+	
+	monthly_towards_belligerent = societal_value_monthly_move
+	monthly_towards_defensive = societal_value_monthly_move
+	global_defensive = -1.0
+	fort_maintenance_efficiency = -10 # this hits a hard cap very fast - not effective
+	court_spending_efficiency = -3
+	army_maintenance_efficiency = -2
+}

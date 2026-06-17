@@ -389,11 +389,11 @@ cc_bop_congress_powers_law = {
 		wants_this_policy_bias = {
 			add = { desc = "CC_BOP_LAW_BASE" value = 5 }
 			if = {
-				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share < 35 } }
+				limit = { situation:cc_balance_of_power ?= { var:cc_bop_preponderance_share < 35 } }
 				add = { desc = "CC_BOP_LAW_HEGEMON_FALLING" value = -40 }
 			}
 			if = {
-				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share >= 55 } }
+				limit = { situation:cc_balance_of_power ?= { var:cc_bop_preponderance_share >= 55 } }
 				add = { desc = "CC_BOP_LAW_HEGEMON_RISING" value = 40 }
 			}
 			# --- How this court reads the threat (per-voter disposition, moderate) ---
@@ -500,21 +500,21 @@ cc_bop_coup_law = {
 		wants_this_policy_bias = {
 			add = { desc = "CC_BOP_LAW_BASE" value = 0 }
 			if = {
-				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 40 } }
+				limit = { situation:cc_balance_of_power ?= { var:cc_bop_preponderance_share <= 40 } }
 				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 50 }
 			}
 			if = {
-				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				limit = { situation:cc_balance_of_power ?= { has_variable = cc_bop_coalition_primed } }
 				add = { desc = "CC_BOP_LAW_RECKONING" value = 100 }
 			}
 		}
 		wants_propose_policy = {
 			if = {
-				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 25 } }
+				limit = { situation:cc_balance_of_power ?= { var:cc_bop_preponderance_share <= 25 } }
 				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 50 }
 			}
 			if = {
-				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				limit = { situation:cc_balance_of_power ?= { has_variable = cc_bop_coalition_primed } }
 				add = { desc = "CC_BOP_LAW_RECKONING" value = 60 }
 			}
 		}
@@ -561,7 +561,7 @@ cc_bop_settlement_law = {
 		allow = {
 			exists = international_organization:cc_bop_coalition
 			international_organization:cc_bop_coalition = {
-				parliament_type = parliament_type:cc_bop_coalition_assembly
+				parliament_type ?= parliament_type:cc_bop_coalition_assembly
 			}
 		}
 		on_activate = {
@@ -582,17 +582,17 @@ cc_bop_settlement_law = {
 			}
 			# A winning bloc plans the settlement; a faltering one does not.
 			if = {
-				limit = { situation:cc_balance_of_power = { var:cc_bop_preponderance_share <= 45 } }
+				limit = { situation:cc_balance_of_power ?= { var:cc_bop_preponderance_share <= 45 } }
 				add = { desc = "CC_BOP_LAW_ASCENDANT" value = 25 }
 			}
 			if = {
-				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				limit = { situation:cc_balance_of_power ?= { has_variable = cc_bop_coalition_primed } }
 				add = { desc = "CC_BOP_LAW_RECKONING" value = 40 }
 			}
 		}
 		wants_propose_policy = {
 			if = {
-				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_situation_months } }
+				limit = { situation:cc_balance_of_power ?= { has_variable = cc_bop_situation_months } }
 				add = {
 					desc = "CC_BOP_LAW_WAR_WEARINESS"
 					value = situation:cc_balance_of_power.var:cc_bop_situation_months
@@ -601,7 +601,7 @@ cc_bop_settlement_law = {
 				}
 			}
 			if = {
-				limit = { situation:cc_balance_of_power = { has_variable = cc_bop_coalition_primed } }
+				limit = { situation:cc_balance_of_power ?= { has_variable = cc_bop_coalition_primed } }
 				add = { desc = "CC_BOP_LAW_RECKONING" value = 40 }
 			}
 		}

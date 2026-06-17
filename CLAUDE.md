@@ -15,6 +15,17 @@ EU V Modding Documentation: https://eu5.paradoxwikis.com/Modding
 
 **Shipping a release?** Follow [docs/release-process.md](docs/release-process.md) — the full checklist for version bump, change note, workshop/web-docs description generators (which read fixed file lists you must register new content in), and upload. Do not hand-edit `*_upload.*` files, `docs/*.html`, or content inside `<!-- GEN:… -->` markers; rerun the generators instead.
 
+## Copywriting & web design conventions
+
+All customer-facing copy (workshop descriptions, dev diaries, change notes, in-game loc that surfaces in those, web docs) must read as **plain, direct documentation**, not marketing. Avoid these "LLM-ism" tells:
+
+- **No em-dashes.** Use a period, semicolon, comma, colon, parentheses, or recast the sentence. For `[b]Label[/b] — description` list items use a **colon** (`[b]Label:[/b] description`). This applies to source files *and* to any generator code that emits separators — fix it at the generator (e.g. `generate_workshop.py` builds list lines with `: `, not ` — `), not just the output.
+- **No flowery / marketing language.** Cut metaphors and hyperbole ("weaving a web... spider envious", "memorable characters", "read a room in three languages", "learns to outlive its own ending"). State the mechanic plainly. Rich language earns emphasis only when used sparingly.
+- **Trim other tells:** rule-of-three triplets, "isn't just X, it's Y" / "no longer just", "at its core / at the heart of", "whether you're... or...", hedging ("unfortunately", "a bit", "subject to change"), and bold-for-emphasis on ordinary text (bold a mechanic name once, not every clause).
+- **Web design:** do **not** use the colored `border-left` (or `border-top`) accent-stripe card pattern. Cards use a uniform `1px var(--card-border)` border with the accent expressed as a small-caps colored **eyebrow** above the title plus a short colored **underline rule** (`::after`) beneath it. All site CSS lives in the `TEMPLATE`/`EXTRA_CSS` of `tools/generate_index.py` and `tools/generate_dev_diaries.py`.
+- **After editing any source that feeds a generator**, rerun the generators and `grep -c "—"` the regenerated `*_upload.*` and `docs/*.html` to confirm em-dashes introduced via loc/generator code didn't leak back in.
+- **Out of scope unless asked:** `README.md` (developer guide) and the historical `assets/workshop/change-notes.bbcode` archive.
+
 # lookup tools
 
 ## Vanilla game file search

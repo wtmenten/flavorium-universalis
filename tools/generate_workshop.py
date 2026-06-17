@@ -60,7 +60,7 @@ TRAIT_FILES: list[tuple[str, str, str]] = [
      "Tier 3 attribute-scaled triads covering integration, antagonism, exploration, and more"),
     ("cc_age_traits.txt",
      "Age Traits",
-     "Era-specific traits granted through historical period events — "
+     "Era-specific traits granted through historical period events: "
      "Renaissance humanists, Reformation theologians, Absolutist administrators, Revolutionary agitators"),
     ("cc_conditional_traits.txt",
      "Conditional Traits",
@@ -77,7 +77,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_cabinet",          "cc_cabinet_events.txt",            "Minister counsel, estate relations, diplomatic situations, provincial affairs"),
     ("cc_traits",           "cc_trait_events.txt",              "Age trait acquisition, ruler teaching, peer learning"),
     ("cc_cond",             "cc_conditional_trait_events.txt",  "Conditional trait spawning based on realm conditions and actions"),
-    ("cc_synergy",          "cc_synergy_events.txt",            "Trait pair synergies — temporary bonuses when ministers share trait families"),
+    ("cc_synergy",          "cc_synergy_events.txt",            "Trait pair synergies: temporary bonuses when ministers share trait families"),
     ("cc_neg",              "cc_negative_trait_events.txt",     "Underperformance events and rehabilitation chains"),
     ("cc_wealth",           "cc_wealth_events.txt",             "Wealth hoarding pressure and minister enrichment"),
     ("cc_dual",             "cc_dual_synergy_events.txt",       "Cabinet × religious figure dual-role synergies"),
@@ -85,9 +85,9 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_feudal",           "cc_feudal_events.txt",             "Feudal era court events"),
     ("cc_legacy",           "cc_legacy_events.txt",             "Senior minister retirement and legacy transmission"),
     ("cc_legend",           "cc_legend_events.txt",             "Legendary minister quest chains"),
-    ("cc_hyw",              "cc_hyw_events.txt",                "Hundred Years War flavor — FRA/ENG war outcomes, observer reactions, vassal defection pressure"),
-    ("cc_personality",      "cc_ai_personality_events.txt",     "Dynamic AI personality inflection events — key historical turning points"),
-    ("cc_bonds",            "cc_bond_*.txt",                    "Overlord-subject bond system — per-type chain events, monitor, status reveals, AoR payoffs"),
+    ("cc_hyw",              "cc_hyw_events.txt",                "Hundred Years War flavor: FRA/ENG war outcomes, observer reactions, vassal defection pressure"),
+    ("cc_personality",      "cc_ai_personality_events.txt",     "Dynamic AI personality inflection events at key historical turning points"),
+    ("cc_bonds",            "cc_bond_*.txt",                    "Overlord-subject bond system: per-type chain events, monitor, status reveals, AoR payoffs"),
     ("cc_rival",            "cc_rivalry_events.txt",            "Court rivalry escalation: minister complaint → letter unsealed → faction hardens"),
     ("cc_cabal",            "cc_cabal_events.txt",              "Cabinet alliance formation: alliance forms → joint reform proposal"),
     ("cc_wc",               "cc_war_council_events.txt",        "War council: active-war events, post-war reform proposals, outdated general retirement"),
@@ -95,10 +95,10 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_prog",             "cc_progression_events.txt",        "Stepping stone trait progression chains (Paths A/C/D/F/E)"),
     ("cc_colonial",         "cc_colonial_events.txt",           "Colonial divan: charter company events + decolonization crisis chain"),
     ("cc_posting",          "cc_colonial_posting_events.txt",   "Colonial posting duty: dispatch, corruption, native uprising, fever"),
-    ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars — papal loan event"),
-    ("cc",                  "cc_subject_events.txt",            "Protectorate & holy protectorate chains — ward maturation, diplomatic incidents, faith crises, religion divergence, papal interactions"),
-    ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation — expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
-    ("cc_balance_of_power",  "cc_balance_of_power.txt",          "European Balance of Power situation — alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings"),
+    ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars papal loan event"),
+    ("cc",                  "cc_subject_events.txt",            "Protectorate & holy protectorate chains: ward maturation, diplomatic incidents, faith crises, religion divergence, papal interactions"),
+    ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation: expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
+    ("cc_balance_of_power",  "cc_balance_of_power.txt",          "European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings"),
 ]
 
 HIGHLIGHTED_TRAITS: list[str] = [
@@ -572,7 +572,7 @@ def gen_game_rules(loc: dict[str, str]) -> str:
                 tag = f" {italic('(default)')}" if key == default_opt else ""
                 entry = f"{bold(opt_name)}{tag}"
                 if opt_desc:
-                    entry += f" — {opt_desc}"
+                    entry += f": {opt_desc}"
                 options.append(entry)
 
         if options:
@@ -610,7 +610,7 @@ def gen_trait_summary(loc: dict[str, str]) -> str:
         )
         entry = bold(name)
         if desc:
-            entry += f" — {first_sentence(desc)}"
+            entry += f": {first_sentence(desc)}"
         trait_items.append(entry)
 
     lines.append(list_block(trait_items))
@@ -645,7 +645,7 @@ def gen_subject_types(loc: dict[str, str]) -> str:
             short = first_sentence(desc) if desc else ""
             entry = f"{bold(name)} {italic(f'(unlocks Age {age})')}"
             if short:
-                entry += f" — {short}"
+                entry += f": {short}"
             items.append(entry)
         blocks.append(bold(chain_name) + "\n" + list_block(items))
     return "\n\n".join(blocks)
@@ -701,13 +701,13 @@ def gen_advances(loc: dict[str, str]) -> str:
                     loc.get(u) or loc.get(f"AM_{u}") or id_to_title(u)
                     for u in unlocks
                 ]
-                entry = f"{branch_tag} {bold(name)} — Unlocks: {bold(', '.join(unlock_names))}."
+                entry = f"{branch_tag} {bold(name)} unlocks {bold(', '.join(unlock_names))}."
                 if short:
                     entry += f" {short}"
             else:
                 entry = f"{branch_tag} {bold(name)}"
                 if short:
-                    entry += f" — {short}"
+                    entry += f": {short}"
 
             entry += _detail_line(mods, cond_str)
             items.append(entry)
@@ -722,25 +722,25 @@ def gen_advances(loc: dict[str, str]) -> str:
 def gen_country_starts(_loc: dict[str, str]) -> str:
     entries = [
         (
-            "France — Hundred Years War Flavor", "default: on",
-            "France begins with historical modifiers reflecting its position at the opening of the Hundred Years War: "
+            "France: Hundred Years War Flavor", "default: on",
+            "France begins with historical modifiers for its position at the opening of the Hundred Years War: "
             "levy readiness, estate pressure, and elevated antagonism from its Lowlands-culture neighbors. "
             "The Lowlands antagonism decays over 200 years. France also starts with a permanent modifier "
-            "representing its expansionist posture toward the Lowlands."
+            "for its expansionist posture toward the Lowlands."
         ),
         (
-            "England — Hundred Years War Flavor", "default: on",
-            "England begins with estate and levy modifiers reflecting its precarious continental position at the "
-            "start of the Hundred Years War — a kingdom stretched across the Channel with ambitious claims and restless nobles."
+            "England: Hundred Years War Flavor", "default: on",
+            "England begins with estate and levy modifiers for its precarious continental position at the "
+            "start of the Hundred Years War: a kingdom stretched across the Channel with ambitious claims and restless nobles."
         ),
         (
-            "Mamluks — Foreign Rule Strain", "default: on",
-            "The Mamluks begin with a permanent peasant levy penalty (representing their status as a foreign military "
+            "Mamluks: Foreign Rule Strain", "default: on",
+            "The Mamluks begin with a permanent peasant levy penalty (for their status as a foreign military "
             "caste ruling over native Egyptian society) and a severe military strain modifier that decays over 200 years. "
-            "Combined, these represent the fragility of Mamluk rule and ease as the regime stabilizes — or they don't."
+            "Together these represent the fragility of Mamluk rule, which eases as the regime stabilizes, if it does."
         ),
         (
-            "Ottomans — No Colonization", "default: on",
+            "Ottomans: No Colonization", "default: on",
             "The Ottomans are permanently prevented from colonizing overseas. This reflects the historical Ottoman "
             "orientation as a land empire focused on Anatolia, the Balkans, and the Middle East, rather than "
             "competing in Atlantic exploration."
@@ -835,7 +835,7 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
             short = first_sentence(desc) if desc else ""
             entry = bold(name)
             if short:
-                entry += f" — {short}"
+                entry += f": {short}"
             entry += f" {italic(f'(via: {from_adv})')}"
             rd = reform_data.get(reform_id, {})
             mods = rd.get("modifiers", [])

@@ -193,11 +193,12 @@ EXTRA_CSS = """
 .diary-byline{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:-2px 0 18px}
 /* ----- dev diary index cards (landing page) ----- */
 .diary-index{display:flex;flex-direction:column;gap:14px;margin-top:10px}
-.diary-card{display:block;background:var(--card-bg);border:1px solid var(--card-border);border-left:3px solid var(--gold);border-radius:var(--radius);padding:16px 20px;text-decoration:none;color:inherit;transition:background .12s,border-color .12s,transform .12s}
-.diary-card:hover{background:var(--hover-bg);border-left-color:var(--adm);transform:translateX(2px)}
-.diary-card .dc-date{color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
-.diary-card .dc-title{color:var(--gold);font-size:18px;font-weight:700;margin:3px 0 6px}
-.diary-card:hover .dc-title{color:var(--adm)}
+.diary-card{display:block;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px 20px 16px;text-decoration:none;color:inherit;transition:background .12s,border-color .12s,transform .12s}
+.diary-card:hover{background:var(--hover-bg);border-color:#3f4452;transform:translateY(-1px)}
+.diary-card .dc-date{color:var(--gold);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em}
+.diary-card .dc-title{color:var(--text);font-size:18px;font-weight:700;margin:5px 0 8px;padding-bottom:9px;position:relative}
+.diary-card .dc-title::after{content:'';position:absolute;left:0;bottom:0;width:32px;height:2px;border-radius:2px;background:var(--gold);transition:width .12s,background .12s}
+.diary-card:hover .dc-title::after{width:48px;background:var(--adm)}
 .diary-card .dc-blurb{color:var(--text-mid);font-size:14px;line-height:1.55}
 .diary-card .dc-more{display:inline-block;margin-top:9px;font-size:12px;color:var(--adm);font-weight:600}
 """
@@ -315,7 +316,7 @@ def main():
         headings = gi.extract_headings(body)
         nav = gi.build_nav(headings)
         page = build_page(
-            title=f'{m["title"]} — Flavorium Universalis',
+            title=f'{m["title"]} | Flavorium Universalis',
             header_html=_header("../", "Dev Diary"),
             sidebar_label="Contents",
             nav_html=nav,
@@ -338,7 +339,7 @@ def main():
     index_body = "\n".join(cards)
 
     index_page = build_page(
-        title="Dev Diaries — Flavorium Universalis",
+        title="Dev Diaries | Flavorium Universalis",
         header_html=_header("", "Dev Diaries"),
         sidebar_label="Dev Diaries",
         nav_html=build_index_nav(metas),

@@ -39,7 +39,13 @@
 	category = country
 
 	potential = {
-		scope:war = { is_no_cb_war = no }
+		scope:war = { 
+			is_no_cb_war = no 
+			OR = {
+				defender_leader = scope:winner
+				NOT = { casus_belli ?= casus_belli:cb_coalition } 
+			}
+		}
 		scope:winner = { has_advance = shadow_diplomacy_advance }
 		scope:loser = {
 			is_subject = no

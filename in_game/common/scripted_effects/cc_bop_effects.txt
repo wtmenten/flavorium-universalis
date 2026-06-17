@@ -254,14 +254,21 @@ cc_bop_form_concert = {
 				20 = { change_global_variable = { name = cc_concert_readmit_year add = 25 } }
 			}
 		}
-		# The old poles are superseded by the new institution.
-		destroy_international_organization = { target = international_organization:cc_bop_preponderance }
-		destroy_international_organization = { target = international_organization:cc_bop_coalition }
+		# The old poles are superseded by the new institution. Use the _no_instigator
+		# variant: this runs in situation/global scope, where the plain destroy silently
+		# no-ops for want of a country instigator.
+		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_preponderance }
+		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_coalition }
 	}
 }
 
 # Apply the appropriate ending payoffs based on which break flag the situation set.
 cc_bop_apply_ending = {
+	# Mark the contest as winding down: dissolving the poles below (here via
+	# cc_bop_form_concert, and in cc_bop_cleanup) fires each IO's on_left for every
+	# member, which would otherwise brand the whole bloc as defectors. The flag is
+	# cleared at the end of cc_bop_cleanup. See the on_left guards in the IO defs.
+	set_global_variable = cc_bop_dissolving
 	# HEGEMONY — the preponderant leader masters the continent.
 	if = {
 		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_hegemony } }
@@ -416,6 +423,22 @@ cc_bop_apply_ending = {
 # deliberately NOT cleared here — they gate whether the situation may re-form.
 cc_bop_cleanup = {
 	clear_global_variable_list = cc_bop_pool
+	# Dissolve the two pole IOs if they still stand. The Concert branch already
+	# destroys them via cc_bop_form_concert; every other ending leaves them alive,
+	# and their generic_actions keep reading the situation's (now-removed) gauge
+	# vars, spamming "variable not set" errors. Tear them down here so their
+	# actions stop evaluating once the situation has ended.
+	# Use the _no_instigator variant: cleanup runs in situation/global scope with no
+	# instigating country, and the plain destroy_international_organization silently
+	# no-ops without a country scope (cf. vanilla red_turban_rebellions on_ended).
+	if = {
+		limit = { exists = international_organization:cc_bop_preponderance }
+		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_preponderance }
+	}
+	if = {
+		limit = { exists = international_organization:cc_bop_coalition }
+		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_coalition }
+	}
 	situation:cc_balance_of_power = {
 		remove_variable = cc_bop_pre_strength
 		remove_variable = cc_bop_coa_strength
@@ -462,4 +485,6 @@ cc_bop_cleanup = {
 		remove_variable = cc_bop_ambition
 		remove_variable = cc_bop_resolve
 	}
+	# The poles are gone; lift the teardown guard so future defections brand normally.
+	remove_global_variable = cc_bop_dissolving
 }

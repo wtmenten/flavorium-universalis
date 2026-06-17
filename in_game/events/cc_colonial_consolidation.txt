@@ -51,11 +51,11 @@ cc_colonial.20 = {
 		any_subject = {
 			is_subject_type = colonial_nation
 			num_locations >= 5
-			num_locations <= 25
+			num_locations <= 50
 			any_neighbor_country = {
 				is_subject_type = colonial_nation
 				num_locations >= 5
-				num_locations <= 25
+				# num_locations <= 50
 				NOT = { is_at_war_with = prev }
 				NOT = { culture = prev.culture }
 			}
@@ -68,11 +68,11 @@ cc_colonial.20 = {
 			limit = {
 				is_subject_type = colonial_nation
 				num_locations >= 5
-				num_locations <= 25
+				num_locations <= 50
 				any_neighbor_country = {
 					is_subject_type = colonial_nation
 					num_locations >= 5
-					num_locations <= 25
+					# num_locations <= 50
 					NOT = { is_at_war_with = prev }
 					NOT = { culture = prev.culture }
 				}
@@ -85,7 +85,7 @@ cc_colonial.20 = {
 				limit = {
 					is_subject_type = colonial_nation
 					num_locations >= 5
-					num_locations <= 25
+					# num_locations <= 50
 					NOT = { is_at_war_with = scope:colony_a }
 					NOT = { culture = scope:colony_a_culture }
 				}
@@ -304,7 +304,6 @@ cc_colonial.30 = {
 	}
 
 	immediate = {
-		set_variable = { name = cc_colonial_consolidate_cd value = yes years = 20 }
 		random_subject = {
 			limit = {
 				is_subject_type = colonial_nation
@@ -349,12 +348,14 @@ cc_colonial.30 = {
 			modifier = { factor = 1.5  scope:colony_a = {subject_loyalty >= 60} }
 			modifier = { factor = 1.5  scope:colony_b = {subject_loyalty >= 60} }
 		}
+		set_variable = { name = cc_colonial_consolidate_cd value = yes years = { 3 15 }  }
 		add_prestige = prestige_mild_penalty
 		trigger_event_silently = { id = cc_colonial.31 days = 30 }
 	}
 
 	# Coordinate them under a shared council, but keep both seats (soft outcome)
 	option = {
+		set_variable = { name = cc_colonial_consolidate_cd value = yes years = 5 }
 		name = cc_colonial.30.b
 		ai_chance = { base = 50 }
 		trigger_event_silently = { id = cc_colonial.32 days = 30 }
@@ -362,6 +363,7 @@ cc_colonial.30 = {
 
 	# Leave the arrangement as it is — the governors grumble at the missed opportunity
 	option = {
+		set_variable = { name = cc_colonial_consolidate_cd value = yes years = 3 }
 		name = cc_colonial.30.c
 		scope:colony_a = { add_liberty_desire = liberty_desire_weak_plus }
 		scope:colony_b = { add_liberty_desire = liberty_desire_weak_plus }
@@ -473,13 +475,17 @@ cc_colonial.33 = {
 
 	trigger = {
 		exists = scope:colony_a
-		scope:colony_a = { is_subject_of = root }
+		scope:colony_a = { 
+			is_subject_of = root 
+			NOT = { has_variable = cc_colonial_vice_court_cd }
+		}
 	}
 
 	# Appoint a crown loyalist — tighter control, the colony chafes a little
 	option = {
 		name = cc_colonial.33.a
 		scope:colony_a = {
+			set_variable = { name = cc_colonial_vice_court_cd value = yes years = 30 }
 			add_country_modifier = { modifier = cc_col_unified_administration years = 15 mode = set_to_largest_and_extend }
 			add_liberty_desire = liberty_desire_weak_plus
 		}
@@ -489,6 +495,7 @@ cc_colonial.33 = {
 	option = {
 		name = cc_colonial.33.b
 		scope:colony_a = {
+			set_variable = { name = cc_colonial_vice_court_cd value = yes years = 30 }
 			add_liberty_desire = liberty_desire_weak_minus
 			if = {
 				limit = { has_variable = cc_bond_cul }
