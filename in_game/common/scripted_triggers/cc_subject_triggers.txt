@@ -1,0 +1,17 @@
+﻿# Custom subject types: shared triggers
+
+# Is this country allowed to research the advances that unlock the mod's custom
+# subject types? Driven by the cc_subject_types game rule:
+#   on          = every country
+#   player_only = human-controlled countries only (AI keeps vanilla subjects)
+#   off         = nobody
+# Evaluated in country scope (used in advance potential blocks).
+cc_subject_types_available = {
+	OR = {
+		has_game_rule = cc_subject_types_on
+		AND = {
+			has_game_rule = cc_subject_types_player_only
+			is_human = yes
+		}
+	}
+}
