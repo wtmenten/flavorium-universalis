@@ -409,7 +409,9 @@ EU5 only loads mods from the top-level `mod/` folder. This script creates Window
 python tools/setup_junctions.py
 ```
 
-Run once after cloning and again whenever a new submod is added. It reads the `name` field from each submod's `.metadata/metadata.json` and creates `mod/<name>/` → `submods/<folder>/`. Safe to re-run — existing up-to-date junctions are skipped.
+Run once after cloning, again whenever a new submod is added, and after **renaming** a submod (for example when promoting a `1.3 Beta ...` submod to its stable `Flavorium Universalis - ...` name). It reads the `name` field from each submod's `.metadata/metadata.json` and creates `mod/<name>/` → `submods/<folder>/`. Safe to re-run: up-to-date junctions are skipped.
+
+The script also **prunes stale junctions**. After every submod name resolves cleanly, any junction directly under `mod/` that points into this repo's `submods/` tree but no longer matches a current submod `name` is removed. This is what clears out old links after a rename (the leftover `1.3 Beta ...` junctions from the beta line). Only reparse points resolving inside `submods/` are touched; real directories (like `cabinets-and-choices`) and unrelated links are left alone, and the prune is skipped entirely if any submod name failed to load, so a transient read error can never delete a still-valid link.
 
 ### `tools/generate_workshop.py` — Workshop description generator
 

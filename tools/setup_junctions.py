@@ -44,10 +44,21 @@ def junction_target(path):
         return None
 
 
+def normalize_path(path):
+    """Normalize a path for comparison. os.readlink on a Windows junction can
+    return a target with a \\\\?\\ or \\??\\ prefix; strip it so path comparisons
+    against a plain absolute path succeed."""
+    for prefix in ("\\\\?\\", "\\??\\"):
+        if path.startswith(prefix):
+            path = path[len(prefix):]
+            break
+    return os.path.normcase(os.path.abspath(path))
+
+
 def create_junction(link_path, target_path):
     existing_target = junction_target(link_path)
     if existing_target is not None:
-        if os.path.normcase(os.path.abspath(existing_target)) == os.path.normcase(os.path.abspath(target_path)):
+        if normalize_path(existing_target) == normalize_path(target_path):
             print(f"    Already up to date.")
             return True
         print(f"    Removing stale junction (was -> {existing_target})")
@@ -73,6 +84,34 @@ def create_junction(link_path, target_path):
     return True
 
 
+def prune_stale_junctions(valid_names):
+    """Remove junctions in MOD_DIR that point into SUBMODS_DIR but whose name is
+    no longer a current submod name. This is what clears out renamed links (e.g.
+    old '1.3 Beta ...' names) after a submod is renamed. Only reparse points that
+    resolve inside this repo's submods/ tree are touched — real directories (like
+    cabinets-and-choices) and unrelated links are left alone."""
+    submods_root = normalize_path(SUBMODS_DIR)
+    removed = 0
+    for entry in sorted(os.listdir(MOD_DIR)):
+        link_path = os.path.join(MOD_DIR, entry)
+        target = junction_target(link_path)
+        if target is None:
+            continue  # real directory or not a reparse point
+        target_abs = normalize_path(target)
+        if target_abs != submods_root and not target_abs.startswith(submods_root + os.sep):
+            continue  # junction points somewhere outside submods/ — not ours
+        if entry in valid_names:
+            continue  # matches a current submod name — keep
+        print(f"  Pruning stale junction: {entry}")
+        print(f"    (was -> {target})")
+        try:
+            os.rmdir(link_path)
+            removed += 1
+        except Exception as e:
+            print(f"    Error: could not remove {link_path}: {e}")
+    return removed
+
+
 def main():
     if sys.platform != "win32":
         print("This script is Windows-only (uses mklink /J).")
@@ -95,6 +134,7 @@ def main():
     print()
 
     errors = 0
+    valid_names = set()
     for folder in folders:
         submod_dir = os.path.join(SUBMODS_DIR, folder)
         mod_name = load_submod_name(submod_dir)
@@ -102,12 +142,22 @@ def main():
             errors += 1
             continue
 
+        valid_names.add(mod_name)
         link_path = os.path.join(MOD_DIR, mod_name)
         print(f"  {mod_name}  (submods/{folder})")
         if create_junction(link_path, submod_dir):
             print(f"    {link_path}")
         else:
             errors += 1
+
+    # Only prune once every submod name resolved cleanly, so a transient read
+    # error can't make us delete a still-valid link.
+    print()
+    if errors:
+        print(f"Skipping stale-junction prune ({errors} name error(s) above).")
+    else:
+        pruned = prune_stale_junctions(valid_names)
+        print(f"Pruned {pruned} stale junction(s).")
 
     print()
     if errors:
