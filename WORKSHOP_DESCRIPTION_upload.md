@@ -1093,6 +1093,15 @@ When enabled, tracks 5 relationship dimensions (economic, military, political, c
   * **Disabled** : Normal subject relationships, bond tracking and event chains disabled.
 
   
+**C &C: Custom Subject Types**  
+Controls whether the mod's custom subject types (personal-union partners, shadow and client states, elite enclaves, chartered companies, cultural communes, provincial governorates, tax farms, marches, federal members, and the rest) are available. The toggle gates every advance that unlocks these subjects.  
+
+
+  * **Enabled** _(default)_ : The advances that unlock the mod's custom subject types appear in the tech tree for every country, alongside their estate privileges and government reforms.
+  * **Player Only** : Only human-controlled countries can research these advances and create the custom subjects. AI countries are limited to vanilla subject types.
+  * **Disabled** : Those advances never appear, so the custom subjects cannot be created. Only vanilla subject types remain, and the related event chains stay dormant.
+
+  
 **Cc Invasion Mexico**  
 
 
