@@ -106,6 +106,23 @@ python tools/var_refs.py --file in_game/events/cc_bond_chain_d.txt
 
 Output format: `file:line  op  event_or_block > section[option_name]`
 
+## Localization translation
+
+**Use `tools/translate.py` to machine-translate localization into the other languages EU5 supports.** Never hand-write translated `.yml` files or edit them for content; re-run the tool instead.
+
+```
+python tools/translate.py -m                            # mod localization, all languages
+python tools/translate.py -m -l french,german,spanish   # limit languages
+python tools/translate.py -s                            # main mod + every submod
+python tools/translate.py -wp -cn                       # Steam page title/description and change notes
+```
+
+- **Backends** are set in `tools/config.toml`: `local` (OpenAI-compatible server, the default, no API key), `deepl`, or `gemini-3-flash`. The `local_*` keys configure the server; `local_disable_thinking = true` is required for reasoning models or throughput drops ~8x.
+- **No Italian.** EU5 ships no `italian` localization folder, so `l_italian` never loads. Valid targets are the ten folders under `game/main_menu/localization/`.
+- **Runs are incremental.** Per-key hashes in `tools/dependencies/.translate_hashes.json` mean re-runs only touch changed/missing keys. To force specific strings to be redone, delete their lines from the target `.yml` and re-run: keys missing from a target are always re-translated.
+- **Markup is validated, not trusted.** Translations that drop a `[scope.Function]`/`$VAR$`/`@icon!`/`#colour…#!` token, *or invent one the source lacks*, are retried then fall back to English. Invented tokens are the dangerous case: a model will turn "they" into `[minister.GetSheHe]` in a key where that scope doesn't exist, which errors in-game.
+- **Protecting text:** `# NO-TRANSLATE` on a source line, `# NO-TRANSLATE BELOW`/`# NO-TRANSLATE END` around a source block, or `# LOCK` on a line in a *target* file to keep a hand-corrected translation from being overwritten.
+
 ## Development Environment
 
 - **Game files location**: `F:\SteamLibrary\steamapps\common\Europa Universalis V\game` — reference these when checking vanilla definitions, scripting syntax, or effect/trigger scopes.

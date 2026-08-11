@@ -180,7 +180,15 @@ $exclusions = @(
     "common/country_interactions/intervene_in_union_civil_war",
     "glorp",
     
-
+    "common/peace_treaties/disband_kontor.txt:45",
+    "D008_latinization_vs_hellenization:29",
+    "events/disaster/horde_civil_war",
+    "events/economy/banking.txt",
+    "common/building_types/rural_buildings.txt:35",
+    "events/disaster/hook_and_cod_wars.txt",
+    "cossacks_estate_events.txt:308",
+    "OVER_FORT_LIMIT_ERROR_LOG",
+    "The following two countries have the same name",
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",
     "audio2_wwise.cpp:757", "audio2_wwise.cpp:1970", "state_event.h:391", "context pointer", "Could not push the provided stack context",

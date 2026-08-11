@@ -2,7 +2,8 @@
 
   
   
-**Compatible with EU5 1.2.* | Multiplayer synchronized**  
+**Compatible with EU5 1.3.* | Multiplayer synchronized**  
+**Languages:** English, Français, Deutsch, Español  
   
 
 

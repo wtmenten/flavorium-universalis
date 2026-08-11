@@ -3,9 +3,20 @@ source_language = "english" # Options: english, french, german, spanish, polish,
 translate_workshop = false # Auto-translate workshop title/description into other languages. You can also use -wp/--workshop-pages instead.
 translate_change_notes_by_default = false # Should running translate.py translate change notes? You can also use -cn/--change-notes instead.
 translate_submods_by_default = false # Should running translate.py include all submods from submods/? You can also use -s/--submods instead.
-localization_translator = "deepl" # Options: deepl, gemini-3-flash
-workshop_title_translator = "gemini-3-flash" # Options: deepl, gemini-3-flash - highly recommended at least for title. But I would also recommend just using Gemini-3-Pro using the website (api has no free requests)
-workshop_description_translator = "gemini-3-flash" # Options: deepl, gemini-3-flash - better, but only 20 free requests per day (Each run takes 10 requests per description, and 10 per title)
+localization_translator = "local" # Options: local, deepl, gemini-3-flash
+workshop_title_translator = "local" # Options: local, deepl, gemini-3-flash
+workshop_description_translator = "local" # Options: local, deepl, gemini-3-flash
+
+# Local OpenAI-compatible server (llama.cpp / llama-swap / LM Studio / Ollama) #
+local_api_base = "http://127.0.0.1:9292/v1"
+local_model = "gemma_4_31b_it_heretic-Q4_K_M"
+local_api_key = "" # Optional bearer token; leave blank for an unauthenticated local server.
+local_batch_size = 25 # Localization strings sent per request. Larger batches are faster but risk dropped entries.
+local_concurrency = 3 # Parallel in-flight requests. Match your server's parallel slot count.
+local_temperature = 0.2
+local_max_tokens = 8192
+local_timeout_seconds = 600 # Raise this if the server has to swap a large model in.
+local_disable_thinking = true # Sends chat_template_kwargs.enable_thinking=false. Reasoning models are ~8x slower without it.
 
 # Prompts for use with Gemini-3-Flash #
 gemini_localization_system_prompt = "You are a professional localization translator. Translate the user's Europa Universalis localization text into {target_language}. Preserve any bracketed tokens, variables, and EU5 markup exactly. Do not add commentary; output only the translated text."
@@ -33,9 +44,9 @@ workshop_id = 3738220283
 ### mod_id = "flavorium-balance-beta-13"
 ### workshop_id = 3738496761
 
-### [[submods]]
-### mod_id = "flavorium-disease-hotfix-beta-13"
-### workshop_id = 3739174610
+[[submods]]
+mod_id = "flavorium-disease-hotfix-beta-13"
+workshop_id = 3739174610
 
 [[submods]]
 mod_id = "flavorium-ui-fixes"

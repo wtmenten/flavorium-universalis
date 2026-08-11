@@ -423,6 +423,33 @@ python tools/generate_workshop.py --dry-run  # print to stdout without writing
 
 Parses mod files and updates `<!-- GEN:name -->...<!-- /GEN:name -->` sections in `WORKSHOP_DESCRIPTION.md`. Run after adding new traits, subject types, advances, or game rules.
 
+### `tools/translate.py` — Localization machine translation
+
+Translates `localization/english/*.yml` into the other languages EU5 supports, and optionally the Steam page title/description and change notes.
+
+```bash
+python tools/translate.py -m                              # mod localization, all languages
+python tools/translate.py -m -l french,german,spanish     # limit to specific languages
+python tools/translate.py -s                              # main mod + every submod
+python tools/translate.py -wp -cn                         # Steam page and change notes
+```
+
+Valid `-l` values: `braz_por`, `french`, `german`, `japanese`, `korean`, `polish`, `russian`, `simp_chinese`, `spanish`, `turkish`. There is no Italian: EU5 ships no `italian` localization folder, so an `l_italian` file would never load.
+
+**Backends** are set in `tools/config.toml` (`localization_translator`, `workshop_title_translator`, `workshop_description_translator`):
+
+- `local` — an OpenAI-compatible server (llama.cpp, llama-swap, LM Studio, Ollama). Configured by the `local_*` keys; no API key or per-character cost. This is the default.
+- `deepl` — needs `pip install deepl` and `DEEPL_API_KEY` in `.env`.
+- `gemini-3-flash` — needs `GEMINI_API_KEY` in `.env`.
+
+Set `local_disable_thinking = true` for reasoning models. Without it the model spends its whole token budget thinking about each string and runs roughly eight times slower. Tune `local_batch_size` and `local_concurrency` to your server's parallel slot count.
+
+**Incremental by default.** Per-key source hashes live in `tools/dependencies/.translate_hashes.json`, so re-runs only translate strings whose English text changed, keys missing from a target file, and keys that no longer exist (those get pruned). To force a re-translation of specific strings, delete their lines from the target `.yml` and re-run.
+
+**Markup safety.** Every translation is checked against the source for `[scope.Function]` links, `$VARIABLE$` tokens, `@icon!` sprites, `#colour ... #!` blocks and `\n`. A translation that drops a token or invents one the source never had is retried, then falls back to the English source. Inventing tokens matters: a model will happily turn "they" into `[minister.GetSheHe]` in a key where that scope does not exist, which errors in-game.
+
+Mark text to leave alone with `# NO-TRANSLATE` on a line, `# NO-TRANSLATE BELOW` / `# NO-TRANSLATE END` around a block, or `# LOCK` on a line in a *target* file to protect a hand-corrected translation from being overwritten.
+
 ---
 
 ## Testing
@@ -437,6 +464,16 @@ Parses mod files and updates `<!-- GEN:name -->...<!-- /GEN:name -->` sections i
 ## Releasing to Steam Workshop
 
 All uploads are handled by `tools/upload.py`. Configure targets in `tools/config.toml`.
+
+`tools/release.py` wraps it with a confirmation prompt and can run translation first. It consumes `-t/--translate`, `-l/--languages` and `--translate-only`, and forwards every other flag to `upload.py`:
+
+```bash
+python tools/release.py -t -m -wp        # translate, then upload mod + workshop pages
+python tools/release.py -t --translate-only -l french,german,spanish
+python tools/release.py -m               # upload only, no translation
+```
+
+The translation step mirrors the upload targets, so `-t -wp` translates the workshop pages it is about to upload.
 
 ### Common commands
 

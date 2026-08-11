@@ -23,8 +23,12 @@ cc_bop_io_call_to_arms = {
 			is_leader_of_international_organization = international_organization:cc_bop_preponderance
 			NOT = { country_type = pop }
 			NOT = { country_type = building }
-			exists = international_organization:cc_bop_coalition
-			is_at_war_with = international_organization:cc_bop_coalition.leader_country
+		}
+		# Dereferencing .leader_country errors when the coalition IO does not exist yet, which
+		# the pre-game country selector does. ?= yields false instead. Checked from the
+		# coalition leader's side because is_at_war_with is symmetric.
+		international_organization:cc_bop_coalition.leader_country ?= {
+			is_at_war_with = scope:actor
 		}
 	}
 

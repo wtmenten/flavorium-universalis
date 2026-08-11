@@ -8,9 +8,23 @@ Usage:
     python tools/generate_index.py --input path/to/file.md
 """
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
+
+METADATA_PATH = Path(__file__).resolve().parent.parent / ".metadata" / "metadata.json"
+
+
+def read_game_version(default="1.3.*"):
+    """Read supported_game_version from metadata.json so the header badge can't go stale."""
+    try:
+        data = json.loads(METADATA_PATH.read_text(encoding="utf-8-sig"))
+    except Exception as e:
+        print(f"Warning: could not read {METADATA_PATH} ({e}); using '{default}' for the version badge.")
+        return default
+    version = str(data.get("supported_game_version") or "").strip()
+    return version or default
 
 try:
     import bbcode
@@ -270,7 +284,7 @@ body.nav-open .sidebar-overlay{display:block}
   <div class="header-inner">
     <button class="menu-btn" id="menuBtn" title="Navigation">&#9776;</button>
     <span class="mod-title">Flavorium Universalis</span>
-    <span class="ver-badge">EU5 1.2.*</span>
+    <span class="ver-badge">EU5 {GAME_VERSION}</span>
     <div class="hdr-spacer"></div>
     <a class="planner-link" href="dev-diaries.html">Dev Diaries &rarr;</a>
     <a class="planner-link" href="planner.html">Advance Planner &rarr;</a>
@@ -425,7 +439,11 @@ def main():
     headings = extract_headings(html_body)
     nav_html = build_nav(headings)
 
-    page = TEMPLATE.replace("{NAV}", nav_html).replace("{CONTENT}", html_body)
+    page = (
+        TEMPLATE.replace("{NAV}", nav_html)
+        .replace("{CONTENT}", html_body)
+        .replace("{GAME_VERSION}", read_game_version())
+    )
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -1101,14 +1101,21 @@ def apply_workshop_item_id(text, item_id):
     return text.replace(WORKSHOP_ITEM_ID_TOKEN, str(item_id))
 
 def trim_description(text, lang_label):
-    """Truncate the description to MAX_DESCRIPTION_LENGTH bytes and warn if truncated."""
+    """Truncate the description to MAX_DESCRIPTION_LENGTH characters and warn if truncated.
+
+    Steam's cap is on characters, not UTF-8 bytes. Measuring bytes truncated translated
+    descriptions early, since accented Latin text runs a few percent larger in bytes and
+    Cyrillic/CJK roughly two to three times larger.
+    """
     if not text:
         return text
 
-    encoded = text.encode("utf-8")
-    if len(encoded) > MAX_DESCRIPTION_LENGTH:
-        print(f"Warning: Description for '{lang_label}' exceeds {MAX_DESCRIPTION_LENGTH} bytes. Truncating.")
-        return encoded[:MAX_DESCRIPTION_LENGTH].decode("utf-8", errors="ignore")
+    if len(text) > MAX_DESCRIPTION_LENGTH:
+        print(
+            f"Warning: Description for '{lang_label}' is {len(text)} characters, "
+            f"over the {MAX_DESCRIPTION_LENGTH} limit. Truncating."
+        )
+        return text[:MAX_DESCRIPTION_LENGTH]
     return text
 
 def build_workshop_page_updates(config, item_id, dev_mode=False, dev_name=None):
