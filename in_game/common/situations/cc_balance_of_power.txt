@@ -16,11 +16,16 @@ cc_balance_of_power = {
 		has_enabled_situation_trigger = { type = cc_balance_of_power }
 		current_age_or_later = { age = age_5_absolutism }
 		cc_bop_doctrine_or_era = yes
-		# Hold until the earlier crises of the age have run their course — no stable
-		# balance can form while Italy is still contested or the wars of religion rage.
-		# (situation_is_active = no also covers games where these never fired at all,
-		# so the gate can never deadlock.)
-		# situation:italian_wars = { situation_is_active = no }
+		# Hold until the wars of religion have run their course: no stable balance can form
+		# while they rage. situation_is_active = no also covers games where the situation
+		# never fired at all, so the gate cannot deadlock, and war_of_religions does reliably
+		# end (by peace treaty, by Westphalia, or by the age-6 fallback in
+		# war_of_religions_end_trigger).
+		#
+		# There is deliberately no italian_wars gate. Vanilla italian_wars.can_end reduces to
+		# years_since_situation_start > 50 (its final OR clause repeats the outer AND), and it
+		# cannot start before 1450, so it is always over well before age_5_absolutism opens in
+		# 1637 and the balance of power becomes eligible. A gate on it could never bind.
 		situation:war_of_religions = { situation_is_active = no }
 		# A decisive break (hegemony / deluge / revolution) settles the question for good.
 		NOT = { has_global_variable = cc_bop_concluded }
@@ -148,6 +153,20 @@ cc_balance_of_power = {
 				add_opinion = { target = scope:bop_new_aspirant  modifier = cc_bop_concert_betrayal }
 				trigger_event_non_silently = { id = cc_balance_of_power.75 days = 8 }
 			}
+			# "Formally broken" is now literal. The equilibrium ending founds a real
+			# cc_bop_concert IO and only stamps the 25-year cooldown (it does not set
+			# cc_bop_concluded), so without this the old Concert would still be standing
+			# while its members re-divide into the two new poles. The stagnation ending sets
+			# the same stamp without founding anything, hence the exists guard.
+			# _no_instigator: on_start runs in situation scope with no instigating country.
+			if = {
+				limit = { exists = international_organization:cc_bop_concert }
+				destroy_international_organization_no_instigator = { target = international_organization:cc_bop_concert }
+			}
+			# A concert that never got the chance to readmit its outcast has lost the
+			# argument; drop the pending stamps so the pulse cannot fire into a dead IO.
+			remove_global_variable = cc_concert_readmit_year
+			remove_global_variable = cc_concert_pending_readmit_tag
 			remove_global_variable = cc_bop_concert_restart_year
 		}
 	}
@@ -222,6 +241,13 @@ cc_balance_of_power = {
 		# (a full hegemony/coalition counter) FREEZES all three counters until its final
 		# war resolves, and no break flag may be set while another flag is set or a counter
 		# is primed — guaranteeing the two victory races can never advance or fire together.
+		#
+		# The flag half of that invariant is enforced in two places, and both are load-bearing:
+		# the priming block below is a single if/else_if/else_if chain, and the deluge /
+		# revolution / concert branches further down are a second chain wrapped in a
+		# no-flag-already-set guard. Keep both as chains. If either is split back into
+		# independent `if` blocks, a month satisfying two conditions sets two flags and
+		# cc_bop_apply_ending resolves whichever branch it happens to test first.
 		# ============================================================================
 
 		# --- Counters: fill in-band, bleed out-of-band; frozen while a reckoning is primed.
@@ -446,46 +472,76 @@ cc_balance_of_power = {
 			}
 		}
 
-		# Eastern deluge — an eastern great power leads the preponderant bloc and dominates.
+		# --- The three non-war breaks: deluge, revolution, concert.
+		# Chained if / else_if so at most ONE may be set in a tick, and wrapped in a guard that
+		# no flag is set already (the priming block above may have set cc_bop_flag_stagnation
+		# earlier this same month). This is what makes the invariant stated at the top of the
+		# ticker section true: previously these were three independent `if` blocks, so a month
+		# that satisfied two of them set two flags and cc_bop_apply_ending silently resolved
+		# whichever branch it tested first.
+		# Order is precedence, and preserves the original source order: deluge is the most
+		# decisive, then revolution, then concert. Deluge and concert cannot overlap anyway
+		# (share >= 62 against share <= 60); revolution could overlap with either.
 		if = {
 			limit = {
 				situation:cc_balance_of_power = {
-					years_since_situation_start > 5
-					var:cc_bop_preponderance_share >= 62
-					# Yield to a reckoning already under way.
-					NOT = { has_variable = cc_bop_hegemony_primed }
-					NOT = { has_variable = cc_bop_coalition_primed }
-				}
-				any_country = {
-					cc_bop_eligible_country = yes
-					cc_bop_eastern_power = yes
-					is_great_power = yes
-					is_leader_of_international_organization = international_organization:cc_bop_preponderance
-				}
-			}
-			situation:cc_balance_of_power = { set_variable = cc_bop_flag_deluge }
-		}
-
-		# Revolutionary collapse.
-		if = {
-			limit = { is_situation_active = situation:the_revolution }
-			situation:cc_balance_of_power = { set_variable = cc_bop_flag_revolution }
-		}
-
-		# Concert of Europe — sustained equilibrium into the revolutionary era.
-		if = {
-			limit = {
-				current_age_or_later = { age = age_6_revolutions }
-				situation:cc_balance_of_power = {
-					years_since_situation_start > 40
-					var:cc_bop_preponderance_share >= 40
-					var:cc_bop_preponderance_share <= 60
+					NOT = { has_variable = cc_bop_flag_hegemony }
+					NOT = { has_variable = cc_bop_flag_coalition }
+					NOT = { has_variable = cc_bop_flag_stagnation }
+					NOT = { has_variable = cc_bop_flag_deluge }
+					NOT = { has_variable = cc_bop_flag_revolution }
+					NOT = { has_variable = cc_bop_flag_concert }
 					# Yield to a reckoning already under way.
 					NOT = { has_variable = cc_bop_hegemony_primed }
 					NOT = { has_variable = cc_bop_coalition_primed }
 				}
 			}
-			situation:cc_balance_of_power = { set_variable = cc_bop_flag_concert }
+
+			# Eastern deluge — an eastern great power leads the preponderant bloc and dominates.
+			if = {
+				limit = {
+					situation:cc_balance_of_power = {
+						years_since_situation_start > 5
+						var:cc_bop_preponderance_share >= 62
+					}
+					any_country = {
+						cc_bop_eligible_country = yes
+						cc_bop_eastern_power = yes
+						is_great_power = yes
+						is_leader_of_international_organization = international_organization:cc_bop_preponderance
+					}
+				}
+				situation:cc_balance_of_power = { set_variable = cc_bop_flag_deluge }
+			}
+
+			# Revolutionary collapse. Carries the same five-year floor as the deluge branch.
+			# Without it, a game entering the Age of Revolutions with the_revolution already
+			# active would spawn the situation, fire its whole opening (the .1 announcement,
+			# both role intros, every alignment prompt) and then close on .73 in the same
+			# month. can_start is deliberately left permissive so the balance can still form
+			# during a long revolution; it simply cannot be ended by one immediately.
+			else_if = {
+				limit = {
+					is_situation_active = situation:the_revolution
+					situation:cc_balance_of_power = {
+						years_since_situation_start > 5
+					}
+				}
+				situation:cc_balance_of_power = { set_variable = cc_bop_flag_revolution }
+			}
+
+			# Concert of Europe — sustained equilibrium into the revolutionary era.
+			else_if = {
+				limit = {
+					current_age_or_later = { age = age_6_revolutions }
+					situation:cc_balance_of_power = {
+						years_since_situation_start > 40
+						var:cc_bop_preponderance_share >= 40
+						var:cc_bop_preponderance_share <= 60
+					}
+				}
+				situation:cc_balance_of_power = { set_variable = cc_bop_flag_concert }
+			}
 		}
 
 		# Overstretch settles on a runaway preponderant leader.
@@ -754,11 +810,11 @@ cc_balance_of_power = {
 						}
 					}
 					# A confident hegemon reaches more readily for the dynastic bond.
-						modifier = {
-							add = 3
-							international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 50
-						}
-						trigger_event_non_silently = cc_balance_of_power.47
+					modifier = {
+						add = 3
+						international_organization:cc_bop_preponderance.var:cc_bop_ambition >= 50
+					}
+					trigger_event_non_silently = cc_balance_of_power.47
 				}
 				97 = { }
 			}

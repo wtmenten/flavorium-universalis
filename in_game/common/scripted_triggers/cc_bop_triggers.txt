@@ -17,13 +17,23 @@ cc_bop_eligible_country = {
 }
 
 # An "eastern" power whose surge westward would constitute a deluge breaking the balance.
+#
+# Every call site pairs this with cc_bop_eligible_country, so the effective set is the
+# intersection of the two:
+#
+#   eastern_europe   fully eligible above, so fully eastern
+#   middle_east      only its anatolia_region and crescent_region are eligible above, so the
+#                    Ottomans and the Levantine powers qualify; Arabia and Persia do not
+#
+# north_asia (west/east Siberia) and central_asia (Khorasan) used to be listed here too, but
+# neither contains a region cc_bop_eligible_country accepts, so those clauses could never
+# contribute and were removed. Widening the deluge to Persia or the steppe khanates is a
+# design change: add their regions to cc_bop_eligible_country first, not here.
 cc_bop_eastern_power = {
 	exists = capital
 	OR = {
 		capital.sub_continent = sub_continent:eastern_europe
 		capital.sub_continent = sub_continent:middle_east
-		capital.sub_continent = sub_continent:north_asia
-		capital.sub_continent = sub_continent:central_asia
 	}
 }
 

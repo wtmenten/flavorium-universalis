@@ -1,10 +1,20 @@
 ﻿
-# Balance of Power — the Balancing Coalition's leadership status.
-# The chief balancer is the power that tables motions before the congress. The status exists
-# chiefly to gate who may raise the coalition's parliament issues (special_status = on each
-# issue) and to give the leader a distinct map colour and title. Voting itself stays one vote
-# per member (the assembly adds no participation restrictions — see cc_bop_parliament.txt),
-# so this status carries no extra voting weight.
+# Balance of Power — the Balancing Coalition's voting statuses.
+#
+# The chief balancer is the power that tables motions before the congress (special_status =
+# on each parliament issue gates who may raise them) and carries a distinct map colour.
+#
+# Vote weight flows through special_status_power: the congress weighs each member by what it
+# brings to the cause, its economic base plus half its great-power standing, so the leading
+# powers carry the vote rather than a room of equal minors. The assembly parliament type sets
+# uses_parliament_for_law_votes, which routes the vanilla policy_vote resolution's weighting
+# through these values (see parliament_types/cc_bop_parliament.txt). This replaces the former
+# whole-file copy of resolutions/policy_vote.txt.
+#
+# cc_bop_congress_weight is the shared script value both statuses use. It carries a floor of 1
+# so no member is ever silently disenfranchised: policy_vote's can_vote block requires
+# country_combined_special_status_power > 0.
+
 cc_bop_chief_balancer = {
 	max_countries = 1
 	priority = 15
@@ -19,5 +29,28 @@ cc_bop_chief_balancer = {
 		NOT = { is_leader_of_international_organization = scope:recipient }
 	}
 	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_LEADER_COLOR
-	special_status_power = 1
+	special_status_power = {
+		value = cc_bop_congress_weight
+	}
+}
+
+cc_bop_coalition_seat = {
+	priority = 5
+	can_bestow_trigger = {
+		is_member_of_international_organization = scope:recipient
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	auto_rescind_trigger = {
+		OR = {
+			NOT = { is_member_of_international_organization = scope:recipient }
+			is_leader_of_international_organization = scope:recipient
+		}
+	}
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_TIER1_COLOR
+	special_status_power = {
+		value = cc_bop_congress_weight
+	}
 }

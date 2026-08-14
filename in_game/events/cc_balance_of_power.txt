@@ -1006,8 +1006,36 @@ cc_balance_of_power.75 = {
 }
 
 ################################################################################
-# ENDINGS (.70-.74) — modifiers already applied by cc_bop_apply_ending
+# ENDINGS (.69-.79) — modifiers already applied by cc_bop_apply_ending.
+# .69 sits below .70 only because .70-.78 was already full when the hegemony ending
+# gained its two extra audiences; it belongs to this block, not to the .60 pulses.
 ################################################################################
+
+# Hegemony — the engaged courts that never picked a side.
+cc_balance_of_power.69 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.69.title
+	desc = cc_balance_of_power.69.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+
+	# Resolve the new master by its modifier rather than by the IO. cc_bop_cleanup destroys
+	# both poles immediately after cc_bop_apply_ending fires these events, so an IO lookup
+	# here can come up empty; cc_bop_master_of_europe is on exactly one country and persists.
+	# Same pattern as .70's bop_humbled lookup.
+	immediate = {
+		random_country = {
+			limit = { has_country_modifier = cc_bop_master_of_europe }
+			save_scope_as = bop_new_master
+		}
+	}
+
+	option = {
+		name = cc_balance_of_power.69.a
+		add_prestige = prestige_weak_bonus
+	}
+}
 
 # Hegemony — the victor
 cc_balance_of_power.70 = {
@@ -1114,6 +1142,32 @@ cc_balance_of_power.78 = {
 	outcome = negative
 	illustration_tags = { 10 = interior  10 = angry }
 	option = { name = cc_balance_of_power.78.a }
+}
+
+# Hegemony — the preponderant bloc's rank and file, sheltered under the new master.
+cc_balance_of_power.79 = {
+	type = country_event
+	category = situation_event
+	title = cc_balance_of_power.79.title
+	desc = cc_balance_of_power.79.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = professional }
+
+	# Resolve the new master by its modifier rather than by the IO. cc_bop_cleanup destroys
+	# both poles immediately after cc_bop_apply_ending fires these events, so an IO lookup
+	# here can come up empty; cc_bop_master_of_europe is on exactly one country and persists.
+	# Same pattern as .70's bop_humbled lookup.
+	immediate = {
+		random_country = {
+			limit = { has_country_modifier = cc_bop_master_of_europe }
+			save_scope_as = bop_new_master
+		}
+	}
+
+	option = {
+		name = cc_balance_of_power.79.a
+		add_prestige = prestige_weak_bonus
+	}
 }
 
 ################################################################################

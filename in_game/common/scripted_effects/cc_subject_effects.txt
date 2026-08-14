@@ -64,8 +64,16 @@ cc_spawn_noble_commander = {
 			modifier = recruited_in_the_military
 			mode = add_and_extend
 		}
-		add_trait = trait:hussar_commander # this doesnt work
 		save_scope_as = cc_noble_commander
+	}
+	# Applied after creation rather than inside the create_character block. Vanilla does grant
+	# traits inline (flavor_plc.txt:719), but the inline form was not taking here; applying it
+	# to the saved scope is unambiguous and leaves trait_category = general free to roll its own
+	# flavour trait alongside it (num_of_traits_of_category confirms a character may hold more
+	# than one trait of a category). hussar_commander is allow = { always = no } in vanilla,
+	# i.e. reserved for exactly this kind of scripted grant.
+	scope:cc_noble_commander ?= {
+		add_trait = trait:hussar_commander
 	}
 }
 

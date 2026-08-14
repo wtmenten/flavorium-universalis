@@ -1,0 +1,27 @@
+﻿###############################################################################
+# Balance of Power — congress vote weight
+#
+# Evaluated in COUNTRY scope (the member holding the special status), with
+# scope:recipient = the Balancing Coalition. Consumed by the special_status_power
+# blocks in international_organization_special_statuses/cc_bop_coalition.txt, which
+# the vanilla policy_vote resolution reads once the assembly parliament type sets
+# uses_parliament_for_law_votes.
+#
+# Operators evaluate linearly top-to-bottom; min = floor, max = ceiling.
+###############################################################################
+
+# The weight a member brings to the cause: its economic base plus half its
+# great-power standing, so the leading powers carry the congress rather than a
+# room of equal minors.
+#
+# The floor of 1 matters: policy_vote's can_vote block requires
+# country_combined_special_status_power > 0, so a member whose tax base and
+# great-power score both round to nothing would otherwise lose its vote entirely.
+cc_bop_congress_weight = {
+	value = country_tax_base
+	add = {
+		value = great_power_score
+		multiply = 0.5
+	}
+	min = 1
+}

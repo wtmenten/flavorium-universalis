@@ -1,8 +1,10 @@
 ﻿
 # Coalition congress — parliament participation modifier types.
-# The chief balancer special status votes in the coalition parliament, so the engine
-# expects a matching *_can_participate_in_parliament and *_agenda_impact type to exist
-# (mirrors vanilla emperor/elector pairing in 00_modifier_types.txt).
+# Each special status that may vote in an IO parliament needs a registered
+# <status>_can_participate_in_parliament modifier type (see vanilla 00_modifier_types.txt,
+# e.g. emperor_can_participate_in_parliament), and vanilla pairs every one of those with an
+# <status>_agenda_impact type (percent = yes). The congress weights votes through these two
+# statuses; the weight itself is cc_bop_congress_weight (script_values/cc_bop_values.txt).
 cc_bop_chief_balancer_can_participate_in_parliament = {
 	boolean = yes
 	game_data = {
@@ -10,7 +12,21 @@ cc_bop_chief_balancer_can_participate_in_parliament = {
 	}
 }
 
+cc_bop_coalition_seat_can_participate_in_parliament = {
+	boolean = yes
+	game_data = {
+		category = internationalorganization
+	}
+}
+
 cc_bop_chief_balancer_agenda_impact = {
+	percent = yes
+	game_data = {
+		category = internationalorganization
+	}
+}
+
+cc_bop_coalition_seat_agenda_impact = {
 	percent = yes
 	game_data = {
 		category = internationalorganization

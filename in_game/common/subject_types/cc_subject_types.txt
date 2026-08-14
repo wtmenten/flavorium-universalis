@@ -620,10 +620,12 @@ elite_enclave = {
 		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
 	}
 
+	# creation_visible gets root = overlord only, no target (see the vanilla readme), so a
+	# culture test on scope:target here would silently do nothing. Culture is enforced by
+	# only_overlord_or_kindred_culture below, which the engine applies on every path.
 	creation_visible = {
 		has_advance = noble_patronage_advance
 		has_estate_privilege = estate_privilege:ep_noble_elite_enclave
-		scope:target ?= { culture = root.culture }
 		# Limited to one of this type or its upgrade
 		NOT = {
 			any_subject = {
@@ -957,18 +959,23 @@ chartered_company = {
 		has_reform = government_reform:cc_colonial_charter_reform
 		has_bureaucracy_of_type = bureaucracy_type:cc_royal_trading_bureau
 	}
-	# Subject must be on a different sub-continent than overlord capital
+	# Subject must be on a different sub-continent than overlord capital.
+	# subject_creation_enabled gets target_province (the geography being released);
+	# release_country_enabled gets target (the country), so it reads the same rule off that
+	# country's capital instead. Cf. vanilla appanage.txt:114.
 	subject_creation_enabled = {
 		NOT = {
 			scope:target_province = {
-				sub_continent = root.capital.continent
+				sub_continent = root.capital.sub_continent
 			}
 		}
 	}
 	release_country_enabled = {
 		NOT = {
-			scope:target_province = {
-				sub_continent = root.capital.continent
+			scope:target = {
+				capital = {
+					sub_continent = root.capital.sub_continent
+				}
 			}
 		}
 	}
@@ -1059,8 +1066,8 @@ artists_commune = {
 
 	# Resists easy diplomatic annexation. The on_annexing_subject_monthly_pulse hook
 	# (cc_subject_pulse.txt) is the real long-term stall; these are the engine backstop.
+	# annexation_min_years_before is set to 75 further down (single source of truth).
 	annexation_speed = 1
-	annexation_min_years_before = 15
 	annexation_min_opinion = 160
 	annexation_stall_opinion = 150
 
@@ -1068,9 +1075,10 @@ artists_commune = {
 		has_advance = artistic_patronage_advance
 		scope:target = { culture = root.culture }
 	}
+	# No target scope in creation_visible (see elite_enclave); culture is enforced by
+	# only_overlord_or_kindred_culture below.
 	creation_visible = {
 		has_advance = artistic_patronage_advance
-		scope:target ?= { culture = root.culture }
 		# Limited to one subject of this type
 		NOT = {
 			any_subject = { is_subject_type = artists_commune }
@@ -1175,8 +1183,8 @@ scientific_college = {
 	annullment_favours_required = 5
 
 	# Resists easy diplomatic annexation (see artists_commune).
+	# annexation_min_years_before is set to 75 further down (single source of truth).
 	annexation_speed = 1
-	annexation_min_years_before = 15
 	annexation_min_opinion = 160
 	annexation_stall_opinion = 150
 
@@ -1323,14 +1331,14 @@ naval_administration = {
 	visible_through_diplomacy = { always = no }
 	only_overlord_or_kindred_culture = yes
 
-    annexation_speed = 20
-    annexation_min_years_before = 20
-    annexation_min_opinion = 150
-    annexation_stall_opinion = 125
+	annexation_speed = 20
+	annexation_min_years_before = 20
+	annexation_min_opinion = 150
+	annexation_stall_opinion = 125
 
-    can_overlord_build_roads = yes
-    can_overlord_build_buildings = yes
-    can_overlord_build_rgos = yes
+	can_overlord_build_roads = yes
+	can_overlord_build_buildings = yes
+	can_overlord_build_rgos = yes
 	can_overlord_recruit_regiments = yes
 	can_overlord_build_ships = yes
 
@@ -1777,8 +1785,15 @@ military_academy = {
 		NOT = { any_subject = { is_subject_type = military_academy } }
 		scope:target = { culture = root.culture }
 	}
+	# The one-per-realm limit has to live here as well as in visible: visible gates the
+	# diplomacy list, creation_visible gates release and peace-treaty creation. With it only
+	# in visible a second academy could be created off the diplomacy path, contradicting the
+	# header comment. Culture is covered by only_overlord_or_kindred_culture (creation_visible
+	# has no target scope, so the visible block's exact-culture test cannot be repeated here).
 	creation_visible = {
 		has_advance = military_academy_advance
+		has_estate_privilege = estate_privilege:ep_nobles_academy_charter
+		NOT = { any_subject = { is_subject_type = military_academy } }
 	}
 	only_overlord_or_kindred_culture = yes
 
@@ -1878,9 +1893,13 @@ provincial_governorate = {
 			continent = root.capital.continent
 		}
 	}
+	# release_country_enabled gets target (the country), not target_province, so the same
+	# rule is read off that country's capital. Cf. vanilla appanage.txt:114.
 	release_country_enabled = {
-		scope:target_province = {
-			continent = root.capital.continent
+		scope:target = {
+			capital = {
+				continent = root.capital.continent
+			}
 		}
 	}
 
@@ -1998,9 +2017,13 @@ tax_farm = {
 			continent = root.capital.continent
 		}
 	}
+	# release_country_enabled gets target (the country), not target_province, so the same
+	# rule is read off that country's capital. Cf. vanilla appanage.txt:114.
 	release_country_enabled = {
-		scope:target_province = {
-			continent = root.capital.continent
+		scope:target = {
+			capital = {
+				continent = root.capital.continent
+			}
 		}
 	}
 
@@ -2108,9 +2131,13 @@ military_march = {
 			continent = root.capital.continent
 		}
 	}
+	# release_country_enabled gets target (the country), not target_province, so the same
+	# rule is read off that country's capital. Cf. vanilla appanage.txt:114.
 	release_country_enabled = {
-		scope:target_province = {
-			continent = root.capital.continent
+		scope:target = {
+			capital = {
+				continent = root.capital.continent
+			}
 		}
 	}
 
@@ -2225,6 +2252,17 @@ imperial_council_member = {
 		has_advance = federal_constitution_advance
 	}
 
+	# Arms the 25-year maturation gate that equal_/lesser_federal_member check before they may
+	# be offered. It has to be set HERE, by the tier being upgraded FROM, exactly as
+	# elite_enclave arms enclave_cooldown for palatinate. It was previously set by the two
+	# upgraded types instead, so on the intended path the variable was never present when the
+	# check ran and the gate did nothing.
+	on_enable = {
+		hidden_effect = {
+			set_variable = { name = imperial_council_cooldown value = yes years = 25 }
+		}
+	}
+
 	has_limited_diplomacy = no
 	will_join_independence_wars = yes
 	can_change_rank = yes
@@ -2330,12 +2368,10 @@ equal_federal_member = {
 	join_defensive_wars_always = { always = yes }
 	join_offensive_wars_can_call = { always = yes }
 
+	# An equal partner cannot be absorbed at all, matching imperial_council_member above.
+	# (lesser_federal_member is the annexable tier.) The four annexation_* settings that used
+	# to sit here were dead: the engine never consults them once can_be_annexed = no.
 	can_be_annexed = no
-
-	annexation_speed = 0.1
-	annexation_min_years_before = 75
-	annexation_min_opinion = 175
-	annexation_stall_opinion = 150
 
 	strength_vs_overlord = -0.1
 	diplomatic_capacity_cost_scale = 0.25
@@ -2366,11 +2402,11 @@ equal_federal_member = {
 	minimum_opinion_for_offer = 150
 	great_power_score_transfer = 0.60
 
-	on_enable = {
-		hidden_effect = {
-			set_variable = { name = imperial_council_cooldown value = yes years = 25 }
-		}
-	}
+	# No on_enable cooldown here: imperial_council_member arms imperial_council_cooldown
+	# when it is created, which is the tier this upgrades FROM and therefore the tier the
+	# gate must be read on. Re-arming it here would be a no-op (visible_through_diplomacy
+	# already requires the target still be an imperial_council_member) and would mask the
+	# real gate if that ever changed. Cf. elite_enclave / palatinate.
 
 	diplo_chance_accept_subject = {
 		base = -92
@@ -2474,11 +2510,11 @@ lesser_federal_member = {
 	minimum_opinion_for_offer = 125
 	great_power_score_transfer = 0.35
 
-	on_enable = {
-		hidden_effect = {
-			set_variable = { name = imperial_council_cooldown value = yes years = 25 }
-		}
-	}
+	# No on_enable cooldown here: imperial_council_member arms imperial_council_cooldown
+	# when it is created, which is the tier this upgrades FROM and therefore the tier the
+	# gate must be read on. Re-arming it here would be a no-op (visible_through_diplomacy
+	# already requires the target still be an imperial_council_member) and would mask the
+	# real gate if that ever changed. Cf. elite_enclave / palatinate.
 
 	diplo_chance_accept_subject = {
 		base = -72

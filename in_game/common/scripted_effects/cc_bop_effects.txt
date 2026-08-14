@@ -198,27 +198,37 @@ cc_bop_designate_poles = {
 	}
 }
 
-# Found the Concert of Europe out of a victorious coalition that voted policy:cc_bop_enact_concert.
-# The chief balancer becomes founding president; the five greatest coalition powers take the
-# seats. The defeated former hegemon is NOT admitted now — it is readmitted decades later via the
-# cc_concert_readmission_pulse (cf. France at Aix-la-Chapelle, 1818). The two old poles, their
-# purpose served, are dissolved. Call this BEFORE cc_bop_cleanup.
+# Found the Concert of Europe. The chief balancer becomes founding president and the five
+# greatest powers of the pool take the seats. The two old poles, their purpose served, are
+# dissolved. Call this BEFORE cc_bop_cleanup.
+#
+# $MODE$ selects who is seated, because the two endings that found a Concert differ in whether
+# anyone lost:
+#
+#   victory     — the coalition beat the aspirant in the final war and voted
+#                 policy:cc_bop_enact_concert. Only coalition members are pooled; the defeated
+#                 former hegemon is left outside and readmitted decades later via
+#                 cc_concert_readmission_pulse (cf. France at Aix-la-Chapelle, 1818).
+#
+#   equilibrium — the balance simply held for forty years into the revolutionary era. Both
+#                 poles are intact and nobody was beaten, so BOTH blocs are pooled and there is
+#                 no exclusion and no readmission arc to run.
+#
+# Everything else (president, five seats, ordering by great_power_score, dissolving the poles)
+# is shared.
 cc_bop_form_concert = {
 	if = {
 		limit = { exists = international_organization:cc_bop_coalition.leader_country }
 		international_organization:cc_bop_coalition.leader_country = { save_scope_as = cc_concert_president }
-		# Remember the defeated aspirant for its eventual readmission.
-		if = {
-			limit = { exists = international_organization:cc_bop_preponderance.leader_country }
-			international_organization:cc_bop_preponderance.leader_country = { save_scope_as = cc_concert_former_hegemon }
-		}
-		# Pool the victorious coalition's members, strongest first.
+
 		clear_global_variable_list = cc_bop_pool
 		international_organization:cc_bop_coalition = {
 			every_international_organization_member = {
 				add_to_global_variable_list = { name = cc_bop_pool target = this }
 			}
 		}
+		cc_bop_form_concert_pool_$MODE$ = yes
+
 		# Found the Concert under the chief balancer.
 		scope:cc_concert_president = {
 			create_international_organization = {
@@ -240,25 +250,45 @@ cc_bop_form_concert = {
 			}
 		}
 		clear_global_variable_list = cc_bop_pool
-		# Schedule the former hegemon's eventual return to the European family (50-75 years).
-		if = {
-			limit = { exists = scope:cc_concert_former_hegemon }
-			set_global_variable = { name = cc_concert_pending_readmit_tag value = scope:cc_concert_former_hegemon }
-			set_global_variable = { name = cc_concert_readmit_year value = current_year }
-			change_global_variable = { name = cc_concert_readmit_year add = 50 }
-			random_list = {
-				20 = { }
-				20 = { change_global_variable = { name = cc_concert_readmit_year add = 5 } }
-				20 = { change_global_variable = { name = cc_concert_readmit_year add = 12 } }
-				20 = { change_global_variable = { name = cc_concert_readmit_year add = 19 } }
-				20 = { change_global_variable = { name = cc_concert_readmit_year add = 25 } }
-			}
-		}
+
 		# The old poles are superseded by the new institution. Use the _no_instigator
 		# variant: this runs in situation/global scope, where the plain destroy silently
 		# no-ops for want of a country instigator.
 		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_preponderance }
 		destroy_international_organization_no_instigator = { target = international_organization:cc_bop_coalition }
+	}
+}
+
+# VICTORY pool: coalition members only (already gathered by the caller). The beaten aspirant is
+# held out and scheduled to return in 50-75 years.
+cc_bop_form_concert_pool_victory = {
+	if = {
+		limit = { exists = international_organization:cc_bop_preponderance.leader_country }
+		international_organization:cc_bop_preponderance.leader_country = { save_scope_as = cc_concert_former_hegemon }
+		set_global_variable = { name = cc_concert_pending_readmit_tag value = scope:cc_concert_former_hegemon }
+		set_global_variable = { name = cc_concert_readmit_year value = current_year }
+		change_global_variable = { name = cc_concert_readmit_year add = 50 }
+		random_list = {
+			20 = { }
+			20 = { change_global_variable = { name = cc_concert_readmit_year add = 5 } }
+			20 = { change_global_variable = { name = cc_concert_readmit_year add = 12 } }
+			20 = { change_global_variable = { name = cc_concert_readmit_year add = 19 } }
+			20 = { change_global_variable = { name = cc_concert_readmit_year add = 25 } }
+		}
+	}
+}
+
+# EQUILIBRIUM pool: add the preponderance bloc alongside the coalition. No power is excluded,
+# so no readmission is scheduled and cc_concert_readmission_pulse never fires for this ending
+# (it is gated on cc_concert_readmit_year, which stays unset).
+cc_bop_form_concert_pool_equilibrium = {
+	if = {
+		limit = { exists = international_organization:cc_bop_preponderance }
+		international_organization:cc_bop_preponderance = {
+			every_international_organization_member = {
+				add_to_global_variable_list = { name = cc_bop_pool target = this }
+			}
+		}
 	}
 }
 
@@ -281,6 +311,7 @@ cc_bop_apply_ending = {
 				trigger_event_non_silently = cc_balance_of_power.70
 			}
 		}
+		# The bloc that failed to stop it.
 		every_country = {
 			limit = {
 				cc_bop_eligible_country = yes
@@ -290,20 +321,49 @@ cc_bop_apply_ending = {
 			add_country_modifier = { modifier = cc_bop_humbled_power years = 40 }
 			trigger_event_non_silently = cc_balance_of_power.71
 		}
+		# The bloc that backed the winner. Excludes the leader, which already took
+		# cc_bop_master_of_europe above. Both this loop and the unaligned one below require a
+		# surviving leader, because .79 and .69 name it in their text.
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				exists = international_organization:cc_bop_preponderance.leader_country
+				is_member_of_international_organization = international_organization:cc_bop_preponderance
+				NOT = { is_leader_of_international_organization = international_organization:cc_bop_preponderance }
+			}
+			add_country_modifier = { modifier = cc_bop_hegemons_client years = 40 }
+			trigger_event_non_silently = cc_balance_of_power.79
+		}
+		# The engaged courts that never aligned. cc_bop_engaged is the marker the situation
+		# sets on_start for powers drawn into the contest, so this is the court that played
+		# the field and kept its hands free, not every bystander on the map.
+		every_country = {
+			limit = {
+				cc_bop_eligible_country = yes
+				is_subject = no
+				exists = international_organization:cc_bop_preponderance.leader_country
+				has_variable = cc_bop_engaged
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_preponderance }
+				NOT = { is_member_of_international_organization = international_organization:cc_bop_coalition }
+			}
+			add_country_modifier = { modifier = cc_bop_unaligned_broker years = 40 }
+			trigger_event_non_silently = cc_balance_of_power.69
+		}
 	}
 	# EASTERN DELUGE
 	else_if = {
 		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_deluge } }
 		set_global_variable = cc_bop_concluded
-		every_country = {
-			limit = {
-				cc_bop_eligible_country = yes
-				is_subject = no
-				cc_bop_eastern_power = yes
-				is_great_power = yes
+		# Only the eastern great power that actually led the preponderant bloc is crowned.
+		# This used to be an every_country sweep of all eligible eastern great powers, which
+		# crowned two or three at once whenever more than one qualified.
+		if = {
+			limit = { exists = international_organization:cc_bop_preponderance }
+			international_organization:cc_bop_preponderance.leader_country ?= {
+				add_country_modifier = { modifier = cc_bop_scourge_of_the_west years = 100 }
+				trigger_event_non_silently = cc_balance_of_power.72
 			}
-			add_country_modifier = { modifier = cc_bop_scourge_of_the_west years = 60 }
-			trigger_event_non_silently = cc_balance_of_power.72
 		}
 		every_country = {
 			limit = {
@@ -359,7 +419,7 @@ cc_bop_apply_ending = {
 					international_organization_has_policy = policy:cc_bop_enact_concert
 				}
 			}
-			cc_bop_form_concert = yes
+			cc_bop_form_concert = { MODE = victory }
 		}
 	}
 	# STAGNATION — the aspirant never broke through and was quietly overtaken. A neutral,
@@ -395,7 +455,12 @@ cc_bop_apply_ending = {
 	# CONCERT OF EUROPE (positive) — not a decisive break. The equilibrium is
 	# institutionalised, but a concert may fray; mark the earliest year a new
 	# balance could form (~25 yr cooldown). See cc_bop_concert_cooldown_elapsed.
-	else = {
+	#
+	# Tested on the flag rather than left as a catch-all `else`: this branch founds a real
+	# institution now, and a catch-all would found one for any future end that reached here
+	# without a flag set. can_end already requires one of the six flags, so nothing is lost.
+	else_if = {
+		limit = { situation:cc_balance_of_power = { has_variable = cc_bop_flag_concert } }
 		set_global_variable = { name = cc_bop_concert_restart_year value = current_year }
 		change_global_variable = { name = cc_bop_concert_restart_year add = 25 }
 		# The chief balancer — architect of the kept peace — earns a destiny of its own,
@@ -415,6 +480,11 @@ cc_bop_apply_ending = {
 			add_country_modifier = { modifier = cc_bop_concert_of_europe years = 100 }
 			trigger_event_non_silently = cc_balance_of_power.74
 		}
+		# Institutionalise the equilibrium for real. Both poles are intact and nobody was
+		# beaten, so the equilibrium pool seats the greatest powers of BOTH blocs and runs no
+		# readmission arc. This dissolves the two old poles, so it must stay LAST in the
+		# branch: the every_country loop above reads membership of both.
+		cc_bop_form_concert = { MODE = equilibrium }
 	}
 }
 

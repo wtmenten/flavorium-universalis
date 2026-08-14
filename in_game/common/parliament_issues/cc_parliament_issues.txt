@@ -85,8 +85,13 @@ cc_create_naval_administration = {
 		}
 		any_owned_location = {
 			continent = ROOT.capital.continent
-			# is_port = yes
-			NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = no }}
+			is_port = yes
+			NOT = {
+				OR = { 
+					location_rank = location_rank:rural_settlement 
+					is_capital = yes 
+				}
+			}
 			dominant_culture = {
 				is_primary_or_accepted_in = ROOT
 			} 
@@ -94,7 +99,7 @@ cc_create_naval_administration = {
 	}
 
 	wants_this_parliament_issue_bias = {
-		add = 100000000
+		add = 1000
 	}
 
 	modifier_when_in_debate = {
@@ -129,18 +134,29 @@ cc_create_naval_administration = {
 				any_owned_location = {
 					continent = ROOT.capital.continent
 					is_port = yes
-					NOT = {OR = { location_rank = location_rank:rural_settlement is_capital = yes }}
+					NOT = {
+						OR = {
+							location_rank = location_rank:rural_settlement
+							is_capital = yes
+						}
+					}
+					dominant_culture = {
+						is_primary_or_accepted_in = ROOT
+					}
 				}
 			}
 			random_owned_location = {
-				limit = { 
+				limit = {
 					continent = ROOT.capital.continent
 					is_port = yes
 					NOT = {
-						OR = { 
-							location_rank = location_rank:rural_settlement 
-							is_capital = yes 
+						OR = {
+							location_rank = location_rank:rural_settlement
+							is_capital = yes
 						}
+					}
+					dominant_culture = {
+						is_primary_or_accepted_in = ROOT
 					}
 				}
 				weight = {

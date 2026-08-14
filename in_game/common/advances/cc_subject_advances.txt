@@ -402,6 +402,11 @@ puppet_state_advance = {
 	requires = diplomatic_range_age_5
 	for = dip
 	
+	# potential = "could research the prerequisite", allow = "has researched it". Using
+	# has_advance_available in allow meant the prerequisite was never actually required: both
+	# prerequisites are early advances gated only on cc_subject_types_available, so they are
+	# available to nearly everyone and allow passed without either being taken. Cf.
+	# naval_administration_advance and military_march_advance, which already split it this way.
 	potential = {
 		cc_subject_types_available = yes
 		OR = {
@@ -411,8 +416,8 @@ puppet_state_advance = {
 	}
 	allow = {
 		OR = {
-			has_advance_available = shadow_diplomacy_advance
-			has_advance_available = client_state_advance
+			has_advance = shadow_diplomacy_advance
+			has_advance = client_state_advance
 		}
 	}
 

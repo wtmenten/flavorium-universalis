@@ -10,6 +10,13 @@ cc_invasion_mexico = {
 
 	can_start = {
 		has_enabled_situation_trigger = { type = cc_invasion_mexico }
+		# can_end closes the situation at 1600, so a first foothold established close to that
+		# date would spawn the situation and satisfy can_end in the same breath: the player
+		# would get the announcement, the three federation requests and the defensive
+		# preparations, then the closing events, back to back. Require at least twenty years
+		# of runway. A foothold established after 1580 is too late to be the invasion this
+		# situation models.
+		current_year < 1580
 		OR = {
 			# A colonial nation or foreign power (non-Americas capital) owns locations in mesoamerica
 			any_country = {
@@ -465,7 +472,12 @@ cc_invasion_mexico = {
 		}
 	}
 
-	# Map tooltip per location
+	# Map tooltip per location.
+	# The colonial branch must test presence in the theatre, not merely "capital is not in
+	# Mesoamerica". Without it the predicate matches every owned location on Earth and the
+	# situation labels the whole globe as a colonial power in the invasion. The presence test
+	# mirrors the visible block above. Every vanilla situation narrows its final branch the
+	# same way (cf. italian_wars, colonial_revolution, reformation).
 	tooltip = {
 		if = {
 			limit = {
@@ -481,7 +493,14 @@ cc_invasion_mexico = {
 		}
 		else_if = {
 			limit = {
-				owner ?= { NOT = { is_capital_mesoamerica = yes } }
+				owner ?= {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
 			}
 			custom_tooltip = ccim_colonial_power_tt
 		}
@@ -503,10 +522,18 @@ cc_invasion_mexico = {
 		}
 		else_if = {
 			limit = {
-				owner ?= { NOT = { is_capital_mesoamerica = yes } }
+				owner ?= {
+					NOT = { is_capital_mesoamerica = yes }
+					OR = {
+						has_presence_in = region:mesoamerica_region
+						has_presence_in = region:central_america_region
+						has_presence_in = region:caribbean_region
+					}
+				}
 			}
 			value = owner.country_color
 		}
+		# Everything outside the theatre falls through to the neutral map colour.
 		else = {
 			value = define:NMapColors|DEFAULT_COLOR
 		}
