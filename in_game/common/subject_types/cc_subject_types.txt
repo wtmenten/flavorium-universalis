@@ -331,6 +331,16 @@ shadow_state = {
 
 	subject_pays = subject_pays_shadow_state
 
+	# Arms the maturation gate puppet_state checks before it may be offered. It has to be
+	# set by the tier being upgraded FROM, exactly as elite_enclave arms enclave_cooldown
+	# for palatinate. puppet_state used to arm it itself, where it could never bind: by then
+	# visible_through_diplomacy already required the target still be a shadow or client state.
+	on_enable = {
+		hidden_effect = {
+			set_variable = { name = puppet_cooldown value = yes years = 25 }
+		}
+	}
+
 	overlord_modifier = {
 		power_projection = 10
 	}
@@ -429,6 +439,13 @@ client_state = {
 	institution_spread_to_subject = monthly_institution_spread_mild
 
 	subject_pays = subject_pays_client_state
+
+	# See shadow_state: the tier being upgraded FROM arms the gate.
+	on_enable = {
+		hidden_effect = {
+			set_variable = { name = puppet_cooldown value = yes years = 25 }
+		}
+	}
 
 	overlord_modifier = {
 		power_projection = 10
@@ -550,9 +567,6 @@ puppet_state = {
 
 	on_enable = {
 		lock_current_subject_type = yes
-		hidden_effect = {
-			set_variable = { name = puppet_cooldown value = yes years = 50 }
-		}
 	}
 	on_disable = {
 		unlock_current_subject_type = yes
@@ -1556,6 +1570,13 @@ crown_dependency = {
 			text = crown_dependency_conversion_tt
 			root = { NOT = { has_variable = crown_dependency_cooldown } }
 		}
+		# A partnership only just settled cannot be flipped straight into a crown dependency.
+		# This is what lesser_partner_maturation is for; it mirrors junior_partner_maturation,
+		# which gates the junior-to-lesser upgrade one tier below.
+		custom_tooltip = {
+			text = lesser_partner_maturation_tt
+			scope:target = { NOT = { has_variable = lesser_partner_maturation } }
+		}
 		scope:target = { 
 			OR = {
 				in_union_with = root 
@@ -2012,6 +2033,12 @@ tax_farm = {
 			has_reform = government_reform:cc_tax_farming_reform
 		}
 	}
+	enabled = {
+		custom_tooltip = {
+			text = tax_farm_cooldown_tt
+			scope:target = { NOT = { has_variable = tax_farm_cooldown } }
+		}
+	}
 	subject_creation_enabled = {
 		scope:target_province = {
 			continent = root.capital.continent
@@ -2064,12 +2091,16 @@ tax_farm = {
 
 	on_enable = {
 		lock_current_subject_type = yes
+	}
+	# The cooldown is armed when the farm is WOUND UP, not when it is created: a country
+	# that has just been squeezed by a tax farm cannot be handed straight back to another.
+	# Read by the enabled block above. Previously armed in on_enable, where nothing could
+	# ever read it, because the subject already was a tax farm for the whole of its life.
+	on_disable = {
+		unlock_current_subject_type = yes
 		hidden_effect = {
 			set_variable = { name = tax_farm_cooldown value = yes years = 15 }
 		}
-	}
-	on_disable = {
-		unlock_current_subject_type = yes
 	}
 
 	diplo_chance_accept_subject = {
@@ -2124,6 +2155,12 @@ military_march = {
 		OR = {
 			has_estate_privilege = estate_privilege:ep_nobles_march_charter
 			has_reform = government_reform:cc_march_charter_reform
+		}
+	}
+	enabled = {
+		custom_tooltip = {
+			text = march_cooldown_tt
+			scope:target = { NOT = { has_variable = march_cooldown } }
 		}
 	}
 	subject_creation_enabled = {
@@ -2186,12 +2223,15 @@ military_march = {
 
 	on_enable = {
 		lock_current_subject_type = yes
+	}
+	# Armed when the march is dissolved, not when it is raised. A frontier command that has
+	# just been broken up is not handed out again to the next claimant for a generation.
+	# Read by the enabled block above.
+	on_disable = {
+		unlock_current_subject_type = yes
 		hidden_effect = {
 			set_variable = { name = march_cooldown value = yes years = 20 }
 		}
-	}
-	on_disable = {
-		unlock_current_subject_type = yes
 	}
 
 	diplo_chance_accept_subject = {

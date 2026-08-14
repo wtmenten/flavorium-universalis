@@ -40,6 +40,7 @@ biyearly_country_pulse = {
 		cc_cabinet_biyearly_rivalry
 		cc_cabinet_biyearly_rivalry_events
 		cc_cabinet_biyearly_scorned
+		cc_cabinet_biyearly_resentful
 		cc_cabinet_biyearly_cabal
 		cc_cabinet_biyearly_defied
 		cc_cabinet_biyearly_estate_faction
@@ -451,6 +452,27 @@ cc_cabinet_biyearly_scorned = {
 }
 
 # Defied general follow-up — fires when a minister with cc_minister_defied is still in cabinet
+# A minister still seated whose counsel the crown overruled. Unlike cc_cabinet_biyearly_scorned,
+# which watches for a dismissed minister lingering outside the cabinet, this one watches the
+# ones who stayed: cc_minister_resentful is set wherever the crown takes a side against a
+# serving minister (cc_cabal, cc_fac, cc_rival and cc_wc events).
+cc_cabinet_biyearly_resentful = {
+	trigger = {
+		any_cabinet_character = {
+			has_variable = cc_minister_resentful
+		}
+	}
+	random_events = {
+		3 = cc_rival.5    # The Sullen Minister
+
+		chance_to_happen = 60
+
+		chance_of_no_event = {
+			value = 20
+		}
+	}
+}
+
 cc_cabinet_biyearly_defied = {
 	trigger = {
 		any_cabinet_character = {

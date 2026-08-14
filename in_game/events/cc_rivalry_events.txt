@@ -136,6 +136,11 @@ cc_rival.1 = {
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
 			set_variable = { name = cc_minister_resentful value = yes }
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+			cc_minister_estate_slight = yes
+		}
+		scope:rival_a = {
+			add_character_modifier = { modifier = cc_minister_favoured  years = 15  mode = add_and_extend }
 		}
 	}
 
@@ -147,6 +152,11 @@ cc_rival.1 = {
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_a = {
 			set_variable = { name = cc_minister_resentful value = yes }
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+			cc_minister_estate_slight = yes
+		}
+		scope:rival_b = {
+			add_character_modifier = { modifier = cc_minister_favoured  years = 15  mode = add_and_extend }
 		}
 	}
 
@@ -162,8 +172,16 @@ cc_rival.1 = {
 		else = {
 			set_variable = { name = cc_court_rivalry value = 0 }
 		}
-		scope:rival_a = { remove_variable = cc_minister_resentful }
-		scope:rival_b = { remove_variable = cc_minister_resentful }
+		scope:rival_a = {
+			remove_variable = cc_minister_resentful
+			remove_character_modifier = cc_minister_slighted
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = add_and_extend }
+		}
+		scope:rival_b = {
+			remove_variable = cc_minister_resentful
+			remove_character_modifier = cc_minister_slighted
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = add_and_extend }
+		}
 	}
 
 	# Option D — Exploit the tension (open "A Letter Unsealed" chain)
@@ -202,6 +220,8 @@ cc_rival.2 = {
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
 			set_variable = { name = cc_minister_resentful value = yes }
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+			cc_minister_estate_slight = yes
 		}
 		add_country_modifier = {
 			modifier = cc_faction_purge_fallout
@@ -255,6 +275,8 @@ cc_rival.3 = {
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
 			set_variable = { name = cc_minister_resentful value = yes }
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+			cc_minister_estate_slight = yes
 		}
 		add_stability = stability_weak_penalty
 	}
@@ -279,6 +301,8 @@ cc_rival.3 = {
 		scope:rival_a = { add_adm = 1 }
 		scope:rival_b = {
 			set_variable = { name = cc_minister_resentful value = yes }
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+			cc_minister_estate_slight = yes
 		}
 	}
 }
@@ -344,6 +368,87 @@ cc_rival.4 = {
 	# Option C — Ignore them (rivalry builds, tension follows)
 	option = {
 		name = cc_rival.4.c
+		if = {
+			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry < 5 }
+			change_variable = { name = cc_court_rivalry add = 1 }
+		}
+		else_if = {
+			limit = { NOT = { has_variable = cc_court_rivalry } }
+			set_variable = { name = cc_court_rivalry value = 1 }
+		}
+		add_country_modifier = {
+			modifier = court_tension
+			years = 2
+			mode = set_to_largest_and_extend
+		}
+	}
+}
+
+###############################################################################
+# cc_rival.5 — "The Sullen Minister"
+# The consumer for cc_minister_resentful, which is set wherever the crown takes a
+# side against a serving minister (cc_cabal, cc_fac, cc_rival, cc_wc). Sibling of
+# cc_rival.4, which handles the DISMISSED minister lingering outside the cabinet;
+# this one handles the minister who stayed in post and remembers.
+# Fired by cc_cabinet_biyearly_resentful.
+###############################################################################
+cc_rival.5 = {
+	type = country_event
+	title = cc_rival.5.title
+	desc = cc_rival.5.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		NOT = { has_variable = cc_rival_5_cooldown }
+		any_cabinet_character = {
+			has_variable = cc_minister_resentful
+		}
+	}
+
+	immediate = {
+		set_variable = { name = cc_rival_5_cooldown value = yes months = 36 }
+		random_cabinet_character = {
+			limit = { has_variable = cc_minister_resentful }
+			save_scope_as = sullen_minister
+		}
+	}
+
+	# Option A — Make amends. Costs gold; the grudge is settled and the slight forgotten.
+	option = {
+		name = cc_rival.5.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  min = -100 }
+		scope:sullen_minister = {
+			remove_variable = cc_minister_resentful
+			remove_character_modifier = cc_minister_slighted
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = add_and_extend }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Option B — A public show of favour. Free, but the rest of the court notices the
+	# preference and the estates read it as weakness.
+	option = {
+		name = cc_rival.5.b
+		scope:sullen_minister = {
+			remove_variable = cc_minister_resentful
+			remove_character_modifier = cc_minister_slighted
+			add_character_modifier = { modifier = cc_minister_favoured  years = 10  mode = add_and_extend }
+		}
+		add_prestige = prestige_weak_penalty
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+	}
+
+	# Option C — Let them sulk. The grudge hardens and the court grows more fractious.
+	option = {
+		name = cc_rival.5.c
+		scope:sullen_minister = {
+			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
+		}
 		if = {
 			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry < 5 }
 			change_variable = { name = cc_court_rivalry add = 1 }

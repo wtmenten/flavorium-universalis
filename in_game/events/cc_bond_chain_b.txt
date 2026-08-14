@@ -37,6 +37,11 @@ cc_bonds.110 = {
 	trigger = {
 		has_game_rule = cc_subject_bonds_on
 		NOT = { has_variable = cc_bond_110_cd_overlord }
+		# One merchant house at a time. Chain state (cc_bond_chain_b_subj, the reputation
+		# score, the secondary map) lives in single overlord-scoped variables, so a second
+		# chain starting mid-run would overwrite the first and strand its subject.
+		# Cleared in .113's after block.
+		NOT = { has_variable = cc_bond_chain_b_active }
 		any_subject = {
 			OR = {
 				is_subject_type = colonial_nation
@@ -378,7 +383,7 @@ cc_bonds.112 = {
 		trigger = { var:cc_bond_112_crisis = 1 }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40 }
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
-		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = 1 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_mil  add = 1 }
 			clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
@@ -410,7 +415,7 @@ cc_bonds.112 = {
 		trigger = { var:cc_bond_112_crisis = 2 }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.30  min = -60 }
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
-		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = 2 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -447,7 +452,7 @@ cc_bonds.112 = {
 		trigger = { var:cc_bond_112_crisis = 3 }
 		add_prestige = prestige_mild_penalty
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
-		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = 3 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_per  add = 1 }
 			clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
@@ -474,7 +479,7 @@ cc_bonds.112 = {
 		trigger = { var:cc_bond_112_crisis = 4 }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.20  min = -40 }
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
-		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = 4 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_eco  add = 1 }
 			clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
@@ -508,7 +513,7 @@ cc_bonds.112 = {
 		trigger = { var:cc_bond_112_crisis = 5 }
 		add_prestige = prestige_mild_penalty
 		change_variable = { name = cc_bond_merchant_rep  add = 1 }
-		set_variable = { name = cc_bond_mem_crisis_managed  value = yes }
+		set_variable = { name = cc_bond_mem_crisis_managed  value = 5 }
 		scope:bond_subj = {
 			change_variable = { name = cc_bond_pol  add = 1 }
 			clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
@@ -541,11 +546,29 @@ cc_bonds.112 = {
 cc_bonds.113 = {
 	type = country_event
 	title = cc_bonds.113.title
+	# cc_bond_mem_second_is_foreign is set in .111 when the house's secondary partners
+	# include a nation outside our own subjects. A dynasty that reached across foreign flags
+	# reads differently from one that only ever traded within the realm, so the two best
+	# outcomes have a variant for it.
 	desc = {
 		first_valid = {
 			triggered_desc = {
+				trigger = {
+					var:cc_bond_113_outcome = 3
+					has_variable = cc_bond_mem_second_is_foreign
+				}
+				desc = cc_bonds.113.desc_flourish_foreign
+			}
+			triggered_desc = {
 				trigger = { var:cc_bond_113_outcome = 3 }
 				desc = cc_bonds.113.desc_flourish
+			}
+			triggered_desc = {
+				trigger = {
+					var:cc_bond_113_outcome = 2
+					has_variable = cc_bond_mem_second_is_foreign
+				}
+				desc = cc_bonds.113.desc_modest_foreign
 			}
 			triggered_desc = {
 				trigger = { var:cc_bond_113_outcome = 2 }
@@ -568,6 +591,22 @@ cc_bonds.113 = {
 		}
 		else = {
 			set_variable = { name = cc_bond_113_outcome  value = 1 }
+		}
+		# The house remembers HOW it was handled, not just how well. Two corrections to the
+		# raw reputation score:
+		#   - obstructing the merchant in .111 (option C) caps the ceiling: a house the crown
+		#     once worked against does not end up its closest partner, whatever the tally says
+		#   - resolving the .112 crisis by coercion (value 5) rather than cooperation costs the
+		#     top tier for the same reason
+		if = {
+			limit = {
+				var:cc_bond_113_outcome = 3
+				OR = {
+					has_variable = cc_bond_mem_merchant_rival
+					var:cc_bond_mem_crisis_managed = 5
+				}
+			}
+			set_variable = { name = cc_bond_113_outcome  value = 2 }
 		}
 	}
 
@@ -668,9 +707,12 @@ cc_bonds.113 = {
 						}
 					}
 				}
-				# Track this target so the cleanup event can find and remove the building
+				# Track this target so the cleanup event can find and remove the building.
+				# A LIST, not a single variable: this runs once per secondary target, so a
+				# single variable would only ever hold the last one and .115 would leave the
+				# rest standing forever.
 				ROOT = {
-					set_variable = { name = cc_bond_trade_post_target  value = scope:secondary_target }
+					add_to_variable_list = { name = cc_bond_trade_post_targets  target = scope:secondary_target }
 					trigger_event_silently = { id = cc_bonds.115  years = { 20 40 } }
 				}
 			}
@@ -762,25 +804,36 @@ cc_bonds.115 = {
 	title = cc_bonds.115.title
 
 	immediate = {
-		# Remove any cc_merchant_trade_post buildings owned by ROOT in foreign locations
-		every_owned_foreign_building_location = {
-			limit = {
-				any_foreign_buildings_in_location = {
-					building_type = building_type:cc_merchant_trade_post
-					owner = root
-				}
-			}
-			every_foreign_buildings_in_location = {
-				limit = {
-					building_type = building_type:cc_merchant_trade_post
-					owner = root
-				}
-				location = {
-					destroy_building = prev
+		# Remove the cc_merchant_trade_post buildings this chain actually built, in the
+		# countries recorded when they were founded. Previously this swept EVERY foreign
+		# trade post ROOT owned anywhere and destroyed the lot, including any the chain had
+		# nothing to do with. The former single-variable form was written for exactly this
+		# purpose and never read; it is now the list above.
+		every_in_variable_list = {
+			variable = cc_bond_trade_post_targets
+			save_temporary_scope_as = cc_post_host
+			ROOT = {
+				every_owned_foreign_building_location = {
+					limit = {
+						owner ?= scope:cc_post_host
+						any_foreign_buildings_in_location = {
+							building_type = building_type:cc_merchant_trade_post
+							owner = root
+						}
+					}
+					every_foreign_buildings_in_location = {
+						limit = {
+							building_type = building_type:cc_merchant_trade_post
+							owner = root
+						}
+						location = {
+							destroy_building = prev
+						}
+					}
 				}
 			}
 		}
-		remove_variable = cc_bond_trade_post_target
+		clear_variable_list = cc_bond_trade_post_targets
 	}
 
 	option = { name = cc_bonds.115.a }

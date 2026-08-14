@@ -1,0 +1,36 @@
+﻿
+###############################################################################
+# Flavorium Universalis — Court Rivalry & Intrigue (Pillar 01) shared effects
+#
+# These replace the opinion modifiers that used to live in
+# in_game/common/biases/cc_court_relations.txt. EU5 opinions are country-to-country
+# only (get_opinion / has_opinion take a country target; estate_opinion is
+# estate-to-country and read-only), so a court cannot hold an opinion of its own
+# minister. The engine-supported equivalents are a character modifier for how the
+# minister takes it, and estate satisfaction for how their estate takes it.
+###############################################################################
+
+# The estate reaction to one of its own being slighted at court.
+# Called in CHARACTER scope (the slighted minister); root = the country.
+# Mirrors the trait-to-estate mapping in character_interactions/cc_purge_rival.txt,
+# one step lighter, because being overruled is not the same as being purged.
+cc_minister_estate_slight = {
+	if = {
+		limit = { has_trait = noble_champion_of_court }
+		root = {
+			add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		}
+	}
+	else_if = {
+		limit = { has_trait = merchant_of_the_crown }
+		root = {
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+		}
+	}
+	else_if = {
+		limit = { has_trait = court_prelate }
+		root = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+		}
+	}
+}

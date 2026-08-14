@@ -574,30 +574,73 @@ this situation models.
 
 ### 3.1 Variables written but never read
 
-Verified with `tools/var_refs.py` plus a manual `.gui` sweep (the `cc_bop_*_pct` variables are
-read by `cc_balance_of_power.gui`, so they are not on this list).
+**Status: resolved. Three deleted, eight wired to real readers, one deliberately retained.**
 
-| Variable | Written at | Note |
+The original finding listed 13 write-only variables. Auditing the cooldown family while fixing
+them turned up three more of the same shape in `cc_subject_types.txt`, plus seven biases that
+were defined and never applied.
+
+**Deleted as superseded.** The bond monitor's "priming flags" block (section 7, 47 lines)
+classified a relationship as loyal, disloyal or revolutionary from raw STM scores. Section 8
+immediately after syncs the same scores into the overlord's `cc_bond_*_eff_map`, and the AoR
+payoff events gate on those instead, LTM-blended and strictly better. Section 7 and its three
+variables are gone. `cc_cabinet_character` went with them: an abandoned attempt at the per-seat
+tracking `cc_duty_free_hands` documents as unsolved.
+
+**Chain B memory, wired.** Six of the header's eleven entries already worked; five did not.
+
+| Variable | Now |
+|---|---|
+| `cc_bond_chain_b_active` | Re-entrancy guard on `.110`. Chain state lives in single overlord-scoped variables, so a second chain starting mid-run used to overwrite the first and strand its subject |
+| `cc_bond_mem_merchant_rival` | Caps the `.113` outcome at 2. A house the crown once worked against does not finish as its closest partner |
+| `cc_bond_mem_crisis_managed` | Now records *which* of the five `.112` resolutions was taken rather than a flat yes; a coercive resolution caps the outcome the same way |
+| `cc_bond_mem_second_is_foreign` | Two new `.113` description variants for a dynasty that reached across foreign flags |
+| `cc_bond_trade_post_target` | Became `cc_bond_trade_post_targets`, a list, and `.115` now reads it |
+
+That last one was a live bug, not dead state. `.115` swept **every** foreign trade post the
+country owned and destroyed the lot, including any this chain never built. It now removes only
+the posts recorded when they were founded. A list rather than a single variable because the
+write site runs once per secondary target, so one variable could only ever hold the last.
+
+**The court layer, rebuilt on mechanisms that exist.** `cc_minister_resentful` had 16 write
+sites and no reader, and `cc_court_relations.txt` defined five opinion modifiers that were
+never applied. The reason for the second is that they could not be: EU5 opinions are
+country-to-country only (`get_opinion` and `has_opinion` take a country target; `estate_opinion`
+is estate-to-country and read-only), so a court cannot hold an opinion of its own minister.
+Those five were unimplementable as written, and the file is deleted.
+
+Replaced with the engine-supported equivalents, following the pattern `cc_dismissed_resentful`
+and `cc_minister_defied` already use:
+
+- `main_menu/common/static_modifiers/cc_character_modifiers.txt`, the mod's first
+  `category = character` modifiers: slighted, favoured, reconciled, cabal bond, defied
+- applied at the existing 16 sites, paired with removals where a quarrel is settled
+- `scripted_effects/cc_court_effects.txt` carries the estate reaction, reusing the
+  trait-to-estate mapping already in `cc_purge_rival`
+- `cc_cabinet_biyearly_resentful` pulse feeding a new consumer event, `cc_rival.5`
+
+**Subject-type gates.** Three more armed-but-unread cooldowns turned up, same class as 2.4:
+
+| Gate | Was | Now |
 |---|---|---|
-| `cc_bond_loyal_primed` | `cc_bond_monitor.txt:206` | The whole "priming flags" block (section 7, lines 199-244) computes three states nothing consumes |
-| `cc_bond_disloyal_primed` | `cc_bond_monitor.txt:227` | as above |
-| `cc_bond_revolutionary_primed` | `cc_bond_monitor.txt:234` | as above |
-| `cc_bond_betrayal_count` | `cc_bond_pulse.txt:581` | Incremented on betrayal, initialised to 0, never read |
-| `lesser_partner_maturation` | `cc_subject_types.txt:237` | Set and removed by `lesser_partner`; the parallel `junior_partner_maturation` *is* read, so this is the stub of a tier above `lesser_partner` that was never built |
-| `cc_bond_chain_b_active` | `cc_bond_chain_b.txt:73` | Documented in the file header as "chain is in progress"; nothing checks it, so chain B has no re-entrancy guard |
-| `cc_bond_mem_crisis_managed` | `cc_bond_chain_b.txt:381,413,450,477,511` | Set by all five options of `cc_bonds.112`, so it does not discriminate anyway, and `cc_bonds.113` never reads it |
-| `cc_bond_mem_merchant_rival` | `cc_bond_chain_b.txt:276` | Header documents it as "111 option C chosen (obstructed)"; unread |
-| `cc_bond_mem_second_is_foreign` | `cc_bond_chain_b.txt:169` | Header documents it; unread |
-| `cc_bond_trade_post_target` | `cc_bond_chain_b.txt:673` | Set then removed 110 lines later without an intervening read |
-| `cc_minister_resentful` | `cc_cabal_events.txt:191` and 5 more | Six writes, no reads |
-| `cc_patron_of_faith_active` | `cc_subject_events.txt:4952,4965,4978` | Set, never removed, never read |
-| `cc_cabinet_character` | `cc_duty_free_hands.txt:25` | Set from `cabinet_member`, removed, never read |
+| `tax_farm_cooldown` | Armed on creation, unread | Armed on *dissolution*, gates re-creation |
+| `march_cooldown` | Armed on creation, unread | Armed on dissolution, gates re-creation |
+| `lesser_partner_maturation` | Armed, unread | Gates the crown-dependency conversion, mirroring `junior_partner_maturation` one tier below |
+| `puppet_cooldown` | Armed by `puppet_state` itself, so it could never bind | Armed by `shadow_state` and `client_state`, the tiers it gates |
 
-Chain B is the notable cluster: its header (lines 11-21) documents an eleven-variable memory
-model, of which four are never consumed. Chains A, C, D and the per-type files use the same
-`cc_bond_mem_*` pattern correctly (checked `cc_bond_mem_fort_*`, `cc_bond_mem_council`,
-`cc_bond_mem_heir_at_court`, `cc_bond_mem_cultures_differ`), so chain B is the outlier, not the
-pattern.
+**Betrayal count.** `cc_bond_betrayal_count` now drives an escalation in the monitor: a second
+betrayal costs an extra point of political bond, a third costs two plus a personal one. The
+per-incident penalty was already landing; this is what makes a pattern worse than the sum of
+its incidents. The counter is deliberately not reset, unlike war calls and unjust wars.
+
+**Retained deliberately.** `cc_patron_of_faith_active` stays unread for now. The three accept
+options of `cc.226` apply two different country modifiers, so this is the single flag a later
+event can test for "did we ever take the title" without enumerating both. Commented in place so
+a future sweep does not remove it, the same treatment 3.2 got.
+
+**Also removed:** `cc_refused_funds_opinion` (no comment, no call site, no discoverable intent)
+and `cc_wc_general_defied`, which described a country's opinion of its own general and is now
+the `cc_minister_defied_modifier` character modifier instead.
 
 ### 3.2 `cc_bop_war_footing` is fully built and never applied
 
@@ -776,9 +819,7 @@ change.
 
 ## Suggested order of work
 
-1. Decide keep-or-cut on the dead state in 3.1. The largest single item is the
-   `cc_bond_monitor` priming block, which computes three states nothing reads.
-2. Optional: the 98 bond events missing `outcome` in 3.6, and the dead commented gates in
+1. Optional: the 98 bond events missing `outcome` in 3.6, and the dead commented gates in
    `naval_administration` noted under 1.8.
 
 **Severity 1 is clear.** 1.1 (override deleted, coalition rewired to the vanilla
@@ -791,8 +832,8 @@ change.
 **Severity 2 is clear.** 2.1 through 2.6 and 2.8 through 2.10 resolved: seven code fixes plus
 2.8 resolved as documentation. 2.7 reviewed and confirmed intentional.
 
-**Severity 3: 3.3, 3.4, 3.5 and 3.7 resolved, 3.2 confirmed intentional.** What remains is
-dead state (3.1) and one cosmetic consistency gap (3.6). Neither affects a running game.
+**Severity 3: 3.1, 3.3, 3.4, 3.5 and 3.7 resolved, 3.2 confirmed intentional.** Only 3.6
+remains, a cosmetic consistency gap that does not affect a running game.
 
 ## Worth re-testing in game
 
@@ -819,3 +860,8 @@ Two severity-2 fixes also change gating that no log will report:
 - 3.4 adds two events. On a hegemony ending, confirm `.79` reaches the preponderant bloc's
   rank and file and `.69` reaches the engaged unaligned, and that both render the hegemon's
   name rather than a blank, which is what the modifier-based scope lookup is there to prevent.
+- 3.1 turns on gates that have never fired. A tax farm or march should now be un-recreatable
+  for 15 and 20 years after one ends, a shadow or client state should refuse the puppet upgrade
+  for 25 years, and a fresh lesser partner should refuse crown-dependency conversion for 50.
+- 3.1 also adds the mod's first character modifiers. Confirm they render on the character sheet
+  after a court quarrel, and that `cc_rival.5` fires for a serving minister the crown overruled.

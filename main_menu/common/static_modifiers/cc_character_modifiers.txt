@@ -1,0 +1,52 @@
+﻿
+###############################################################################
+# Flavorium Universalis — Character Modifiers
+#
+# Pillar 01 (Court Rivalry & Intrigue) consequences. These replace the opinion
+# modifiers that used to live in in_game/common/biases/cc_court_relations.txt:
+# EU5 opinions are country-to-country only (get_opinion / has_opinion take a
+# country target, and estate_opinion is estate-to-country and read-only), so a
+# court cannot hold an opinion of its own minister. A character modifier is the
+# engine-supported way to express how a minister feels about the crown.
+#
+# Applied wherever the crown takes a side: cc_cabal.1/.2/.3, cc_fac.1/.2/.3,
+# cc_rival.1/.2/.3 and cc_wc.50/.51. Paired with the cc_minister_resentful
+# variable, which is what the cc_cabinet_biyearly_resentful pulse reads.
+#
+# Magnitudes follow vanilla character.txt, where character_cabinet_efficiency
+# swings run roughly -0.25 to +0.25 for this kind of court event.
+###############################################################################
+
+# The minister whose side the crown did not take. Sulks, and works the worse for it.
+cc_minister_slighted = {
+	game_data = { category = character }
+	character_cabinet_efficiency = -0.15
+}
+
+# The minister whose side the crown DID take. Vindicated, and eager to prove it.
+cc_minister_favoured = {
+	game_data = { category = character }
+	character_cabinet_efficiency = 0.10
+}
+
+# Both parties to a ruler-brokered reconciliation. Neither won, but the crown was seen
+# to be fair, and a court that trusts its arbiter runs smoothly.
+cc_minister_reconciled = {
+	game_data = { category = character }
+	character_cabinet_efficiency = 0.05
+}
+
+# Ministers who formalised a compact with one another. Effective together, and rather
+# harder for the crown to play off against each other later.
+cc_minister_cabal_bond = {
+	game_data = { category = character }
+	character_cabinet_efficiency = 0.12
+}
+
+# A general whose request the crown refused. Replaces the cc_wc_general_defied bias,
+# which described a country's opinion of its own commander and so could never apply.
+# Pairs with the cc_minister_defied variable read by cc_wc.51.
+cc_minister_defied_modifier = {
+	game_data = { category = character }
+	character_cabinet_efficiency = -0.10
+}

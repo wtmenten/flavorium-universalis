@@ -122,6 +122,26 @@ cc_bonds.1 = {
 				}
 				set_variable = { name = cc_bond_war_calls  value = 0 }
 
+				# --- 4b. Betrayal escalation → pol, counter persists ---
+				# cc_bond_betrayal_count is incremented in cc_bonds_on_join_war whenever the
+				# subject takes the field against its own overlord. That already costs -1 mil
+				# and -1 pol on the spot; this is the part that makes a pattern of it worse
+				# than the sum of its incidents. Unlike war_calls and unjust_wars above, the
+				# counter is NOT reset: a court remembers who has turned on it before, and the
+				# AoR events read the resulting floor through the effective maps.
+				if = {
+					limit = { var:cc_bond_betrayal_count >= 3 }
+					change_variable = { name = cc_bond_pol  add = -2 }
+					clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+					change_variable = { name = cc_bond_per  add = -1 }
+					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { var:cc_bond_betrayal_count >= 2 }
+					change_variable = { name = cc_bond_pol  add = -1 }
+					clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
+				}
+
 				# --- 5. Unjust wars accumulation → mil/cul, counter decays ---
 				if = {
 					limit = { var:cc_bond_unjust_wars >= 3 }
@@ -194,53 +214,6 @@ cc_bonds.1 = {
 					clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
 					change_variable = { name = cc_bond_cul  add = -1 }
 					clamp_variable = { name = cc_bond_cul  max = 5  min = -5 }
-				}
-
-				# --- 7. Priming flags ---
-				if = {
-					limit = {
-						var:cc_bond_eco >= 2
-						var:cc_bond_pol >= 2
-						var:cc_bond_per >= 2
-					}
-					set_variable = { name = cc_bond_loyal_primed  value = yes }
-					remove_variable = cc_bond_disloyal_primed
-					remove_variable = cc_bond_revolutionary_primed
-				}
-				else_if = {
-					limit = {
-						OR = {
-							AND = {
-								var:cc_bond_eco <= -2
-								var:cc_bond_pol <= -2
-							}
-							AND = {
-								var:cc_bond_eco <= -2
-								var:cc_bond_cul <= -2
-							}
-							AND = {
-								var:cc_bond_mil <= -2
-								var:cc_bond_pol <= -2
-							}
-						}
-					}
-					set_variable = { name = cc_bond_disloyal_primed  value = yes }
-					remove_variable = cc_bond_loyal_primed
-					if = {
-						limit = {
-							var:cc_bond_eco <= -2
-							var:cc_bond_cul <= -2
-						}
-						set_variable = { name = cc_bond_revolutionary_primed  value = yes }
-					}
-					else = {
-						remove_variable = cc_bond_revolutionary_primed
-					}
-				}
-				else = {
-					remove_variable = cc_bond_loyal_primed
-					remove_variable = cc_bond_disloyal_primed
-					remove_variable = cc_bond_revolutionary_primed
 				}
 
 				# --- 7b. Long-term memory: peak tracking (every cycle) + sweep (long cadence) ---
