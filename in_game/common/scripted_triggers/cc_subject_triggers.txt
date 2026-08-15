@@ -15,3 +15,68 @@ cc_subject_types_available = {
 		}
 	}
 }
+
+###############################################################################
+# Age of Revolutions payoff eligibility
+#
+# Evaluated on a KEY of the overlord's cc_subject_registry_map (this = the
+# subject, root = the overlord), from both the event trigger and the matching
+# ordered_key_in_variable_map limit.
+#
+# Subject type is read from the cc_bond_type_* flags rather than is_subject_type,
+# because is_subject_type stops answering once a subject goes free and every
+# payoff needs to keep working for a subject that already left.
+###############################################################################
+
+# Old enough to have a record, and not yet judged by this payoff.
+# cc_bond_cycles is read from the subject rather than from a map on the overlord:
+# the monitor does not remove it on release, and the has_variable guard means a
+# save that predates the counter simply does not fire a payoff until the next
+# monitor cycle stamps one, rather than looking up a key that is not there.
+cc_bonds_aor_eligible = {
+	NOT = { has_variable = cc_bond_aor_$ID$_fired }
+	# At least two monitor cycles (~20 years) of history. Without this a subject
+	# acquired in 1730 gets handed a verdict on "a generation of good choices".
+	has_variable = cc_bond_cycles
+	var:cc_bond_cycles >= 2
+}
+
+# The same, plus a subject-type requirement.
+cc_bonds_aor_candidate = {
+	has_variable = cc_bond_type_$TYPE$
+	cc_bonds_aor_eligible = { ID = $ID$ }
+}
+
+# Loyal pole: the weaker of the two dimensions still clears the bar.
+cc_bonds_aor_loyal_gate = {
+	"variable_map(cc_bond_$DIMA$_eff_map|this)" >= $MIN$
+	"variable_map(cc_bond_$DIMB$_eff_map|this)" >= $MIN$
+}
+
+# Hostile pole: either dimension is currently bad, or either one bottomed out
+# badly at some point, or the subject has a standing record of fighting us.
+cc_bonds_aor_hostile_gate = {
+	OR = {
+		"variable_map(cc_bond_$DIMA$_eff_map|this)" <= $MAX$
+		"variable_map(cc_bond_$DIMB$_eff_map|this)" <= $MAX$
+		"variable_map(cc_bond_$DIMA$_ltm_min_map|this)" <= -3
+		"variable_map(cc_bond_$DIMB$_ltm_min_map|this)" <= -3
+		AND = {
+			has_variable = cc_bond_betrayal_count
+			var:cc_bond_betrayal_count >= 3
+		}
+	}
+}
+
+# The cultural payoffs are not tied to a subject type: any tracked subject whose
+# cul score has run far enough in either direction qualifies. Restricted to
+# subjects whose culture differed from ours to begin with, since a subject that
+# always shared our culture has no assimilation story to tell.
+cc_bonds_aor_cul_candidate = {
+	cc_bonds_aor_eligible = { ID = $ID$ }
+	OR = {
+		has_variable = cc_bond_mem_cultures_differ
+		has_variable = cc_bond_mem_religion_forced
+		"variable_map(cc_bond_cul_ltm_min_map|this)" <= -2
+	}
+}

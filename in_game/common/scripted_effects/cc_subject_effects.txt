@@ -134,6 +134,13 @@ cc_bonds_initialize_subject = {
 		set_variable = { name = cc_bond_init_provinces  value = num_provinces }
 		set_variable = { name = cc_bond_initialized  value = yes }
 		set_variable = { name = cc_bond_established_date  value = current_date }
+		# Tenure counter (one per 10-year monitor cycle). The AoR payoffs refuse to
+		# judge a relationship younger than a couple of cycles.
+		set_variable = { name = cc_bond_cycles  value = 0 }
+		# Last-known subject type, kept as flags so the AoR payoffs can still tell a
+		# released colonial nation from a released crown dependency (is_subject_type
+		# stops answering the moment the subject goes free).
+		cc_bonds_stamp_subject_type = yes
 		# Long-term memory stores (sum + sweep counter + running average + peak extremes).
 		cc_bonds_ensure_ltm_stores = yes
 		# Record if cultures differ at start (for culture conversion detection).
@@ -144,13 +151,50 @@ cc_bonds_initialize_subject = {
 	}
 }
 
+# Stamp one subject-type flag on the subject. Called in SUBJECT scope.
+# $TYPE$ = a subject_type key (colonial_nation, palatinate, ...).
+cc_bonds_stamp_one_type = {
+	if = {
+		limit = { is_subject_type = $TYPE$ }
+		set_variable = { name = cc_bond_type_$TYPE$  value = yes }
+	}
+	else = {
+		remove_variable = cc_bond_type_$TYPE$
+	}
+}
+
+# Refresh the last-known subject-type flags. Called in SUBJECT scope from
+# cc_bonds_initialize_subject and from the monitor's per-subject loop, so the flags
+# track promotions (colonial_nation -> imperial_council_member, and so on) and the
+# final value survives release. The AoR payoffs read these instead of
+# is_subject_type when the subject has already gone free: without them a released
+# crown dependency with a healthy eco score satisfies the colonial-nation payoff.
+cc_bonds_stamp_subject_type = {
+	cc_bonds_stamp_one_type = { TYPE = colonial_nation }
+	cc_bonds_stamp_one_type = { TYPE = provincial_governorate }
+	cc_bonds_stamp_one_type = { TYPE = palatinate }
+	cc_bonds_stamp_one_type = { TYPE = military_march }
+	cc_bonds_stamp_one_type = { TYPE = crown_dependency }
+	cc_bonds_stamp_one_type = { TYPE = puppet_state }
+	cc_bonds_stamp_one_type = { TYPE = imperial_council_member }
+	cc_bonds_stamp_one_type = { TYPE = equal_federal_member }
+	cc_bonds_stamp_one_type = { TYPE = lesser_federal_member }
+	cc_bonds_stamp_one_type = { TYPE = false_federal_member }
+	cc_bonds_stamp_one_type = { TYPE = shadow_state }
+	cc_bonds_stamp_one_type = { TYPE = client_state }
+	cc_bonds_stamp_one_type = { TYPE = chartered_company }
+}
+
 # Zero the subject-side long-term-memory stores (sum + sweep counter + running
 # average + peak extremes) and arm the first sweep ~70 years out. Called in SUBJECT
 # scope from cc_bonds_initialize_subject and, defensively, from the monitor to
 # upgrade subjects from saves that predate the LTM system. Non-destructive to STM.
 cc_bonds_ensure_ltm_stores = {
 	set_variable = { name = cc_bond_ltm_sweeps  value = 0 }
-	set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 70 }
+	# First sweep 25 years in (was 70). At the old cadence a subject acquired after
+	# roughly 1665 never swept before the Age of Revolutions, so its ltm_avg stayed 0
+	# and the AoR payoff gates were unreachable on anything but a pinned STM score.
+	set_variable = { name = cc_bond_ltm_sweep_cd  value = yes  years = 25 }
 	set_variable = { name = cc_bond_eco_ltm  value = 0 }
 	set_variable = { name = cc_bond_mil_ltm  value = 0 }
 	set_variable = { name = cc_bond_pol_ltm  value = 0 }
@@ -220,10 +264,28 @@ cc_bonds_sync_dimension = {
 	set_local_variable = { name = lv_stm  value = var:cc_bond_$DIM$ }
 	set_local_variable = { name = lv_min  value = var:cc_bond_$DIM$_ltm_min }
 	set_local_variable = { name = lv_avg  value = var:cc_bond_$DIM$_ltm_avg }
-	# effective = ltm_avg + (stm * 0.5)
-	set_local_variable = { name = lv_eff  value = var:cc_bond_$DIM$ }
-	change_local_variable = { name = lv_eff  multiply = 0.5 }
-	change_local_variable = { name = lv_eff  add = local_var:lv_avg }
+	# Effective score, blended by how much long-term memory actually exists yet.
+	# A relationship with no completed sweep has no record to be judged on, so it is
+	# read on current mood alone; an established one is read primarily on its record.
+	# The old flat `ltm_avg + stm*0.5` meant a young subject needed a pinned STM of 4
+	# to clear a threshold of 2, which effectively never happened.
+	if = {
+		limit = { var:cc_bond_ltm_sweeps = 0 }
+		set_local_variable = { name = lv_eff  value = local_var:lv_stm }
+	}
+	else_if = {
+		limit = { var:cc_bond_ltm_sweeps <= 2 }
+		set_local_variable = { name = lv_eff  value = local_var:lv_stm }
+		change_local_variable = { name = lv_eff  multiply = 0.75 }
+		set_local_variable = { name = lv_avg_part  value = local_var:lv_avg }
+		change_local_variable = { name = lv_avg_part  multiply = 0.5 }
+		change_local_variable = { name = lv_eff  add = local_var:lv_avg_part }
+	}
+	else = {
+		set_local_variable = { name = lv_eff  value = local_var:lv_stm }
+		change_local_variable = { name = lv_eff  multiply = 0.5 }
+		change_local_variable = { name = lv_eff  add = local_var:lv_avg }
+	}
 	root = {
 		remove_from_variable_map = { name = cc_bond_$DIM$_map  key = scope:cc_sync_subj }
 		add_to_variable_map = { name = cc_bond_$DIM$_map  key = scope:cc_sync_subj  value = local_var:lv_stm }
@@ -232,4 +294,18 @@ cc_bonds_sync_dimension = {
 		remove_from_variable_map = { name = cc_bond_$DIM$_ltm_min_map  key = scope:cc_sync_subj }
 		add_to_variable_map = { name = cc_bond_$DIM$_ltm_min_map  key = scope:cc_sync_subj  value = local_var:lv_min }
 	}
+}
+
+# Per-subject bookkeeping that is not dimension-scoped. Called in SUBJECT scope once
+# per monitor cycle, alongside the five cc_bonds_sync_dimension calls. Advances the
+# tenure counter and refreshes the last-known subject-type flags. Both live on the
+# subject and survive release, which is what the AoR payoffs need: cc_bonds_on_becoming_free
+# clears the dimension scores but not these.
+cc_bonds_sync_meta = {
+	if = {
+		limit = { NOT = { has_variable = cc_bond_cycles } }
+		set_variable = { name = cc_bond_cycles  value = 0 }
+	}
+	change_variable = { name = cc_bond_cycles  add = 1 }
+	cc_bonds_stamp_subject_type = yes
 }

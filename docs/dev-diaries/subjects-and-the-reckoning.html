@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dev Diary: Subjects, and the Reckoning | Flavorium Universalis</title>
+<style>
+:root{
+  --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
+  --hover-bg:#2d3040;
+  --adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;--gold:#d4a843;--purple:#a07bdf;
+  --text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --radius:7px;--sidebar-w:230px;
+}
+/* ----- reset ----- */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
+
+/* ----- sticky header ----- */
+.site-header{position:sticky;top:0;z-index:100;background:var(--panel-bg);border-bottom:1px solid var(--card-border)}
+.header-inner{display:flex;align-items:center;gap:10px;padding:0 18px;height:50px}
+.menu-btn{background:none;border:none;color:var(--text-mid);font-size:18px;line-height:1;padding:6px 8px;cursor:pointer;border-radius:4px;display:none;flex-shrink:0}
+.menu-btn:hover{color:var(--text);background:var(--hover-bg)}
+.mod-title{font-size:15px;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em}
+.ver-badge{font-size:10px;font-weight:700;background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.3);border-radius:3px;padding:2px 7px;white-space:nowrap}
+.hdr-spacer{flex:1}
+.planner-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:5px 12px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s,background .12s}
+.planner-link:hover{color:var(--adm);border-color:var(--adm);background:rgba(91,174,232,.08)}
+
+/* ----- layout: sidebar + main ----- */
+.layout{display:flex;min-height:calc(100vh - 50px)}
+
+/* ----- sidebar ----- */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;background:var(--panel-bg);border-right:1px solid var(--card-border);padding:16px 0 40px}
+.sidebar-label{padding:10px 18px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim)}
+.nav-sec{margin-bottom:2px}
+.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h2:hover{color:var(--text);background:var(--hover-bg)}
+.nav-h2.active{color:var(--text);background:var(--hover-bg)}
+.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.55}
+.nav-h2.active .nav-h2-dot{opacity:1}
+.nav-sub{display:flex;flex-direction:column}
+.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h3:hover{color:var(--text-mid);background:var(--hover-bg)}
+.nav-h3.active{color:var(--text-mid);background:var(--hover-bg)}
+/* section accent colors for nav dots */
+.nav-sec[data-sec="0"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="1"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="2"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="3"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="4"]  .nav-h2{--nav-color:var(--dip)}
+.nav-sec[data-sec="5"]  .nav-h2{--nav-color:var(--mil)}
+.nav-sec[data-sec="6"]  .nav-h2{--nav-color:var(--purple)}
+.nav-sec[data-sec="7"]  .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="8"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="9"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="10"] .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="11"] .nav-h2{--nav-color:var(--mil)}
+
+/* ----- main content area ----- */
+.main{flex:1;min-width:0}
+.content{max-width:1080px;margin:0 auto;padding:36px 36px 100px}
+
+/* ----- hero h1 ----- */
+.content h1{font-size:32px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em}
+.content h1::after{content:'';display:block;width:52px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-top:12px}
+
+/* ----- section h2: panel bar with accent underline rule ----- */
+.content h2{position:relative;font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:13px 18px 15px;background:var(--panel-bg);border:1px solid var(--card-border);border-radius:var(--radius);color:var(--text)}
+.content h2::after{content:'';position:absolute;left:18px;bottom:8px;width:34px;height:2px;border-radius:2px;background:var(--s-color,var(--text-mid))}
+.content h2[data-sec="0"] {--s-color:var(--gold)}
+.content h2[data-sec="1"] {--s-color:var(--adm)}
+.content h2[data-sec="2"] {--s-color:var(--gold)}
+.content h2[data-sec="3"] {--s-color:var(--adm)}
+.content h2[data-sec="4"] {--s-color:var(--dip)}
+.content h2[data-sec="5"] {--s-color:var(--mil)}
+.content h2[data-sec="6"] {--s-color:var(--purple)}
+.content h2[data-sec="7"] {--s-color:var(--text-mid)}
+.content h2[data-sec="8"] {--s-color:var(--gold)}
+.content h2[data-sec="9"] {--s-color:var(--adm)}
+.content h2[data-sec="10"]{--s-color:var(--text-mid)}
+.content h2[data-sec="11"]{--s-color:var(--mil)}
+
+/* ----- h3 sections: editorial style with accent underline rule ----- */
+.h3-group{margin:24px 0 28px}
+.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:12px;margin-top:0;padding-bottom:8px;border-bottom:1px solid var(--card-border);position:relative}
+.h3-group h3::after{content:'';position:absolute;left:0;bottom:-1px;width:30px;height:2px;border-radius:2px;background:var(--g-color,var(--adm))}
+
+/* ----- Features section: 2-col grid tiles ----- */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0;align-items:start}
+.feat-grid .h3-group{margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px 18px}
+.feat-grid .h3-group h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+/* suppress bbcode <br> newline artifacts inside grid tiles */
+.feat-grid .h3-group br{display:none}
+
+/* ----- prose ----- */
+.content p{margin-bottom:10px}
+.content strong{color:var(--text);font-weight:600}
+.content em{color:var(--text-mid)}
+.content a{color:var(--adm);text-decoration:none}
+.content a:hover{text-decoration:underline}
+
+/* ----- lists ----- */
+.content ul,.content ol{margin:6px 0 10px 20px}
+.content li{margin-bottom:4px}
+.content ul ul,.content ol ul{margin-top:4px}
+
+/* ----- blockquote ----- */
+.content blockquote{margin:14px 0;padding:12px 18px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);font-size:14px;line-height:1.6}
+.content blockquote,.content blockquote p{color:var(--text-mid)}
+.content blockquote p:last-child{margin-bottom:0}
+
+/* ----- hr ----- */
+.content hr{border:none;height:1px;background:var(--card-border);margin:22px 0}
+
+/* ----- table ----- */
+.content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.content th{background:var(--hover-bg);color:var(--text);font-weight:600;font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--card-border)}
+.content td{padding:7px 12px;border:1px solid var(--card-border);vertical-align:top}
+.content tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+/* ----- NEW badge ----- */
+.new-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px 2px;border-radius:3px;background:rgba(90,191,122,.12);color:var(--dip);border:1px solid rgba(90,191,122,.28);margin-right:3px;vertical-align:middle;line-height:1.4}
+
+/* ----- anchor scroll offset: clear the sticky 50px header ----- */
+.content h1[id],.content h2[id],.content h3[id]{scroll-margin-top:66px}
+
+/* ----- suppress stray <br> after block tags (bbcode newline artifact) ----- */
+h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br{display:none}
+
+/* ----- overlay (mobile sidebar) ----- */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:98}
+body.nav-open .sidebar-overlay{display:block}
+
+/* ----- mobile ----- */
+@media(max-width:768px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;top:50px;left:0;height:calc(100vh - 50px);z-index:99;transform:translateX(-100%);transition:transform .22s ease}
+  body.nav-open .sidebar{transform:translateX(0)}
+  .content{padding:22px 18px 80px}
+  .content h1{font-size:26px}
+  .content h2{font-size:17px;padding:10px 14px;margin-top:36px}
+  .feat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .content{padding:18px 14px 60px}
+}
+
+/* ----- dev diary figures ----- */
+.content figure{margin:18px 0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
+.content figure a{display:block}
+.content figure img{display:block;width:100%;height:auto}
+.content figcaption{padding:8px 14px;font-size:12.5px;color:var(--text-mid);border-top:1px solid var(--card-border)}
+.fig-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}
+.fig-row figure{margin:0}
+@media(max-width:680px){.fig-row{grid-template-columns:1fr}}
+/* ----- diary entry byline (per-diary pages) ----- */
+.diary-byline{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:-2px 0 18px}
+/* ----- dev diary index cards (landing page) ----- */
+.diary-index{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.diary-card{display:block;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px 20px 16px;text-decoration:none;color:inherit;transition:background .12s,border-color .12s,transform .12s}
+.diary-card:hover{background:var(--hover-bg);border-color:#3f4452;transform:translateY(-1px)}
+.diary-card .dc-date{color:var(--gold);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em}
+.diary-card .dc-title{color:var(--text);font-size:18px;font-weight:700;margin:5px 0 8px;padding-bottom:9px;position:relative}
+.diary-card .dc-title::after{content:'';position:absolute;left:0;bottom:0;width:32px;height:2px;border-radius:2px;background:var(--gold);transition:width .12s,background .12s}
+.diary-card:hover .dc-title::after{width:48px;background:var(--adm)}
+.diary-card .dc-blurb{color:var(--text-mid);font-size:14px;line-height:1.55}
+.diary-card .dc-more{display:inline-block;margin-top:9px;font-size:12px;color:var(--adm);font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <button class="menu-btn" id="menuBtn" title="Navigation">&#9776;</button>
+    <span class="mod-title">Flavorium Universalis</span>
+    <span class="ver-badge">Dev Diary</span>
+    <div class="hdr-spacer"></div>
+    <a class="planner-link" href="../index.html">&larr; Home</a>
+    <a class="planner-link" href="../dev-diaries.html">All Dev Diaries</a>
+    <a class="planner-link" href="../planner.html">Advance Planner &rarr;</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-label">Contents</div>
+  <div class="nav-sec" data-sec="0">
+    <a class="nav-h2" href="#eighteen-ways-to-hold-a-subject"><span class="nav-h2-dot"></span>Eighteen ways to hold a subject</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="1">
+    <a class="nav-h2" href="#the-ledger"><span class="nav-h2-dot"></span>The ledger</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="2">
+    <a class="nav-h2" href="#what-they-actually-remember"><span class="nav-h2-dot"></span>What they actually remember</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="3">
+    <a class="nav-h2" href="#the-reckoning"><span class="nav-h2-dot"></span>The reckoning</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="4">
+    <a class="nav-h2" href="#two-roads-out"><span class="nav-h2-dot"></span>Two roads out</a>
+    <div class="nav-sub">
+      <a class="nav-h3" href="#the-federation">The federation</a>
+      <a class="nav-h3" href="#the-revolution">The revolution</a>
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="5">
+    <a class="nav-h2" href="#the-historical-inspiration"><span class="nav-h2-dot"></span>The historical inspiration</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main">
+    <article class="content" id="content">
+<h1 id="dev-diary-subjects-and-the-reckoning">Dev Diary: Subjects, and the Reckoning</h1>
+<p class="diary-byline">August 14, 2026</p>
+<p><em>Published: 2026-08-14</em></p>
+<p><em>Eighteen ways to hold a subject, five ways to be remembered for it, and the age that settles the account.</em></p>
+<p><em>Dev Note: vanilla subjects are a number you manage. You watch liberty desire, you feed it a modifier, you move on. Nothing that happens between you and a vassal in 1490 has any bearing on what happens in 1790. This update is about closing that gap. Your subjects now keep a record, the record covers specific things you did rather than a running total, and in the Age of Revolutions they hand you the bill. This diary covers the whole system: the subject types you can build, the ledger that tracks them, and the two very different late games that come out the other end.</em></p>
+<figure>
+  <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_overview.png" target="_blank">
+    <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_overview.png" alt="The Subject Relations Ledger panel">
+  </a>
+  <figcaption>The Subject Relations Ledger: every tracked subject, scored along five lines, with the date the relationship began.</figcaption>
+</figure>
+<hr>
+<h2 id="eighteen-ways-to-hold-a-subject" data-sec="0">Eighteen ways to hold a subject</h2>
+<p>Vanilla gives you vassals, marches, and colonies. Flavorium adds eighteen more arrangements, unlocked by advances across the ages, and most of them exist because they enable a playstyle rather than because a chart had a gap in it.</p>
+<p>Some are quiet influence. A <strong>Shadow State</strong> is independent on paper and bound by private treaty in practice; promote it to a <strong>Client State</strong>, then a <strong>Puppet State</strong>, and you have a slow ladder from "we have an understanding" to "we appoint their ministers" that never once required you to declare war. If you have played Victoria 3, you will recognise the shape.</p>
+<p>Some are prestige projects that actually produce something. An <strong>Artists' Commune</strong> does not just sit there generating a modifier: its events place real works of art in your capital, credited to a court artist if you have one. A <strong>Scientific College</strong> does the same with treatises. Grant an <strong>Elite Enclave</strong> to a kindred noble house and let it mature into a <strong>Palatinate</strong>, and the lord's finest knight can end up commanding your armies as a named character.</p>
+<p>Some are frankly exploitative, and the mod does not pretend otherwise. A <strong>Tax Farm</strong> hands revenue collection to a powerful lord who keeps a cut. A <strong>Chartered Company</strong> runs your commerce in distant lands on terms that favour you. These work. They are also exactly the arrangements that produce the worst reckonings two centuries later, and that tension is the point.</p>
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_subject_type_list.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_subject_type_list.png" alt="The subject type selection screen">
+    </a>
+    <figcaption>The expanded subject roster. Most types need a matching advance, and several want an estate privilege or government reform as well.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_commune_artwork.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_commune_artwork.png" alt="An Artists' Commune producing a work of art">
+    </a>
+    <figcaption>An Artists' Commune delivering an actual work of art to the capital, attributed to a minister at court.</figcaption>
+  </figure>
+</div>
+<hr>
+<h2 id="the-ledger" data-sec="1">The ledger</h2>
+<p>Every significant subject keeps an account with you, scored from -5 to +5 along five lines:</p>
+<ul><li><strong>Economic:</strong> whether you invest in them or strip them.</li><li><strong>Military:</strong> whether you spend their soldiers carelessly, and whether you come when they call.</li><li><strong>Political:</strong> how much say you let them have.</li><li><strong>Cultural:</strong> whether they are allowed to remain themselves.</li><li><strong>Personal:</strong> the warmth between the two courts, across generations of rulers.</li></ul>
+<p>These move on their own as you play. Building in their lands, sharing institutions, subsidising their treasury, answering their pleas for help: all of it registers without you doing anything deliberate. So does the opposite. Call a subject into four wars a decade and the military line sags. Convert them by force and the cultural line collapses.</p>
+<p>You can also tend a relationship directly. Each subject has a row of actions on a shared cooldown: <strong>Underwrite</strong> their treasury, hold a joint <strong>Review</strong>, confer a <strong>Charter</strong> of privileges, patronise a <strong>Festival</strong>, dispatch a personal <strong>Envoy</strong>. Each costs something real and each buys a point on one line. Two of them run the other way: <strong>Tribute</strong> takes their money and their goodwill, and <strong>Reprimand</strong> buys compliance at the cost of warmth.</p>
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_actions.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_actions.png" alt="The engagement actions under a subject row">
+    </a>
+    <figcaption>The actions under each subject. Generosity is not free, and the cheap options cost you elsewhere.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_dimension_tooltip.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_ledger_dimension_tooltip.png" alt="A dimension tooltip explaining what raises and lowers it">
+    </a>
+    <figcaption>Hovering a score tells you exactly what raises and lowers it, so no part of the account is hidden from you.</figcaption>
+  </figure>
+</div>
+<p>There is a second layer underneath. Alongside the current score, each bond keeps a <strong>lifetime memory</strong>: every few generations the present standing is folded into a long-term average and then half-forgotten. A relationship you repaired last decade still carries the century that came before it. The panel has a toggle so you can look at either, and the lifetime figure is the one that matters most when the reckoning arrives.</p>
+<hr>
+<h2 id="what-they-actually-remember" data-sec="2">What they actually remember</h2>
+<p>This is the part that changed most in this update.</p>
+<p>A running total is a blunt instrument. It tells a colony it is unhappy; it does not tell it <em>why</em>. So alongside the scores, your subjects now remember around thirty <strong>specific decisions</strong>, and the endgame reads them.</p>
+<p>Did you grant that colony an assembly when it asked for a voice, or refuse? Did you fund the frontier fortress, or leave the march lord to pay for his own walls? When you brought his heir to your court, did the boy go home loyal or go home hating you? Did you sponsor the brilliant local scholar, put him on your payroll as a propagandist, or have him silenced? Did you force a conversion on a people who had already stopped trusting you?</p>
+<p>Each of those is filed away, and each surfaces later, both in what the endgame event <em>says</em> and in what it <em>does</em>. A colony in revolt reads very differently when the pamphlets driving it are being written by the scholar you had suppressed forty years earlier. A frontier that holds against everything reads differently when the reason it holds is a fortress you paid for in 1602.</p>
+<figure>
+  <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_chain_event_ward.png" target="_blank">
+    <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_chain_event_ward.png" alt="The march lord's heir arriving at court">
+  </a>
+  <figcaption>A march lord's heir arrives at court. How you raise him is remembered for the rest of the game, and decides which side he is on at the end of it.</figcaption>
+</figure>
+<hr>
+<h2 id="the-reckoning" data-sec="3">The reckoning</h2>
+<p>Then the Age of Revolutions opens, and the account comes due.</p>
+<p>Each tracked relationship resolves into a one-shot event, and how heavy that event lands depends on the weight of the record: a merely good relationship produces a local, proportionate outcome, while an exceptional one changes the map. Banked goodwill can soften a bad ending by a full step, and accumulated grievance can push a mediocre one over the edge. A subject that has taken the field against you three times does not get a quiet ending regardless of how the numbers look now.</p>
+<p>They arrive one at a time across the age, worst relationships first, so each one lands as its own set piece rather than as a wall of popups the year the age ticks over.</p>
+<p>The important change is that these outcomes now reach into the revolution itself.</p>
+<p><strong>If your subjects stand with you</strong>, that loyalty is worth something concrete at home. Their steadiness feeds your estates and your stability, and the deepest bonds will hold the revolutionary crisis off your own realm outright for a generation, and mark your court as the crown that held while others fell. Two centuries of paying attention to a colonial assembly turn out to be the cheapest insurance policy you ever bought.</p>
+<p><strong>If they do not</strong>, the argument travels. An estranged subject makes the revolution substantially likelier to break out in <em>your</em> capital, not just theirs. The very worst relationships put sympathisers on your own streets while you are still trying to deal with the original problem.</p>
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_loyal_colony.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_loyal_colony.png" alt="A loyal colony in the Age of Revolutions">
+    </a>
+    <figcaption>A colony that was given a voice, sitting out the age. The assembly you chartered is where the argument is happening, which is why you are reading a transcript instead of a casualty list.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_colony_revolt.png" target="_blank">
+      <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_colony_revolt.png" alt="A colony in revolt in the Age of Revolutions">
+    </a>
+    <figcaption>The other version. You can crack down, concede everything you should have conceded decades ago, or let them go before the argument crosses the ocean.</figcaption>
+  </figure>
+</div>
+<hr>
+<h2 id="two-roads-out" data-sec="4">Two roads out</h2>
+<p>The reckoning is not simply pass or fail. It opens two genuinely different late games.</p>
+<h3 id="the-federation">The federation</h3>
+<p>Take <strong>Colonial Assemblies</strong>, then a <strong>Federal Constitution</strong>, and your empire acquires a ladder. A well-treated subject can be raised to an <strong>Imperial Council Member</strong>, then an <strong>Associate Member</strong>, then a full <strong>Federal Member</strong> with a real seat. A colony that has been dealt with honestly for two centuries will come to you in the revolutionary age and <em>ask</em> for federation, having already considered independence and rejected it on the merits.</p>
+<p>Played to its end, this is an empire that survives the age by ceasing to be an empire: a union of partners that holds together because the people inside it have somewhere to make their argument. Your council members will spend the crisis holding the thing together on your behalf.</p>
+<p>There is a darker version, and it is available to you from the same advance tree. The <strong>Federal Charter</strong> lets you brand a client as a federal partner while continuing to extract from it exactly as before. It pays well and immediately. It also means that when someone in that subject finally sits down and compares the charter you signed against what actually happened, they will read the whole document aloud, clause by clause, in front of every other court you have ever signed anything with. You can still save it at that point. It will cost you a great deal more than honesty would have.</p>
+<h3 id="the-revolution">The revolution</h3>
+<p>The other road is more fun to watch and considerably worse to live through.</p>
+<p>A <strong>Military March</strong> is an offensive border vassal: trained soldiers, your drill, your staff work, intimate knowledge of your frontier. Treat one badly for long enough and it does not merely defect. The march lord raises his own banner, and if the relationship has rotted far enough you are given the option to cut him loose entirely and let the age have him. Take it, and a revolutionary republic appears on your border, fielding the army you trained, commanded by the officer you educated.</p>
+<p>Elsewhere: a <strong>Palatinate</strong> can declare armed neutrality and simply write you out of its calculations, which is somehow worse than rebellion. A <strong>Crown Dependency</strong> can send you a courteous letter explaining that it has been approached by a neighbouring power and is exploring its options. A <strong>Provincial Governorate</strong> can reach the point where you hold it by garrison or not at all.</p>
+<p>And if enough of this is happening at once while the continent is already contested, it feeds the <strong>Balance of Power</strong> situation's Revolutionary Collapse ending, where the careful equilibrium of kings turns out to count for nothing once the people rise.</p>
+<figure>
+  <a href="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_march_banner.png" target="_blank">
+    <img src="../assets/screenshots/Subjects/EUV_1.3.x_FU_Bonds_0.3.11_aor_march_banner.png" alt="The march lord raising his own banner">
+  </a>
+  <figcaption>The march lord raises his own banner. The option to release him as a revolutionary state is only offered when the relationship has gone past saving.</figcaption>
+</figure>
+<hr>
+<h2 id="the-historical-inspiration" data-sec="5">The historical inspiration</h2>
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Subjects/art_storming_of_the_bastille.jpg" target="_blank">
+      <img src="../assets/screenshots/Subjects/art_storming_of_the_bastille.jpg" alt="The Storming of the Bastille, 1789">
+    </a>
+    <figcaption>The Storming of the Bastille, 1789. The age that decides whether your empire was a partnership or an arrangement.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Subjects/art_signing_of_the_constitution.jpg" target="_blank">
+      <img src="../assets/screenshots/Subjects/art_signing_of_the_constitution.jpg" alt="The signing of a federal constitution, 1787">
+    </a>
+    <figcaption>The other outcome: colonies that argued their way into a union instead of out of one.</figcaption>
+  </figure>
+</div>
+<p>The system takes its shape from the long imperial unravelling between roughly 1770 and 1830, and from the fact that it did not go the same way everywhere.</p>
+<p>Thirteen colonies with assemblies, a tax dispute and no representation broke away and wrote a federal constitution. Spanish America, governed for three centuries by appointed peninsulars with almost no local voice, broke away far more violently and stayed broken. Canada did not leave at all. The difference was rarely the size of the grievance. It was whether there had ever been a legitimate place to put it.</p>
+<p>That is the argument the whole system is built around. The subjects that stay with you are not the ones you taxed least. They are the ones you gave somewhere to complain.</p>
+<hr>
+<p><em>The Subject Relations Ledger, its chain events, and the Age of Revolutions payoffs are all governed by the <strong>C&C: Overlord-Subject Bonds</strong> game rule (default: on). The federal and revolutionary paths need their matching advances, which sit in the late Diplomatic and Administrative branches.</em></p>
+    </article>
+  </div>
+</div>
+
+<script>
+(function(){
+  // --- group h3 + following siblings into .h3-group, put Features ones in a .feat-grid ---
+  // Uses childNodes (not children) so that bare text nodes produced by bbcode are moved
+  // along with their surrounding element siblings and not stranded as orphans.
+  var PALETTE = ['--adm','--dip','--mil','--gold','--purple'];
+  var content = document.getElementById('content');
+  var nodes = Array.prototype.slice.call(content.childNodes); // includes text nodes
+  var inFeatures = false, currentGrid = null, currentGroup = null, ci = 0;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    // Text / comment nodes: absorb into current group if one is open
+    if (el.nodeType !== 1) {
+      if (currentGroup) currentGroup.appendChild(el);
+      continue;
+    }
+    var tag = el.tagName;
+    if (tag === 'H2') {
+      inFeatures = false;
+      currentGrid = null; currentGroup = null; ci = 0;
+    } else if (tag === 'H3') {
+      var color = 'var(' + PALETTE[ci++ % PALETTE.length] + ')';
+      currentGroup = document.createElement('div');
+      currentGroup.className = 'h3-group';
+      currentGroup.style.setProperty('--g-color', color);
+      if (inFeatures) {
+        if (!currentGrid) {
+          currentGrid = document.createElement('div');
+          currentGrid.className = 'feat-grid';
+          el.parentNode.insertBefore(currentGrid, el);
+        }
+        currentGrid.appendChild(currentGroup);
+      } else {
+        el.parentNode.insertBefore(currentGroup, el);
+      }
+      currentGroup.appendChild(el);
+    } else if (currentGroup) {
+      currentGroup.appendChild(el);
+    }
+  }
+})();
+
+(function(){
+  // --- scroll-spy: sidebar active links ---
+  var allLinks = document.querySelectorAll('.nav-h2, .nav-h3');
+  function activate(id) {
+    allLinks.forEach(function(l){ l.classList.remove('active'); });
+    var a = document.querySelector('[href="#' + id + '"]');
+    if (a) {
+      a.classList.add('active');
+      // also activate parent h2 when a h3 is active
+      if (a.classList.contains('nav-h3')) {
+        var sec = a.closest('.nav-sec');
+        if (sec) { var h2 = sec.querySelector('.nav-h2'); if (h2) h2.classList.add('active'); }
+      }
+      a.scrollIntoView({block:'nearest'});
+    }
+  }
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) activate(e.target.id); });
+  }, {rootMargin:'-6% 0px -78% 0px'});
+  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(function(h){ obs.observe(h); });
+})();
+
+(function(){
+  // --- mobile sidebar toggle ---
+  var btn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('sidebarOverlay');
+  function close() { document.body.classList.remove('nav-open'); }
+  btn.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  overlay.addEventListener('click', close);
+  document.querySelectorAll('.nav-h2, .nav-h3').forEach(function(a){
+    a.addEventListener('click', function(){ if (window.innerWidth <= 768) close(); });
+  });
+})();
+</script>
+
+</body>
+</html>

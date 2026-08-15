@@ -3,894 +3,581 @@ namespace = cc_bonds
 
 ###############################################################################
 # Age of Revolutions Payoff Events — cc_bonds.90–99
-# Fire during age_6_revolutions via yearly_country_pulse.
-# Root = overlord. Each reads bond scores from variable maps on overlord
-# to handle subjects that may have already been released.
-# One-shot per subject via cc_bond_aor_fired flag on overlord (keyed per subject).
+#
+# Fired by cc_bonds_aor_pulse, which selects the subject, saves it as
+# scope:bond_subj, and grades the relationship into var:cc_bond_aor_tier (1-3)
+# before triggering the event. Selection and grading live in the pulse rather
+# than here because triggered_desc is evaluated before immediate runs, so both
+# the description and the option triggers need the tier to already exist.
+#
+# root = overlord. Scores are read from variable maps on the overlord so that a
+# subject which has already been released is still judged on the record it left.
+#
+# Tier 1 is a local outcome, tier 2 is a serious one, tier 3 reaches into
+# vanilla's revolution machinery (see cc_bond_aor_effects.txt).
 ###############################################################################
 
 # cc_bonds.90 — A Loyal Colony in Turbulent Times
-# Triggers: colonial_nation with eco >= 2 AND pol >= 2
 cc_bonds.90 = {
 	type = country_event
 	title = cc_bonds.90.title
-	desc = cc_bonds.90.desc
-	illustration_tags = { 10 = happy }
-
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = colonial_nation
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_eco_frozen
-				}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_voice_granted } }
+				desc = cc_bonds.90.desc.voice
 			}
-			"variable_map(cc_bond_eco_eff_map|this)" >= 2
-			"variable_map(cc_bond_pol_eff_map|this)" >= 2
-			NOT = { has_variable = cc_bond_aor_90_fired }
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.90.desc.deep
+			}
+			desc = cc_bonds.90.desc
 		}
 	}
+	illustration_tags = { 10 = happy }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = colonial_nation
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_eco_frozen
-					}
-				}
-				"variable_map(cc_bond_eco_eff_map|this)" >= 2
-				"variable_map(cc_bond_pol_eff_map|this)" >= 2
-				NOT = { has_variable = cc_bond_aor_90_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_90_fired  value = yes }
-		}
+	trigger = { exists = scope:bond_subj }
+
+	# Formally elevate the colony. The settlement holds, and the crown gets the
+	# benefit of it at home.
+	option = {
+		name = cc_bonds.90.a
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_subject_loyal_bulwark }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
+	}
+
+	# Press emergency levies. Real manpower now, but you spend the goodwill
+	# instead of banking it: no revolution insurance, and the bond takes damage.
+	option = {
+		name = cc_bonds.90.b
+		cc_bonds_aor_levy_subject = yes
 		if = {
 			limit = { scope:bond_subj = { is_subject_of = root } }
 			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-			}
-		}
-		add_country_modifier = {
-			modifier = cc_subject_loyal_bulwark
-			years = 20
-		}
-	}
-
-	# Formally elevate the colony
-	option = {
-		name = cc_bonds.90.a
-		add_prestige = prestige_mild_bonus
-	}
-
-	# Press emergency levies anyway (relationship damage even in loyalty scenario)
-	option = {
-		name = cc_bonds.90.b
-		add_manpower = { value = scope:bond_subj.monthly_manpower multiply = 6}
-		scope:bond_subj = {
-			add_manpower = { value = scope:bond_subj.monthly_manpower multiply = -6}
-		}
-		if = {
-			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
-			scope:bond_subj = {
-				change_variable = { name = cc_bond_mil  add = -2 }
-				clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+				add_liberty_desire = liberty_desire_mild_minus
+				if = {
+					limit = { has_variable = cc_bond_initialized }
+					change_variable = { name = cc_bond_mil  add = -2 }
+					clamp_variable = { name = cc_bond_mil  max = 5  min = -5 }
+				}
 			}
 		}
 	}
 
-	# Invite them into the Imperial Council
+	# Invite them into the Imperial Council. Structural, and only available to a
+	# bond deep enough to survive the promotion.
 	option = {
 		name = cc_bonds.90.c
 		trigger = {
 			has_advance = federal_constitution_advance
+			var:cc_bond_aor_tier >= 2
 			scope:bond_subj = { is_subject_of = root }
 		}
 		scope:bond_subj = {
 			change_subject_type = subject_type:imperial_council_member
 		}
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_federal_union_solidarity }
+		cc_bonds_aor_suppress_revolution = yes
+	}
+}
+
+# cc_bonds.91 — The Colony Finds Its Voice
+cc_bonds.91 = {
+	type = country_event
+	title = cc_bonds.91.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed } }
+				desc = cc_bonds.91.desc.scholar
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_religion_forced } }
+				desc = cc_bonds.91.desc.faith
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.91.desc.deep
+			}
+			desc = cc_bonds.91.desc
+		}
+	}
+	illustration_tags = { 10 = angry }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Crack down. The colony radicalizes and the argument travels home.
+	option = {
+		name = cc_bonds.91.a
+		cc_bonds_aor_prestige_gain = yes
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_revolutionary_sympathies }
+		cc_bonds_aor_bolster_revolution = yes
+	}
+
+	# Concede. Expensive, late, and it works: the contagion does not reach the
+	# metropole, though the colony keeps what it won.
+	option = {
+		name = cc_bonds.91.b
+		cc_bonds_aor_pay_light = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
 		add_country_modifier = {
-			modifier = cc_federal_union_solidarity
+			modifier = cc_aor_settled_grievance
+			years = 15
+		}
+	}
+
+	# Let them go before the argument crosses the ocean. Only on the worst
+	# relationships, where holding on is the thing that costs you.
+	option = {
+		name = cc_bonds.91.c
+		trigger = {
+			var:cc_bond_aor_tier >= 3
+			scope:bond_subj = { is_subject_of = root }
+		}
+		cancel_subject = scope:bond_subj
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = {
+			modifier = cc_aor_orderly_separation
 			years = 20
 		}
 	}
 }
 
-# cc_bonds.91 — The Colony Finds Its Voice
-# Triggers: colonial_nation with eco <= -2 OR pol <= -2
-cc_bonds.91 = {
-	type = country_event
-	title = cc_bonds.91.title
-	desc = cc_bonds.91.desc
-	illustration_tags = { 10 = angry }
-
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = colonial_nation
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_eco_frozen
-				}
-			}
-			OR = {
-				"variable_map(cc_bond_eco_eff_map|this)" <= -2
-					"variable_map(cc_bond_eco_ltm_min_map|this)" <= -3
-				"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-			}
-			NOT = { has_variable = cc_bond_aor_91_fired }
-		}
-	}
-
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = colonial_nation
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_eco_frozen
-					}
-				}
-				OR = {
-					"variable_map(cc_bond_eco_eff_map|this)" <= -2
-					"variable_map(cc_bond_eco_ltm_min_map|this)" <= -3
-					"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-				}
-				NOT = { has_variable = cc_bond_aor_91_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_91_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_plus
-				add_country_modifier = {
-					modifier = cc_revolutionary_sympathies
-					years = 30
-				}
-			}
-		}
-	}
-
-	# Crack down — more liberty desire, some prestige
-	option = {
-		name = cc_bonds.91.a
-		add_prestige = prestige_weak_bonus
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_mild_plus
-			}
-		}
-	}
-
-	# Last-minute concessions — gold cost, pol gain (may prevent worst outcome)
-	option = {
-		name = cc_bonds.91.b
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.00  min = -250 }
-		if = {
-			limit = { scope:bond_subj = { has_variable = cc_bond_initialized } }
-			scope:bond_subj = {
-				change_variable = { name = cc_bond_pol  add = 3 }
-				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
-			}
-		}
-	}
-}
-
 # cc_bonds.92 — The Governor Stands With the Crown
-# Triggers: provincial_governorate with eco >= 2 AND pol >= 2
 cc_bonds.92 = {
 	type = country_event
 	title = cc_bonds.92.title
-	desc = cc_bonds.92.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_council } }
+				desc = cc_bonds.92.desc.council
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.92.desc.deep
+			}
+			desc = cc_bonds.92.desc
+		}
+	}
 	illustration_tags = { 10 = professional }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = provincial_governorate
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_eco_frozen
-				}
-			}
-			"variable_map(cc_bond_eco_eff_map|this)" >= 2
-			"variable_map(cc_bond_pol_eff_map|this)" >= 2
-			NOT = { has_variable = cc_bond_aor_92_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = provincial_governorate
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_eco_frozen
-					}
-				}
-				"variable_map(cc_bond_eco_eff_map|this)" >= 2
-				"variable_map(cc_bond_pol_eff_map|this)" >= 2
-				NOT = { has_variable = cc_bond_aor_92_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_92_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-				add_country_modifier = {
-					modifier = cc_loyal_governor_support
-					years = 10
-				}
-			}
-		}
-	}
-
+	# Commend him publicly.
 	option = {
 		name = cc_bonds.92.a
-		add_prestige = prestige_mild_bonus
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_loyal_governor_support }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
+	}
+
+	# Put his administration to work on our own provinces. Less recognition for
+	# him, more order at home.
+	option = {
+		name = cc_bonds.92.b
+		trigger = { var:cc_bond_aor_tier >= 2 }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_estate_nudge = { ESTATE = peasants_estate  VALUE = estate_satisfaction_mild_bonus }
+		cc_bonds_aor_estate_nudge = { ESTATE = burghers_estate  VALUE = estate_satisfaction_mild_bonus }
+		add_stability = stability_mild_bonus
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = { add_liberty_desire = liberty_desire_mild_minus }
+		}
 	}
 }
 
 # cc_bonds.93 — The Province Remembers
-# Triggers: provincial_governorate with pol <= -2 OR eco <= -2
 cc_bonds.93 = {
 	type = country_event
 	title = cc_bonds.93.title
-	desc = cc_bonds.93.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_religion_forced } }
+				desc = cc_bonds.93.desc.faith
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.93.desc.deep
+			}
+			desc = cc_bonds.93.desc
+		}
+	}
 	illustration_tags = { 10 = angry }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = provincial_governorate
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_eco_frozen
-				}
-			}
-			OR = {
-				"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-				"variable_map(cc_bond_eco_eff_map|this)" <= -2
-					"variable_map(cc_bond_eco_ltm_min_map|this)" <= -3
-			}
-			NOT = { has_variable = cc_bond_aor_93_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = provincial_governorate
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_eco_frozen
-					}
-				}
-				OR = {
-					"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-					"variable_map(cc_bond_eco_eff_map|this)" <= -2
-					"variable_map(cc_bond_eco_ltm_min_map|this)" <= -3
-				}
-				NOT = { has_variable = cc_bond_aor_93_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_93_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_extreme_plus
-			}
-		}
-	}
-
-	# Try to retain with gold bribe
+	# Pay what it takes to hold the province.
 	option = {
 		name = cc_bonds.93.a
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.75  min = -200 }
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_mild_minus
-				change_variable = { name = cc_bond_eco  add = 1 }
-				clamp_variable = { name = cc_bond_eco  max = 5  min = -5 }
-			}
-		}
+		cc_bonds_aor_pay_light = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
 	}
 
-	# Accept the situation
+	# Hold it by garrison instead. Cheaper in gold, and the province stops
+	# pretending the arrangement is consensual.
 	option = {
 		name = cc_bonds.93.b
+		trigger = { var:cc_bond_aor_tier >= 2 }
+		add_country_modifier = {
+			modifier = cc_aor_martial_law
+			years = 20
+		}
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_revolutionary_sympathies }
+	}
+
+	# Accept the situation.
+	option = {
+		name = cc_bonds.93.c
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_bolster_revolution = yes
 	}
 }
 
 # cc_bonds.94 — The Palatinate Answers the Call
-# Triggers: palatinate with mil >= 2 AND per >= 2
 cc_bonds.94 = {
 	type = country_event
 	title = cc_bonds.94.title
-	desc = cc_bonds.94.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_interregnum } }
+				desc = cc_bonds.94.desc.interregnum
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.94.desc.deep
+			}
+			desc = cc_bonds.94.desc
+		}
+	}
 	illustration_tags = { 10 = army }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = palatinate
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_mil_frozen
-				}
-			}
-			"variable_map(cc_bond_mil_eff_map|this)" >= 2
-			"variable_map(cc_bond_per_eff_map|this)" >= 2
-			NOT = { has_variable = cc_bond_aor_94_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = palatinate
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_mil_frozen
-					}
-				}
-				"variable_map(cc_bond_mil_eff_map|this)" >= 2
-				"variable_map(cc_bond_per_eff_map|this)" >= 2
-				NOT = { has_variable = cc_bond_aor_94_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_94_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-			}
-		}
-		add_manpower = { value = scope:bond_subj.monthly_manpower multiply = 6}
-		scope:bond_subj = {
-			add_manpower = { value = scope:bond_subj.monthly_manpower multiply = -6}
-		}
-	}
-
-	# Accept freely — add cavalry modifier if no interregnum debt
+	# Accept the muster.
 	option = {
 		name = cc_bonds.94.a
-		trigger = {
-			NOT = { scope:bond_subj = { has_variable = cc_bond_mem_interregnum } }
-		}
-		add_country_modifier = {
-			modifier = cc_palatinate_war_banner
-			years = 10
-		}
+		cc_bonds_aor_levy_subject = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_palatinate_war_banner }
+		cc_bonds_aor_suppress_revolution = yes
 	}
 
-	# Interregnum debt — the palatinate wants payment first
+	# Settle the interregnum debt first. It costs, and unlike the old version it
+	# buys more than the free option rather than less: the lord commits fully.
 	option = {
 		name = cc_bonds.94.b
 		trigger = {
 			scope:bond_subj = { has_variable = cc_bond_mem_interregnum }
 		}
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.50  min = -125 }
-		add_country_modifier = {
-			modifier = cc_palatinate_war_banner
-			years = 10
+		cc_bonds_aor_pay_light = yes
+		cc_bonds_aor_levy_subject = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_palatinate_war_banner }
+		cc_bonds_aor_suppress_revolution = yes
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			scope:bond_subj = {
+				add_liberty_desire = liberty_desire_severe_minus
+				if = {
+					limit = { has_variable = cc_bond_initialized }
+					change_variable = { name = cc_bond_per  add = 2 }
+					clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
+				}
+			}
 		}
+	}
+
+	# Take the lord's finest knight into our own army.
+	option = {
+		name = cc_bonds.94.c
+		trigger = { var:cc_bond_aor_tier >= 3 }
+		cc_spawn_noble_commander = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_palatinate_war_banner }
+		cc_bonds_aor_suppress_revolution = yes
 	}
 }
 
 # cc_bonds.95 — The Palatinate Declares Armed Neutrality
-# Triggers: palatinate with pol <= -2 OR per <= -2
 cc_bonds.95 = {
 	type = country_event
 	title = cc_bonds.95.title
-	desc = cc_bonds.95.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_bitter } }
+				desc = cc_bonds.95.desc.fort
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.95.desc.deep
+			}
+			desc = cc_bonds.95.desc
+		}
+	}
 	illustration_tags = { 10 = military }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = palatinate
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_pol_frozen
-				}
-			}
-			OR = {
-				"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-				"variable_map(cc_bond_per_eff_map|this)" <= -2
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-			}
-			NOT = { has_variable = cc_bond_aor_95_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = palatinate
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_pol_frozen
-					}
-				}
-				OR = {
-					"variable_map(cc_bond_pol_eff_map|this)" <= -2
-					"variable_map(cc_bond_pol_ltm_min_map|this)" <= -3
-					"variable_map(cc_bond_per_eff_map|this)" <= -2
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-				}
-				NOT = { has_variable = cc_bond_aor_95_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_95_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_country_modifier = {
-					modifier = cc_palatinate_neutrality
-					years = 10
-				}
-				add_liberty_desire = liberty_desire_severe_plus
-			}
-		}
-	}
-
-	# Accept neutrality — no further damage
+	# Accept the declaration. Neutrality contains the damage: no contagion home.
 	option = {
 		name = cc_bonds.95.a
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_palatinate_neutrality }
+		cc_bonds_aor_ld_spike = yes
 	}
 
-	# Demand service by force — triggers independence war risk
+	# Buy the lord back. Only worth attempting before the breach is total.
 	option = {
 		name = cc_bonds.95.b
+		trigger = { var:cc_bond_aor_tier <= 2 }
+		cc_bonds_aor_pay_heavy = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
+	}
+
+	# Demand service by force.
+	option = {
+		name = cc_bonds.95.c
 		add_prestige = prestige_mild_bonus
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_plus
-				add_country_modifier = {
-					modifier = cc_armed_independence_modifier
-					years = 20
-				}
-			}
-		}
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_armed_independence_modifier }
+		cc_bonds_aor_bolster_revolution = yes
 	}
 }
 
 # cc_bonds.96 — The March Holds the Frontier
-# Triggers: military_march with mil >= 2 AND per >= 2
 cc_bonds.96 = {
 	type = country_event
 	title = cc_bonds.96.title
-	desc = cc_bonds.96.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:bond_subj = {
+						has_variable = cc_bond_mem_ward_hostage
+						has_variable = cc_bond_mem_heir_disposition_loyal
+					}
+				}
+				desc = cc_bonds.96.desc.ward
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_funded } }
+				desc = cc_bonds.96.desc.fort
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.96.desc.deep
+			}
+			desc = cc_bonds.96.desc
+		}
+	}
 	illustration_tags = { 10 = military }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = military_march
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_mil_frozen
-				}
-			}
-			"variable_map(cc_bond_mil_eff_map|this)" >= 2
-			"variable_map(cc_bond_per_eff_map|this)" >= 2
-			NOT = { has_variable = cc_bond_aor_96_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = military_march
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_mil_frozen
-					}
-				}
-				"variable_map(cc_bond_mil_eff_map|this)" >= 2
-				"variable_map(cc_bond_per_eff_map|this)" >= 2
-				NOT = { has_variable = cc_bond_aor_96_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_96_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-			}
-		}
-		add_country_modifier = {
-			modifier = cc_march_frontier_defense
-			years = 15
-		}
-	}
-
-	# Standard — accept the march's loyalty
+	# Acknowledge the march lord's service.
 	option = {
 		name = cc_bonds.96.a
-		trigger = {
-			NOT = { scope:bond_subj = { has_variable = cc_bond_mem_ward_hostage } }
-		}
-		add_prestige = prestige_mild_bonus
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_march_frontier_defense }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
 	}
 
-	# Ward returns — special flavor if heir was sent to court
+	# The ward we raised comes back to command his father's forces. Previously
+	# this option was mechanically identical to the one above; it now delivers the
+	# commander the whole chain was building toward.
 	option = {
 		name = cc_bonds.96.b
 		trigger = {
-			scope:bond_subj = { has_variable = cc_bond_mem_ward_hostage }
+			scope:bond_subj = {
+				has_variable = cc_bond_mem_ward_hostage
+				has_variable = cc_bond_mem_heir_disposition_loyal
+			}
 		}
-		add_prestige = prestige_mild_bonus
+		cc_spawn_noble_commander = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_march_frontier_defense }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
 	}
 }
 
 # cc_bonds.97 — The March Lord Raises His Own Banner
-# Triggers: military_march with mil <= -2 OR per <= -3
 cc_bonds.97 = {
 	type = country_event
 	title = cc_bonds.97.title
-	desc = cc_bonds.97.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:bond_subj = {
+						has_variable = cc_bond_mem_ward_hostage
+						has_variable = cc_bond_mem_heir_disposition_hostile
+					}
+				}
+				desc = cc_bonds.97.desc.ward
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_fort_legacy_bitter } }
+				desc = cc_bonds.97.desc.fort
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.97.desc.deep
+			}
+			desc = cc_bonds.97.desc
+		}
+	}
 	illustration_tags = { 10 = military }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = military_march
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_mil_frozen
-				}
-			}
-			OR = {
-				"variable_map(cc_bond_mil_eff_map|this)" <= -2
-					"variable_map(cc_bond_mil_ltm_min_map|this)" <= -3
-				"variable_map(cc_bond_per_eff_map|this)" <= -3
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-			}
-			NOT = { has_variable = cc_bond_aor_97_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = military_march
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_mil_frozen
-					}
-				}
-				OR = {
-					"variable_map(cc_bond_mil_eff_map|this)" <= -2
-					"variable_map(cc_bond_mil_ltm_min_map|this)" <= -3
-					"variable_map(cc_bond_per_eff_map|this)" <= -3
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-				}
-				NOT = { has_variable = cc_bond_aor_97_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_97_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_plus
-				add_country_modifier = {
-					modifier = cc_armed_independence_modifier
-					years = 20
-				}
-			}
-		}
-	}
-
-	# Negotiate — costly gold, pol recovery
+	# Send terms. Expensive, and it keeps the frontier attached.
 	option = {
 		name = cc_bonds.97.a
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.75  min = -200 }
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_mild_minus
-				change_variable = { name = cc_bond_pol  add = 2 }
-				clamp_variable = { name = cc_bond_pol  max = 5  min = -5 }
-				change_variable = { name = cc_bond_per  add = 2 }
-				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
-			}
-		}
+		cc_bonds_aor_pay_heavy = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
 	}
 
-	# Crush them — they fight well; this will be costly
+	# Put him down. He knows the ground; this will not be quick.
 	option = {
 		name = cc_bonds.97.b
 		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_aor_frontier_war_effort
+			years = 15
+		}
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_armed_independence_modifier }
+		cc_bonds_aor_bolster_revolution = yes
+	}
+
+	# Cut him loose and let the age have him. The most extreme outcome in the
+	# system: a trained frontier army becomes a revolutionary state on our border.
+	option = {
+		name = cc_bonds.97.c
+		trigger = {
+			var:cc_bond_aor_tier >= 3
+			scope:bond_subj = { is_subject_of = root }
+		}
+		cancel_subject = scope:bond_subj
+		scope:bond_subj = {
+			change_government_type = government_type:republic
+			set_revolution = yes
+			add_country_modifier = {
+				modifier = cc_armed_independence_modifier
+				years = 30
+			}
+		}
+		add_prestige = prestige_severe_penalty
+		cc_bonds_aor_bolster_revolution = yes
 	}
 }
 
 # cc_bonds.98 — The Dependency Stands True
-# Triggers: crown_dependency with per >= 2
 cc_bonds.98 = {
 	type = country_event
 	title = cc_bonds.98.title
-	desc = cc_bonds.98.desc
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.98.desc.deep
+			}
+			desc = cc_bonds.98.desc
+		}
+	}
 	illustration_tags = { 10 = happy }
 
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = crown_dependency
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_per_frozen
-				}
-			}
-			"variable_map(cc_bond_per_eff_map|this)" >= 2
-			NOT = { has_variable = cc_bond_aor_98_fired }
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = crown_dependency
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_per_frozen
-					}
-				}
-				"variable_map(cc_bond_per_eff_map|this)" >= 2
-				NOT = { has_variable = cc_bond_aor_98_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_98_fired  value = yes }
-		}
-		add_prestige = prestige_severe_bonus
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-			}
-		}
-	}
-
+	# Answer in kind.
 	option = {
 		name = cc_bonds.98.a
-		add_prestige = prestige_weak_bonus
+		cc_bonds_aor_prestige_gain = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_suppress_revolution = yes
+	}
+
+	# Ask the house to speak for us in the courts that are watching.
+	option = {
+		name = cc_bonds.98.b
+		trigger = { var:cc_bond_aor_tier >= 2 }
+		add_country_modifier = {
+			modifier = cc_aor_dependency_advocacy
+			years = 20
+		}
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_suppress_revolution = yes
 	}
 }
 
 # cc_bonds.99 — The Dependency Looks Elsewhere
-# Triggers: crown_dependency with per <= -3
+# The old gate here required per_eff <= -3 AND per_ltm_min <= -3, because the two
+# conditions were written bare rather than inside an OR block the way every other
+# hostile payoff wrote them. The shared cc_bonds_aor_hostile_gate now supplies the
+# intended OR.
 cc_bonds.99 = {
 	type = country_event
 	title = cc_bonds.99.title
-	desc = cc_bonds.99.desc
-	illustration_tags = {  }
-
-	trigger = {
-		has_game_rule = cc_subject_bonds_on
-		current_age = age_6_revolutions
-		any_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			OR = {
-				AND = {
-					is_subject_of = root
-					is_subject_type = crown_dependency
-				}
-				AND = {
-					NOT = { is_subject_of = root }
-					has_variable = cc_bond_per_frozen
-				}
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.99.desc.deep
 			}
-			"variable_map(cc_bond_per_eff_map|this)" <= -3
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-			NOT = { has_variable = cc_bond_aor_99_fired }
+			desc = cc_bonds.99.desc
 		}
 	}
+	illustration_tags = { }
 
-	immediate = {
-		random_key_in_variable_map = {
-			variable = cc_subject_registry_map
-			limit = {
-				OR = {
-					AND = {
-						is_subject_of = root
-						is_subject_type = crown_dependency
-					}
-					AND = {
-						NOT = { is_subject_of = root }
-						has_variable = cc_bond_per_frozen
-					}
-				}
-				"variable_map(cc_bond_per_eff_map|this)" <= -3
-					"variable_map(cc_bond_per_ltm_min_map|this)" <= -3
-				NOT = { has_variable = cc_bond_aor_99_fired }
-			}
-			save_scope_as = bond_subj
-		}
-		scope:bond_subj = {
-			set_variable = { name = cc_bond_aor_99_fired  value = yes }
-		}
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_extreme_plus
-			}
-		}
-		add_country_modifier = {
-			modifier = cc_abandoned_by_dependency
-			years = 10
-		}
-	}
+	trigger = { exists = scope:bond_subj }
 
-	# Offer lavish concessions — last chance
+	# Offer everything we should have offered years ago.
 	option = {
 		name = cc_bonds.99.a
-		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.00  min = -250 }
-		if = {
-			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_severe_minus
-				change_variable = { name = cc_bond_per  add = 3 }
-				clamp_variable = { name = cc_bond_per  max = 5  min = -5 }
-			}
-		}
+		cc_bonds_aor_pay_heavy = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
 	}
 
-	# Let them go gracefully
+	# Let them go gracefully. Costs standing, but a managed parting is not a
+	# revolutionary one.
 	option = {
 		name = cc_bonds.99.b
-		add_prestige = prestige_weak_penalty
-	}
-
-	# Threaten them — independence war
-	option = {
-		name = cc_bonds.99.c
 		if = {
 			limit = { scope:bond_subj = { is_subject_of = root } }
-			scope:bond_subj = {
-				add_liberty_desire = liberty_desire_extreme_plus
-				add_country_modifier = {
-					modifier = cc_armed_independence_modifier
-					years = 15
-				}
-			}
+			cancel_subject = scope:bond_subj
 		}
+		add_country_modifier = {
+			modifier = cc_aor_orderly_separation
+			years = 20
+		}
+	}
+
+	# Refuse them the choice.
+	option = {
+		name = cc_bonds.99.c
+		add_country_modifier = {
+			modifier = cc_abandoned_by_dependency
+			years = 15
+		}
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_armed_independence_modifier }
+		cc_bonds_aor_bolster_revolution = yes
 	}
 }

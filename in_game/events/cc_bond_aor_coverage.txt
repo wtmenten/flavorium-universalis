@@ -1,0 +1,292 @@
+﻿
+namespace = cc_bonds
+
+###############################################################################
+# Age of Revolutions Payoff Events — cc_bonds.150-155
+#
+# Coverage for the three gaps in the original payoff set:
+#  150/151 puppet_state, which had a full seven-event chain (cc_bonds.40-46) and
+#          no terminal event at all.
+#  152/153 imperial_council_member, which three separate payoff options promote
+#          into and which previously terminated in nothing, making the promotion
+#          read as a dead end.
+#  154/155 the cul dimension, which is tracked, driven by religion changes,
+#          forced-conversion detection, assimilation events and institution flow,
+#          and was read by none of the payoffs.
+#
+# Same contract as cc_bond_aor.txt: fired by cc_bonds_aor_pulse with
+# scope:bond_subj selected and var:cc_bond_aor_tier already graded.
+###############################################################################
+
+# cc_bonds.150 — The Client Regime Holds
+cc_bonds.150 = {
+	type = country_event
+	title = cc_bonds.150.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.150.desc.deep
+			}
+			desc = cc_bonds.150.desc
+		}
+	}
+	illustration_tags = { 10 = interior }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Keep the arrangement exactly as it is.
+	option = {
+		name = cc_bonds.150.a
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_subject_loyal_bulwark }
+		cc_bonds_aor_suppress_revolution = yes
+	}
+
+	# Put the regime on a formal footing so it survives without our garrison.
+	option = {
+		name = cc_bonds.150.b
+		trigger = {
+			var:cc_bond_aor_tier >= 2
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:imperial_council_member
+		}
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
+	}
+}
+
+# cc_bonds.151 — The Client Regime Falls
+cc_bonds.151 = {
+	type = country_event
+	title = cc_bonds.151.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed } }
+				desc = cc_bonds.151.desc.scholar
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.151.desc.deep
+			}
+			desc = cc_bonds.151.desc
+		}
+	}
+	illustration_tags = { 10 = angry }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Prop the regime back up.
+	option = {
+		name = cc_bonds.151.a
+		cc_bonds_aor_pay_heavy = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
+	}
+
+	# Install a new one by force.
+	option = {
+		name = cc_bonds.151.b
+		add_prestige = prestige_weak_bonus
+		add_country_modifier = {
+			modifier = cc_aor_martial_law
+			years = 20
+		}
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_revolutionary_sympathies }
+		cc_bonds_aor_bolster_revolution = yes
+	}
+
+	# Disown it. The client was never worth the credibility it cost.
+	option = {
+		name = cc_bonds.151.c
+		if = {
+			limit = { scope:bond_subj = { is_subject_of = root } }
+			cancel_subject = scope:bond_subj
+		}
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = {
+			modifier = cc_aor_orderly_separation
+			years = 20
+		}
+	}
+}
+
+# cc_bonds.152 — The Council Seat Proves Its Worth
+cc_bonds.152 = {
+	type = country_event
+	title = cc_bonds.152.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.152.desc.deep
+			}
+			desc = cc_bonds.152.desc
+		}
+	}
+	illustration_tags = { 10 = interior }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Let the council carry the settlement.
+	option = {
+		name = cc_bonds.152.a
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_federal_union_solidarity }
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
+	}
+
+	# Raise the member to a full federal partner.
+	option = {
+		name = cc_bonds.152.b
+		trigger = {
+			var:cc_bond_aor_tier >= 2
+			has_advance = federal_constitution_advance
+			scope:bond_subj = { is_subject_of = root }
+		}
+		scope:bond_subj = {
+			change_subject_type = subject_type:equal_federal_member
+		}
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_federal_union_solidarity }
+		cc_bonds_aor_suppress_revolution = yes
+	}
+}
+
+# cc_bonds.153 — The Council Seat Was Never Enough
+cc_bonds.153 = {
+	type = country_event
+	title = cc_bonds.153.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.153.desc.deep
+			}
+			desc = cc_bonds.153.desc
+		}
+	}
+	illustration_tags = { 10 = angry }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Widen the seat into a real share of power.
+	option = {
+		name = cc_bonds.153.a
+		cc_bonds_aor_pay_heavy = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
+		if = {
+			limit = {
+				has_advance = federal_constitution_advance
+				scope:bond_subj = { is_subject_of = root }
+			}
+			scope:bond_subj = {
+				change_subject_type = subject_type:equal_federal_member
+			}
+		}
+	}
+
+	# Remind them what the seat was: a courtesy, not a right.
+	option = {
+		name = cc_bonds.153.b
+		add_prestige = prestige_weak_bonus
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_revolutionary_sympathies }
+		cc_bonds_aor_bolster_revolution = yes
+	}
+}
+
+# cc_bonds.154 — One Nation, Two Languages
+# The cul payoff. Fires for a subject whose culture differed from ours at the
+# start and which came through the assimilation question intact.
+cc_bonds.154 = {
+	type = country_event
+	title = cc_bonds.154.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_legacy_aligned } }
+				desc = cc_bonds.154.desc.scholar
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.154.desc.deep
+			}
+			desc = cc_bonds.154.desc
+		}
+	}
+	illustration_tags = { 10 = regular }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Let the settlement stand as it is.
+	option = {
+		name = cc_bonds.154.a
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_prestige_gain = yes
+	}
+
+	# Commit it to law, at the cost of the estates that resent it.
+	option = {
+		name = cc_bonds.154.b
+		trigger = { var:cc_bond_aor_tier >= 2 }
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_suppress_revolution = yes
+		cc_bonds_aor_tiered_modifier = { MOD = cc_federal_union_solidarity }
+		cc_bonds_aor_estate_nudge = { ESTATE = nobles_estate  VALUE = estate_satisfaction_mild_penalty }
+		add_stability = stability_mild_bonus
+	}
+}
+
+# cc_bonds.155 — The Old Language Comes Back
+cc_bonds.155 = {
+	type = country_event
+	title = cc_bonds.155.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_religion_forced } }
+				desc = cc_bonds.155.desc.faith
+			}
+			triggered_desc = {
+				trigger = { scope:bond_subj = { has_variable = cc_bond_mem_scholar_suppressed } }
+				desc = cc_bonds.155.desc.scholar
+			}
+			triggered_desc = {
+				trigger = { var:cc_bond_aor_tier >= 3 }
+				desc = cc_bonds.155.desc.deep
+			}
+			desc = cc_bonds.155.desc
+		}
+	}
+	illustration_tags = { 10 = angry }
+
+	trigger = { exists = scope:bond_subj }
+
+	# Repeal the assimilation statutes.
+	option = {
+		name = cc_bonds.155.a
+		cc_bonds_aor_pay_light = yes
+		cc_bonds_aor_ld_relief = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_aor_settled_grievance }
+		cc_bonds_aor_estate_nudge = { ESTATE = clergy_estate  VALUE = estate_satisfaction_mild_penalty }
+	}
+
+	# Enforce them harder.
+	option = {
+		name = cc_bonds.155.b
+		add_prestige = prestige_weak_bonus
+		cc_bonds_aor_ld_spike = yes
+		cc_bonds_aor_tiered_modifier_subject = { MOD = cc_revolutionary_sympathies }
+		cc_bonds_aor_bolster_revolution = yes
+	}
+}

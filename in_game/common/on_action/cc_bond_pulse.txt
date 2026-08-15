@@ -14,26 +14,6 @@
 yearly_country_pulse = {
 	events = {
 		cc_bonds.1		# Hidden monitor (10-year cycle)
-
-		# AoR Payoff events — one-shot guards on each
-		cc_bonds.90
-		cc_bonds.91
-		cc_bonds.92
-		cc_bonds.93
-		cc_bonds.94
-		cc_bonds.95
-		cc_bonds.96
-		cc_bonds.97
-		cc_bonds.98
-		cc_bonds.99
-
-		# AoR Federal Payoff events
-		cc_bonds.140
-		cc_bonds.141
-		cc_bonds.142
-		cc_bonds.143
-		cc_bonds.144
-		cc_bonds.145
 	}
 
 	on_actions = {
@@ -46,6 +26,83 @@ yearly_country_pulse = {
 		cc_bonds_dependency_pulse
 		cc_bonds_march_pulse
 		cc_bonds_narrative_pulse
+		cc_bonds_aor_pulse
+	}
+}
+
+###############################################################################
+# AGE OF REVOLUTIONS PAYOFF DISPATCH
+#
+# The payoffs used to sit in the events = {} list above with no mutual cooldown,
+# so an empire with a dozen tracked subjects could resolve most of its subject
+# relationships in the single year the age turned over. They now run through one
+# dispatcher that resolves at most one payoff per window.
+#
+# The dispatcher also does the selection and the grading, rather than each event
+# doing its own: a payoff's triggered_desc is evaluated BEFORE its immediate
+# block runs, so scope:bond_subj and cc_bond_aor_tier have to already exist by
+# the time the event is triggered.
+#
+# Hostile poles are attempted ahead of loyal ones so the empire's worst
+# relationship is the one that surfaces first. Within a pole the candidate is
+# picked at random rather than by severity, because ordered_key_in_variable_map's
+# order_by is evaluated in the key's scope and the score maps live on the
+# overlord.
+#
+# cc_bond_aor_cd doubles as the "something already fired this pass" guard, so
+# each try self-guards and no separate latch is needed.
+###############################################################################
+
+cc_bonds_aor_pulse = {
+	effect = {
+		if = {
+			limit = {
+				has_game_rule = cc_subject_bonds_on
+				current_age = age_6_revolutions
+			}
+
+			# One-time arming. Puts a jittered 5-15 year delay on the first payoff so
+			# they do not all land on the age boundary in 1737.
+			if = {
+				limit = { NOT = { has_variable = cc_bond_aor_armed } }
+				set_variable = { name = cc_bond_aor_armed  value = yes }
+				random_list = {
+					33 = { set_variable = { name = cc_bond_aor_cd  value = yes  years = 5 } }
+					34 = { set_variable = { name = cc_bond_aor_cd  value = yes  years = 10 } }
+					33 = { set_variable = { name = cc_bond_aor_cd  value = yes  years = 15 } }
+				}
+			}
+
+			# --- Hostile poles ---
+			cc_bonds_aor_try_hostile = { ID = 91   TYPE = colonial_nation         DIMA = eco  DIMB = pol  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 93   TYPE = provincial_governorate  DIMA = pol  DIMB = eco  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 95   TYPE = palatinate              DIMA = pol  DIMB = per  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 97   TYPE = military_march          DIMA = mil  DIMB = per  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 99   TYPE = crown_dependency        DIMA = per  DIMB = per  MAX = -3 }
+			cc_bonds_aor_try_hostile = { ID = 151  TYPE = puppet_state            DIMA = pol  DIMB = per  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 153  TYPE = imperial_council_member DIMA = pol  DIMB = per  MAX = -2 }
+			cc_bonds_aor_try_hostile = { ID = 141  TYPE = equal_federal_member    DIMA = pol  DIMB = per  MAX = -3 }
+			cc_bonds_aor_try_hostile = { ID = 143  TYPE = false_federal_member    DIMA = eco  DIMB = pol  MAX = -2 }
+			cc_bonds_aor_try_cul_hostile = { ID = 155 }
+
+			# --- Loyal poles ---
+			cc_bonds_aor_try_loyal = { ID = 90   TYPE = colonial_nation         DIMA = eco  DIMB = pol  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 92   TYPE = provincial_governorate  DIMA = eco  DIMB = pol  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 94   TYPE = palatinate              DIMA = mil  DIMB = per  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 96   TYPE = military_march          DIMA = mil  DIMB = per  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 98   TYPE = crown_dependency        DIMA = per  DIMB = per  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 150  TYPE = puppet_state            DIMA = pol  DIMB = per  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 152  TYPE = imperial_council_member DIMA = pol  DIMB = per  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 140  TYPE = equal_federal_member    DIMA = pol  DIMB = per  MIN = 3 }
+			cc_bonds_aor_try_loyal = { ID = 142  TYPE = lesser_federal_member   DIMA = pol  DIMB = eco  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 145  TYPE = client_state            DIMA = eco  DIMB = pol  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 145  TYPE = shadow_state            DIMA = eco  DIMB = pol  MIN = 2 }
+			cc_bonds_aor_try_loyal = { ID = 145  TYPE = chartered_company       DIMA = eco  DIMB = pol  MIN = 2 }
+			cc_bonds_aor_try_cul_loyal = { ID = 154 }
+			# Last, and at a higher bar than cc_bonds.90: the colony that has earned a
+			# seat rather than merely stayed quiet.
+			cc_bonds_aor_try_loyal = { ID = 144  TYPE = colonial_nation         DIMA = pol  DIMB = per  MIN = 3 }
+		}
 	}
 }
 

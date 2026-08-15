@@ -55,6 +55,7 @@ Flavorium Universalis enhances the vanilla EUV experience across multiple areas:
     * Low-antagonism, low-control subjects for steadily expanding influence over foreign states (similar to a Victoria 3 protectorate-to-puppet progression).
     * Late-game subjects for organizing large empires and defining a sphere of influence.
     * **NEW:** Long-term subjects remember how you treated them. A bond system tracks economic, military, political, cultural, and personal relationships across the Ages, which sets how your subjects behave in the Age of Revolutions.
+    * **NEW:** That memory now decides whether the revolution comes for you. Loyal subjects grant stability and estate satisfaction and can block the revolution disaster outright; estranged ones loosen its start conditions and spawn sympathy revolts at home. Payoffs are graded into three outcome bands and read the specific decisions you made, down to whether you funded a fortress or silenced a scholar.
   * Age-specific advances give regions, cultures, religions, and the Adm/Dip/Mil age-branches more choices: catch-up opportunities and playstyle specialization as you play through the ages.
     * Many unlocks are placed into the existing tech tree.
     * New micro-tech trees unlock from the Age of Discovery onward. They are branch- and region-locked, and some stay hidden until you meet the conditions.
@@ -500,7 +501,19 @@ Long-term subjects keep a **relationship history**. A five-part bond system trac
   
 Bond scores accumulate silently through event chains specific to each subject type (colonial nations, governorates, palatinates, puppets, dependencies, marches, federal subjects). Periodic **status reveal events** show what your subjects think of you.  
   
-In the **Age of Revolutions** , accumulated bond scores resolve into **one-shot payoff events**. Subjects with high bonds become steady partners, while those with poor bonds may push for independence, defect to rivals, or demand constitutional concessions.  
+Your subjects also remember **specific decisions** , not just running totals. A granted colonial assembly, a funded frontier fortress, an heir raised at your court, a suppressed scholar, a forced conversion, a denied merchant: each is recorded, and each carries weight when the reckoning comes.  
+  
+**The Age of Revolutions reckoning**  
+  
+Accumulated bonds resolve into **one-shot payoff events** , graded into three outcome bands from the weaker of the two dimensions each payoff reads, escalated by the worst the relationship ever got and by any standing record of fighting you. Banked goodwill or accumulated grievance can move an outcome a full band in either direction.  
+
+
+  * **Loyal outcomes suppress the revolution:** estate satisfaction and stability grants that move the conditions vanilla's revolution disaster actually checks. The deepest bonds block that disaster outright for 25 years.
+  * **Hostile outcomes bolster it:** the worst relationships loosen the revolution's start conditions across your whole realm, and the most extreme ones spawn sympathy revolts in your own capital region.
+  * **The dramatic endings:** a deeply estranged military march can be cut loose to become a revolutionary republic on your border, fielding the army you trained. A colony that earned a voice can be raised to a full federal partner instead.
+
+  
+Payoffs resolve one at a time across the age rather than all at once, worst relationships first, so each one reads as a set piece.  
   
 Gated by the **C &C: Overlord-Subject Bonds** game rule (default: on).  
   
@@ -906,9 +919,9 @@ cc_hyw| 11| Hundred Years War flavor: FRA/ENG war outcomes, observer reactions, 
   
 cc_personality| 18| Dynamic AI personality inflection events at key historical turning points  
   
-cc_bonds| 110| Overlord-subject bond system: per-type chain events, monitor, status reveals, AoR payoffs  
+cc_bonds| 116| Overlord-subject bond system: per-type chain events, monitor, status reveals, AoR payoffs  
   
-cc_rival| 4| Court rivalry escalation: minister complaint → letter unsealed → faction hardens  
+cc_rival| 5| Court rivalry escalation: minister complaint → letter unsealed → faction hardens  
   
 cc_cabal| 3| Cabinet alliance formation: alliance forms → joint reform proposal  
   
@@ -928,11 +941,11 @@ cc| 76| Protectorate & holy protectorate chains: ward maturation, diplomatic inc
   
 cc_invasion_mexico| 28| Mexican Conquest situation: expedition decisions, Mesoamerican reactions, confederation events, conquest resolution  
   
-cc_balance_of_power| 52| European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings  
+cc_balance_of_power| 54| European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings  
   
   
   
- _~494 events total_  
+ _~503 events total_  
   
 
 

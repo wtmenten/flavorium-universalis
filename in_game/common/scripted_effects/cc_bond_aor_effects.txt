@@ -1,0 +1,554 @@
+﻿###############################################################################
+# Age of Revolutions Payoffs — shared grading, memory and revolution effects
+#
+# Grading runs in the PULSE (cc_bonds_aor_pulse), not in the event, because a
+# payoff's triggered_desc is evaluated before its immediate block runs. The pulse
+# picks the subject, grades it, then fires the event, so both the description and
+# the options can branch on the result.
+#
+# All of these run in OVERLORD scope (root = overlord) with the graded subject
+# saved as scope:bond_subj, and write these variables on the overlord:
+#
+#   cc_bond_aor_band      the weaker of the two effective scores read
+#   cc_bond_aor_mem_raw   summed weight of the accumulated memory flags
+#   cc_bond_aor_mem       memory as a tier shift (-1 / 0 / +1)
+#   cc_bond_aor_tier      final outcome band, 1 (modest) to 3 (decisive)
+#
+# Tier 1 is local and reversible, tier 2 is roughly the payload the payoffs used
+# to deliver unconditionally, tier 3 reaches into vanilla's revolution machinery.
+###############################################################################
+
+###############################################################################
+# DISPATCH
+#
+# Called in overlord scope from cc_bonds_aor_pulse. Each try self-guards on
+# cc_bond_aor_cd, which the previous successful try sets, so at most one payoff
+# resolves per pass and no separate latch variable is needed.
+#
+# The four-year cooldown paces the rest across the age: an empire with a dozen
+# tracked subjects gets a sequence of set-pieces rather than a wall of popups.
+###############################################################################
+
+cc_bonds_aor_fire = {
+	scope:bond_subj = {
+		set_variable = { name = cc_bond_aor_$ID$_fired  value = yes }
+	}
+	set_variable = { name = cc_bond_aor_cd  value = yes  years = 4 }
+	trigger_event_non_silently = cc_bonds.$ID$
+}
+
+cc_bonds_aor_try_loyal = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_bond_aor_cd }
+			any_key_in_variable_map = {
+				variable = cc_subject_registry_map
+				cc_bonds_aor_candidate = { TYPE = $TYPE$  ID = $ID$ }
+				cc_bonds_aor_loyal_gate = { DIMA = $DIMA$  DIMB = $DIMB$  MIN = $MIN$ }
+			}
+		}
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				cc_bonds_aor_candidate = { TYPE = $TYPE$  ID = $ID$ }
+				cc_bonds_aor_loyal_gate = { DIMA = $DIMA$  DIMB = $DIMB$  MIN = $MIN$ }
+			}
+			save_scope_as = bond_subj
+		}
+		cc_bonds_aor_grade_loyal = { DIMA = $DIMA$  DIMB = $DIMB$ }
+		cc_bonds_aor_fire = { ID = $ID$ }
+	}
+}
+
+cc_bonds_aor_try_hostile = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_bond_aor_cd }
+			any_key_in_variable_map = {
+				variable = cc_subject_registry_map
+				cc_bonds_aor_candidate = { TYPE = $TYPE$  ID = $ID$ }
+				cc_bonds_aor_hostile_gate = { DIMA = $DIMA$  DIMB = $DIMB$  MAX = $MAX$ }
+			}
+		}
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				cc_bonds_aor_candidate = { TYPE = $TYPE$  ID = $ID$ }
+				cc_bonds_aor_hostile_gate = { DIMA = $DIMA$  DIMB = $DIMB$  MAX = $MAX$ }
+			}
+			save_scope_as = bond_subj
+		}
+		cc_bonds_aor_grade_hostile = { DIMA = $DIMA$  DIMB = $DIMB$ }
+		cc_bonds_aor_fire = { ID = $ID$ }
+	}
+}
+
+# Cultural pole. Not tied to a subject type, so it uses its own candidate check.
+cc_bonds_aor_try_cul_loyal = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_bond_aor_cd }
+			any_key_in_variable_map = {
+				variable = cc_subject_registry_map
+				cc_bonds_aor_cul_candidate = { ID = $ID$ }
+				cc_bonds_aor_loyal_gate = { DIMA = cul  DIMB = cul  MIN = 3 }
+			}
+		}
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				cc_bonds_aor_cul_candidate = { ID = $ID$ }
+				cc_bonds_aor_loyal_gate = { DIMA = cul  DIMB = cul  MIN = 3 }
+			}
+			save_scope_as = bond_subj
+		}
+		cc_bonds_aor_grade_loyal = { DIMA = cul  DIMB = cul }
+		cc_bonds_aor_fire = { ID = $ID$ }
+	}
+}
+
+cc_bonds_aor_try_cul_hostile = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_bond_aor_cd }
+			any_key_in_variable_map = {
+				variable = cc_subject_registry_map
+				cc_bonds_aor_cul_candidate = { ID = $ID$ }
+				cc_bonds_aor_hostile_gate = { DIMA = cul  DIMB = cul  MAX = -3 }
+			}
+		}
+		random_key_in_variable_map = {
+			variable = cc_subject_registry_map
+			limit = {
+				cc_bonds_aor_cul_candidate = { ID = $ID$ }
+				cc_bonds_aor_hostile_gate = { DIMA = cul  DIMB = cul  MAX = -3 }
+			}
+			save_scope_as = bond_subj
+		}
+		cc_bonds_aor_grade_hostile = { DIMA = cul  DIMB = cul }
+		cc_bonds_aor_fire = { ID = $ID$ }
+	}
+}
+
+###############################################################################
+# BAND — the weaker leg of the relationship
+###############################################################################
+
+# Lower of two effective scores for scope:bond_subj. A relationship is only as
+# strong as its weaker dimension, so a colony with fine trade and no political
+# voice does not read as loyal. Single-dimension payoffs pass the same key twice.
+cc_bonds_aor_band_min = {
+	set_variable = { name = cc_bond_aor_band  value = "variable_map(cc_bond_$DIMA$_eff_map|scope:bond_subj)" }
+	if = {
+		limit = { "variable_map(cc_bond_$DIMB$_eff_map|scope:bond_subj)" < var:cc_bond_aor_band }
+		set_variable = { name = cc_bond_aor_band  value = "variable_map(cc_bond_$DIMB$_eff_map|scope:bond_subj)" }
+	}
+}
+
+###############################################################################
+# MEMORY VERDICT
+#
+# The chain events accumulate roughly thirty cc_bond_mem_* flags across a
+# campaign, each one a decision the player actually made. Before this, the
+# payoffs read exactly two of them, and one of those changed nothing. This folds
+# the lot into a single weighted verdict so the terminal event can differ because
+# of what happened, not only because of where a number landed.
+#
+# Most flags live on the subject. The merchant chain (chain B) stamps its flags
+# on the OVERLORD instead, with cc_bond_chain_b_subj recording who the chain was
+# about, so those are only counted when the chain concerned this subject.
+###############################################################################
+
+# Add $W$ to the running memory score if the subject carries $FLAG$.
+cc_bonds_aor_mem_subj = {
+	if = {
+		limit = { scope:bond_subj = { has_variable = $FLAG$ } }
+		change_variable = { name = cc_bond_aor_mem_raw  add = $W$ }
+	}
+}
+
+# Same, for the overlord-side merchant chain flags, attributed by chain subject.
+cc_bonds_aor_mem_chain_b = {
+	if = {
+		limit = {
+			has_variable = $FLAG$
+			has_variable = cc_bond_chain_b_subj
+			var:cc_bond_chain_b_subj = scope:bond_subj
+		}
+		change_variable = { name = cc_bond_aor_mem_raw  add = $W$ }
+	}
+}
+
+cc_bonds_aor_memory_verdict = {
+	set_variable = { name = cc_bond_aor_mem_raw  value = 0 }
+
+	# --- Investment honoured ---
+	# The colonial assembly is the single best predictor that a colony sits out
+	# the revolutionary wave, so it carries the most weight on its own.
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_voice_granted           W = 2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_council                 W = 1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_funded             W = 1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_legacy_positive    W = 2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_partial            W = 1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_heir_disposition_loyal  W = 2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_heir_gifted             W = 1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_scholar_legacy_aligned  W = 1 }
+
+	# --- Grievance kept ---
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_denied              W = -1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_ignored             W = -1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_fort_legacy_bitter       W = -2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_heir_disposition_hostile W = -2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_religion_forced          W = -2 }
+	# A suppressed scholar during the Enlightenment is precisely the pamphleteer
+	# the hostile payoff text has always claimed and never modelled.
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_scholar_suppressed       W = -2 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_scholar_legacy_contested W = -1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_scholar_legacy_counter   W = -1 }
+	cc_bonds_aor_mem_subj = { FLAG = cc_bond_mem_interregnum              W = -1 }
+
+	# --- Merchant chain (overlord-side flags) ---
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_merchant_patronized W = 1 }
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_merchant_backed     W = 1 }
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_merchant_allowed    W = 1 }
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_crisis_managed      W = 1 }
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_merchant_denied     W = -1 }
+	cc_bonds_aor_mem_chain_b = { FLAG = cc_bond_mem_merchant_rival      W = -1 }
+
+	# Collapse to a tier shift. Score stays primary: memory moves the outcome one
+	# band at most, it does not replace the ledger.
+	set_variable = { name = cc_bond_aor_mem  value = 0 }
+	if = {
+		limit = { var:cc_bond_aor_mem_raw >= 2 }
+		set_variable = { name = cc_bond_aor_mem  value = 1 }
+	}
+	if = {
+		limit = { var:cc_bond_aor_mem_raw <= -2 }
+		set_variable = { name = cc_bond_aor_mem  value = -1 }
+	}
+}
+
+###############################################################################
+# GRADING
+###############################################################################
+
+cc_bonds_aor_clamp_tier = {
+	clamp_variable = { name = cc_bond_aor_tier  max = 3  min = 1 }
+}
+
+# Positive pole. Both dimensions must hold up; banked goodwill can promote a
+# merely good relationship into a decisive one.
+cc_bonds_aor_grade_loyal = {
+	cc_bonds_aor_band_min = { DIMA = $DIMA$  DIMB = $DIMB$ }
+	set_variable = { name = cc_bond_aor_tier  value = 1 }
+	if = {
+		limit = { var:cc_bond_aor_band >= 3 }
+		set_variable = { name = cc_bond_aor_tier  value = 2 }
+	}
+	if = {
+		limit = { var:cc_bond_aor_band >= 4 }
+		set_variable = { name = cc_bond_aor_tier  value = 3 }
+	}
+	cc_bonds_aor_memory_verdict = yes
+	change_variable = { name = cc_bond_aor_tier  add = var:cc_bond_aor_mem }
+	cc_bonds_aor_clamp_tier = yes
+}
+
+# Negative pole. Escalated by the worst the relationship ever got (peak lows) and
+# by a standing record of taking the field against the overlord, neither of which
+# a recovered current score should be able to wash out.
+cc_bonds_aor_grade_hostile = {
+	cc_bonds_aor_band_min = { DIMA = $DIMA$  DIMB = $DIMB$ }
+	set_variable = { name = cc_bond_aor_tier  value = 1 }
+	if = {
+		limit = { var:cc_bond_aor_band <= -3 }
+		set_variable = { name = cc_bond_aor_tier  value = 2 }
+	}
+	if = {
+		limit = {
+			var:cc_bond_aor_tier < 2
+			OR = {
+				"variable_map(cc_bond_$DIMA$_ltm_min_map|scope:bond_subj)" <= -3
+				"variable_map(cc_bond_$DIMB$_ltm_min_map|scope:bond_subj)" <= -3
+			}
+		}
+		set_variable = { name = cc_bond_aor_tier  value = 2 }
+	}
+	if = {
+		limit = {
+			OR = {
+				var:cc_bond_aor_band <= -4
+				"variable_map(cc_bond_$DIMA$_ltm_min_map|scope:bond_subj)" <= -4
+				"variable_map(cc_bond_$DIMB$_ltm_min_map|scope:bond_subj)" <= -4
+				# Three times on the wrong side of a war is not a mood, it is a record.
+				AND = {
+					scope:bond_subj = { has_variable = cc_bond_betrayal_count }
+					scope:bond_subj = { var:cc_bond_betrayal_count >= 3 }
+				}
+			}
+		}
+		set_variable = { name = cc_bond_aor_tier  value = 3 }
+	}
+	cc_bonds_aor_memory_verdict = yes
+	# Memory runs the other way at this pole: goodwill banked earlier pulls the
+	# severity down, grievance pushes it up.
+	change_variable = { name = cc_bond_aor_tier  subtract = var:cc_bond_aor_mem }
+	cc_bonds_aor_clamp_tier = yes
+}
+
+###############################################################################
+# REVOLUTION INTEGRATION
+#
+# Written against vanilla's own machinery, with no vanilla file overridden:
+#   revolution_disaster.can_start reads peasant/burgher satisfaction, their tax
+#     rates, and NOT has_blocked_disaster_trigger.
+#   easier_rev_disaster (vanilla sets it itself in the_revolution.6.b) relaxes
+#     that check from "both estates under 0.25 satisfaction and both taxed over
+#     0.8" to "peasants under 0.4 OR either estate taxed over 0.55".
+#   aspiration_for_liberty.can_start reads stability < 20. It does NOT honour
+#     disaster blocking (revolution_disaster is the only disaster that does), so
+#     stability is the only lever on that one.
+###############################################################################
+
+# add_estate_satisfaction errors on a country that lacks the estate.
+cc_bonds_aor_estate_nudge = {
+	if = {
+		limit = { any_estate = { estate_type = estate_type:$ESTATE$ } }
+		add_estate_satisfaction = { type = estate_type:$ESTATE$  value = $VALUE$ }
+	}
+}
+
+# Loyal payoff. Reads var:cc_bond_aor_tier, set by cc_bonds_aor_grade_loyal.
+cc_bonds_aor_suppress_revolution = {
+	cc_bonds_aor_estate_nudge = { ESTATE = peasants_estate  VALUE = estate_satisfaction_weak_bonus }
+	cc_bonds_aor_estate_nudge = { ESTATE = burghers_estate  VALUE = estate_satisfaction_weak_bonus }
+	if = {
+		limit = { var:cc_bond_aor_tier >= 2 }
+		add_stability = stability_mild_bonus
+		cc_bonds_aor_estate_nudge = { ESTATE = peasants_estate  VALUE = estate_satisfaction_mild_bonus }
+		cc_bonds_aor_estate_nudge = { ESTATE = burghers_estate  VALUE = estate_satisfaction_mild_bonus }
+	}
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_stability = stability_severe_bonus
+		block_disaster_temporarily_effect = {
+			type = revolution_disaster
+			years = 25
+			years_in_days = 9125
+		}
+		add_country_modifier = {
+			modifier = cc_aor_counter_revolutionary_crown
+			years = 25
+		}
+	}
+}
+
+# Hostile payoff. Reads var:cc_bond_aor_tier, set by cc_bonds_aor_grade_hostile.
+cc_bonds_aor_bolster_revolution = {
+	cc_bonds_aor_estate_nudge = { ESTATE = peasants_estate  VALUE = estate_satisfaction_weak_penalty }
+	if = {
+		limit = { var:cc_bond_aor_tier >= 2 }
+		add_stability = stability_mild_penalty
+		cc_bonds_aor_estate_nudge = { ESTATE = peasants_estate  VALUE = estate_satisfaction_mild_penalty }
+		cc_bonds_aor_estate_nudge = { ESTATE = burghers_estate  VALUE = estate_satisfaction_mild_penalty }
+		if = {
+			limit = { NOT = { has_variable = easier_rev_disaster } }
+			set_variable = easier_rev_disaster
+		}
+	}
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_stability = stability_severe_penalty
+		cc_bonds_aor_spawn_sympathy_revolt = yes
+	}
+}
+
+# Tier 3 hostile: the argument comes home. Mirrors the_revolution.6.a, but seeded
+# by the subject relationship rather than by a reactionary court faction.
+cc_bonds_aor_spawn_sympathy_revolt = {
+	if = {
+		limit = { NOT = { any_rebel = { rebel_name_key = cc_bond_sympathy_rebels } } }
+		create_rebel = {
+			name = cc_bond_sympathy_rebels
+			category = estate
+			estate = burghers_estate
+			save_scope_as = cc_aor_rebel
+		}
+	}
+	else = {
+		random_rebel = {
+			limit = { rebel_name_key = cc_bond_sympathy_rebels }
+			save_scope_as = cc_aor_rebel
+		}
+	}
+	capital.region ?= {
+		every_location_in_region = {
+			limit = { owner ?= root }
+			every_pop = {
+				limit = {
+					owner = root
+					pop_type = pop_type:burghers
+				}
+				add_pop_satisfaction = pop_satisfaction_severe_penalty
+				change_pop_allegiance = scope:cc_aor_rebel
+			}
+		}
+	}
+}
+
+###############################################################################
+# SHARED PAYOFF PAYLOADS
+#
+# Used by the option blocks so the events stay readable. Each reads
+# var:cc_bond_aor_tier. Anything that touches the subject is guarded on the
+# subject still being ours, because a payoff can fire for a subject that already
+# went free (its scores were frozen on release for exactly this reason).
+###############################################################################
+
+# Liberty desire scaled by tier, applied only if the subject is still ours.
+cc_bonds_aor_subject_ld = {
+	if = {
+		limit = { scope:bond_subj = { is_subject_of = root } }
+		if = {
+			limit = { var:cc_bond_aor_tier >= 3 }
+			scope:bond_subj = { add_liberty_desire = $EXTREME$ }
+		}
+		else_if = {
+			limit = { var:cc_bond_aor_tier = 2 }
+			scope:bond_subj = { add_liberty_desire = $SEVERE$ }
+		}
+		else = {
+			scope:bond_subj = { add_liberty_desire = $MILD$ }
+		}
+	}
+}
+
+# Standard loyal liberty-desire relief (bigger the deeper the bond).
+cc_bonds_aor_ld_relief = {
+	cc_bonds_aor_subject_ld = {
+		MILD = liberty_desire_mild_minus
+		SEVERE = liberty_desire_severe_minus
+		EXTREME = liberty_desire_extreme_minus
+	}
+}
+
+# Standard hostile liberty-desire spike.
+cc_bonds_aor_ld_spike = {
+	cc_bonds_aor_subject_ld = {
+		MILD = liberty_desire_mild_plus
+		SEVERE = liberty_desire_severe_plus
+		EXTREME = liberty_desire_extreme_plus
+	}
+}
+
+# Tiered gold costs. Two fixed ladders rather than a parameterised formula, so the
+# add_gold blocks stay in the plain shape the rest of the mod uses. A deeper bond
+# costs more to settle because there is more of it to settle.
+cc_bonds_aor_pay_light = {
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.00  min = -250 }
+	}
+	else_if = {
+		limit = { var:cc_bond_aor_tier = 2 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.75  min = -190 }
+	}
+	else = {
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -0.50  min = -125 }
+	}
+}
+
+cc_bonds_aor_pay_heavy = {
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2.00  min = -500 }
+	}
+	else_if = {
+		limit = { var:cc_bond_aor_tier = 2 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.50  min = -375 }
+	}
+	else = {
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.00  min = -250 }
+	}
+}
+
+# Prestige scaled by tier.
+cc_bonds_aor_prestige_gain = {
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_prestige = prestige_severe_bonus
+	}
+	else_if = {
+		limit = { var:cc_bond_aor_tier = 2 }
+		add_prestige = prestige_mild_bonus
+	}
+	else = {
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+# Emergency levies drawn from a subject that is still ours. Scales with the tier,
+# because a deeper bond is what makes the demand answerable at all.
+cc_bonds_aor_levy_subject = {
+	if = {
+		limit = { scope:bond_subj = { is_subject_of = root } }
+		if = {
+			limit = { var:cc_bond_aor_tier >= 3 }
+			set_variable = { name = cc_bond_aor_levy  value = 12 }
+		}
+		else_if = {
+			limit = { var:cc_bond_aor_tier = 2 }
+			set_variable = { name = cc_bond_aor_levy  value = 9 }
+		}
+		else = {
+			set_variable = { name = cc_bond_aor_levy  value = 6 }
+		}
+		set_variable = { name = cc_bond_aor_levy_neg  value = var:cc_bond_aor_levy }
+		change_variable = { name = cc_bond_aor_levy_neg  multiply = -1 }
+		add_manpower = {
+			value = scope:bond_subj.monthly_manpower
+			multiply = var:cc_bond_aor_levy
+		}
+		scope:bond_subj = {
+			add_manpower = {
+				value = scope:bond_subj.monthly_manpower
+				multiply = root.var:cc_bond_aor_levy_neg
+			}
+		}
+	}
+}
+
+# Country modifier whose duration scales with the tier.
+cc_bonds_aor_tiered_modifier = {
+	if = {
+		limit = { var:cc_bond_aor_tier >= 3 }
+		add_country_modifier = { modifier = $MOD$  years = 30 }
+	}
+	else_if = {
+		limit = { var:cc_bond_aor_tier = 2 }
+		add_country_modifier = { modifier = $MOD$  years = 20 }
+	}
+	else = {
+		add_country_modifier = { modifier = $MOD$  years = 10 }
+	}
+}
+
+# Same, applied to the subject if it is still ours.
+cc_bonds_aor_tiered_modifier_subject = {
+	if = {
+		limit = { scope:bond_subj = { is_subject_of = root } }
+		scope:bond_subj = {
+			if = {
+				limit = { root = { var:cc_bond_aor_tier >= 3 } }
+				add_country_modifier = { modifier = $MOD$  years = 30 }
+			}
+			else_if = {
+				limit = { root = { var:cc_bond_aor_tier = 2 } }
+				add_country_modifier = { modifier = $MOD$  years = 20 }
+			}
+			else = {
+				add_country_modifier = { modifier = $MOD$  years = 10 }
+			}
+		}
+	}
+}
