@@ -189,6 +189,12 @@ $exclusions = @(
     "cossacks_estate_events.txt:308",
     "OVER_FORT_LIMIT_ERROR_LOG",
     "The following two countries have the same name",
+    "_oik_",
+    
+    "_finished' not found",
+    "Failed to create event construction_building_",
+
+    "FetchData failed for 'CabinetItem.GetActionProgressLongWordier'",
 
     "Unknown formatting tag 'l'", "Too low relation use_count == 2", "Missing Icon for Modifier", "Streamed texture has no mipmaps",
     "audio2_wwise.cpp:757", "audio2_wwise.cpp:1970", "state_event.h:391", "context pointer", "Could not push the provided stack context",
