@@ -10,7 +10,7 @@ Naming follows the Balance of Power convention: `EUV_<gameversion>_FU_Bonds_<mod
 If you capture on a different game build, rename the `1.3.x` part consistently in both the
 files and the diary.
 
-Status | File | What to capture |
+| Status | File | What to capture |
 |---|---|---|
 |-X-| `EUV_1.3.x_FU_Bonds_0.3.11_ledger_overview.png` | The Subject Relations Ledger with several subjects listed, ideally a mix of positive and negative scores, showing the establishment dates. |
 |-X-| `EUV_1.3.x_FU_Bonds_0.3.11_subject_type_list.png` | The subject type selection UI showing the expanded roster. A view with several mod types visible at once is best. |
