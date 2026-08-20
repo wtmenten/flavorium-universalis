@@ -1,0 +1,85 @@
+﻿# Overextension. The pillar that makes the reconquest cost what it historically cost.
+#
+# cc_byz_strain runs 0..10 and is written from three places:
+#   the theatre effects        (+1 to +3 per theatre, -2 at the capstone)
+#   the debt threads           (tax farming, bankruptcy)
+#   this pulse                 (the drift below)
+#
+# It is read by the theatre event chains, by cc_byz_debt.33, and by the threshold events here.
+#
+# THE DRIFT, applied yearly by cc_byz_on_yearly_strain:
+#
+#   RISES with   territory held far from Constantinople that is not integrated
+#                being at war while already holding two or more theatres
+#                loans taken while at war
+#   FALLS with   peace, and with the capstone having been reached
+#
+# The asymmetry is deliberate. Strain accumulates from conditions the player creates quickly
+# and drains only from a condition they have to sustain, which is what makes a reconquest that
+# outruns the fisc a trap rather than a tax.
+
+cc_byz_strain_pulse_effect = {
+	cc_byz_init_debt_scores_effect = yes
+
+	# Ground taken and not yet made part of the empire. The single largest driver, and the one
+	# the player can actually act on by integrating rather than by conquering further.
+	if = {
+		limit = {
+			any_owned_location = {
+				count >= 25
+				NOT = { integration_level = core }
+			}
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+	}
+
+	# Fighting while already holding down two theatres.
+	if = {
+		limit = {
+			at_war = yes
+			cc_byz_two_theatres_held_trigger = yes
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+	}
+
+	# Borrowing to pay for a war is how the ledger loses what the map won.
+	if = {
+		limit = {
+			at_war = yes
+			num_loans > 2
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+	}
+
+	# Peace, and the assessment catching up with the conquests.
+	if = {
+		limit = {
+			at_war = no
+			NOT = {
+				any_owned_location = {
+					count >= 25
+					NOT = { integration_level = core }
+				}
+			}
+		}
+		change_variable = { name = cc_byz_strain  add = -1 }
+	}
+
+	# The campaigns being over is worth a standing reduction, not a one-off.
+	if = {
+		limit = { has_variable = cc_byz_mem_theatre_mare_nostrum }
+		change_variable = { name = cc_byz_strain  add = -1 }
+	}
+
+	# Illyricum settled rather than cleared or ignored. The federates hold their own frontier
+	# and recruit from it, so the nearest theatre stops drawing on the capital's manpower
+	# entirely. This is the long-term payoff for cc_byz_reconquest.1 option a, and it is the
+	# only choice in the reconquest that permanently reduces the drift rather than paying a
+	# one-off cost.
+	if = {
+		limit = { has_variable = cc_byz_mem_slavs_settled }
+		change_variable = { name = cc_byz_strain  add = -1 }
+	}
+
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}

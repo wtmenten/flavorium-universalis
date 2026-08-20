@@ -1,0 +1,179 @@
+﻿# Conditional half of the Rhomanismos advance payoffs.
+#
+# See the header of in_game/common/advances/cc_byz_rhomanismos.txt for why these are split.
+# Short version: BYZ starts around +80 so the whole line is researched at game start, and
+# advance modifiers are permanent once researched, while vanilla's rom_* line is sticky via
+# has_or_had_tag = ROM. Without this the player holds both lines at once. We cannot block
+# vanilla's ROM formable, so the payoff has to be what reacts.
+#
+# Each advance keeps a small permanent core on the advance itself. The larger share is here,
+# gated on both having researched it and still running the empire as a Rhomaios one. Abandon
+# the axis and these switch off; return to it and they come back. The advance is knowledge,
+# which you keep. These are the institution actually functioning, which you do not.
+#
+# The +25 threshold matches the allow blocks on the advances themselves. Keep the two in
+# sync: an advance researchable at a threshold its payoff does not honour is a trap.
+
+#############################
+# age_1_traditions
+#############################
+
+cc_byz_taxis_of_offices_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_taxis_of_offices
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	country_cabinet_efficiency = 0.1
+}
+
+cc_byz_oikonomia_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_oikonomia
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_monthly_prosperity = 0.001
+}
+
+#############################
+# age_2_renaissance
+#############################
+
+cc_byz_tagmata_restored_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_tagmata_restored
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	army_heavy_cavalry_power = 0.1
+}
+
+cc_byz_palaiologan_revival_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_palaiologan_revival
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	cultural_tradition_modifier = 0.1
+}
+
+#############################
+# age_3_discovery
+#############################
+
+cc_byz_basilika_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_basilika
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	country_cabinet_efficiency = 0.1
+}
+
+cc_byz_annona_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_annona
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_estate_target_satisfaction = small_permanent_target_satisfaction
+}
+
+#############################
+# age_4_reformation
+#############################
+
+cc_byz_ecumenical_office_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_ecumenical_office
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_pop_assimilation_speed_modifier = 0.1
+}
+
+cc_byz_dromos_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_dromos
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_distance_from_capital_speed_propagation = 0.15
+}
+
+#############################
+# age_5_absolutism
+#############################
+
+cc_byz_thematic_administration_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_thematic_administration
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_manpower_modifier = 0.1
+}
+
+cc_byz_autokrator_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_autokrator
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	global_integration_speed_modifier = 0.2
+}
+
+#############################
+# age_6_revolutions
+#############################
+
+cc_byz_great_church_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_great_church
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	building_upkeep_efficiency = 0.3
+}
+
+#############################
+# Renovatio (cc_byz_renovatio.txt)
+#
+# These carry the capital check as well, since the whole Renovatio premise is governing the
+# west from Constantinople. A player who takes vanilla's ROM_BYZ_f formable moves to Rome
+# and loses these, which is exactly the trade the pillar is built around.
+#############################
+
+cc_byz_renovatio_imperii_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_renovatio_imperii
+		societal_value:latinization_vs_hellenization > 25
+		capital = location:constantinople
+	}
+
+	diplomatic_capacity = 1
+}
+
+cc_byz_exarchal_chancery_active = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_exarchal_chancery
+		societal_value:latinization_vs_hellenization > 25
+		capital = location:constantinople
+	}
+
+	subject_loyalty = 10
+}

@@ -1,0 +1,246 @@
+﻿# The union with Rome, as four separate decisions instead of one button.
+#
+# WHAT VANILLA HAS. Two religious actions in D008_orthodox.txt, both gated on
+# has_all_pentarchy (owning Constantinople, Rome, Jerusalem, Antioch and Alexandria):
+#
+#   mend_schism           grants the mended_schism modifier and extreme prestige, notifies
+#                         every Catholic country and the Pope. Safe for this submod's track.
+#
+#   restore_rome_primacy  requires latinization < -50 and, in d008_orthodox_events.11 option a,
+#                         RUNS set_capital = location:rome. It force-relocates the capital,
+#                         which is the exact outcome the exarchate track exists to avoid, and
+#                         it would silently disable cc_byz_appoint_exarch and every Renovatio
+#                         advance, all of which require capital = constantinople. This is
+#                         stated plainly in the loc rather than worked around: it is a real
+#                         and legitimate alternative path, it is simply the other one.
+#
+# Both are all-or-nothing and both need all five seats. This arc runs without any of them.
+# It ends where vanilla begins: an emperor who has taken the union through reception can then
+# use mend_schism if Pillar 5 delivers him the seats, and the two read as one story.
+#
+# The historical shape being modelled is that the union of 1439 was negotiated, signed, and
+# then rejected at home. Signing is therefore NOT the end of the arc. Stage 2 is a signature;
+# stage 3 is whether the city accepts it; and repudiation from stage 3 is a legitimate ending
+# rather than a failure state, which is why it has its own action rather than being a
+# reversion.
+#
+# cc_byz_union_stage:  0 nothing  1 contacts  2 signed  3 received  4 repudiated
+# Initialised lazily by cc_byz_init_union_scores_effect, like the debt scores.
+
+
+# Stage 0 to 1. Legates and letters. Cheap, deniable, and it commits nobody.
+cc_byz_open_union_contacts = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	price = price:cc_byz_union_contacts_price
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		scope:actor = {
+			has_or_had_tag = BYZ
+			religion = religion:orthodox
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			# GUARDING A VARIABLE READ. has_variable in the same block does NOT stop a
+			# sibling var: from being evaluated: every trigger in a block is evaluated, so
+			# an unset variable errors regardless of the guard beside it. The variable is
+			# unset for the entire early game here, so this fired every tick.
+			#
+			# trigger_if is the idiom (vanilla character_interactions/banish_character.txt:9).
+			# trigger_else supplies the answer for the unset case, which for this action is
+			# yes: never having opened contacts is exactly stage 0.
+			trigger_if = {
+				limit = { has_variable = cc_byz_union_stage }
+				var:cc_byz_union_stage = 0
+			}
+			trigger_else = { always = yes }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			country_exists = c:PAP
+			NOT = { has_country_modifier = mended_schism }
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_init_union_scores_effect = yes
+			set_variable = {
+				name = cc_byz_union_stage
+				value = 1
+			}
+			trigger_event_non_silently = cc_byz_union.1
+		}
+	}
+
+	ai_will_do = {
+		add = 4
+	}
+}
+
+
+# Stage 1 to 2. The council. This is where the doctrinal argument actually happens and where
+# the clergy have to be brought along or bought.
+cc_byz_summon_union_council = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	price = price:cc_byz_union_council_price
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		scope:actor = {
+			has_or_had_tag = BYZ
+			religion = religion:orthodox
+			# See cc_byz_open_union_contacts for why this is trigger_if rather than a
+			# has_variable guard beside the read.
+			trigger_if = {
+				limit = { has_variable = cc_byz_union_stage }
+				var:cc_byz_union_stage = 1
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			country_exists = c:PAP
+			# A council needs churchmen who will attend it. Buying them off is a legitimate
+			# way to reach this number and the council events say so.
+			#
+			# estate_satisfaction is colon-indexed in country scope and runs 0..1, cf.
+			# crisis_of_the_chinese_dynasty_actions.txt:116 and black_death.txt:119. It is
+			# NOT a trigger inside an any_estate block.
+			custom_tooltip = {
+				text = cc_byz_clergy_will_attend_tt
+				estate_satisfaction:clergy_estate >= 0.35
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			trigger_event_non_silently = cc_byz_union.10
+		}
+	}
+
+	ai_will_do = {
+		add = 3
+	}
+}
+
+
+# Stage 2 to 3. Promulgation. The signature already exists; this is reading it aloud in Hagia
+# Sophia and finding out what the city does about it.
+cc_byz_promulgate_union = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	price = price:cc_byz_union_promulgate_price
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		scope:actor = {
+			has_or_had_tag = BYZ
+			trigger_if = {
+				limit = { has_variable = cc_byz_union_stage }
+				var:cc_byz_union_stage = 2
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			at_war = no
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			trigger_event_non_silently = cc_byz_union.20
+		}
+	}
+
+	ai_will_do = {
+		add = 2
+	}
+}
+
+
+# Stage 2 or 3 to 4. Renounce it. Deliberately available from the signature onward, because
+# an emperor who signed and thought better of it before promulgating is the more common case
+# and the arc should not force him to promulgate first in order to reach the exit.
+cc_byz_repudiate_union = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	price = price:cc_byz_union_repudiate_price
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		scope:actor = {
+			has_or_had_tag = BYZ
+			trigger_if = {
+				limit = { has_variable = cc_byz_union_stage }
+				OR = {
+					var:cc_byz_union_stage = 2
+					var:cc_byz_union_stage = 3
+				}
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	allow = {
+	}
+
+	effect = {
+		scope:actor = {
+			trigger_event_non_silently = cc_byz_union.30
+		}
+	}
+
+	# The AI reaches for this when the union is costing it more at home than it is worth
+	# abroad, which is the same calculation the player is making.
+	ai_will_do = {
+		add = 1
+
+		# Same guard as the potential blocks. A limit inside a script value is a trigger
+		# context and evaluates its contents whether or not the variable exists.
+		if = {
+			limit = {
+				scope:actor = {
+					has_variable = cc_byz_anti_unionist
+					trigger_if = {
+						limit = { has_variable = cc_byz_anti_unionist }
+						var:cc_byz_anti_unionist >= 3
+					}
+				}
+			}
+			add = 8
+		}
+		if = {
+			limit = { scope:actor = { societal_value:latinization_vs_hellenization > 40 } }
+			add = 5
+		}
+	}
+}

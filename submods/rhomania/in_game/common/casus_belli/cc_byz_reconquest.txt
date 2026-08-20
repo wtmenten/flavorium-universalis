@@ -1,0 +1,135 @@
+﻿# Two narrow reconquest CBs for an empire that holds an exarchate.
+#
+# Structure copied from vanilla's cb_restore_roman_borders (D008_restore_roman_borders.txt),
+# including its create_enabled neighbour-or-one-seazone test, which is what stops a CB with a
+# wide geography from being declarable against the far end of the Mediterranean.
+#
+# WAR GOAL. Both reuse vanilla's superiority_restore_roman_borders rather than defining new
+# war goal types in common/wargoals/. The goal is the same in each case (establish superiority
+# and take territory in the scoped geography) and a bespoke goal would duplicate vanilla's
+# with a different name for no mechanical difference.
+#
+# UNLOCKING. Neither is granted by an advance. cb_restore_roman_borders is granted by
+# cc_byz_appoint_exarch, because asserting a governor over the old capital is the act that
+# revives the claim. These two are unlocked by the exarchate event threads: the islands CB by
+# the Italian thread once the maritime republics have made themselves an enemy, and the Italian
+# mainland CB by the papal thread once the exarchate's position in Italy is contested. The
+# chains are what open the map, which is the point of writing the chains.
+
+# The Latin islands. Narrow, cheap and fast, because these are raids on a scattered set of
+# holdings rather than a war of conquest against a state.
+cc_byz_cb_recover_the_islands = {
+	create_visible = {
+		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands }
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_aegean_latin_geography
+		}
+	}
+	declare_enabled = {
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_aegean_latin_geography
+		}
+	}
+	create_enabled = {
+		OR = {
+			is_neighbor_of_country_or_across_one_seazone = scope:target
+			scope:target = {
+				any_subject = {
+					is_neighbor_of_country_or_across_one_seazone = root
+				}
+			}
+			any_subject = {
+				is_neighbor_of_country_or_across_one_seazone = scope:target
+			}
+		}
+	}
+	speed = 20
+	war_goal_type = superiority_restore_roman_borders
+}
+
+# The Italian mainland, and only while an exarchate actually exists to consolidate around.
+# An emperor who lost his exarchate loses this with it, which is the intended pressure: the
+# claim rests on the governor, not on the memory of Rome.
+cc_byz_cb_consolidate_italy = {
+	create_visible = {
+		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_consolidate_italy }
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+		}
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_italian_mainland_geography
+		}
+	}
+	declare_enabled = {
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+		}
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_italian_mainland_geography
+		}
+	}
+	create_enabled = {
+		OR = {
+			is_neighbor_of_country_or_across_one_seazone = scope:target
+			scope:target = {
+				any_subject = {
+					is_neighbor_of_country_or_across_one_seazone = root
+				}
+			}
+			any_subject = {
+				is_neighbor_of_country_or_across_one_seazone = scope:target
+			}
+		}
+	}
+	speed = 12
+	war_goal_type = superiority_restore_roman_borders
+}
+
+# The Indian Ocean. Unlocked by the Red Sea theatre, so the ocean opens only once the empire
+# actually holds the strait rather than merely aspiring to.
+#
+# Spans all three eastern geographies in one CB rather than three, because the distinction
+# between the Horn, India and the islands matters for the mission chain and not for the
+# question of whether we may fight somebody out there.
+cc_byz_cb_indian_ocean = {
+	create_visible = {
+		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_indian_ocean }
+		scope:target = {
+			is_subject = no
+			OR = {
+				owns_or_has_subject_in = scripted_geography:cc_byz_horn_geography
+				owns_or_has_subject_in = scripted_geography:cc_byz_india_geography
+				owns_or_has_subject_in = scripted_geography:cc_byz_spice_islands_geography
+			}
+		}
+	}
+	declare_enabled = {
+		scope:target = {
+			is_subject = no
+			OR = {
+				owns_or_has_subject_in = scripted_geography:cc_byz_horn_geography
+				owns_or_has_subject_in = scripted_geography:cc_byz_india_geography
+				owns_or_has_subject_in = scripted_geography:cc_byz_spice_islands_geography
+			}
+		}
+	}
+	create_enabled = {
+		OR = {
+			is_neighbor_of_country_or_across_one_seazone = scope:target
+			scope:target = {
+				any_subject = {
+					is_neighbor_of_country_or_across_one_seazone = root
+				}
+			}
+			any_subject = {
+				is_neighbor_of_country_or_across_one_seazone = scope:target
+			}
+		}
+	}
+	speed = 20
+	war_goal_type = superiority_restore_roman_borders
+}

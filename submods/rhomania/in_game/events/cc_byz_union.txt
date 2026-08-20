@@ -1,0 +1,1111 @@
+﻿namespace = cc_byz_union
+
+# The union arc.
+#
+# Entered through the four generic actions in common/generic_actions/cc_byz_union_actions.txt;
+# the ferment events hang off the yearly pulse via cc_byz_on_yearly_union. See the action file
+# for what vanilla already provides and why restore_rome_primacy is incompatible with the
+# exarchate track.
+#
+# THE POINT OF THE ARC. A union was negotiable, and was negotiated, and was signed. What
+# could not be negotiated was the reception of it in Constantinople. So signing is stage 2 of
+# 4, not the end, and the events after it are the ones that decide anything.
+#
+#   .1  .2  .3        Contacts. Legates, terms, and the first sense of the price.
+#   .10 .11 .12       The council. Four doctrinal points, then signature or collapse.
+#   .20 .21 .22 .23   Reception at home. Where it succeeds or fails.
+#   .30 .31           Repudiation and what the west does about it.
+#   .40               The payoff, if it held.
+#
+# State:
+#   cc_byz_union_stage    0..4  see cc_byz_scores.txt
+#   cc_byz_anti_unionist  0..5
+#
+# Memory variables:
+#   cc_byz_mem_union_bought_clergy   the clergy were paid to attend rather than persuaded
+#   cc_byz_mem_union_conceded_azymes doctrinal ground was given on the Latin rite
+#   cc_byz_mem_union_conceded_primacy papal primacy was acknowledged in the text
+#   cc_byz_mem_union_forced          promulgation was pushed through against the clergy
+#   cc_byz_mem_union_held            reception succeeded
+#   cc_byz_mem_union_failed          reception failed
+#   cc_byz_mem_union_repudiated      the union was formally renounced
+#
+# SOCIETAL VALUE DIRECTION. latinization_vs_hellenization has Latinitas on the LEFT (negative)
+# and Rhomanismos on the RIGHT (positive). Vanilla's ROM_BYZ_f applies
+# societal_value_huge_move_to_left, and restore_rome_primacy requires < -50. So union progress
+# moves LEFT and repudiation moves RIGHT.
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100. total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  The legates
+#############################################
+cc_byz_union.1 = {
+	type = country_event
+	title = cc_byz_union.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { societal_value:latinization_vs_hellenization > 50 }
+				desc = cc_byz_union.1.desc_hellenic
+			}
+			desc = cc_byz_union.1.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		add_country_modifier = {
+			modifier = cc_byz_union_contacts
+			years = -1
+			mode = add
+		}
+	}
+
+	# Send men who will report accurately and promise nothing.
+	option = {
+		name = cc_byz_union.1.a
+		ai_chance = { base = 45 }
+
+		every_country = {
+			limit = {
+				religion = religion:catholic
+				NOT = { has_or_had_tag = PAP }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_negotiating
+			}
+		}
+	}
+
+	# Send men who will promise whatever is needed to keep the door open.
+	option = {
+		name = cc_byz_union.1.b
+		ai_chance = { base = 35 }
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		c:PAP ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_negotiating
+			}
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# Put the patriarch's own men on the embassy so the church cannot later say it was
+	# not consulted. Needs a ruler with standing enough to make that stick.
+	option = {
+		name = cc_byz_union.1.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 70 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = -1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_union.2  years = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .2  Rome's terms arrive
+#############################################
+cc_byz_union.2 = {
+	type = country_event
+	title = cc_byz_union.2.title
+	desc = cc_byz_union.2.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_union_stage }
+			var:cc_byz_union_stage >= 1
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+	}
+
+	# Read them out to the synod as they stand.
+	option = {
+		name = cc_byz_union.2.a
+		ai_chance = { base = 40 }
+
+		change_variable = { name = cc_byz_anti_unionist  add = 1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# Have them translated generously before anyone else sees them.
+	option = {
+		name = cc_byz_union.2.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_bonus
+		# Nothing visible happens. The reckoning is at promulgation, when the clergy read
+		# the Latin text for themselves.
+		set_variable = { name = cc_byz_mem_union_softened_terms  value = yes }
+	}
+
+	# Answer with terms of our own. The see of Constantinople is not a petitioner.
+	option = {
+		name = cc_byz_union.2.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = -1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+}
+
+
+#############################################
+# .10  The council convenes
+#
+# From cc_byz_summon_union_council. The doctrinal argument is real and each concession is
+# tracked, because promulgation reads all of them back.
+#############################################
+cc_byz_union.10 = {
+	type = country_event
+	title = cc_byz_union.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { estate_satisfaction:clergy_estate < 0.45 }
+				desc = cc_byz_union.10.desc_reluctant
+			}
+			desc = cc_byz_union.10.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+
+		# Hidden. Whether the delegation is there out of conviction or out of payment is
+		# decided before the first session and nobody announces which.
+		hidden_effect = {
+			if = {
+				limit = { estate_satisfaction:clergy_estate < 0.45 }
+				set_variable = { name = cc_byz_mem_union_bought_clergy  value = yes }
+			}
+		}
+	}
+
+	# Concede the filioque as a matter of wording rather than doctrine.
+	option = {
+		name = cc_byz_union.10.a
+		ai_chance = { base = 40 }
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = 1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+	}
+
+	# Concede the azymes too. The Latin rite is admitted as valid, not merely tolerated.
+	option = {
+		name = cc_byz_union.10.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_union_conceded_azymes  value = yes }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_left
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = 2 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		c:PAP ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_negotiating
+			}
+		}
+	}
+
+	# Hold the line on both and make Rome argue for them. Needs a theologian on the throne
+	# or at least a man who can follow the argument.
+	option = {
+		name = cc_byz_union.10.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = -1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_non_silently = { id = cc_byz_union.11 }
+		}
+	}
+}
+
+
+#############################################
+# .11  Papal primacy, which is the actual question
+#############################################
+cc_byz_union.11 = {
+	type = country_event
+	title = cc_byz_union.11.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_conceded_azymes }
+				desc = cc_byz_union.11.desc_conceded
+			}
+			desc = cc_byz_union.11.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	# Acknowledge the primacy, saving the rights of the eastern patriarchs. The historical
+	# formula, and it is a formula.
+	immediate = {
+		# Writes a score owned by another thread's initialiser, so that one is called too.
+		cc_byz_init_union_scores_effect = yes
+	}
+
+	option = {
+		name = cc_byz_union.11.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_union_conceded_primacy  value = yes }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_left
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = 1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		trigger_event_non_silently = { id = cc_byz_union.12 }
+	}
+
+	# Offer a primacy of honour only. Rome may or may not accept it.
+	option = {
+		name = cc_byz_union.11.b
+		ai_chance = { base = 30 }
+
+		random_list = {
+			55 = {
+				# Accepted. The text is weaker and it will survive at home better.
+				trigger_event_non_silently = { id = cc_byz_union.12 }
+			}
+			45 = {
+				# Refused. Twenty years of embassies end in a corridor in Ferrara.
+				trigger_event_non_silently = { id = cc_byz_union.13 }
+			}
+		}
+	}
+
+	# Break off rather than sign what cannot be preached in Hagia Sophia. A ruler who has
+	# read the room at home rather than the room he is standing in.
+	option = {
+		name = cc_byz_union.11.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { adm >= 70 }
+		}
+
+		trigger_event_non_silently = { id = cc_byz_union.13 }
+	}
+}
+
+
+#############################################
+# .12  The union is signed
+#############################################
+cc_byz_union.12 = {
+	type = country_event
+	title = cc_byz_union.12.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_bought_clergy }
+				desc = cc_byz_union.12.desc_bought
+			}
+			desc = cc_byz_union.12.desc
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		set_variable = {
+			name = cc_byz_union_stage
+			value = 2
+		}
+		remove_country_modifier = cc_byz_union_contacts
+		add_country_modifier = {
+			modifier = cc_byz_union_signed
+			years = -1
+			mode = add
+		}
+
+		every_country = {
+			limit = { religion = religion:catholic }
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_negotiating
+			}
+		}
+
+		# Hidden and forced. The Orthodox powers hear about the signature long before any
+		# explanation of it reaches them, and they draw the obvious conclusion.
+		every_country = {
+			limit = {
+				religion = religion:orthodox
+				NOT = { this = root }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_submitted_to_rome
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_union.12.a
+		ai_chance = { base = 100 }
+	}
+}
+
+
+#############################################
+# .13  The council collapses
+#
+# Not a failure state. An emperor who walks out of Ferrara keeps his church and loses a fleet
+# he was probably never going to get, and the arc resets to stage 1 so he may try again.
+#############################################
+cc_byz_union.13 = {
+	type = country_event
+	title = cc_byz_union.13.title
+	desc = cc_byz_union.13.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		set_variable = {
+			name = cc_byz_union_stage
+			value = 1
+		}
+		change_variable = { name = cc_byz_anti_unionist  add = -2 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+	}
+
+	# The church is intact and says so loudly.
+	option = {
+		name = cc_byz_union.13.a
+		ai_chance = { base = 60 }
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Keep the legation in Italy. This will be tried again.
+	option = {
+		name = cc_byz_union.13.b
+		ai_chance = { base = 40 }
+
+		add_country_modifier = {
+			modifier = cc_byz_union_contacts
+			years = -1
+			mode = add
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+}
+
+
+#############################################
+# .20  Promulgation in Hagia Sophia
+#
+# From cc_byz_promulgate_union. This is the event the whole arc is built to reach.
+#############################################
+cc_byz_union.20 = {
+	type = country_event
+	title = cc_byz_union.20.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_softened_terms }
+				desc = cc_byz_union.20.desc_softened
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_anti_unionist >= 3 }
+				desc = cc_byz_union.20.desc_hostile
+			}
+			desc = cc_byz_union.20.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+
+		# Hidden and forced, resolved BEFORE the player chooses. The terms as actually
+		# written are now public, and an emperor who had them translated generously
+		# discovers what the Latin says at the same moment his clergy do.
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_union_softened_terms }
+				change_variable = { name = cc_byz_anti_unionist  add = 2 }
+			}
+			if = {
+				limit = { has_variable = cc_byz_mem_union_conceded_primacy }
+				change_variable = { name = cc_byz_anti_unionist  add = 1 }
+			}
+			if = {
+				limit = { has_variable = cc_byz_mem_union_bought_clergy }
+				change_variable = { name = cc_byz_anti_unionist  add = 1 }
+			}
+			clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		}
+	}
+
+	# Read it, and let the objections be heard afterwards.
+	option = {
+		name = cc_byz_union.20.a
+		ai_chance = { base = 40 }
+
+		trigger_event_non_silently = { id = cc_byz_union.21 }
+	}
+
+	# Read it, and arrest whoever interrupts.
+	option = {
+		name = cc_byz_union.20.b
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		set_variable = { name = cc_byz_mem_union_forced  value = yes }
+		change_variable = { name = cc_byz_anti_unionist  add = 1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		add_stability = stability_mild_penalty
+		trigger_event_non_silently = { id = cc_byz_union.21 }
+	}
+
+	# Read it yourself, from the ambo, and answer the objections in person. Only a ruler who
+	# can genuinely do this should be offered it, and most cannot.
+	option = {
+		name = cc_byz_union.20.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { dip >= 80 }
+		}
+
+		change_variable = { name = cc_byz_anti_unionist  add = -2 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		add_legitimacy = legitimacy_mild_bonus
+		trigger_event_non_silently = { id = cc_byz_union.21 }
+	}
+}
+
+
+#############################################
+# .21  What the city did about it
+#
+# The reception resolves here, on accumulated cc_byz_anti_unionist rather than on a choice.
+# Everything the player decided from .1 onward is being read at once.
+#############################################
+cc_byz_union.21 = {
+	type = country_event
+	title = cc_byz_union.21.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_anti_unionist >= 4 }
+				desc = cc_byz_union.21.desc_rejected
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_anti_unionist <= 1 }
+				desc = cc_byz_union.21.desc_accepted
+			}
+			desc = cc_byz_union.21.desc_divided
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		set_variable = {
+			name = cc_byz_union_stage
+			value = 3
+		}
+		remove_country_modifier = cc_byz_union_signed
+
+		# Forced. Which of the three outcomes lands is not a choice and was decided several
+		# events ago.
+		if = {
+			limit = { var:cc_byz_anti_unionist >= 4 }
+			set_variable = { name = cc_byz_mem_union_failed  value = yes }
+			add_country_modifier = {
+				modifier = cc_byz_union_rejected
+				years = -1
+				mode = add
+			}
+			add_country_modifier = {
+				modifier = cc_byz_anti_unionist_ferment
+				years = -1
+				mode = add
+			}
+			every_country = {
+				limit = { religion = religion:catholic }
+				add_opinion = {
+					target = root
+					modifier = cc_byz_union_undelivered
+				}
+			}
+		}
+		else = {
+			set_variable = { name = cc_byz_mem_union_held  value = yes }
+			add_country_modifier = {
+				modifier = cc_byz_union_received
+				years = -1
+				mode = add
+			}
+			every_country = {
+				limit = { religion = religion:catholic }
+				add_opinion = {
+					target = root
+					modifier = cc_byz_union_upheld
+				}
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_union.21.a
+		ai_chance = { base = 100 }
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_union_held }
+				trigger_event_silently = { id = cc_byz_union.40  years = 8 }
+			}
+			else = {
+				trigger_event_silently = { id = cc_byz_union.22  years = 4 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .22  The ferment
+#
+# Also fired from the yearly pulse while the union is in force and resistance is high, so an
+# emperor who promulgated successfully but then drifted Hellenic can still end up here.
+#############################################
+cc_byz_union.22 = {
+	type = country_event
+	title = cc_byz_union.22.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_forced }
+				desc = cc_byz_union.22.desc_forced
+			}
+			desc = cc_byz_union.22.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = {
+				has_variable = cc_byz_union_stage
+				has_variable = cc_byz_anti_unionist
+			}
+			var:cc_byz_union_stage = 3
+			var:cc_byz_anti_unionist >= 3
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+	}
+
+	# Enforce it. Deprive the leading objectors and appoint unionists over them.
+	option = {
+		name = cc_byz_union.22.a
+		ai_chance = { base = 30 }
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		add_stability = stability_mild_penalty
+		change_variable = { name = cc_byz_anti_unionist  add = 1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Let it be preached both ways and hope the question goes quiet. It does not, but it
+	# stops costing anything immediately.
+	option = {
+		name = cc_byz_union.22.b
+		ai_chance = { base = 45 }
+
+		change_variable = { name = cc_byz_anti_unionist  add = -1 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Buy the leading objector a see far from the capital. Cynical, effective, and it needs
+	# a ruler who can make an exile look like a promotion.
+	option = {
+		name = cc_byz_union.22.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_gold = -150
+		change_variable = { name = cc_byz_anti_unionist  add = -2 }
+		clamp_variable = { name = cc_byz_anti_unionist  min = 0  max = 5 }
+	}
+
+	after = {
+		# Not offered. Resistance that has run this long stops being about the filioque and
+		# becomes about everything else the palace has done.
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_anti_unionist >= 5 }
+				add_country_modifier = {
+					modifier = cc_byz_anti_unionist_ferment
+					years = -1
+					mode = add
+				}
+				change_societal_value = {
+					type = cc_taxis_vs_cc_dynatoi
+					value = societal_value_minor_move_to_right
+				}
+			}
+		}
+	}
+}
+
+
+#############################################
+# .30  Repudiation
+#
+# From cc_byz_repudiate_union. A legitimate ending, not a reversion: the arc does not return
+# to stage 0 and the west remembers.
+#############################################
+cc_byz_union.30 = {
+	type = country_event
+	title = cc_byz_union.30.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_failed }
+				desc = cc_byz_union.30.desc_failed
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_union_held }
+				desc = cc_byz_union.30.desc_held
+			}
+			desc = cc_byz_union.30.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		set_variable = {
+			name = cc_byz_union_stage
+			value = 4
+		}
+		set_variable = { name = cc_byz_mem_union_repudiated  value = yes }
+
+		remove_country_modifier = cc_byz_union_signed
+		remove_country_modifier = cc_byz_union_received
+		remove_country_modifier = cc_byz_union_rejected
+		remove_country_modifier = cc_byz_anti_unionist_ferment
+		remove_country_modifier = cc_byz_latin_aid
+
+		add_country_modifier = {
+			modifier = cc_byz_union_repudiated
+			years = -1
+			mode = add
+		}
+
+		set_variable = { name = cc_byz_anti_unionist  value = 0 }
+
+		every_country = {
+			limit = { religion = religion:catholic }
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_renounced
+			}
+		}
+		every_country = {
+			limit = {
+				religion = religion:orthodox
+				NOT = { this = root }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_held_the_faith
+			}
+		}
+	}
+
+	# Renounce it plainly and let the record stand.
+	option = {
+		name = cc_byz_union.30.a
+		ai_chance = { base = 50 }
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+
+	# Renounce it and blame the legates who signed it. Cheaper at home, and every diplomat
+	# in Italy understands exactly what happened.
+	option = {
+		name = cc_byz_union.30.b
+		ai_chance = { base = 30 }
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		add_legitimacy = legitimacy_mild_bonus
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Renounce it while keeping the embassy in Rome, on the argument that the quarrel is
+	# with the text rather than with the west. Very few rulers can hold both.
+	option = {
+		name = cc_byz_union.30.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 85 }
+		}
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		add_country_modifier = {
+			modifier = cc_byz_union_contacts
+			years = -1
+			mode = add
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_union.31  years = 6 }
+		}
+	}
+}
+
+
+#############################################
+# .31  The west draws its conclusions
+#############################################
+cc_byz_union.31 = {
+	type = country_event
+	title = cc_byz_union.31.title
+	desc = cc_byz_union.31.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_variable = cc_byz_mem_union_repudiated
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		# Option b reads cc_byz_italian_standing, which belongs to the debt initialiser.
+		# A player can reach the union arc having never taken an Italian loan, so the
+		# variable is not guaranteed to exist by this point.
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Accept it. The empire will hold what it holds with what it has.
+	option = {
+		name = cc_byz_union.31.a
+		ai_chance = { base = 55 }
+
+		add_legitimacy = legitimacy_mild_bonus
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Look east and south instead. There are powers that do not care what is preached here.
+	option = {
+		name = cc_byz_union.31.b
+		ai_chance = { base = 45 }
+
+		add_country_modifier = {
+			modifier = cc_byz_creditors_wary
+			years = 15
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+}
+
+
+#############################################
+# .40  What the union was for
+#
+# Only reachable when reception succeeded. This is the arc paying out, and it should be worth
+# having taken the risk.
+#############################################
+cc_byz_union.40 = {
+	type = country_event
+	title = cc_byz_union.40.title
+	desc = cc_byz_union.40.desc
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_variable = cc_byz_mem_union_held
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_union_stage }
+			var:cc_byz_union_stage = 3
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = happy
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_union_scores_effect = yes
+		# Option c reads cc_byz_italian_standing, owned by the debt initialiser.
+		cc_byz_init_debt_scores_effect = yes
+		add_country_modifier = {
+			modifier = cc_byz_latin_aid
+			years = -1
+			mode = add
+		}
+	}
+
+	# Take the men and the money.
+	option = {
+		name = cc_byz_union.40.a
+		ai_chance = { base = 50 }
+
+		add_gold = 250
+		# add_manpower takes a computed value, not a named size. There is no
+		# manpower_mild_bonus script value; the vanilla idiom is a multiple of monthly
+		# manpower (personality_events.txt:1193).
+		add_manpower = {
+			value = root.monthly_manpower
+			multiply = 6
+		}
+	}
+
+	# Ask instead that the western powers press the case for the eastern seats. Slower, and
+	# it sets up the pentarchy rather than the next campaign.
+	option = {
+		name = cc_byz_union.40.b
+		ai_chance = { base = 30 }
+
+		add_prestige = prestige_mild_bonus
+		every_country = {
+			limit = { religion = religion:catholic }
+			add_opinion = {
+				target = root
+				modifier = cc_byz_union_upheld
+			}
+		}
+	}
+
+	# Ask for the regalia back. Only worth raising if they are still in a Venetian vault,
+	# and it is the Pope rather than the emperor who does the asking.
+	option = {
+		name = cc_byz_union.40.c
+		ai_chance = { base = 40 }
+		trigger = {
+			has_country_modifier = BYZ_lacking_jewels
+		}
+
+		add_legitimacy = legitimacy_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		c:VEN ?= {
+			add_opinion = {
+				target = root
+				modifier = opinion_insulted
+			}
+		}
+	}
+}

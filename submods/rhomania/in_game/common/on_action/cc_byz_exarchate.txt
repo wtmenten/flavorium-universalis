@@ -1,0 +1,65 @@
+﻿# Exarchate thread chain points.
+#
+# The vanilla hook (yearly_country_pulse) is declared in cc_byz_on_actions.txt.
+#
+# All three threads share one pulse entry rather than three, because they share a
+# precondition: an exarchate has to exist. The two papal events that do NOT require one
+# (.10 the annexation guard and .11 the substitute thread) are in a separate on_action with
+# its own trigger, since an emperor can erase the Papal States without ever appointing a
+# governor and the guard has to fire for him too.
+#
+# Each thread's later events are reached by delayed continuation from its own first event, so
+# the pulse only ever needs to open a thread, never to advance one.
+
+cc_byz_on_yearly_exarchate = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+	random_events = {
+		100 = 0
+		10 = cc_byz_exarch.1
+		8 = cc_byz_papal.1
+		8 = cc_byz_italy.1
+		8 = cc_byz_demand.1
+	}
+}
+
+# The prompt that offers an exarchate in the first place. Separate from the list above
+# because that one requires an exarchate to already exist and this one requires the opposite.
+# cc_byz_exarch.10 is fire_only_once and carries its own advance, capital and territory gates,
+# so the weight here only controls how soon after qualifying it appears.
+cc_byz_on_yearly_exarch_prompt = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
+	}
+	random_events = {
+		10 = 0
+		10 = cc_byz_exarch.10
+	}
+}
+
+# The papal guard and its aftermath. Deliberately NOT gated on holding an exarchate: the
+# Western Schism can be deleted by any Byzantine emperor who annexes the Papal States before
+# 1360, whether or not he ever appointed a governor to Rome. See the header of
+# in_game/events/cc_byz_papal.txt for what is at stake.
+cc_byz_on_yearly_papal_guard = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+	random_events = {
+		# Weighted high because both events are one-shot and self-gating: .10 only fires
+		# while PAP is one step from erasure and before 1360, .11 only once PAP is already
+		# gone. A low weight would risk the guard never firing inside its own window.
+		10 = 0
+		10 = cc_byz_papal.10
+		10 = cc_byz_papal.11
+	}
+}

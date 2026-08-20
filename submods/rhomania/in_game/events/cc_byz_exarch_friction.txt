@@ -1,0 +1,710 @@
+﻿namespace = cc_byz_exarch
+
+# The exarch himself.
+#
+# The governor of a rich, distant, formerly imperial city is the oldest problem in the empire,
+# and the exarchate track creates it deliberately. Constantinople keeps the capital and the
+# tag; what it gives up is any illusion that Rome is being governed by the palace.
+#
+# SCOPE NOTE, and it matters for every event here. cc_byz_exarch_loyalty and
+# cc_byz_is_exarchate live on the SUBJECT, written by cc_byz_appoint_exarch and backfilled by
+# the subject type's on_enable. These events fire on the OVERLORD, because the overlord is the
+# player. Every read and write of the loyalty score therefore goes through scope:cc_byz_exarch,
+# saved in each immediate block. Writing cc_byz_exarch_loyalty in root scope here would
+# silently create a second variable on the emperor that nothing else ever reads.
+#
+#   .1  .2  .3  .4  .5     appointment consequences, drift, the recall, the ending
+#
+# Scores:
+#   cc_byz_exarch_loyalty  -5..5  on the subject
+#   cc_byz_papal_standing  -5..5  on the overlord, shared with the papal thread
+#
+# Memory variables (on the overlord unless noted):
+#   cc_byz_mem_exarch_latinised    the exarch's court adopted Latin usage
+#   cc_byz_mem_exarch_recalled     a recall was issued
+#   cc_byz_mem_exarch_defied       the recall was refused
+#   cc_byz_mem_exarch_dynasty      the exarchate became hereditary in fact
+#   cc_byz_mem_exarch_absorbed     the exarchate was reduced to an ordinary province
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100. total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .10  Italy is held. Who governs it?
+#
+# The DISCOVERY route. The character interaction is the deliberate one and a player who knows
+# it exists can use it whenever; this fires unprompted once enough of Italy is in imperial
+# hands, so the exarchate is not a feature you have to already know about to find.
+#
+# Both routes call cc_byz_create_exarchate_effect, so they cannot drift. See
+# scripted_effects/cc_byz_exarchate_effects.txt.
+#
+# GATED ON THE ADVANCE, deliberately. cc_byz_renovatio_imperii (age 2) and a capital still at
+# Constantinople are required here exactly as they are in the interaction's allow block. A
+# prompt that created exarchates without the advance would make the advance decorative.
+#
+# The candidate is a random cabinet character, so the man who ends up governing Rome is
+# somebody already at court with his own stats and traits rather than a generated placeholder.
+# The three options ARE the three terms of appointment, which is where the branching lives:
+# the terms seed cc_byz_exarch_loyalty and every later event in the thread reads it.
+#############################################
+cc_byz_exarch.10 = {
+	type = country_event
+	title = cc_byz_exarch.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { owns = location:rome }
+				desc = cc_byz_exarch.10.desc_rome
+			}
+			desc = cc_byz_exarch.10.desc
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_advance = cc_byz_renovatio_imperii
+		capital = location:constantinople
+		NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
+
+		# Enough of Italy to be worth governing rather than garrisoning.
+		any_owned_location = {
+			count >= 8
+			region = region:italy_region
+		}
+
+		# And at least one area complete enough to seat an exarchate on, matching the 75%
+		# threshold the interaction's area select_trigger uses.
+		#
+		# SCOPE. any_area_in_region runs region -> area, so it must be entered FROM a region
+		# and does not take a region parameter. Vanilla does the same
+		# (age_of_discovery_tests.txt:113). root inside is still the country, so the
+		# ownership test below reads correctly.
+		region:italy_region = {
+			any_area_in_region = {
+				any_location_in_area = {
+					percent >= 0.75
+					owner ?= root
+				}
+			}
+		}
+
+		any_cabinet_character = {
+			is_alive = yes
+			is_ruler = no
+			is_adult = yes
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+
+		save_scope_as = cc_byz_exarch_overlord
+
+		# An area we substantially hold becomes the seat.
+		# Same scope rule as the trigger above: region -> area, entered from the region.
+		#
+		# random_ rather than ordered_ by development, deliberately. An earlier revision
+		# sorted areas by their total owned development using an iterator inside order_by:
+		#     order_by = { value = 0  every_location_in_area = { add = development } }
+		# That does not work. Vanilla never puts an iterator inside an order_by anywhere, and
+		# the accumulator idiom for script values is root = { add = 1 } (byz_values.txt:17)
+		# because a bare add inside an iterator does not reach the enclosing value. Here root
+		# is the country rather than the value being built, so there is no correct form of it
+		# either. It would not have errored; every area would simply have scored zero and the
+		# "best" seat would have been arbitrary while looking deliberate.
+		#
+		# The limit below already guarantees a viable seat, so picking among viable areas is
+		# all that was ever needed.
+		region:italy_region = {
+			random_area_in_region = {
+				limit = {
+					any_location_in_area = {
+						percent >= 0.75
+						owner ?= root
+					}
+				}
+				save_scope_as = cc_byz_exarch_area
+			}
+		}
+
+		# A man already at court, with his own stats and traits.
+		random_cabinet_character = {
+			limit = {
+				is_alive = yes
+				is_ruler = no
+				is_adult = yes
+			}
+			save_scope_as = cc_byz_exarch_candidate
+		}
+	}
+
+	# Caretaker. A safe man on short terms who will not build anything of his own.
+	option = {
+		name = cc_byz_exarch.10.a
+		ai_chance = { base = 40 }
+		trigger = {
+			exists = scope:cc_byz_exarch_area
+			exists = scope:cc_byz_exarch_candidate
+		}
+
+		government_reform:cc_byz_exarch_caretaker_reform = { save_scope_as = cc_byz_exarch_reform }
+		cc_byz_create_exarchate_effect = yes
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Effective. The middle term, and the one that actually governs Italy well.
+	option = {
+		name = cc_byz_exarch.10.b
+		ai_chance = { base = 35 }
+		trigger = {
+			exists = scope:cc_byz_exarch_area
+			exists = scope:cc_byz_exarch_candidate
+		}
+
+		government_reform:cc_byz_exarch_effective_reform = { save_scope_as = cc_byz_exarch_reform }
+		cc_byz_create_exarchate_effect = yes
+	}
+
+	# Strategos. Civil and military command together, which is how the office worked and how
+	# it went wrong. Offered only to a ruler confident enough to hand it over.
+	option = {
+		name = cc_byz_exarch.10.c
+		ai_chance = { base = 15 }
+		trigger = {
+			exists = scope:cc_byz_exarch_area
+			exists = scope:cc_byz_exarch_candidate
+			ruler ?= { mil >= 65 }
+		}
+
+		government_reform:cc_byz_exarch_strategos_reform = { save_scope_as = cc_byz_exarch_reform }
+		cc_byz_create_exarchate_effect = yes
+		add_army_tradition = army_tradition_mild_bonus
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Govern it from here, through the ordinary provincial machinery.
+	option = {
+		name = cc_byz_exarch.10.d
+		ai_chance = { base = 10 }
+
+		add_prestige = prestige_weak_bonus
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { any_subject = { has_variable = cc_byz_is_exarchate } }
+				trigger_event_silently = { id = cc_byz_exarch.1  years = 8 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .1  The first decision taken without asking
+#############################################
+cc_byz_exarch.1 = {
+	type = country_event
+	title = cc_byz_exarch.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -1 } }
+				desc = cc_byz_exarch.1.desc_strategos
+			}
+			desc = cc_byz_exarch.1.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+	}
+
+	# Confirm it. He was appointed to decide things.
+	option = {
+		name = cc_byz_exarch.1.a
+		ai_chance = { base = 40 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Overrule it, and require that the next one comes to the capital first.
+	option = {
+		name = cc_byz_exarch.1.b
+		ai_chance = { base = 40 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Confirm it publicly and correct him privately. Costs nothing visible and requires a
+	# ruler who can write the second letter well enough that it lands.
+	option = {
+		name = cc_byz_exarch.1.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 70 }
+		}
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_exarch.2  years = 9 }
+		}
+	}
+}
+
+
+#############################################
+# .2  The exarch's court goes native
+#
+# The irony the submod is built on: an emperor who refused to move to Rome discovers his
+# governor has moved to Rome in every sense that matters.
+#############################################
+cc_byz_exarch.2 = {
+	type = country_event
+	title = cc_byz_exarch.2.title
+	desc = cc_byz_exarch.2.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		NOT = { has_variable = cc_byz_mem_exarch_latinised }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		# Writes a score owned by another thread's initialiser, so that one is called too.
+		cc_byz_init_debt_scores_effect = yes
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+		set_variable = { name = cc_byz_mem_exarch_latinised  value = yes }
+	}
+
+	# Let it alone. A governor who is at home in his province governs it better.
+	option = {
+		name = cc_byz_exarch.2.a
+		ai_chance = { base = 40 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Send Greek clergy and Greek clerks, and pay for them out of the capital.
+	option = {
+		name = cc_byz_exarch.2.b
+		ai_chance = { base = 35 }
+
+		add_gold = -200
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_variable = { name = cc_byz_papal_standing  add = -1 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+	}
+
+	# Summon his sons to be raised at the palace. The oldest instrument in the empire and it
+	# needs a ruler who can present it as an honour.
+	option = {
+		name = cc_byz_exarch.2.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	after = {
+		# Not offered. Whatever the palace decided, the Italian powers have noticed that
+		# there is now a court at Rome worth writing letters to.
+		hidden_effect = {
+			change_variable = { name = cc_byz_italian_standing  add = 1 }
+			clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+			trigger_event_silently = { id = cc_byz_exarch.3  years = 10 }
+		}
+	}
+}
+
+
+#############################################
+# .3  Correspondence with the Italian powers
+#############################################
+cc_byz_exarch.3 = {
+	type = country_event
+	title = cc_byz_exarch.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_latinised }
+				desc = cc_byz_exarch.3.desc_latinised
+			}
+			desc = cc_byz_exarch.3.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+	}
+
+	# Accept that a governor in Italy must talk to Italians.
+	option = {
+		name = cc_byz_exarch.3.a
+		ai_chance = { base = 40 }
+
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+	}
+
+	# Require that every letter be copied to the capital. He will comply, and he will also
+	# start keeping a second set.
+	option = {
+		name = cc_byz_exarch.3.b
+		ai_chance = { base = 35 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Use him. An exarch with his own correspondence is a diplomatic instrument the palace
+	# does not have to pay for.
+	option = {
+		name = cc_byz_exarch.3.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 80 }
+		}
+
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = 2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		# The islands CB opens here: an exarch who is corresponding with Venice and Genoa
+		# has, incidentally, established exactly who holds what in the Aegean.
+		if = {
+			limit = {
+				NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } }
+			}
+			unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -2 } }
+				trigger_event_silently = { id = cc_byz_exarch.4  years = 6 }
+			}
+			else = {
+				trigger_event_silently = { id = cc_byz_exarch.5  years = 20 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .4  The recall
+#############################################
+cc_byz_exarch.4 = {
+	type = country_event
+	title = cc_byz_exarch.4.title
+	desc = cc_byz_exarch.4.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+		set_variable = { name = cc_byz_mem_exarch_recalled  value = yes }
+
+		# Hidden and forced, resolved BEFORE the player chooses. Whether he obeys was decided
+		# by the loyalty accumulated over the previous three events, not by what is done now.
+		hidden_effect = {
+			if = {
+				limit = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -3 } }
+				set_variable = { name = cc_byz_mem_exarch_defied  value = yes }
+			}
+		}
+	}
+
+	# Insist, and send someone to escort him.
+	option = {
+		name = cc_byz_exarch.4.a
+		ai_chance = { base = 35 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		if = {
+			limit = { has_variable = cc_byz_mem_exarch_defied }
+			add_stability = stability_mild_penalty
+			scope:cc_byz_exarch ?= {
+				change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+				add_opinion = {
+					target = root
+					modifier = opinion_insulted
+				}
+			}
+		}
+		else = {
+			scope:cc_byz_exarch ?= {
+				change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+			add_prestige = prestige_mild_bonus
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_move_to_left
+			}
+		}
+	}
+
+	# Withdraw the summons before it is refused in public.
+	option = {
+		name = cc_byz_exarch.4.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_mild_penalty
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Offer him something in the capital worth more than what he holds. Expensive, and the
+	# only route that ends this without anybody being humiliated.
+	option = {
+		name = cc_byz_exarch.4.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 80 }
+		}
+
+		add_gold = -300
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		remove_variable = cc_byz_mem_exarch_defied
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_exarch.5  years = 15 }
+		}
+	}
+}
+
+
+#############################################
+# .5  What the exarchate became
+#
+# The thread's ending, decided by accumulated loyalty rather than by a final choice.
+#############################################
+cc_byz_exarch.5 = {
+	type = country_event
+	title = cc_byz_exarch.5.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_defied }
+				desc = cc_byz_exarch.5.desc_dynasty
+			}
+			triggered_desc = {
+				trigger = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty >= 3 } }
+				desc = cc_byz_exarch.5.desc_absorbed
+			}
+			# An exarchate that was summoned home and complied is not the same ending as one
+			# that was never tested, even where the loyalty score lands in the same band.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_recalled }
+				desc = cc_byz_exarch.5.desc_recalled
+			}
+			desc = cc_byz_exarch.5.desc_standing
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+
+		# Forced. Which ending lands was settled several reigns ago.
+		if = {
+			limit = { has_variable = cc_byz_mem_exarch_defied }
+			set_variable = { name = cc_byz_mem_exarch_dynasty  value = yes }
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_large_move_to_right
+			}
+			scope:cc_byz_exarch ?= {
+				add_reform = government_reform:cc_byz_exarch_strategos_reform
+			}
+		}
+		else_if = {
+			limit = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty >= 3 } }
+			set_variable = { name = cc_byz_mem_exarch_absorbed  value = yes }
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_large_move_to_left
+			}
+			scope:cc_byz_exarch ?= {
+				add_reform = government_reform:cc_byz_exarch_caretaker_reform
+			}
+			# A province governed from the capital again is a province the emperor can
+			# argue about with the rest of Italy.
+			if = {
+				limit = {
+					NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_consolidate_italy } }
+				}
+				unlock_casus_belli_effect = { type = cc_byz_cb_consolidate_italy }
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_exarch.5.a
+		ai_chance = { base = 100 }
+	}
+}

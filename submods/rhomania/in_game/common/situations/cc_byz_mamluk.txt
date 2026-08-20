@@ -1,0 +1,141 @@
+﻿# The Mamluk confrontation, in two phases.
+#
+# Phase A is a cold war over the holy places that is FULLY RESOLVABLE BY DIPLOMACY. A
+# negotiated condominium is a real ending, not a consolation prize, and the situation is built
+# so a player can reach it without ever declaring war.
+#
+# Phase B, the Pentarchy War, escalates only if the player presses for it. Taking a seat writes
+# into vanilla's own pentarchy variable map through set_pentarch_variable and
+# add_pentarchy_modifier (the idiom is autocephalous_patriarchates.txt:544-547), so seats count
+# toward has_all_pentarchy and unlock vanilla's mend_schism, which is where pillar 3's union arc
+# hands off.
+#
+#
+# NO has_enabled_situation_trigger GATE, deliberately.
+#
+# The main mod gates its own two situations that way and calls enable_situation_effect from
+# on_game_start (in_game/common/on_action/cc_game_start.txt:98,106). This submod cannot do the
+# same: a second declaration of the on_game_start key is last-one-wins, exactly as CLAUDE.md
+# documents, so declaring it here would risk silently clobbering the main mod's entire
+# game-start block. That is far worse than not having a rule toggle.
+#
+# The gate is unnecessary anyway. Vanilla's own situations (western_schism, guelphs_and_
+# ghibellines, italian_wars) carry no such trigger; only rise_of_timur does. can_start below is
+# narrow enough on its own that this cannot fire in a game it has no business firing in.
+#
+#
+# Situation scopes, per common/situations/readme.txt:
+#   can_start / can_end / on_start / on_monthly / on_ending / on_ended   root = situation
+#   visible                                                             root = country, scope:target = situation
+#   map_color / secondary_map_color / tooltip                           root = location, scope:target = situation
+#
+# Situation variables:
+#   cc_byz_levant_progress   0..100  the empire's position in the Levant
+#   cc_byz_mamluk_progress   0..100  Cairo's
+#   cc_byz_mamluk_phase      1 or 2  cold war, or the Pentarchy War
+#
+# Country variable (on Byzantium): cc_byz_levant_pressure -5..5
+
+cc_byz_mamluk_confrontation = {
+	content_priority = 650
+
+	monthly_spawn_chance = monthly_spawn_chance_unique
+
+	can_start = {
+		has_dlc = "d008_fate_of_the_phoenix"
+
+		# Anatolia has to be settled first. This is the whole premise: the empire only looks
+		# south once it is no longer fighting for its life in the east, which is what the
+		# rise of the Ottomans represents.
+		NOT = { is_situation_active = situation:rise_of_the_ottomans }
+
+		country_exists = c:MAM
+		country_exists = c:BYZ
+
+		c:BYZ = {
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			owns = location:constantinople
+			# A meaningful presence in Anatolia, not a toehold.
+			any_owned_location = {
+				count >= 15
+				region = region:anatolia_region
+			}
+		}
+	}
+
+	can_end = {
+		OR = {
+			# Guarded even though on_start sets both and can_end only runs for an active
+			# situation. The cost is four lines; the cost of being wrong about evaluation
+			# order is an error every tick for the life of the confrontation.
+			trigger_if = {
+				limit = { has_variable = cc_byz_levant_progress }
+				var:cc_byz_levant_progress >= 100
+			}
+			trigger_if = {
+				limit = { has_variable = cc_byz_mamluk_progress }
+				var:cc_byz_mamluk_progress >= 100
+			}
+			NOT = { country_exists = c:MAM }
+			NOT = { country_exists = c:BYZ }
+			current_year > 1650
+		}
+	}
+
+	visible = {
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = MAM
+			religion = religion:orthodox
+		}
+	}
+
+	on_start = {
+		set_variable = { name = cc_byz_levant_progress  value = 0 }
+		set_variable = { name = cc_byz_mamluk_progress  value = 0 }
+		set_variable = { name = cc_byz_mamluk_phase     value = 1 }
+
+		c:BYZ = {
+			cc_byz_init_levant_scores_effect = yes
+			trigger_event_non_silently = cc_byz_mamluk.1
+		}
+		c:MAM = {
+			trigger_event_non_silently = cc_byz_mamluk.2
+		}
+	}
+
+	on_monthly = {
+		# Cairo's own weather. Mostly hidden or forced outcomes, giving the player openings
+		# they did not create and setbacks they could not have prevented, so the situation
+		# has weather rather than a schedule.
+		random_list = {
+			96 = { }
+			2 = {
+				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.5 }
+			}
+			2 = {
+				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.4 }
+			}
+		}
+	}
+
+	on_ended = {
+		c:BYZ ?= {
+			trigger_event_non_silently = cc_byz_mamluk.20
+		}
+	}
+
+	map_color = {
+		if = {
+			limit = { owner ?= c:BYZ }
+			value = define:NMapColors|MAP_COLOR_HIGH
+		}
+		else_if = {
+			limit = { owner ?= c:MAM }
+			value = define:NMapColors|MAP_COLOR_LOW
+		}
+		else = {
+			value = define:NMapColors|MAP_COLOR_NULL
+		}
+	}
+}

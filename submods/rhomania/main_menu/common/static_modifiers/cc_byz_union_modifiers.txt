@@ -1,0 +1,99 @@
+﻿# Country modifiers for the union arc.
+#
+# All names checked with tools/vanilla_search.py modifier <name>. Note that missionary_strength
+# does NOT exist in EU5 despite being an obvious guess; tolerance_own and tolerance_heretic are
+# the levers for religious pressure here.
+#
+# The arc's shape in modifier terms: signing buys standing in the west and costs standing at
+# home, and the two are not symmetrical. cc_byz_union_signed alone is a bad deal. It only pays
+# once reception succeeds (cc_byz_union_received), and the gap between those two is where the
+# whole thread lives.
+
+# Stage 1. Legates going back and forth. Worth a little abroad and nothing at home yet.
+cc_byz_union_contacts = {
+	game_data = {
+		category = country
+	}
+
+	diplomatic_reputation = 1
+}
+
+# Stage 2. Signed, not yet promulgated. The west believes it and the city has not been told.
+cc_byz_union_signed = {
+	game_data = {
+		category = country
+	}
+
+	diplomatic_reputation = 2
+	tolerance_heretic = 1
+	monthly_religious_influence = -0.05
+	clergy_estate_target_satisfaction = -0.1
+}
+
+# Stage 3, reception succeeded. The union holds and the empire can ask the west for things
+# and occasionally be given them.
+cc_byz_union_received = {
+	game_data = {
+		category = country
+	}
+
+	diplomatic_reputation = 2
+	tolerance_heretic = 2
+	hire_mercenary_premium_cost_modifier = -0.15
+	global_trade_center_power = 0.1
+	monthly_religious_influence = -0.05
+	clergy_estate_target_satisfaction = -0.05
+}
+
+# Stage 3, reception failed. Signed abroad, rejected at home, and now carrying the costs of
+# both positions and the benefits of neither. The worst square on the board and it should be
+# reachable, because it is where the empire historically ended up.
+cc_byz_union_rejected = {
+	game_data = {
+		category = country
+	}
+
+	diplomatic_reputation = -1
+	tolerance_own = -1
+	stability_decay = 0.003
+	pop_join_rebel_threshold = 0.04
+	clergy_estate_target_satisfaction = -0.2
+	monthly_religious_influence = -0.1
+}
+
+# The ferment itself, scaled by how far it has gone. Applied and removed by the arc.
+cc_byz_anti_unionist_ferment = {
+	game_data = {
+		category = country
+	}
+
+	pop_join_rebel_threshold = 0.05
+	stability_decay = 0.004
+	country_cabinet_efficiency = -0.05
+	global_estate_satisfaction_decay = 0.02
+}
+
+# Stage 4. Renounced. Standing restored at home, and no Latin fleet is coming.
+cc_byz_union_repudiated = {
+	game_data = {
+		category = country
+	}
+
+	tolerance_own = 2
+	monthly_religious_influence = 0.1
+	clergy_estate_target_satisfaction = 0.15
+	diplomatic_reputation = -2
+	hire_mercenary_premium_cost_modifier = 0.1
+}
+
+# The payoff for a union that actually held. Deliberately concrete rather than a prestige
+# number: western help arriving is the only thing the union was ever for.
+cc_byz_latin_aid = {
+	game_data = {
+		category = country
+	}
+
+	global_manpower_modifier = 0.1
+	hire_mercenary_premium_cost_modifier = -0.2
+	monthly_prestige = 0.05
+}

@@ -1,0 +1,47 @@
+﻿# Bureaucracy event chain points.
+#
+# The VANILLA hooks these hang off (on_bureaucracy_added, on_bureaucracy_removed,
+# yearly_country_pulse) are declared in cc_byz_on_actions.txt, not here. Declaring a vanilla
+# on_action key in more than one file is last-one-wins, so this file defines only the custom
+# cc_byz_* on_actions that the shared file points at. See the header there.
+#
+# scope:bureaucracy_type is provided on the added and removed variants; on_bureaucracy_change
+# gets only root = country.
+
+cc_byz_on_bureaucracy_added = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+	}
+	events = {
+		cc_byz_bureaucracy.1
+	}
+}
+
+cc_byz_on_bureaucracy_removed = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+	}
+	events = {
+		cc_byz_bureaucracy.10
+	}
+}
+
+# The slow-burn thread. Fires off the country pulse rather than a bureaucracy change,
+# because underfunding is a condition rather than an event. The pulse itself is chained in
+# cc_byz_on_actions.txt.
+cc_byz_on_yearly_bureaucracy = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+	random_events = {
+		100 = 0
+		10 = cc_byz_bureaucracy.20
+		10 = cc_byz_bureaucracy.30
+		10 = cc_byz_bureaucracy.40
+		10 = cc_byz_bureaucracy.50
+	}
+}

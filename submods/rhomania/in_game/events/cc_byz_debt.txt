@@ -1,0 +1,1619 @@
+﻿namespace = cc_byz_debt
+
+# The debt threads.
+#
+# Chained from cc_byz_debt.txt in common/on_action, which hangs off on_loan_taken,
+# on_bankruptcy and the yearly pulse. The vanilla hook keys themselves are declared once in
+# cc_byz_on_actions.txt; see that file for why.
+#
+#
+# WHAT VANILLA ALREADY OWNS, and is therefore NOT rebuilt here.
+#
+# The pawning of the crown jewels is shipped content: flavor_byz_ven.1 through .14, 582 lines
+# in in_game/events/DHE/flavor_byz_ven.txt, plus branches inside vanilla's own on_loan_repaid
+# and on_bankruptcy. It gives BYZ a Venetian loan carrying set_loc_key = pawning_of_crown_jewels,
+# moves work_of_art:byzantine_crown_jewels to Venice, sets var:original_crown_jewels_lender on
+# the lender, and applies the BYZ_lacking_jewels country modifier until they are redeemed.
+#
+# Thread B here therefore covers only the CONSEQUENCES of that gap, keyed on
+# has_country_modifier = BYZ_lacking_jewels. It never issues, cancels or redeems that loan:
+# redemption is vanilla's flavor_byz_ven.3, reached through vanilla's on_loan_repaid, and
+# interfering with it would strand that chain.
+#
+#
+# THE FOUR THREADS
+#
+#   A  .1  .2  .3  .4  .5     Italian creditor leverage. Concessions, not the size of the debt.
+#   B  .10 .11 .13            The regalia in Venetian hands. Reads vanilla's state.
+#   C  .20 .21 .22            Tax farming and revenue anticipation.
+#   D  .30 .31 .32 .33        Default, renegotiation and repudiation.
+#
+# Scores, initialised lazily by cc_byz_init_debt_scores_effect (see scripted_effects):
+#   cc_byz_italian_standing  -5..5
+#   cc_byz_creditor_grip      0..5
+#   cc_byz_strain             0..10
+#
+# Memory variables set here:
+#   cc_byz_mem_customs_conceded    a customs exemption was granted in perpetuity
+#   cc_byz_mem_island_pledged      territory was pledged as security
+#   cc_byz_mem_bought_out          the creditors were bought out rather than conceded to
+#   cc_byz_mem_regalia_replaced    gilt copies were made and used at a coronation
+#   cc_byz_mem_regalia_abandoned   a generation passed with no attempt to redeem them
+#   cc_byz_mem_tax_farmed          revenue was sold forward
+#   cc_byz_mem_farm_hereditary     the farm was formalised as heritable property
+#   cc_byz_mem_renegotiated        a debt was rewritten at worse terms
+#   cc_byz_mem_repudiated          a debt was repudiated outright
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100 (MAX_ABILITY_VALUE = 100).
+# total_abilities is their SUM, 0..300. Do not carry a total_abilities-sized number over to a
+# single stat: a gate of dip >= 150 can never be satisfied and the option silently never
+# appears. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# THREAD A. Italian creditor leverage
+#
+# The premise: what costs an emperor is not what he owes, it is what he concedes in order to
+# owe it. cc_byz_creditor_grip therefore rises with privileges granted and never with the
+# principal. An emperor can be deep in debt and hold grip at zero, and that is a legitimate
+# way to play the thread.
+#############################################
+
+#############################################
+# .1  The first Italian loan, and the terms attached to it
+#
+# From on_loan_taken, filtered there to VEN/GEN/PIS and excluding the crown jewels loan.
+# fire_only_once: the first approach is the memorable one. Escalation is .2 and .3.
+#############################################
+cc_byz_debt.1 = {
+	type = country_event
+	title = cc_byz_debt.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_bureau_venality >= 3 }
+				desc = cc_byz_debt.1.desc_venal
+			}
+			desc = cc_byz_debt.1.desc
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = scope:owner
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		scope:owner = { save_scope_as = cc_byz_creditor }
+	}
+
+	# Pay the interest and concede nothing. The expensive, correct answer.
+	option = {
+		name = cc_byz_debt.1.a
+		ai_chance = { base = 35 }
+
+		add_country_modifier = {
+			modifier = cc_byz_sound_credit
+			years = 15
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Better terms, in exchange for something that costs nothing today.
+	option = {
+		name = cc_byz_debt.1.b
+		ai_chance = { base = 40 }
+
+		add_gold = 150
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_privilege
+			}
+		}
+		# Credit from the west arrives with westerners attached to it.
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Raise it at home instead. An administrator can, and the fisc is the instrument.
+	option = {
+		name = cc_byz_debt.1.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 70 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	after = {
+		# The other republic hears the terms within the month whatever was agreed, and prices
+		# its own money accordingly. Not offered as a choice.
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_creditor_grip >= 1 }
+				every_country = {
+					limit = {
+						OR = {
+							has_or_had_tag = VEN
+							has_or_had_tag = GEN
+							has_or_had_tag = PIS
+						}
+						NOT = { this = scope:cc_byz_creditor }
+					}
+					add_opinion = {
+						target = root
+						modifier = cc_byz_rival_privilege_granted
+					}
+				}
+				trigger_event_silently = { id = cc_byz_debt.2  years = 6 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .2  The customs exemption is asked for in writing
+#
+# Galata is a vanilla unique building (unique_buildings.txt:3021), which is why the Genoese
+# quarter can be named concretely rather than gestured at.
+#############################################
+cc_byz_debt.2 = {
+	type = country_event
+	title = cc_byz_debt.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_italian_standing >= 2 }
+				desc = cc_byz_debt.2.desc_cordial
+			}
+			desc = cc_byz_debt.2.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		NOT = { has_variable = cc_byz_mem_customs_conceded }
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			save_scope_as = cc_byz_creditor
+		}
+	}
+
+	# Grant it. The revenue does not stop, it stops arriving.
+	option = {
+		name = cc_byz_debt.2.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_customs_conceded  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_customs_conceded
+			years = -1
+			mode = add
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 2 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_privilege
+			}
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Refuse. They will lend to somebody else, and say why.
+	option = {
+		name = cc_byz_debt.2.b
+		ai_chance = { base = 30 }
+
+		add_country_modifier = {
+			modifier = cc_byz_creditors_wary
+			years = 20
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_italian_standing  add = -2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# A term of years rather than a perpetuity. Requires someone who can sell a limit as a gift.
+	option = {
+		name = cc_byz_debt.2.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_gold = 75
+		add_country_modifier = {
+			modifier = cc_byz_customs_conceded
+			years = 25
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_creditor_grip >= 2 }
+				trigger_event_silently = { id = cc_byz_debt.3  years = 8 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .3  An island offered as security
+#
+# Mechanical precedent is vanilla's take_colony_for_debt country interaction, where a creditor
+# cancels a loan in exchange for a colonial charter. Same trade, older setting.
+#############################################
+cc_byz_debt.3 = {
+	type = country_event
+	title = cc_byz_debt.3.title
+	desc = cc_byz_debt.3.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		num_loans > 0
+		NOT = { has_variable = cc_byz_mem_island_pledged }
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_loan = {
+			limit = { exists = owner }
+			save_scope_as = cc_byz_pledged_loan
+			owner = { save_scope_as = cc_byz_creditor }
+		}
+	}
+
+	# Pledge it. The debt is cancelled and everyone understands the island is gone.
+	option = {
+		name = cc_byz_debt.3.a
+		ai_chance = { base = 35 }
+		trigger = {
+			exists = scope:cc_byz_pledged_loan
+		}
+
+		set_variable = { name = cc_byz_mem_island_pledged  value = yes }
+		cancel_loan = scope:cc_byz_pledged_loan
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_holds_pledged_territory
+			}
+		}
+		add_prestige = prestige_mild_penalty
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Pay in coin instead and keep the island. Expensive now, cheap in fifty years.
+	option = {
+		name = cc_byz_debt.3.b
+		ai_chance = { base = 35 }
+
+		add_gold = -250
+		add_country_modifier = {
+			modifier = cc_byz_sound_credit
+			years = 20
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = -1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+	}
+
+	# Tell them to collect it themselves. Needs a ruler who can make that sound like policy.
+	option = {
+		name = cc_byz_debt.3.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = -2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = opinion_insulted
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_byz_creditors_wary
+			years = 25
+			mode = add_and_extend
+		}
+	}
+}
+
+
+#############################################
+# .4  The creditors compare notes
+#
+# From the yearly pulse. This is the thread's turning point: up to here each republic dealt
+# with the emperor separately, which is what let him play them off. Once they act together
+# the leverage stops being a series of favours and becomes a standing claim.
+#############################################
+cc_byz_debt.4 = {
+	type = country_event
+	title = cc_byz_debt.4.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_customs_conceded }
+				desc = cc_byz_debt.4.desc_conceded
+			}
+			desc = cc_byz_debt.4.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_creditor_grip }
+			var:cc_byz_creditor_grip >= 3
+		}
+		trigger_else = { always = no }
+		num_loans > 1
+		NOT = { has_variable = cc_byz_mem_bought_out }
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Buy out the ringleaders. Ruinous, and it ends the thread on the emperor's terms.
+	option = {
+		name = cc_byz_debt.4.a
+		ai_chance = { base = 30 }
+
+		add_gold = -400
+		set_variable = { name = cc_byz_mem_bought_out  value = yes }
+		change_variable = { name = cc_byz_creditor_grip  add = -3 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+
+		every_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_bought_out_creditors
+			}
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Consolidate at a better rate, and accept that they will now watch the books.
+	option = {
+		name = cc_byz_debt.4.b
+		ai_chance = { base = 45 }
+
+		add_country_modifier = {
+			modifier = cc_byz_sound_credit
+			years = 20
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Break the syndicate by offering one of them what the others wanted. Needs an
+	# administrator who can hold the whole ledger in his head while he does it.
+	option = {
+		name = cc_byz_debt.4.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 80 }
+		}
+
+		change_variable = { name = cc_byz_creditor_grip  add = -1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		add_prestige = prestige_mild_bonus
+
+		random_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			save_scope_as = cc_byz_favoured_republic
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_privilege
+			}
+		}
+		# Saved to a named scope rather than compared against prev: inside every_country,
+		# prev would resolve to the iteration's own parent, not the republic just favoured.
+		every_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+				NOT = { this = scope:cc_byz_favoured_republic }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_rival_privilege_granted
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_debt.5  years = 12 }
+		}
+	}
+}
+
+
+#############################################
+# .5  What the quarter became
+#
+# The thread's ending, decided by accumulated grip rather than by a final choice. Three
+# distinct outcomes, none of them offered as a menu.
+#############################################
+cc_byz_debt.5 = {
+	type = country_event
+	title = cc_byz_debt.5.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_creditor_grip >= 4 }
+				desc = cc_byz_debt.5.desc_captured
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_creditor_grip <= 1 }
+				desc = cc_byz_debt.5.desc_free
+			}
+			desc = cc_byz_debt.5.desc_mixed
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		# Forced, before the player is asked anything. The state of the customs is a fact by
+		# now and the only question is whether the court admits it.
+		if = {
+			limit = { var:cc_byz_creditor_grip >= 4 }
+			add_country_modifier = {
+				modifier = cc_byz_customs_conceded
+				years = -1
+				mode = add
+			}
+			change_societal_value = {
+				type = latinization_vs_hellenization
+				value = societal_value_move_to_left
+			}
+		}
+		else_if = {
+			limit = { var:cc_byz_creditor_grip <= 1 }
+			add_country_modifier = {
+				modifier = cc_byz_sound_credit
+				years = -1
+				mode = add
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_debt.5.a
+		ai_chance = { base = 100 }
+	}
+}
+
+
+#############################################
+# THREAD B. The regalia in Venetian hands
+#
+# Keyed entirely on vanilla state. Entry condition is has_country_modifier = BYZ_lacking_jewels,
+# applied by flavor_byz_ven.2 and removed by vanilla's own redemption branches
+# (flavor_byz_ven.3, .4, .6, .7, .12). Nothing here issues or cancels that loan.
+#
+# The historical detail these are built on: the regalia pawned to Venice in 1343 were never
+# redeemed, and later coronations used gilt copies set with glass.
+#############################################
+
+#############################################
+# .10  A coronation with nothing to crown him with
+#############################################
+cc_byz_debt.10 = {
+	type = country_event
+	title = cc_byz_debt.10.title
+	desc = cc_byz_debt.10.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_country_modifier = BYZ_lacking_jewels
+		NOT = { has_variable = cc_byz_mem_regalia_replaced }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Gilt and glass. Everyone in the room knows, and nobody says so.
+	option = {
+		name = cc_byz_debt.10.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_regalia_replaced  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_crowned_without_regalia
+			years = -1
+			mode = add
+		}
+	}
+
+	# Crown him without regalia at all and let the omission be the statement.
+	option = {
+		name = cc_byz_debt.10.b
+		ai_chance = { base = 25 }
+
+		add_legitimacy = legitimacy_mild_penalty
+		add_prestige = prestige_weak_bonus
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Make the loss itself the ceremony's subject. Needs a ruler who can hold a room.
+	option = {
+		name = cc_byz_debt.10.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_legitimacy = legitimacy_mild_bonus
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_debt.11  years = 5 }
+		}
+	}
+}
+
+
+#############################################
+# .11  The clergy on the subject of Latin creditors
+#
+# PILLAR 3 SEAM. When the union arc exists this event should also branch on cc_byz_union_stage:
+# a Latin republic holding the imperial insignia while the emperor negotiates with Rome is the
+# anti-unionists' best argument and they will make it. Written now against state that exists
+# so it works standalone, and marked so the union pass extends rather than rewrites it.
+#############################################
+cc_byz_debt.11 = {
+	type = country_event
+	title = cc_byz_debt.11.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_customs_conceded }
+				desc = cc_byz_debt.11.desc_customs
+			}
+			desc = cc_byz_debt.11.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_country_modifier = BYZ_lacking_jewels
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Agree with them publicly. Cheap, popular, and it commits the throne to a redemption
+	# it may not be able to afford.
+	option = {
+		name = cc_byz_debt.11.a
+		ai_chance = { base = 40 }
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Remind them what the loan paid for, and that they did not offer the money.
+	option = {
+		name = cc_byz_debt.11.b
+		ai_chance = { base = 35 }
+
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		add_legitimacy = legitimacy_weak_bonus
+	}
+
+	# Ask the church to fund the redemption itself. Only a ruler with real standing among
+	# them can put it that way without it sounding like a confiscation.
+	option = {
+		name = cc_byz_debt.11.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		add_gold = 200
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_debt.13  years = 25 }
+		}
+	}
+}
+
+
+#############################################
+# .13  A generation, and they are still in Venice
+#
+# Entirely hidden resolution. If the regalia are still pawned this long after the fact, the
+# court has stopped treating it as temporary, and that is worth recording as a decision even
+# though nobody ever made it.
+#############################################
+cc_byz_debt.13 = {
+	type = country_event
+	title = cc_byz_debt.13.title
+	desc = cc_byz_debt.13.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_country_modifier = BYZ_lacking_jewels
+		NOT = { has_variable = cc_byz_mem_regalia_abandoned }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		set_variable = { name = cc_byz_mem_regalia_abandoned  value = yes }
+
+		# Not offered. The office has outlasted its own insignia and the men who serve it
+		# have drawn their own conclusions about what else is negotiable.
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	option = {
+		name = cc_byz_debt.13.a
+		ai_chance = { base = 100 }
+	}
+}
+
+
+#############################################
+# THREAD C. Tax farming and revenue anticipation
+#
+# create_estate_loan is the engine's own loan mechanism and is what vanilla's take_estate_loan
+# action calls (take_bank_loan.txt:23). Note the comment at estate_emergency_actions.txt:491:
+# the BURGHERS GRANT was deliberately converted off create_estate_loan to transfer_gold_from_estate
+# to stop a bankruptcy spiral. That is a caution about using a loan where a grant belongs, not a
+# deprecation of the effect. Selling revenue forward is genuinely a loan, so it takes one.
+#############################################
+
+#############################################
+# .20  Sell next year's revenue
+#############################################
+cc_byz_debt.20 = {
+	type = country_event
+	title = cc_byz_debt.20.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { at_war = yes }
+				desc = cc_byz_debt.20.desc_war
+			}
+			desc = cc_byz_debt.20.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		NOT = { has_country_modifier = cc_byz_revenue_farmed }
+		NOT = { has_variable = cc_byz_mem_farm_hereditary }
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = peasant
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Sell it to the burghers. Domestic, recoverable, and they will want it renewed.
+	option = {
+		name = cc_byz_debt.20.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_tax_farmed  value = yes }
+		transfer_gold_from_estate = {
+			estate_type = estate_type:burghers_estate
+			value = {
+				value = country_estate_loan_size
+				multiply = 8
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_byz_revenue_farmed
+			years = 15
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Sell it to Italian merchants. More money, and the collectors answer to a foreign city.
+	option = {
+		name = cc_byz_debt.20.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_tax_farmed  value = yes }
+		add_gold = 300
+		add_country_modifier = {
+			modifier = cc_byz_revenue_farmed
+			years = 20
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+
+		random_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_holds_tax_farm
+			}
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Retrench instead. Nothing arrives, and the assessment survives to collect next year.
+	option = {
+		name = cc_byz_debt.20.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		add_country_modifier = {
+			modifier = cc_byz_fiscal_retrenchment
+			years = 12
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_tax_farmed }
+				trigger_event_silently = { id = cc_byz_debt.21  years = 7 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .21  How the farmers collect
+#############################################
+cc_byz_debt.21 = {
+	type = country_event
+	title = cc_byz_debt.21.title
+	desc = cc_byz_debt.21.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_variable = cc_byz_mem_tax_farmed
+	}
+
+	illustration_tags = {
+		10 = peasant
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Rein them in. The contract is worth less and the countryside is quieter.
+	option = {
+		name = cc_byz_debt.21.a
+		ai_chance = { base = 35 }
+
+		add_gold = -100
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Look away. The money arrives on time, which is the only test being applied.
+	option = {
+		name = cc_byz_debt.21.b
+		ai_chance = { base = 45 }
+
+		add_gold = 100
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Hang one of them. Effective, and it teaches the others to be discreet rather than fair.
+	option = {
+		name = cc_byz_debt.21.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_debt.22  years = 15 }
+		}
+	}
+}
+
+
+#############################################
+# .22  The farm becomes heritable
+#
+# CROSS-THREAD GATE. Option c requires low cc_byz_bureau_venality, the score the pillar 6a
+# bureaucracy events move. An emperor who let offices be sold has no salaried service left to
+# convert the farm into, and the best exit from this thread is closed to him. That is the
+# intended coupling between the two pillars rather than an incidental one.
+#############################################
+cc_byz_debt.22 = {
+	type = country_event
+	title = cc_byz_debt.22.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_bureau_venality >= 3 }
+				desc = cc_byz_debt.22.desc_venal
+			}
+			desc = cc_byz_debt.22.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_variable = cc_byz_mem_tax_farmed
+		NOT = { has_variable = cc_byz_mem_farm_hereditary }
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = interior
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Recognise it. The families keep the right and pay for the charter.
+	option = {
+		name = cc_byz_debt.22.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_farm_hereditary  value = yes }
+		add_gold = 200
+		add_country_modifier = {
+			modifier = cc_byz_hereditary_farm
+			years = -1
+			mode = add
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Buy the contracts back. The only route that restores the assessment, and it is priced
+	# accordingly.
+	option = {
+		name = cc_byz_debt.22.b
+		ai_chance = { base = 25 }
+
+		add_gold = -450
+		remove_country_modifier = cc_byz_revenue_farmed
+		remove_variable = cc_byz_mem_tax_farmed
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Convert the farm into a salaried office. Needs a service that still has salaried
+	# officers in it, which is what the venality gate is testing.
+	option = {
+		name = cc_byz_debt.22.c
+		ai_chance = { base = 35 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+			var:cc_byz_bureau_venality <= 2
+		}
+
+		add_gold = -150
+		remove_country_modifier = cc_byz_revenue_farmed
+		remove_variable = cc_byz_mem_tax_farmed
+		add_country_modifier = {
+			modifier = cc_byz_fiscal_retrenchment
+			years = 20
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	after = {
+		# Whatever was decided, the men who have been assessing the countryside for a
+		# generation are the farmers' men now. Not offered as a choice.
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_farm_hereditary }
+				change_variable = { name = cc_byz_strain  add = 1 }
+				clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+				every_current_bureaucracy = {
+					limit = { bureaucracy_maintenance < 0.5 }
+					change_entrenchment = entrenchment_mild_penalty
+				}
+			}
+		}
+	}
+}
+
+
+#############################################
+# THREAD D. Default
+#
+# change_loan_interest does NOT exist. The complete list of loan-scope effects is cancel_loan,
+# create_estate_loan, give_loan and pay_off_loans; everything else about a loan is read-only
+# (loan_amount, loan_interest, months_left, remaining_debt, has_loc_key). Renegotiation is
+# therefore modelled as cancel plus re-issue from the creditor's scope at a worse rate, which
+# is what actually happened anyway.
+#############################################
+
+#############################################
+# .30  The payment cannot be made
+#############################################
+cc_byz_debt.30 = {
+	type = country_event
+	title = cc_byz_debt.30.title
+	desc = {
+		first_valid = {
+			# Ordered most specific first. A second default by an emperor who already had one
+			# debt rewritten is a different conversation from the first, and outranks the
+			# grip branch: the creditors' posture is set by the history, not by the leverage.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_renegotiated }
+				desc = cc_byz_debt.30.desc_again
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_creditor_grip >= 3 }
+				desc = cc_byz_debt.30.desc_grip
+			}
+			desc = cc_byz_debt.30.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		num_loans > 1
+		any_loan = { exists = owner }
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_loan = {
+			limit = { exists = owner }
+			save_scope_as = cc_byz_due_loan
+			save_scope_value_as = {
+				name = cc_byz_due_amount
+				value = remaining_debt
+			}
+			owner = { save_scope_as = cc_byz_creditor }
+		}
+	}
+
+	# Find the money by starving the offices. The oldest answer and it always works once.
+	option = {
+		name = cc_byz_debt.30.a
+		ai_chance = { base = 35 }
+
+		every_current_bureaucracy = {
+			set_maintenance = 0.25
+		}
+		add_country_modifier = {
+			modifier = cc_byz_sound_credit
+			years = 10
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Ask them to rewrite it. They will, at their price.
+	option = {
+		name = cc_byz_debt.30.b
+		ai_chance = { base = 40 }
+		trigger = {
+			exists = scope:cc_byz_due_loan
+			exists = scope:cc_byz_creditor
+		}
+
+		set_variable = { name = cc_byz_mem_renegotiated  value = yes }
+		trigger_event_non_silently = { id = cc_byz_debt.31 }
+	}
+
+	# Repudiate it. Nothing is paid and nothing is forgotten.
+	option = {
+		name = cc_byz_debt.30.c
+		ai_chance = { base = 15 }
+
+		set_variable = { name = cc_byz_mem_repudiated  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_debt_repudiated
+			years = -1
+			mode = add
+		}
+		change_variable = { name = cc_byz_italian_standing  add = -3 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+
+		if = {
+			limit = { exists = scope:cc_byz_due_loan }
+			cancel_loan = scope:cc_byz_due_loan
+		}
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_repudiated_debt
+			}
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Talk them into rolling it over on the existing terms. Exceptional, and it should be.
+	option = {
+		name = cc_byz_debt.30.d
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { dip >= 85 }
+		}
+
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_repudiated }
+				trigger_event_silently = { id = cc_byz_debt.32  years = 4 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .31  The new terms
+#
+# The cancel-and-reissue. give_loan is called from the CREDITOR's scope with target = the
+# borrower, exactly as vanilla does it in flavor_byz_ven.2. The amount carried over is the
+# remaining debt captured in .30's immediate block, because a cancelled loan cannot be read
+# afterwards.
+#############################################
+cc_byz_debt.31 = {
+	type = country_event
+	title = cc_byz_debt.31.title
+	desc = cc_byz_debt.31.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = trading
+	}
+
+	# Accept the rate.
+	immediate = {
+		# Writes a score owned by another thread's initialiser, so that one is called too.
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	option = {
+		name = cc_byz_debt.31.a
+		ai_chance = { base = 70 }
+
+		if = {
+			limit = {
+				exists = scope:cc_byz_due_loan
+				exists = scope:cc_byz_creditor
+			}
+			cancel_loan = scope:cc_byz_due_loan
+			scope:cc_byz_creditor = {
+				give_loan = {
+					target = root
+					amount = scope:cc_byz_due_amount
+					interest = 0.06
+					months = 120
+				}
+			}
+			add_opinion = {
+				target = scope:cc_byz_creditor
+				modifier = opinion_increased_loan_interest
+			}
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+	}
+
+	# Accept the rate and the collector they send with it. Cheaper money, more of them here.
+	option = {
+		name = cc_byz_debt.31.b
+		ai_chance = { base = 30 }
+
+		if = {
+			limit = {
+				exists = scope:cc_byz_due_loan
+				exists = scope:cc_byz_creditor
+			}
+			cancel_loan = scope:cc_byz_due_loan
+			scope:cc_byz_creditor = {
+				give_loan = {
+					target = root
+					amount = scope:cc_byz_due_amount
+					interest = 0.03
+					months = 120
+				}
+			}
+		}
+		change_variable = { name = cc_byz_creditor_grip  add = 2 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		scope:cc_byz_creditor ?= {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_privilege
+			}
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+}
+
+
+#############################################
+# .32  The creditors act as one
+#############################################
+cc_byz_debt.32 = {
+	type = country_event
+	title = cc_byz_debt.32.title
+	desc = cc_byz_debt.32.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_variable = cc_byz_mem_repudiated
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		# Forced. Repudiation is not a transaction the other republics can ignore, whatever
+		# their own quarrels.
+		every_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_syndicate
+			}
+		}
+	}
+
+	# Weather it. The empire has no credit in Italy and buys nothing there.
+	option = {
+		name = cc_byz_debt.32.a
+		ai_chance = { base = 45 }
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Settle a part of it to reopen the door.
+	option = {
+		name = cc_byz_debt.32.b
+		ai_chance = { base = 35 }
+
+		add_gold = -350
+		remove_country_modifier = cc_byz_debt_repudiated
+		change_variable = { name = cc_byz_italian_standing  add = 2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Borrow east instead. Available to a ruler who has somewhere else to go.
+	option = {
+		name = cc_byz_debt.32.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+			societal_value:latinization_vs_hellenization > 40
+		}
+
+		add_gold = 150
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+	}
+}
+
+
+#############################################
+# .33  After the bankruptcy
+#
+# From on_bankruptcy, chained through the on_actions sub-list so vanilla's own branches
+# (ach_has_been_bankrupt, and the flavor_byz_ven.11-14 crown-jewels seizure) still run. This
+# is the aftermath only; it does not duplicate any of that.
+#############################################
+cc_byz_debt.33 = {
+	type = country_event
+	title = cc_byz_debt.33.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_country_modifier = BYZ_lacking_jewels }
+				desc = cc_byz_debt.33.desc_jewels
+			}
+			# The first read of cc_byz_strain anywhere in the submod. Pillar 4d owns the pulse
+			# that drives the score and the threshold events that key off it; this branch
+			# exists so the variable is live and provably wired before that pillar lands,
+			# rather than accumulating silently for several releases.
+			triggered_desc = {
+				trigger = { var:cc_byz_strain >= 4 }
+				desc = cc_byz_debt.33.desc_strained
+			}
+			desc = cc_byz_debt.33.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		# Hidden and forced. A bankruptcy hands the provinces to whoever can still pay
+		# soldiers, and that is never the treasury.
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Rebuild the assessment from nothing. Slow, and it is the only thing that works.
+	option = {
+		name = cc_byz_debt.33.a
+		ai_chance = { base = 40 }
+
+		add_country_modifier = {
+			modifier = cc_byz_fiscal_retrenchment
+			years = 25
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Let the magnates collect and remit what they think fair. It arrives, and less of it.
+	option = {
+		name = cc_byz_debt.33.b
+		ai_chance = { base = 40 }
+
+		add_country_modifier = {
+			modifier = cc_byz_hereditary_farm
+			years = 30
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Go back to the Italians with nothing to offer but the truth about the books.
+	option = {
+		name = cc_byz_debt.33.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 80 }
+			NOT = { has_variable = cc_byz_mem_repudiated }
+		}
+
+		add_country_modifier = {
+			modifier = cc_byz_creditors_wary
+			years = 15
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+}

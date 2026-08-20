@@ -1,0 +1,170 @@
+﻿# Shared score variables, initialised in one place.
+#
+# Several pillars read the same three running scores, and the build order does not create
+# them in dependency order: the debt threads (pillar 6b) are written before the exarchate
+# event threads (pillar 2) and before strain (pillar 4d), yet all three touch these. Defining
+# them here means a later pillar keys off a definition rather than retrofitting one, which is
+# the failure mode that cost the main mod a whole review pass: variables written by one chain
+# and never read by another, so the content looks deep and plays linear.
+#
+# Initialisation is LAZY. Every event that touches a score calls the matching init effect from
+# its immediate block first. There is deliberately no on_game_start here: this is a submod, and
+# both it and the main mod declaring on_game_start = { effect = {} } would silently leave only
+# the last one loaded. The on_actions sub-list would merge safely, but lazy init needs no hook
+# at all and cannot collide with anything.
+#
+#   cc_byz_italian_standing   -5..5   standing with the Italian maritime republics as a bloc.
+#                                     Read by the debt threads, the Italian and papal threads
+#                                     (pillar 2) and the spice/grain thread (pillar 5).
+#
+#   cc_byz_creditor_grip       0..5   how much of the fisc the creditors have a claim on.
+#                                     Rises with concessions, not with the size of the debt:
+#                                     an emperor can owe a great deal and concede nothing.
+#
+#   cc_byz_strain              0..10  overextension. Pillar 4d owns the pulse that drives this;
+#                                     the debt threads only seed it, because borrowing to hold
+#                                     ground is the mechanism by which reconquest becomes ruin.
+#
+# Ranges are enforced by clamp_variable at each call site rather than here, matching the
+# existing cc_byz_bureau_venality pattern in the bureaucracy events.
+
+cc_byz_init_debt_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_italian_standing } }
+		set_variable = {
+			name = cc_byz_italian_standing
+			value = 0
+		}
+	}
+
+	if = {
+		limit = { NOT = { has_variable = cc_byz_creditor_grip } }
+		set_variable = {
+			name = cc_byz_creditor_grip
+			value = 0
+		}
+	}
+
+	if = {
+		limit = { NOT = { has_variable = cc_byz_strain } }
+		set_variable = {
+			name = cc_byz_strain
+			value = 0
+		}
+	}
+}
+
+# Union arc state.
+#
+#   cc_byz_union_stage      0..4   0 nothing, 1 contacts opened, 2 signed, 3 received at
+#                                  home, 4 repudiated. Read by the four union actions'
+#                                  potential blocks, so it must exist before any of them can
+#                                  become visible: cc_byz_open_union_contacts therefore
+#                                  accepts EITHER the variable being absent OR equal to 0,
+#                                  and calls this effect before setting it.
+#
+#   cc_byz_anti_unionist    0..5   how hard the city is resisting. Rises with promulgation
+#                                  and with Hellenic drift, falls when the union is
+#                                  repudiated. Gates the ferment events and the AI's
+#                                  willingness to renounce.
+#
+# Kept separate from the debt initialiser rather than merged into one effect: the union
+# actions run this from a generic_action's effect block, where dragging in three unrelated
+# debt variables would put them on every save that ever opened a legation.
+# Bureaucracy thread state.
+#
+#   cc_byz_bureau_venality  0..5  how far offices have become property rather than posts.
+#
+# THIS EXISTS BECAUSE OF A REAL BUG. The score used to be initialised inline in the immediate
+# of cc_byz_bureaucracy.1 only, on the assumption that .1 fires first because it hangs off
+# on_bureaucracy_added. It does not always: .60 hangs off on_maintenance_changed, which fires
+# whenever a bureau's funding moves, INCLUDING during game start before any bureau has been
+# added. Its options then ran change_variable on an unset variable and errored.
+#
+# change_variable on an unset variable is a different failure from reading one in a trigger:
+# it happens in an EFFECT, after the player has clicked, so there is no guard block to hide
+# behind. The variable simply has to exist. Every event in the thread now calls this first.
+cc_byz_init_bureau_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_bureau_venality } }
+		set_variable = {
+			name = cc_byz_bureau_venality
+			value = 0
+		}
+	}
+}
+
+# Exarchate thread state, on the OVERLORD.
+#
+#   cc_byz_papal_standing  -5..5  the emperor's standing with the papacy as an institution,
+#                                 distinct from the union arc's cc_byz_union_stage. A union
+#                                 can be signed while this is deeply negative: the doctrinal
+#                                 question and the question of who governs Rome are separate
+#                                 quarrels and the threads treat them that way.
+#
+# NOT initialised here: cc_byz_exarch_loyalty and cc_byz_is_exarchate live on the SUBJECT,
+# set by cc_byz_appoint_exarch and backfilled by the subject type's on_enable. The friction
+# thread fires on the overlord and reaches them through a saved scope, so initialising them
+# from the overlord's scope here would create a second, unrelated pair of variables on the
+# wrong country.
+#   cc_byz_exarch_appetite  0..5   how much more of Italy the exarch thinks should be his.
+#                                  Owned by the demand thread and deliberately NOT the same
+#                                  score as cc_byz_exarch_loyalty: an exarch can be perfectly
+#                                  loyal and still want the Romagna, and a resentful one can
+#                                  want nothing. Keeping them apart is also what stops a
+#                                  recurring pulse thread from deciding the friction arc's
+#                                  ending by sheer number of firings.
+cc_byz_init_exarch_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_papal_standing } }
+		set_variable = {
+			name = cc_byz_papal_standing
+			value = 0
+		}
+	}
+
+	if = {
+		limit = { NOT = { has_variable = cc_byz_exarch_appetite } }
+		set_variable = {
+			name = cc_byz_exarch_appetite
+			value = 0
+		}
+	}
+}
+
+# Levant confrontation state, on Byzantium.
+#
+#   cc_byz_levant_pressure  -5..5  how hard the empire is pressing in the Levant. Negative is
+#                                  accommodation, positive is confrontation. Gates the phase B
+#                                  escalation and decides which endings stay reachable.
+#
+# The situation's own progress counters (cc_byz_levant_progress, cc_byz_mamluk_progress,
+# cc_byz_mamluk_phase) live on the SITUATION, not here, and are initialised in its on_start.
+# Events reach them through situation:cc_byz_mamluk_confrontation rather than through root.
+cc_byz_init_levant_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_levant_pressure } }
+		set_variable = {
+			name = cc_byz_levant_pressure
+			value = 0
+		}
+	}
+}
+
+cc_byz_init_union_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_union_stage } }
+		set_variable = {
+			name = cc_byz_union_stage
+			value = 0
+		}
+	}
+
+	if = {
+		limit = { NOT = { has_variable = cc_byz_anti_unionist } }
+		set_variable = {
+			name = cc_byz_anti_unionist
+			value = 0
+		}
+	}
+}

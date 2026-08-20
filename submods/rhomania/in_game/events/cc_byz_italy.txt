@@ -1,0 +1,479 @@
+﻿namespace = cc_byz_italy
+
+# The north Italians, and later the Empire.
+#
+#   .1   Guelph and Ghibelline enrolment for a late-created exarchate
+#   .2   The republics' quarters in the reconquered ports
+#   .3   Communes that would rather have a signore
+#   .4   A second emperor in Italy
+#
+# Score: cc_byz_italian_standing -5..5, shared with the debt threads.
+#
+#
+# .1 EXISTS BECAUSE OF A PARTICIPATION GAP IN VANILLA, not a bug in it.
+#
+# guelphs_and_ghibellines enrols its members exactly once, in on_start, via a single
+# every_country pass over has_presence_in = region:italy_region
+# (common/situations/guelphs_and_ghibellines.txt:29-45). A country created LATER is never
+# enrolled. An exarchate spun out of Italian territory mid-situation therefore passes the
+# situation's visible check and can see the whole thing while being unable to touch it.
+#
+# The end conditions are safe either way. guelphs_and_ghibellines_end_trigger fires when
+# either IO reaches progress >= 1, when NAND = { exists ghibellines_io  exists guelphs_io },
+# or on reaching age 3, so even a Byzantine conquest that collapses one faction's membership
+# entirely ends the situation through the stalemate branch rather than hanging. Nothing here
+# is preventing a break; it is filling a hole.
+#
+# Enrolment idiom copied verbatim from guelphs_and_ghibellines.2:
+#     international_organization:ghibellines_io = { add_country_to_international_organization = X }
+#     international_organization:guelphs_io = { remove_country_from_international_organization = X }
+# with can_join_international_organization checked first.
+#
+# Note vanilla gates its own side-choice options on capital.region = region:italy_region, which
+# an exarchate satisfies by construction, and on is_emperor = no for the Guelph side.
+#
+# Memory variables:
+#   cc_byz_mem_enrolled_guelph      the exarchate joined the Guelphs
+#   cc_byz_mem_enrolled_ghibelline  the exarchate joined the Ghibellines
+#   cc_byz_mem_third_party          the exarchate stood apart as a third imperial party
+#   cc_byz_mem_quarters_granted     the republics keep their quarters in the ports
+#   cc_byz_mem_commune_charter      a commune was bought with a charter rather than a garrison
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  A third party in an old quarrel
+#############################################
+cc_byz_italy.1 = {
+	type = country_event
+	title = cc_byz_italy.1.title
+	desc = cc_byz_italy.1.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		is_situation_active = situation:guelphs_and_ghibellines
+		NOR = {
+			has_variable = cc_byz_mem_enrolled_guelph
+			has_variable = cc_byz_mem_enrolled_ghibelline
+			has_variable = cc_byz_mem_third_party
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+	}
+
+	# The Ghibellines. An eastern emperor claiming the imperial party is the more interesting
+	# reading and the one the Ghibellines will find hardest to refuse.
+	option = {
+		name = cc_byz_italy.1.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_enrolled_ghibelline  value = yes }
+		hidden_effect = {
+			scope:cc_byz_exarch ?= {
+				if = {
+					limit = {
+						NOT = { is_member_of_international_organization = international_organization:ghibellines_io }
+						can_join_international_organization = international_organization:ghibellines_io
+					}
+					international_organization:ghibellines_io = {
+						add_country_to_international_organization = scope:cc_byz_exarch
+					}
+				}
+			}
+		}
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_papal_standing  add = -2 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+	}
+
+	# The Guelphs. The papal party, which for an Orthodox emperor is an odd place to stand
+	# and an extremely useful one.
+	option = {
+		name = cc_byz_italy.1.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_enrolled_guelph  value = yes }
+		hidden_effect = {
+			scope:cc_byz_exarch ?= {
+				if = {
+					limit = {
+						NOT = { is_member_of_international_organization = international_organization:guelphs_io }
+						can_join_international_organization = international_organization:guelphs_io
+					}
+					international_organization:guelphs_io = {
+						add_country_to_international_organization = scope:cc_byz_exarch
+					}
+				}
+			}
+		}
+		change_variable = { name = cc_byz_papal_standing  add = 2 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Stand apart. The exarchate forfeits any influence over how the quarrel ends and keeps
+	# clear of a fight that has consumed better-placed powers than itself.
+	option = {
+		name = cc_byz_italy.1.c
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_third_party  value = yes }
+		add_prestige = prestige_weak_bonus
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_italy.2  years = 6 }
+		}
+	}
+}
+
+
+#############################################
+# .2  The quarters in the ports
+#
+# Couples directly to the debt threads: the republics asking for quarters here are the same
+# ones lending in cc_byz_debt, and an emperor already deep in their books argues from a
+# weaker position whether he notices or not.
+#############################################
+cc_byz_italy.2 = {
+	type = country_event
+	title = cc_byz_italy.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_creditor_grip >= 3 }
+				desc = cc_byz_italy.2.desc_indebted
+			}
+			desc = cc_byz_italy.2.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		NOT = { has_variable = cc_byz_mem_quarters_granted }
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Grant the quarters. The ports work, and they work for somebody else.
+	option = {
+		name = cc_byz_italy.2.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_quarters_granted  value = yes }
+		add_gold = 200
+		change_variable = { name = cc_byz_italian_standing  add = 2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Refuse, and garrison the ports properly. Expensive and it makes enemies who own ships.
+	option = {
+		name = cc_byz_italy.2.b
+		ai_chance = { base = 35 }
+
+		add_gold = -200
+		change_variable = { name = cc_byz_italian_standing  add = -2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+		# Making enemies of the maritime republics is what puts the Aegean in play.
+		if = {
+			limit = {
+				NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } }
+			}
+			unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
+		}
+	}
+
+	# Grant quarters to one republic on condition it keeps the others out. Needs a ruler who
+	# can hold the resulting quarrel at arm's length.
+	option = {
+		name = cc_byz_italy.2.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		set_variable = { name = cc_byz_mem_quarters_granted  value = yes }
+		add_gold = 100
+		random_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			save_scope_as = cc_byz_favoured_republic
+			add_opinion = {
+				target = root
+				modifier = cc_byz_creditor_privilege
+			}
+		}
+		every_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+				NOT = { this = scope:cc_byz_favoured_republic }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_rival_privilege_granted
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_italy.3  years = 10 }
+		}
+	}
+}
+
+
+#############################################
+# .3  The communes
+#############################################
+cc_byz_italy.3 = {
+	type = country_event
+	title = cc_byz_italy.3.title
+	desc = cc_byz_italy.3.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+	}
+
+	# Garrison them. It works for as long as the garrison is paid.
+	option = {
+		name = cc_byz_italy.3.a
+		ai_chance = { base = 35 }
+
+		add_gold = -150
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Let each commune keep its own signore under the exarch's confirmation. Cheap, and it
+	# builds a network of Italian lords who owe their standing to Rome rather than to us.
+	option = {
+		name = cc_byz_italy.3.b
+		ai_chance = { base = 40 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Buy them with charters instead of garrisons. An administrator can, and the charter
+	# becomes the precedent every other commune cites.
+	option = {
+		name = cc_byz_italy.3.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		set_variable = { name = cc_byz_mem_commune_charter  value = yes }
+		add_gold = -100
+		change_variable = { name = cc_byz_italian_standing  add = 2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+
+	after = {
+		# Not offered. A charter granted to one commune is read aloud in the next one before
+		# the ink is dry, and the terms only ever move one way.
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_commune_charter }
+				change_societal_value = {
+					type = cc_taxis_vs_cc_dynatoi
+					value = societal_value_minor_move_to_right
+				}
+			}
+			trigger_event_silently = { id = cc_byz_italy.4  years = 25 }
+		}
+	}
+}
+
+
+#############################################
+# .4  A second emperor
+#
+# The later-age turn: the Empire in the north takes an interest in the fact that a man calling
+# himself Roman emperor is governing Rome.
+#
+# ITALIAN WARS NOTE. Vanilla already anticipates a surviving Byzantium here. The Balkan foreign
+# league's leader is chosen as a Christian country with a Balkan capital that owns
+# location:constantinople and holds 100+ locations owned or owned by subjects
+# (italian_wars.txt:155-193), which is this country by construction. Exarchate locations count
+# toward that total, so the exarchate helps BYZ qualify to lead the league against the very
+# powers this event is about. Nothing here needs to make that happen; it needs to not break it.
+#############################################
+cc_byz_italy.4 = {
+	type = country_event
+	title = cc_byz_italy.4.title
+	desc = {
+		first_valid = {
+			# What the exarchate has BECOME outranks which party it enrolled in. A hereditary
+			# exarch and a salaried governor answer the western emperor's question in
+			# completely different voices, and only one of them is the emperor's voice.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_dynasty }
+				desc = cc_byz_italy.4.desc_dynasty
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_absorbed }
+				desc = cc_byz_italy.4.desc_absorbed
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_enrolled_ghibelline }
+				desc = cc_byz_italy.4.desc_ghibelline
+			}
+			desc = cc_byz_italy.4.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Answer in kind. There is one Roman emperor and he is in Constantinople.
+	option = {
+		name = cc_byz_italy.4.a
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_severe_bonus
+		change_variable = { name = cc_byz_italian_standing  add = -2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		if = {
+			limit = {
+				NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_consolidate_italy } }
+			}
+			unlock_casus_belli_effect = { type = cc_byz_cb_consolidate_italy }
+		}
+	}
+
+	# Say nothing and keep the exarchate. Titles are cheap; Rome is not.
+	option = {
+		name = cc_byz_italy.4.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_mild_penalty
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Propose that the two empires recognise each other and divide the question of Italy.
+	# Requires a ruler who can sell that at home as something other than a surrender.
+	option = {
+		name = cc_byz_italy.4.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 85 }
+		}
+
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = 3 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+}

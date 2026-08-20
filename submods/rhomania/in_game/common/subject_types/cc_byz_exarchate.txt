@@ -1,0 +1,230 @@
+﻿# The Exarchate: Rome governed from Constantinople.
+#
+# Vanilla's route to holding Rome as a Byzantine player is ROM_BYZ_f
+# (00_formable_countries.txt:1909), whose form_effect force-moves the capital to Rome and
+# applies societal_value_huge_move_to_left. This is the alternative: Rome is held as a
+# governed subject under an appointed exarch while the emperor stays in Constantinople.
+#
+# Structure follows vanilla pronoia (D008_pronoia.txt) for the visibility and diplo-chance
+# blocks, since that is the other BYZ-specific subject type and the closest precedent.
+# The exarch himself is appointed through cc_byz_appoint_exarch, which creates the country
+# via create_country_from_location the way vanilla's assign_governor does.
+#
+# has_overlords_ruler = no: the exarch is his own man, which is the whole problem.
+# overlord_inherit_if_no_heir = yes: an exarch who dies without an heir reverts to the
+# emperor, matching pronoia. This is the safety valve that stops a failed appointment
+# becoming permanent.
+
+cc_byz_exarchate = {
+	content_priority = 300
+	subject_pays = subject_pays_pronoia
+	color = subject_pronoia
+	level = 2
+
+	visible_through_diplomacy = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			AND = {
+				has_or_had_tag = BYZ
+				modifier:cc_byz_can_appoint_exarch = yes
+			}
+			AND = {
+				country_exists = c:BYZ
+				is_subject_of = c:BYZ
+				is_subject_type = cc_byz_exarchate
+			}
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+
+	visible_through_treaty = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			AND = {
+				has_or_had_tag = BYZ
+				modifier:cc_byz_can_appoint_exarch = yes
+			}
+			AND = {
+				country_exists = c:BYZ
+				is_subject_of = c:BYZ
+				is_subject_type = cc_byz_exarchate
+			}
+		}
+		scope:target = { subject_type_is_not_locked = yes }
+	}
+
+	# An exarch is appointed, not negotiated. Both ordinary routes into this subject type are
+	# closed so cc_byz_appoint_exarch is the only way in: that interaction is what picks the
+	# man, the terms of appointment and the seat, seeds cc_byz_exarch_loyalty and grants the
+	# reconquest CB. Creating one through the normal subject-creation diplomacy skipped all
+	# of it and produced an exarchate with no exarch.
+	#
+	# Scripted creation is unaffected by these: vanilla's conquistador, secessionists, hre,
+	# samanta and hanseatic_member types are all always = no here and are spawned by script.
+	creation_visible = {
+		always = no
+	}
+
+	release_country_enabled = {
+		always = no
+	}
+
+	# An exarchate is a command, not an ally. It fights the empire's wars.
+	join_offensive_wars_always = {
+		NOT = { scope:actor ?= { is_subject_of = scope:recipient } }
+	}
+	join_offensive_wars_can_call = {
+		scope:actor ?= { is_subject_of = scope:recipient }
+		NOT = { scope:target ?= { is_subject_of = scope:recipient } }
+	}
+	join_defensive_wars_always = {
+		always = yes
+	}
+
+	diplomatic_capacity_cost_scale = 1.0
+
+	# Rome is far from Constantinople and the exarch knows it.
+	strength_vs_overlord = -0.35
+
+	has_overlords_ruler = no
+	annexation_speed = 0.5
+	annexation_min_years_before = 25
+	annexation_min_opinion = 190
+	annexation_stall_opinion = 175
+	subject_can_cancel = no
+	overlord_can_cancel = yes
+	overlord_inherit_if_no_heir = yes
+
+	can_overlord_build_roads = yes
+	can_overlord_build_buildings = yes
+	can_overlord_build_rgos = yes
+
+	has_limited_diplomacy = yes
+
+	fleet_basing_rights = yes
+	food_access = yes
+
+	can_change_rank = no
+	can_change_heir_selection = yes
+
+	minimum_opinion_for_offer = 150
+
+	great_power_score_transfer = 0.5
+
+	institution_spread_to_overlord = monthly_institution_spread_mild
+	institution_spread_to_subject = monthly_institution_spread_mild
+
+	# Holding the old capital is worth prestige, and governing through an appointed official
+	# rather than a magnate family is an argument for government by office.
+	overlord_modifier = {
+		monthly_prestige = 0.05
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+	}
+
+	subject_modifier = {
+		global_monthly_prosperity = 0.001
+		global_estate_target_satisfaction = small_permanent_target_satisfaction
+	}
+
+	# Backfill. The appoint interaction sets all of this itself, so normally these limits are
+	# all false and nothing here fires. It exists for the routes we do not control: a subject
+	# type changed through a treaty, a peace deal, or anything added later. Without it such an
+	# exarchate would have no terms of appointment and no loyalty score, and the friction
+	# thread reads both. Pattern follows vanilla appanage.txt:157, which add_reforms here.
+	#
+	# root is the subject in on_enable.
+	on_enable = {
+		# No is_available_for guard here, deliberately. The three exarch reforms are locked
+		# and their potential is the self-referential has_reform = <itself> that vanilla's
+		# soyurghal governor reforms use, so is_available_for is false for all of them right
+		# up until you already hold one. add_reform grants directly and ignores potential,
+		# which is exactly why assign_governor can hand out a locked reform the same way.
+		if = {
+			limit = {
+				NOR = {
+					has_reform = government_reform:cc_byz_exarch_caretaker_reform
+					has_reform = government_reform:cc_byz_exarch_effective_reform
+					has_reform = government_reform:cc_byz_exarch_strategos_reform
+				}
+			}
+			# Caretaker is the right default for an exarchate nobody deliberately appointed.
+			add_reform = government_reform:cc_byz_exarch_caretaker_reform
+		}
+
+		if = {
+			limit = { NOT = { has_variable = cc_byz_is_exarchate } }
+			set_variable = {
+				name = cc_byz_is_exarchate
+				value = yes
+			}
+		}
+
+		if = {
+			limit = { NOT = { has_variable = cc_byz_exarch_loyalty } }
+			set_variable = {
+				name = cc_byz_exarch_loyalty
+				value = 0
+			}
+		}
+	}
+
+	on_disable = {
+		remove_variable = cc_byz_is_exarchate
+		remove_variable = cc_byz_exarch_loyalty
+	}
+
+	diplo_chance_accept_subject = {
+		base = -90
+		current_strength = 0.2
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		rank_difference = -5
+		giving_defensive_support = 2
+		receiving_defensive_support = 5
+		royal_ties = 1
+
+		num_of_limited_subjects = -5
+		culture_war = 3
+		diplomatic_reputation = 1
+		different_religion = -100
+		same_common_language = 10
+		same_court_language = 20
+		different_culture = -50
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+		tax_base = -0.25
+
+		reject_subjugation_reasons = -1
+		accept_subjugation_reasons = 1
+	}
+
+	diplo_chance_accept_overlord = {
+		base = -50
+		border_distance = -0.3
+		negative_opinion = -5
+		positive_opinion = 0.25
+		same_common_language = 10
+		same_court_language = 20
+		different_culture = -50
+		different_government_type = -25
+		actor_at_war = -20
+		competing_power = -200
+	}
+
+	ai_wants_to_be_overlord = {
+		scope:subject = {
+			add = {
+				desc = "COALITION_GRADE_ANTAGONISM_TOWARDS_THEM_SUBJECT"
+				value = {
+					every_country_with_coalition_grade_antagonism_against_us = {
+						add = {
+							value = -10
+						}
+					}
+				}
+			}
+		}
+	}
+}

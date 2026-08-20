@@ -1,0 +1,82 @@
+﻿# Narrow geographies for the exarchate reconquest CBs.
+#
+# WHY THESE EXIST. Vanilla's cb_restore_roman_borders points at roman_borders_geography
+# (01_europe.txt:124), which spans anatolia, italy, iberia, france, balkan and egypt regions
+# plus a long area list. That is the whole Justinianic claim in one CB and it makes no
+# interesting choices: it is available against practically everyone or nobody.
+#
+# These two are deliberately small. Each answers one question the exarchate events raise, and
+# each is unlocked by those events rather than granted with the advance.
+#
+# Area contents are vanilla's own annotation from 01_europe.txt:243-245:
+#   aegean_archipelago_area   Crete, Rhodes, Chios, Samos, Cyclades
+#   northern_greece_area      Athens, Thessaly, Epirus, Ionian Islands
+#
+# northern_greece_area is deliberately NOT included. It would bring the Ionian Islands, which
+# belong here, but also Athens and Thessaly, which are mainland Greece and already reachable
+# through ordinary conquest. A CB that quietly covers half the Balkans is the problem this
+# file was written to avoid.
+
+# The Latin holdings in the Aegean: the Duchy of the Archipelago, Genoese Chios,
+# Hospitaller Rhodes, Venetian Crete and Negroponte.
+cc_byz_aegean_latin_geography = {
+	area = {
+		aegean_archipelago_area
+	}
+}
+
+# Consolidating the Italian mainland around an established exarchate. Region-wide because an
+# exarchate at Rome has a claim to argue anywhere in Italy, but this CB is gated behind
+# actually holding an exarchate, which is the real restriction.
+cc_byz_italian_mainland_geography = {
+	region = {
+		italy_region
+	}
+}
+
+
+# ---- The eastern branch ----
+#
+# Once Alexandria, Cairo and the Sinai are held, the empire sits astride the Red Sea transit
+# and the argument changes from recovering the west to reaching the source of the spice.
+#
+# These four are used by the eastern CBs, by owns_or_has_subject_in presence checks in the
+# theatre triggers, and by ordered_province_definition_in_scripted_geography when a colonial
+# charter is planted. Areas verified with tools/vanilla_search.py values area.
+
+# The mouth of the Red Sea. Whoever holds this taxes everything that passes.
+cc_byz_red_sea_geography = {
+	area = {
+		north_yemen_area
+		south_yemen_area
+	}
+}
+
+# The Horn. Named by location rather than area, because vanilla has no single area covering
+# the Somali coast and northern_ethiopia_area reaches well inland of anything the empire
+# would plausibly hold.
+cc_byz_horn_geography = {
+	location = {
+		zeila
+		berbera
+		mogadishu
+	}
+}
+
+# The Malabar and Coromandel trade, and the Gujarati shipping that feeds it.
+cc_byz_india_geography = {
+	area = {
+		malabar_area
+		gujarat_area
+		bengal_area
+	}
+}
+
+# The source. Everything west of here is a middleman.
+cc_byz_spice_islands_geography = {
+	area = {
+		java_area
+		north_sumatra_area
+		south_sumatra_area
+	}
+}

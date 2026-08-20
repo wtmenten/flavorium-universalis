@@ -1,0 +1,54 @@
+﻿# EVERY vanilla on_action this submod chains into is declared HERE, once, and nowhere else.
+#
+# WHY THIS FILE EXISTS. Two rules combine into a trap:
+#
+#   1. A hardcoded on_action must never be redefined with a direct effect = {} block, because
+#      that overrides vanilla's own logic instead of adding to it. Chain through the
+#      on_actions = { } sub-list instead, which merges. (CLAUDE.md, and see on_bankruptcy
+#      below: vanilla's copy carries real crown-jewels logic that must survive.)
+#
+#   2. Declaring the SAME on_action key in two files is last-one-wins, exactly as CLAUDE.md
+#      documents for on_game_start. Checked against vanilla: across in_game and every dlc,
+#      no on_action key is declared more than once. There is therefore no evidence that two
+#      declarations of one key merge, and good evidence the engine expects exactly one.
+#
+# So the moment a second pillar wanted the yearly pulse, the per-topic files could no longer
+# each declare their own hooks. Topic files keep their own cc_byz_* on_actions; this file is
+# the single place a vanilla key is named. Add new pillars to the lists below.
+#
+# Hook contracts, from in_game/common/on_action/_hardcoded.txt:
+#   on_bureaucracy_added / _removed   root = country, scope:bureaucracy_type
+#   on_loan_taken                     root = country, scope:target = loan, scope:owner = lender
+#                                     (vanilla leaves this one entirely empty)
+#   on_bankruptcy                     root = country. NOT empty in vanilla: it sets
+#                                     ach_has_been_bankrupt and runs the flavor_byz_ven.11-14
+#                                     crown-jewels branches. Chained, never replaced.
+
+on_bureaucracy_added = {
+	on_actions = { cc_byz_on_bureaucracy_added }
+}
+
+on_bureaucracy_removed = {
+	on_actions = { cc_byz_on_bureaucracy_removed }
+}
+
+on_loan_taken = {
+	on_actions = { cc_byz_on_loan_taken }
+}
+
+on_bankruptcy = {
+	on_actions = { cc_byz_on_bankruptcy }
+}
+
+yearly_country_pulse = {
+	on_actions = {
+		cc_byz_on_yearly_bureaucracy
+		cc_byz_on_yearly_debt
+		cc_byz_on_yearly_union
+		cc_byz_on_yearly_exarchate
+		cc_byz_on_yearly_exarch_prompt
+		cc_byz_on_yearly_papal_guard
+		cc_byz_on_yearly_strain_drift
+		cc_byz_on_yearly_strain_events
+	}
+}

@@ -1,0 +1,79 @@
+﻿# Counts consumed by cc_byz_taxis.txt auto_modifiers.
+#
+# auto_modifier scales_with takes a script value, not an inline iterator block.
+# Accumulator pattern copied from vanilla byz_values.txt:5 (byz_romance_traders_count),
+# which adds into root from inside the iterator.
+
+# How many pronoia grants are outstanding. Each one is land and its soldiers
+# passed out of the fisc and into a private hand.
+cc_byz_pronoia_count = {
+	every_subject = {
+		limit = { is_subject_type = pronoia }
+		root = { add = 1 }
+	}
+	min = 0
+	max = 10
+}
+
+# How many bureaus are actually being funded, not merely established.
+cc_byz_funded_bureau_count = {
+	every_current_bureaucracy = {
+		limit = { bureaucracy_maintenance > 0 }
+		root = { add = 1 }
+	}
+	min = 0
+	max = 8
+}
+
+# Tagmata cap. Deliberately the same shape as vanilla's legionaries_unit_limit
+# (default_values.txt:595), but scaling off the Greek culture group the player already has
+# rather than roman_culture, which only spreads via the Latin-gated roman_culture_movement.
+cc_byz_tagmata_unit_limit = {
+	add = {
+		desc = "SUBUNIT_LIMIT_BASE"
+		value = 4
+	}
+	add = {
+		desc = "GREEK_CULTURE_PERCENTAGE"
+		value = {
+			add = "culture_group_percentage_in_country(culture_group:greek_group)"
+			multiply = 20
+		}
+	}
+	multiply = {
+		desc = "[ShowModifierTypeName('cc_num_of_tagmata_modifier')]"
+		value = {
+			add = 1
+			add = modifier:cc_num_of_tagmata_modifier
+		}
+	}
+}
+
+# Deeply entrenched bureaus, funded and unfunded. Consumed by the entrenchment tier in
+# cc_byz_bureaucracy_overlay.txt. Entrenchment is 0..100 (hire_advisor.txt:74 steps 10..60),
+# maintenance is 0..1 (vanilla compares >= 0.25).
+#
+# 60 is the threshold the .40 and .50 events use for "entrenched"; keep the three in sync.
+cc_byz_entrenched_funded_count = {
+	every_current_bureaucracy = {
+		limit = {
+			entrenchment >= 60
+			bureaucracy_maintenance >= 0.5
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 6
+}
+
+cc_byz_entrenched_unfunded_count = {
+	every_current_bureaucracy = {
+		limit = {
+			entrenchment >= 60
+			bureaucracy_maintenance < 0.5
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 6
+}

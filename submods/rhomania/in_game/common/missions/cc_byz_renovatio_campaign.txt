@@ -1,0 +1,1235 @@
+﻿# FRONT-END 2: the mission tree, for players with mission packs ON.
+#
+# 71 tasks. A spine with three braided pillars, five exclusive forks, four reconvergence
+# points and seven optional spurs.
+#
+#
+# READ THIS BEFORE ADDING A TASK.
+#
+# 1. REWARDS GO IN on_persistent_completion, NEVER on_completion. Per common/missions/
+#    ____Info.txt, on_completion "is not executed if task_rewards_disabled is active in the
+#    rules" while on_persistent_completion "is ALWAYS executed". The mission_rewards rule
+#    defaults to only_end_mission_rewards, which sets task_rewards_disabled. Using
+#    on_completion silently drops the reward under DEFAULT settings.
+#
+# 2. ONLY THE NINE CORNERSTONES HAVE A GENERIC-ACTION TWIN. Everything else is mission-mode
+#    only and is not compensated for elsewhere. Mission packs are OFF by default; the
+#    cornerstones and their permanent modifiers remain reachable either way, which is the part
+#    that matters. See generic_actions/cc_byz_theatre_actions.txt.
+#
+# 3. Only ONE task may carry final = yes. That is cc_byz_task_mare_nostrum.
+#
+#
+# THE FOUR STRUCTURES, and how each is expressed.
+#
+# ANY ORDER. Several tasks share one requires parent and reconverge later. The three western
+# theatres all require only cc_byz_task_illyricum, so Italy, Africa and Spania can be taken in
+# whatever order the map offers. This is also the historical order: Justinian took Africa in
+# 533 and Italy afterwards, which the old strict chain forbade.
+#
+# RECONVERGENCE. requires = { a b c } is AND, so a task naming several parents waits for all
+# of them. Vanilla does this (generic_conquer_province_mission_pack.txt:284, three parents).
+#
+# SUBSET (two of three). There is no count operator for mission_task_completed, so the test is
+# an explicit OR of AND pairs wrapped in a custom_tooltip. The player reads one clean line and
+# never sees the nine. Deliberately NOT done with a counter variable: a counter is derived
+# state, bypassed tasks fire on_bypass rather than on_persistent_completion, and this tree
+# bypasses a great deal (every fork sibling, every stone that can become impossible). A
+# desynced counter would either unlock a branch early or block it forever with nothing in the
+# log. mission_task_completed is stateless and reads the truth at every evaluation.
+#
+# EXCLUSIVE FORK. Five of them. Each sibling carries:
+#     visible = { NOT = { mission_task_completed = mission_task:<other> } }
+#     bypass  = { mission_task_completed = mission_task:<other> }
+# The visible hides the road not taken, exactly as vanilla does at
+# generic_capital_economy_mission_pack.txt:270. The bypass is load-bearing rather than
+# cosmetic: without it a reconvergence naming either sibling would wait forever on the one
+# that can no longer complete.
+#
+#
+# BYPASS ON UNREACHABLE CONDITIONS. Any task depending on owning one specific place carries a
+# bypass, because gating means one impossible stone would block its whole branch. Tasks whose
+# condition only gets easier with time (a NOT-exists, an income threshold) need none.
+#
+#
+# SHAPE
+#
+#   T0  House in Order      5 roots, any order
+#   T1  Three pillars       Fisc / Faith / Sword, any order -> The State Restored (2 of 3)
+#   T2  The Greek World     claimants, neighbours, FORK 1 Venice or Genoa
+#   T3  Anatolia            FORK 2 destroy or vassalise the Turks, FORK 3 tagmata or pronoia
+#   T4  The Levant          the seats (2 of 3), FORK 4 treaty or Pentarchy War
+#   T5  The West            Illyricum -> Italy / Africa / Spania in ANY ORDER (2 of 3)
+#   T6  The East            off the Sinai Road, FORK 5 monopoly or company
+#   S   Spurs               7 optional, none gate anything
+#
+# ART. 71 icons are named and none are supplied. A missing .dds renders a BLANK button without
+# logging, so this is checked by eye. Cornerstones and pillar capstones are worth doing first.
+
+cc_byz_renovatio_campaign = {
+	header = "gfx/interface/illustrations/missions/cc_byz_renovatio_campaign.dds"
+	icon = "gfx/interface/icons/missions/cc_byz_renovatio_campaign.dds"
+
+	repeatable = no
+	player_playstyle = administrative
+
+	visible = {
+		game_has_missions_enabled = yes
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	chance = 9999
+	ai_will_do = { value = 10 }
+
+
+	######################################################################
+	# T0. THE HOUSE IN ORDER. Five roots, any order, no wars required.
+	######################################################################
+
+	cc_byz_task_walls = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_walls.dds"
+		highlight = { scope:province = { this = location:constantinople } }
+		enabled = {
+			location:constantinople = {
+				owner ?= root
+				has_building_with_at_least_one_level = theodosian_walls
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 100
+			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = 15  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_hippodrome = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_hippodrome.dds"
+		highlight = { scope:province = { this = location:constantinople } }
+		enabled = {
+			location:constantinople = {
+				owner ?= root
+				has_building_with_at_least_one_level = hippodrome
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 15  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_council = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_council.dds"
+		enabled = { any_cabinet_character = { count >= 5  is_alive = yes } }
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 15  mode = add_and_extend }
+			add_legitimacy = legitimacy_mild_bonus
+		}
+	}
+
+	cc_byz_task_bureaus = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_bureaus.dds"
+		enabled = { any_current_bureaucracy = { count >= 4  bureaucracy_maintenance >= 1 } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 20  mode = add_and_extend }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_left }
+		}
+	}
+
+	cc_byz_task_arsenal = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_arsenal.dds"
+		highlight = { scope:province = { this = location:constantinople } }
+		enabled = {
+			location:constantinople = {
+				owner ?= root
+				has_building_with_at_least_one_level = shipyard
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 15  mode = add_and_extend }
+			add_sailors = { value = root.monthly_sailors  multiply = 6 }
+		}
+	}
+
+
+	######################################################################
+	# T1. THREE PILLARS. Fisc, Faith and Sword run in parallel and in any
+	# order. The State Restored needs TWO of the three capstones, so one
+	# pillar may be neglected entirely.
+	######################################################################
+
+	# ---- The Fisc ----
+
+	cc_byz_task_nomisma = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_nomisma.dds"
+		requires = { cc_byz_task_bureaus }
+		enabled = { country_tax_base >= 60 }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_silk_looms = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_silk_looms.dds"
+		requires = { cc_byz_task_nomisma }
+		enabled = { monthly_trade_income >= 10 }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_literate_admin = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_literate_admin.dds"
+		requires = { cc_byz_task_council }
+		enabled = { average_country_literacy > 25 }
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 25  mode = add_and_extend }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_left }
+		}
+	}
+
+	cc_byz_task_logothete = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_logothete.dds"
+		requires = { cc_byz_task_silk_looms  cc_byz_task_literate_admin }
+		enabled = {
+			country_tax_base >= 100
+			any_current_bureaucracy = { count >= 5  bureaucracy_maintenance >= 1 }
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 300
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 30  mode = add_and_extend }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_move_to_left }
+		}
+	}
+
+	# ---- The Faith ----
+
+	cc_byz_task_athonite = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_athonite.dds"
+		requires = { cc_byz_task_hippodrome }
+		enabled = { religious_influence >= 40 }
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 25
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_icons = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_icons.dds"
+		requires = { cc_byz_task_athonite }
+		enabled = { any_work_of_art = { count >= 3 } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_autocephalous = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_autocephalous.dds"
+		requires = { cc_byz_task_hippodrome }
+		enabled = {
+			any_international_organizations_member_of = {
+				international_organization_type = international_organization_type:autocephalous_patriarchate
+				international_organization_has_leader = yes
+				leader_country = root
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 30
+			add_prestige = prestige_mild_bonus
+		}
+	}
+
+	cc_byz_task_ecumenical_throne = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_ecumenical_throne.dds"
+		requires = { cc_byz_task_icons  cc_byz_task_autocephalous }
+		enabled = {
+			religious_influence >= 75
+			estate_satisfaction:clergy_estate >= 0.6
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 50
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
+		}
+	}
+
+	# ---- The Sword ----
+
+	cc_byz_task_veterans = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_veterans.dds"
+		requires = { cc_byz_task_arsenal }
+		enabled = { army_tradition >= 40 }
+		duration = 0
+		on_persistent_completion = {
+			add_army_tradition = army_tradition_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_dromon = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_dromon.dds"
+		requires = { cc_byz_task_arsenal }
+		enabled = { navy_size >= 20 }
+		duration = 0
+		on_persistent_completion = {
+			add_navy_tradition = navy_tradition_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_varangians = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_varangians.dds"
+		requires = { cc_byz_task_walls }
+		enabled = {
+			any_country_sub_unit = {
+				count >= 1
+				sub_unit_type = unit_type:a_varangians
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = 20  mode = add_and_extend }
+			add_legitimacy = legitimacy_mild_bonus
+		}
+	}
+
+	cc_byz_task_field_army = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_field_army.dds"
+		requires = { cc_byz_task_veterans  cc_byz_task_dromon  cc_byz_task_varangians }
+		enabled = {
+			army_size >= 40
+			army_tradition >= 60
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_manpower = { value = root.monthly_manpower  multiply = 10 }
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 30  mode = add_and_extend }
+		}
+	}
+
+	# ---- RECONVERGENCE 1: two of the three pillars ----
+
+	cc_byz_task_state_restored = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_state_restored.dds"
+		requires = { cc_byz_task_walls }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_two_of_three_pillars_tt
+				OR = {
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_logothete
+						mission_task_completed = mission_task:cc_byz_task_ecumenical_throne
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_logothete
+						mission_task_completed = mission_task:cc_byz_task_field_army
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_ecumenical_throne
+						mission_task_completed = mission_task:cc_byz_task_field_army
+					}
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_legitimacy = legitimacy_mild_bonus
+			add_gold = 300
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+		}
+	}
+
+
+	######################################################################
+	# T2. THE GREEK WORLD
+	######################################################################
+
+	cc_byz_task_no_second_emperor = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_no_second_emperor.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { NOT = { country_exists = c:TRE } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_legitimacy = legitimacy_mild_bonus
+		}
+	}
+
+	cc_byz_task_duchy_dissolved = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_duchy_dissolved.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { NOT = { country_exists = c:ATH } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 100
+			add_prestige = prestige_weak_bonus
+		}
+	}
+
+	cc_byz_task_despotate = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_despotate.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = {
+			own_entire_province = province_definition:achaea_province
+			own_entire_province = province_definition:arcadia_province
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+			add_manpower = { value = root.monthly_manpower  multiply = 6 }
+		}
+	}
+
+	cc_byz_task_greek_again = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_greek_again.dds"
+		requires = { cc_byz_task_duchy_dissolved }
+		enabled = {
+			own_entire_province = province_definition:attica_province
+			location:athens = { "religion_percentage(religion:orthodox)" >= 0.6 }
+		}
+		bypass = { NOT = { own_entire_province = province_definition:attica_province } }
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 25
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_serbian_question = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_serbian_question.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = {
+			OR = {
+				NOT = { country_exists = c:SER }
+				c:SER ?= { is_subject_of = root }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_latin_bride = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_latin_bride.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = {
+			any_country = {
+				religion = religion:catholic
+				has_royal_marriage_with = root
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_weak_bonus
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 15  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_embassies = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_embassies.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { num_of_diplomats >= 4 }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_weak_bonus
+			add_gold = 100
+		}
+	}
+
+	# ---- FORK 1: Venice or Genoa ----
+
+	cc_byz_task_venetian_alliance = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_venetian_alliance.dds"
+		requires = { cc_byz_task_state_restored }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_genoese_compact } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_genoese_compact }
+		enabled = {
+			c:VEN ?= { opinion = { target = root  value >= 100 } }
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 25  mode = add_and_extend }
+			c:GEN ?= { add_opinion = { target = root  modifier = cc_byz_rival_privilege_granted } }
+		}
+	}
+
+	cc_byz_task_genoese_compact = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_genoese_compact.dds"
+		requires = { cc_byz_task_state_restored }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance }
+		enabled = {
+			c:GEN ?= { opinion = { target = root  value >= 100 } }
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 25  mode = add_and_extend }
+			c:VEN ?= { add_opinion = { target = root  modifier = cc_byz_rival_privilege_granted } }
+		}
+	}
+
+
+	######################################################################
+	# T3. ANATOLIA
+	######################################################################
+
+	# ---- FORK 2: end the Turks, or make them a tributary ----
+
+	cc_byz_task_beylik_ended = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_beylik_ended.dds"
+		requires = { cc_byz_task_state_restored }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary }
+		enabled = { NOT = { country_exists = c:TUR } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_legitimacy = legitimacy_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 25  mode = add_and_extend }
+		}
+	}
+
+	# The historically ironic answer: the empire spent decades as an Ottoman tributary, and
+	# reversing that arrangement is cheaper than destroying them.
+	cc_byz_task_sultan_tributary = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_sultan_tributary.dds"
+		requires = { cc_byz_task_state_restored }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_beylik_ended } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_beylik_ended }
+		enabled = {
+			c:TUR ?= { is_subject_of = root }
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 300
+			add_prestige = prestige_mild_bonus
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_move_to_right }
+		}
+	}
+
+	cc_byz_task_themes = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_themes.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { any_owned_location = { count >= 25  region = region:anatolia_region } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# Converges the fork. enabled accepts EITHER branch, which is why both siblings need their
+	# bypass: without it this would wait forever on the one that can no longer complete.
+	cc_byz_task_anatolia_secured = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_anatolia_secured.dds"
+		requires = { cc_byz_task_themes }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_turkish_question_settled_tt
+				OR = {
+					mission_task_completed = mission_task:cc_byz_task_beylik_ended
+					mission_task_completed = mission_task:cc_byz_task_sultan_tributary
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 25  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_convert_anatolia = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_convert_anatolia.dds"
+		requires = { cc_byz_task_anatolia_secured }
+		enabled = { "religion_percentage_in_country(religion:orthodox)" >= 0.7 }
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 40
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
+		}
+	}
+
+	# ---- FORK 3: a professional army, or a feudal host ----
+	# Taxis against Dynatoi expressed militarily. The two push the axis in opposite directions.
+
+	cc_byz_task_tagmata = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_tagmata.dds"
+		requires = { cc_byz_task_anatolia_secured }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_pronoia_host } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_pronoia_host }
+		enabled = {
+			army_size >= 50
+			any_subject = { count = 0  is_subject_type = pronoia }
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_army_tradition = army_tradition_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 30  mode = add_and_extend }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_large_move_to_left }
+		}
+	}
+
+	cc_byz_task_pronoia_host = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_pronoia_host.dds"
+		requires = { cc_byz_task_anatolia_secured }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_tagmata } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_tagmata }
+		enabled = { any_subject = { count >= 4  is_subject_type = pronoia } }
+		duration = 0
+		on_persistent_completion = {
+			add_manpower = { value = root.monthly_manpower  multiply = 10 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_mild_bonus }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_large_move_to_right }
+		}
+	}
+
+
+	######################################################################
+	# T4. THE LEVANT
+	######################################################################
+
+	cc_byz_task_antioch = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_antioch.dds"
+		requires = { cc_byz_task_anatolia_secured }
+		highlight = { scope:province = { this = location:antioch } }
+		enabled = {
+			OR = {
+				own_entire_province = province_definition:antakya_province
+				has_variable = cc_byz_mem_seat_antioch
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 25
+			add_prestige = prestige_mild_bonus
+		}
+	}
+
+	cc_byz_task_holy_city = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_holy_city.dds"
+		requires = { cc_byz_task_antioch }
+		highlight = { scope:province = { this = location:jerusalem } }
+		enabled = {
+			OR = {
+				owns_or_non_sovereign_subject_owns = location:jerusalem
+				has_variable = cc_byz_mem_seat_jerusalem
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_legitimacy = legitimacy_mild_bonus
+			add_religious_influence = 40
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_patriarch = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_patriarch.dds"
+		requires = { cc_byz_task_holy_city }
+		enabled = {
+			location:jerusalem = {
+				owner ?= root
+				"religion_percentage(religion:orthodox)" >= 0.5
+			}
+		}
+		bypass = { NOT = { owns = location:jerusalem } }
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 40
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_egypt = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_egypt.dds"
+		requires = { cc_byz_task_holy_city }
+		highlight = {
+			scope:province = { OR = { this = location:alexandria  this = location:cairo } }
+		}
+		enabled = {
+			OR = {
+				AND = {
+					owns_or_non_sovereign_subject_owns = location:alexandria
+					owns_or_non_sovereign_subject_owns = location:cairo
+				}
+				has_variable = cc_byz_mem_seat_alexandria
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 250
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_lighthouse = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_lighthouse.dds"
+		requires = { cc_byz_task_egypt }
+		highlight = { scope:province = { this = location:alexandria } }
+		enabled = {
+			location:alexandria = {
+				owner ?= root
+				has_building_with_at_least_one_level = lighthouse_of_alexandria
+			}
+		}
+		bypass = { NOT = { owns = location:alexandria } }
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# ---- RECONVERGENCE 2: two of the three eastern seats ----
+
+	cc_byz_task_eastern_sees = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_eastern_sees.dds"
+		requires = { cc_byz_task_holy_city }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_two_of_three_seats_tt
+				OR = {
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_antioch
+						mission_task_completed = mission_task:cc_byz_task_patriarch
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_antioch
+						mission_task_completed = mission_task:cc_byz_task_egypt
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_patriarch
+						mission_task_completed = mission_task:cc_byz_task_egypt
+					}
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 60
+			add_prestige = prestige_severe_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+		}
+	}
+
+	# ---- FORK 4: a treaty with Cairo, or the Pentarchy War ----
+
+	cc_byz_task_sultans_friend = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_sultans_friend.dds"
+		requires = { cc_byz_task_eastern_sees }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_pentarchy_war } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_pentarchy_war }
+		enabled = { has_variable = cc_byz_mem_condominium }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 300
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 30  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_pentarchy_war = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_pentarchy_war.dds"
+		requires = { cc_byz_task_eastern_sees }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_sultans_friend } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_sultans_friend }
+		enabled = { has_all_pentarchy = yes }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_ultimate_bonus
+			add_religious_influence = 80
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
+		}
+	}
+
+	cc_byz_task_sinai_road = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_sinai_road.dds"
+		requires = { cc_byz_task_egypt }
+		highlight = { scope:province = { this = location:sinai_desert } }
+		enabled = { owns_or_non_sovereign_subject_owns = location:sinai_desert }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+		}
+	}
+
+
+	######################################################################
+	# T5. THE WEST. Illyricum opens THREE theatres that run in ANY ORDER.
+	######################################################################
+
+	cc_byz_task_adriatic = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_adriatic.dds"
+		requires = { cc_byz_task_state_restored }
+		highlight = {
+			scope:province = { OR = { this = location:durres  this = location:split } }
+		}
+		enabled = {
+			owns_or_non_sovereign_subject_owns = location:durres
+			owns_or_non_sovereign_subject_owns = location:split
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 15  mode = add_and_extend }
+			add_sailors = { value = root.monthly_sailors  multiply = 6 }
+		}
+	}
+
+	cc_byz_task_illyricum = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_illyricum.dds"
+		requires = { cc_byz_task_despotate  cc_byz_task_no_second_emperor  cc_byz_task_adriatic }
+		highlight = {
+			scope:province = {
+				OR = { this = location:salona  this = location:split  this = location:durres }
+			}
+		}
+		enabled = { cc_byz_theatre_illyricum_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_illyricum_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.1
+		}
+	}
+
+	# --- Italy line ---
+
+	cc_byz_task_exarch_seated = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_exarch_seated.dds"
+		requires = { cc_byz_task_illyricum }
+		enabled = { any_subject = { has_variable = cc_byz_is_exarchate } }
+		duration = 0
+		on_persistent_completion = {
+			add_legitimacy = legitimacy_mild_bonus
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_ravenna = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_ravenna.dds"
+		requires = { cc_byz_task_exarch_seated }
+		highlight = { scope:province = { this = location:ravenna } }
+		enabled = { owns_or_non_sovereign_subject_owns = location:ravenna }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 15  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_italy = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_italy.dds"
+		requires = { cc_byz_task_exarch_seated }
+		highlight = {
+			scope:province = {
+				OR = { this = location:rome  this = location:ravenna  this = location:naples }
+			}
+		}
+		enabled = { cc_byz_theatre_italy_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_italy_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.10
+		}
+	}
+
+	# --- Africa line, independent of Italy ---
+
+	cc_byz_task_sicily = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_sicily.dds"
+		requires = { cc_byz_task_illyricum }
+		highlight = {
+			scope:province = { OR = { this = location:palermo  this = location:syracuse } }
+		}
+		enabled = {
+			owns_or_non_sovereign_subject_owns = location:palermo
+			owns_or_non_sovereign_subject_owns = location:syracuse
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_carthage = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_carthage.dds"
+		requires = { cc_byz_task_sicily }
+		enabled = { own_entire_province = province_definition:tunis_province }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_africa = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_africa.dds"
+		requires = { cc_byz_task_carthage }
+		highlight = {
+			scope:province = {
+				OR = {
+					this = location:palermo  this = location:syracuse
+					this = location:tunis    this = location:tripoli
+				}
+			}
+		}
+		enabled = { cc_byz_theatre_africa_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_africa_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.20
+		}
+	}
+
+	# --- Spania line, independent of both ---
+
+	cc_byz_task_pillars = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_pillars.dds"
+		requires = { cc_byz_task_illyricum }
+		enabled = {
+			OR = {
+				own_entire_province = province_definition:murcia_province
+				own_entire_province = province_definition:almeria_province
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_sailors = { value = root.monthly_sailors  multiply = 8 }
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_spania = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_spania.dds"
+		requires = { cc_byz_task_pillars }
+		highlight = {
+			scope:province = { OR = { this = location:cartagena  this = location:malaga } }
+		}
+		enabled = { cc_byz_theatre_spania_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_spania_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.30
+		}
+	}
+
+	# ---- RECONVERGENCE 3: two of the three western theatres ----
+
+	cc_byz_task_western_sea = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_western_sea.dds"
+		requires = { cc_byz_task_illyricum }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_two_of_three_theatres_tt
+				OR = {
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_italy
+						mission_task_completed = mission_task:cc_byz_task_africa
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_italy
+						mission_task_completed = mission_task:cc_byz_task_spania
+					}
+					AND = {
+						mission_task_completed = mission_task:cc_byz_task_africa
+						mission_task_completed = mission_task:cc_byz_task_spania
+					}
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_gold = 400
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 30  mode = add_and_extend }
+		}
+	}
+
+
+	######################################################################
+	# T6. THE EAST, off the Sinai Road.
+	######################################################################
+
+	cc_byz_task_red_sea = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_red_sea.dds"
+		requires = { cc_byz_task_sinai_road }
+		highlight = {
+			scope:province = {
+				OR = { this = location:alexandria  this = location:cairo  this = location:sinai_desert }
+			}
+		}
+		enabled = { cc_byz_theatre_red_sea_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_red_sea_effect = yes
+			trigger_event_non_silently = cc_byz_east.1
+		}
+	}
+
+	cc_byz_task_horn = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_horn.dds"
+		requires = { cc_byz_task_red_sea }
+		highlight = {
+			scope:province = {
+				OR = { this = location:zeila  this = location:berbera  this = location:mogadishu }
+			}
+		}
+		enabled = { cc_byz_theatre_horn_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_horn_effect = yes
+			trigger_event_non_silently = cc_byz_east.10
+		}
+	}
+
+	cc_byz_task_galata = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_galata.dds"
+		requires = { cc_byz_task_bureaus }
+		highlight = { scope:province = { this = location:constantinople } }
+		enabled = {
+			location:constantinople = {
+				owner ?= root
+				has_building_with_at_least_one_level = galata
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_merchant_fleet = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_merchant_fleet.dds"
+		requires = { cc_byz_task_galata }
+		enabled = { monthly_trade_income >= 15 }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 250
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_spice_dues = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_spice_dues.dds"
+		requires = { cc_byz_task_merchant_fleet }
+		enabled = { monthly_trade_income >= 30 }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 400
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	cc_byz_task_india = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_india.dds"
+		requires = { cc_byz_task_horn  cc_byz_task_merchant_fleet }
+		enabled = { cc_byz_theatre_india_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_india_effect = yes
+			trigger_event_non_silently = cc_byz_east.20
+		}
+	}
+
+	cc_byz_task_spice_islands = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_spice_islands.dds"
+		requires = { cc_byz_task_india  cc_byz_task_spice_dues }
+		enabled = { cc_byz_theatre_spice_islands_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_spice_islands_effect = yes
+			trigger_event_non_silently = cc_byz_east.30
+		}
+	}
+
+	# ---- FORK 5: crown monopoly or chartered company ----
+
+	cc_byz_task_crown_monopoly = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_crown_monopoly.dds"
+		requires = { cc_byz_task_spice_islands }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_chartered_company } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_chartered_company }
+		enabled = { monthly_trade_income >= 50 }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 600
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_move_to_left }
+		}
+	}
+
+	cc_byz_task_chartered_company = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_chartered_company.dds"
+		requires = { cc_byz_task_spice_islands }
+		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_crown_monopoly } }
+		bypass = { mission_task_completed = mission_task:cc_byz_task_crown_monopoly }
+		enabled = { has_country_modifier = cc_byz_eastern_company }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 400
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_move_to_right }
+		}
+	}
+
+
+	######################################################################
+	# OPTIONAL SPURS. Nothing required depends on any of these.
+	######################################################################
+
+	# --- Unlock content elsewhere ---
+
+	cc_byz_task_reconquest_claim = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_reconquest_claim.dds"
+		requires = { cc_byz_task_illyricum }
+		enabled = { num_of_advances_researched >= 30 }
+		duration = 0
+		on_persistent_completion = {
+			if = {
+				limit = { NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } } }
+				unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
+			}
+			add_prestige = prestige_mild_bonus
+		}
+	}
+
+	cc_byz_task_greek_fire = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_greek_fire.dds"
+		requires = { cc_byz_task_dromon }
+		enabled = {
+			navy_tradition >= 50
+			average_country_literacy > 20
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 40  mode = add_and_extend }
+			add_navy_tradition = navy_tradition_mild_bonus
+		}
+	}
+
+	# --- The wonders, feeding an optional capstone ---
+
+	cc_byz_task_hagia_sophia = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_hagia_sophia.dds"
+		requires = { cc_byz_task_hippodrome }
+		highlight = { scope:province = { this = location:constantinople } }
+		enabled = {
+			location:constantinople = {
+				owner ?= root
+				has_building_with_at_least_one_level = cathedral
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 30
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_great_palace = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_great_palace.dds"
+		requires = { cc_byz_task_hippodrome }
+		enabled = { any_work_of_art = { count >= 6 } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_legitimacy = legitimacy_mild_bonus
+		}
+	}
+
+	cc_byz_task_thessaloniki = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_thessaloniki.dds"
+		requires = { cc_byz_task_walls }
+		highlight = { scope:province = { this = location:thessaloniki } }
+		enabled = { owns_or_non_sovereign_subject_owns = location:thessaloniki }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 100
+			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# The optional capstone. Requires all three wonders and nothing requires it.
+	cc_byz_task_city_adorned = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_city_adorned.dds"
+		requires = {
+			cc_byz_task_hagia_sophia
+			cc_byz_task_great_palace
+			cc_byz_task_thessaloniki
+		}
+		enabled = { always = yes }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 40  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	# --- Dead ends with a reward ---
+
+	cc_byz_task_triumph = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_triumph.dds"
+		requires = { cc_byz_task_illyricum }
+		enabled = { army_tradition >= 70 }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_severe_bonus
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+
+	######################################################################
+	# THE CAPSTONE. The only task with final = yes.
+	######################################################################
+
+	cc_byz_task_mare_nostrum = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_mare_nostrum.dds"
+		requires = { cc_byz_task_western_sea }
+		final = yes
+		enabled = { cc_byz_theatre_mare_nostrum_trigger = yes }
+		duration = 0
+		on_persistent_completion = {
+			cc_byz_theatre_mare_nostrum_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.40
+		}
+	}
+}

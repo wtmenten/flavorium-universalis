@@ -1,0 +1,277 @@
+﻿# Three additional Byzantine bureaus.
+#
+# Vanilla's eleven (byz.txt) already cover codified law, the eunuch service, court ceremony,
+# provincial governors, the tax on the powerful, the senate, the themes, central command,
+# honorary rank, the living law and romanitas. What they leave open is the fisc itself,
+# access to imperial justice, and the personalist alternative to holding formal office.
+# These three fill exactly those gaps and each one takes a hard side on Taxis/Dynatoi.
+#
+# Slots are finite, so the real rebalancing of vanilla's set is opportunity cost: a new
+# bureau that competes for a slot changes what the old ones are worth without editing them.
+#
+# cc_byz_epi_ton_deeseon and cc_byz_oikeioi are mutually exclusive, using vanilla's own
+# exclusion pattern from themata_bureaucracy (byz.txt:536). A subject either appeals over
+# his magnate's head to a public office, or he asks a man who knows the emperor. Running
+# both means the formal channel exists and everyone knows it is not the real one.
+#
+#
+# ENTRENCHMENT: ENGINE ON THE BOONS, EXTRA SOFTENING ON THE MALUSES
+#
+# The engine already multiplies BOTH the positive and the negative modifier of every
+# bureaucracy by entrenchment on its own. See game_concept_bureaucracy_desc, "increasing the
+# power of both positive and negative modifiers", and the ADDITIONAL_MODIFIER_ENTRENCHMENT
+# line that renders under a bureaucracy tooltip as "Entrenchment +N%".
+#
+#   positive_modifier   scale = maintenance            x engine entrenchment   (linear)
+#   negative_modifier   scale = (1 - maintenance)
+#                               x entrenchment/100     x engine entrenchment   (quadratic)
+#
+# So the boons are left alone: doubling the engine's own scaling there was simply wrong and an
+# earlier revision did exactly that, squaring it.
+#
+# The maluses carry ONE deliberate extra factor of entrenchment. The engine's linear scaling
+# still leaves a brand new, unfunded office doing real harm, and it should not: nobody has had
+# time to build anything out of it yet. With the extra factor the penalty is quadratic below
+# full entrenchment and identical to vanilla at 100%:
+#
+#     entrenchment      20%     50%     80%    100%
+#     engine only      0.20    0.50    0.80    1.00
+#     with ours        0.04    0.25    0.64    1.00
+#
+# That is what makes the funding x entrenchment matrix the .40 and .50 events describe
+# actually bite, rather than a new bureau being punished for existing:
+#
+#                    low entrenchment        high entrenchment
+#     funded         works, modestly         works fully
+#     unfunded       harmless                a fiefdom
+#
+# The general fisc. Assessment, collection, audit: the least glamorous instrument of
+# central power and the one everything else depends on.
+cc_byz_genikon = {
+	# Per-bureaucracy hook: root = country, scope:old_maintenance, scope:new_maintenance.
+	# Only our own bureaus can carry this, since vanilla's eleven are not ours to edit.
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = TRE
+		}
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		tax_income_efficiency = 0.05
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+
+		global_bureaucracy_maintenance_efficiency = 0.15
+		monthly_towards_cc_taxis = societal_value_minor_monthly_move
+
+		# The price of a treasury that actually works: it works to its own procedures.
+		# An emperor cannot simply take money out of a fisc that keeps proper books.
+		global_crown_estate_power = -0.04
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+
+		# An unfunded treasury does not simply do less. It gets sold.
+		global_estate_satisfaction_decay = 0.02
+		monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+	}
+}
+
+# The Master of Petitions. A standing office through which a provincial can appeal past the
+# man who owns his valley, directly to the palace. Cheap to establish, and resented exactly
+# in proportion to how well it works.
+cc_byz_epi_ton_deeseon = {
+	# Per-bureaucracy hook: root = country, scope:old_maintenance, scope:new_maintenance.
+	# Only our own bureaus can carry this, since vanilla's eleven are not ours to edit.
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = TRE
+		}
+	}
+
+	allow = {
+		NOT = {
+			any_current_bureaucracy = {
+				bureaucracy_type = bureaucracy_type:cc_byz_oikeioi
+			}
+		}
+	}
+
+	estates_that_like = {
+		peasants_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		global_estate_satisfaction_from_legitimacy = 0.05
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+
+		global_crown_estate_power = 0.1
+		monthly_towards_cc_taxis = societal_value_monthly_move
+
+		# An appeals office that has heard cases for fifty years decides them by its own
+		# accumulated precedent. Subjects get consistency; the emperor gets less say.
+		country_cabinet_efficiency = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+
+		# A petitions office nobody staffs is worse than none: it advertises a remedy
+		# that does not arrive.
+		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+	}
+}
+
+# The oikeioi, the emperor's "own men": household intimates handed provincial commands on
+# the strength of personal favour rather than office. Fast, flexible, and it teaches
+# everyone that proximity to the emperor outranks any title.
+cc_byz_oikeioi = {
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = TRE
+		}
+	}
+
+	allow = {
+		NOT = {
+			any_current_bureaucracy = {
+				bureaucracy_type = bureaucracy_type:cc_byz_epi_ton_deeseon
+			}
+		}
+	}
+
+	estates_that_like = {
+		nobles_estate
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		country_cabinet_efficiency = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+
+		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction
+		monthly_towards_cc_dynatoi = societal_value_monthly_move
+
+		# Favour granted long enough stops being favour and becomes expectation. The
+		# households holding commands for three reigns now consider them theirs.
+		global_nobles_estate_power = 0.05
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+
+		# Favourites who stop being paid in favour start being paid by someone else.
+		global_crown_estate_power = -0.2
+	}
+}

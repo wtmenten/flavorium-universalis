@@ -1,0 +1,119 @@
+﻿# Creating an exarchate. Single source of truth for both routes.
+#
+# WHY THIS EXISTS. There are now two ways to appoint an exarch:
+#   1. cc_byz_appoint_exarch, the character interaction (the deliberate route)
+#   2. cc_byz_exarch.10, the prompt event that fires once Italy is held (the discovery route)
+#
+# Both have to do the same eight things or the exarchate ends up half-built: seat it on the
+# right location, create the country, apply the terms of appointment, take the emperor's
+# religion, transfer and core the surrounding territory, seed the loyalty score, bias that
+# score by the terms, and grant the reconquest CB. Duplicating that in an event would drift
+# from the interaction within one release, and the interaction is the version that has been
+# tested in game.
+#
+# EXPECTED SCOPES. The caller must save all three before calling:
+#   scope:cc_byz_exarch_overlord    country  the emperor
+#   scope:cc_byz_exarch_candidate   character the man being appointed
+#   scope:cc_byz_exarch_reform      government_reform  one of the three exarch reforms
+#   scope:cc_byz_exarch_area        area     the seat, must be 75%+ owned by the overlord
+#
+# Named scopes rather than root, because the two callers run in different scopes: the
+# interaction's effect block is in scope:actor, the event's is in root. Reading a named scope
+# works identically from both.
+#
+# The religion line is load-bearing and the reasoning is in the interaction file: it is what
+# closes all three vanilla papal Rome-return routes (flavor_pap.9000/.9001/.9002), each of
+# which gates on the holder being Catholic.
+
+cc_byz_create_exarchate_effect = {
+	if = {
+		limit = {
+			exists = scope:cc_byz_exarch_area
+			exists = scope:cc_byz_exarch_candidate
+		}
+
+		# Seat the exarchate on the most developed location we own in the area, exactly as
+		# vanilla's assign_governor picks its capital.
+		scope:cc_byz_exarch_area = {
+			ordered_location_in_area = {
+				limit = {
+					owner ?= scope:cc_byz_exarch_overlord
+				}
+				order_by = development
+				check_range_bounds = no
+				max = 1
+				save_scope_as = cc_byz_exarch_seat
+			}
+		}
+
+		if = {
+			limit = { exists = scope:cc_byz_exarch_seat }
+
+			scope:cc_byz_exarch_seat = {
+				create_country_from_location = {
+					overlord = scope:cc_byz_exarch_overlord
+					subject_type = subject_type:cc_byz_exarchate
+					set_capital = prev
+					set_new_ruler = scope:cc_byz_exarch_candidate
+					change_government_type = government_type:monarchy
+					save_scope_as = cc_byz_exarch_country
+					add_reform = scope:cc_byz_exarch_reform
+
+					# The exarchate takes the emperor's religion, not the province's.
+					# Deliberately the overlord's religion rather than a hardcoded Orthodox:
+					# if the emperor concludes the union and turns Catholic, his exarch turns
+					# with him and the papal demand becomes a real dilemma again.
+					change_religion = scope:cc_byz_exarch_overlord.religion
+				}
+			}
+
+			scope:cc_byz_exarch_area = {
+				every_location_in_area = {
+					limit = {
+						owner ?= scope:cc_byz_exarch_overlord
+					}
+					change_location_owner = scope:cc_byz_exarch_country
+					add_core = scope:cc_byz_exarch_country
+					change_integration_level = core
+				}
+			}
+
+			scope:cc_byz_exarch_country = {
+				set_variable = {
+					name = cc_byz_is_exarchate
+					value = yes
+				}
+				# Read by the friction and demand threads. Starts neutral; the terms of
+				# appointment and everything after them move it.
+				set_variable = {
+					name = cc_byz_exarch_loyalty
+					value = 0
+				}
+				if = {
+					limit = { exists = scope:cc_byz_exarch_reform }
+					if = {
+						limit = { scope:cc_byz_exarch_reform = government_reform:cc_byz_exarch_strategos_reform }
+						change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+					}
+					else_if = {
+						limit = { scope:cc_byz_exarch_reform = government_reform:cc_byz_exarch_caretaker_reform }
+						change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+					}
+				}
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+
+			scope:cc_byz_exarch_overlord = {
+				# Asserting a governor over the old capital is the act that revives the claim
+				# to the old borders. Vanilla grants this from ROM_BYZ_f's form_effect; this
+				# is the same grant without the capital move.
+				if = {
+					limit = {
+						NOT = { has_unlocked_casus_belli_trigger = { type = cb_restore_roman_borders } }
+					}
+					unlock_casus_belli_effect = { type = cb_restore_roman_borders }
+				}
+			}
+		}
+	}
+}

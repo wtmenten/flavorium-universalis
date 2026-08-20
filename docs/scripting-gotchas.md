@@ -225,6 +225,169 @@ Liberty desire: `liberty_desire_weak_plus` (5), `liberty_desire_mild_plus` (10),
 
 ## Scope Rules
 
+### `*_in_<container>` iterators are entered FROM the container, never given it as a parameter
+
+This is the single easiest scope mistake to make, because the wrong form reads perfectly
+naturally. Any iterator named `*_in_region`, `*_in_area`, `*_in_scripted_geography`,
+`*_in_province_definition` takes the container as its **input scope**, not as a key inside the
+block:
+
+```
+# WRONG — logs "Inconsistent trigger scopes (country vs. region)"
+any_area_in_region = {
+    region = region:italy_region
+    any_location_in_area = { ... }
+}
+
+# RIGHT
+region:italy_region = {
+    any_area_in_region = {
+        any_location_in_area = { ... }
+    }
+}
+```
+
+Same for geographies (vanilla does this at `on_action/country_four_yearly.txt:334`):
+
+```
+scripted_geography:my_geography = {
+    ordered_province_definition_in_scripted_geography = { ... }
+}
+```
+
+`root` inside the nested block is still the original scope, so ownership tests like
+`owner ?= root` keep working after the fix.
+
+**To check any iterator's contract**, the offline wiki tables end each row with
+`| <input scope> | <output scope> |`:
+```
+grep -hoE "\|any_area_in_region\|[^|]*\|[^|]*\|[^|]*\|[^|]*" docs/offline-wiki/core/trigger.md
+# ...|region|area   <- input region, output area
+```
+Worth doing for every iterator in a new file, since these fail at load with a clear message
+but only for code paths the engine actually parses.
+
+### `change_variable` / `clamp_variable` on an unset variable errors
+
+Distinct from reading one in a trigger, and it has no guard to hide behind: this happens in an
+**effect**, usually after the player has clicked an option, so the variable simply has to
+exist first.
+
+```
+[jomini_script_system.cpp:252]: Script system error!
+  Script location: events/<file>.txt:<line>
+```
+
+Note the error text is often **blank** apart from the location, unlike the trigger-read case
+which names the variable. The line number is the only clue.
+
+**Lazily-initialised scores make this easy to get wrong**, because the initialiser lives in
+one event's `immediate` and correctness then depends on firing order. Two ways it bites:
+
+1. **A sibling event fires first.** The initialiser sat in the event hanging off
+   `on_bureaucracy_added`; another event in the same thread hung off `on_maintenance_changed`,
+   which fires during game start before any bureau is added.
+2. **An event writes another thread's score.** A Levant event that touches `cc_byz_strain`
+   needs the *debt* initialiser, not the Levant one.
+
+**Rule: every event that writes a score calls that score's initialiser in its own `immediate`,
+regardless of which thread the event belongs to.** Do not rely on another event having run.
+
+Auditing for it is mechanical, and worth doing after adding any event:
+
+```
+# for each event: collect cc_byz_init_*_effect calls, then check every
+# change_variable/clamp_variable name against a var -> owning-initialiser map
+```
+
+### `has_variable` does NOT guard a sibling `var:` read
+
+Every trigger in a block is evaluated. Putting `has_variable = X` beside `var:X` does not
+prevent the `var:` read from running against an unset variable, and the log fills with:
+
+```
+Failed to fetch variable for 'X' due to not being set
+Event target link 'var' returned an unset scope
+Invalid left side during comparison 'var'
+```
+
+Use `trigger_if`, which is vanilla's idiom (`character_interactions/banish_character.txt:9`):
+
+```
+# WRONG — errors every evaluation until the variable is first written
+has_variable = cc_byz_union_stage
+var:cc_byz_union_stage = 2
+
+# RIGHT
+trigger_if = {
+    limit = { has_variable = cc_byz_union_stage }
+    var:cc_byz_union_stage = 2
+}
+trigger_else = { always = no }
+```
+
+**Where this actually bites.** A read is only unsafe if it is evaluated *before* anything
+initialises the variable:
+
+| context | safe? | why |
+|---|---|---|
+| `generic_action` / `potential` | **no** | evaluated every tick from game start |
+| on_action `trigger` | **no** | evaluated every pulse |
+| event top-level `trigger` | **no** | evaluated before `immediate` runs |
+| situation `can_start` / `can_end` | **no** | evaluated outside the event flow |
+| event `desc` / `triggered_desc` | yes | renders after `immediate` |
+| `option` / `trigger` | yes | evaluated after `immediate` |
+| `immediate` / `after` inner `limit` | yes | the init effect already ran |
+
+So lazily-initialised score variables are fine inside events and dangerous everywhere else.
+`var:X ?= N` exists but is **equality only**, so it is not a substitute for a guarded `>=`.
+
+### Never put an iterator inside `order_by` (silent failure)
+
+`order_by` is a script value. A bare `add` inside an iterator does **not** reach the enclosing
+value; the vanilla accumulator idiom is `root = { add = 1 }` (`script_values/byz_values.txt:17`),
+which only works when `root` *is* the thing being accumulated into. Inside an `order_by` it is
+not. Vanilla never does this anywhere.
+
+```
+# WRONG — does not error, every entry scores 0, and the "best" pick is arbitrary
+ordered_area_in_region = {
+    order_by = { value = 0  every_location_in_area = { add = development } }
+    max = 1
+}
+
+# RIGHT — if the limit already guarantees viability, just pick one
+random_area_in_region = {
+    limit = { any_location_in_area = { percent >= 0.75  owner ?= root } }
+}
+```
+
+This is worse than a crash: the code reads as though it selects the best candidate and
+actually selects an arbitrary one.
+
+### `order_by` must compare a value valid in the ITERATED scope
+
+`development` is **location** scope. Sorting province definitions by it fails at runtime with
+`Wrong scope for trigger for compare trigger 'development' (got province_definition, expected
+location)`. A province definition is not a location and has no development of its own. If
+there is no sensible sort key for the scope, use `random_*`, which needs no `order_by`.
+
+Useful side effect: that error message is also how you settle output-scope questions the
+offline wiki gets wrong. The tables list `random_province_definition_in_scripted_geography` as
+yielding `province` while `every_`/`ordered_` yield `province_definition`; the engine error
+proves the family yields `province_definition`, so the `random_` row is a typo.
+
+### `ordered_*` has no ascending option
+The documented parameters are `limit`, `order_by`, `position`, `min`, `max` and
+`check_range_bounds`. It always takes the **highest** `order_by` value. To take the lowest,
+negate the sort value:
+```
+ordered_owned_location = {
+    order_by = { value = 0  subtract = development }   # least developed
+    max = 1
+}
+```
+
 ### Culture effects
 `add_cultural_tradition` and `add_cultural_influence` require **culture scope**. From a country-scope event:
 ```

@@ -1,0 +1,254 @@
+﻿# Theatre rewards. Single source of truth for both front-ends.
+#
+# See ../scripted_triggers/cc_byz_theatre_triggers.txt for the theatre list and the rule that
+# a new theatre must be added to BOTH front-ends.
+#
+# Because the mission tree and the generic actions both call these, a reward change lands in
+# both automatically. The risk the plan flagged is a theatre added to one front-end and not
+# the other, which is why the list lives in one comment block rather than being inferred.
+#
+# EVERY THEATRE COSTS SOMETHING. Justinian's reconquest bankrupted the empire it was fought to
+# restore, and the plague arrived with the fleet. A theatre that paid a flat bonus would be
+# telling the opposite story, so each of these raises cc_byz_strain alongside its reward, and
+# the strain pulse in cc_byz_strain.txt turns that into events the player did not choose.
+#
+# The memory variable each sets is read by the capstone trigger and by the theatre event
+# chains, so completing a theatre and later losing the ground still counts as having done it.
+
+cc_byz_theatre_illyricum_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_illyricum  value = yes }
+
+	add_prestige = prestige_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_theatre_illyricum_held
+		years = -1
+		mode = add
+	}
+	change_societal_value = {
+		type = latinization_vs_hellenization
+		value = societal_value_minor_move_to_right
+	}
+	# The nearest theatre and the cheapest. One point of strain, and it is the only one that
+	# can plausibly be held with the empire's own manpower.
+	change_variable = { name = cc_byz_strain  add = 1 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+cc_byz_theatre_italy_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_italy  value = yes }
+
+	add_prestige = prestige_severe_bonus
+	add_legitimacy = legitimacy_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_theatre_italy_held
+		years = -1
+		mode = add
+	}
+	if = {
+		limit = {
+			NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_consolidate_italy } }
+		}
+		unlock_casus_belli_effect = { type = cc_byz_cb_consolidate_italy }
+	}
+	change_variable = { name = cc_byz_strain  add = 2 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+cc_byz_theatre_africa_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_africa  value = yes }
+
+	add_prestige = prestige_mild_bonus
+	add_gold = 300
+	add_country_modifier = {
+		modifier = cc_byz_theatre_africa_held
+		years = -1
+		mode = add
+	}
+	if = {
+		limit = {
+			NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } }
+		}
+		unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
+	}
+	# Africa is rich and it is the theatre that never settles. It pays for itself in gold and
+	# charges for itself in everything else.
+	change_variable = { name = cc_byz_strain  add = 3 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+cc_byz_theatre_spania_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_spania  value = yes }
+
+	add_prestige = prestige_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_theatre_spania_held
+		years = -1
+		mode = add
+	}
+	# The cheapest theatre to take and the hardest to justify keeping. A coastal strip at the
+	# far end of the sea, indefensible on its own, and the strain says so.
+	change_variable = { name = cc_byz_strain  add = 3 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+# ---- The eastern branch ----
+#
+# Four rewards rather than one, because the user asked for footholds that are concrete:
+#   trade modifiers        verified names, the safe backbone
+#   colonial charters      create_colonial_charter = { target = <province_definition> },
+#                          planted through ordered_province_definition_in_scripted_geography
+#   explorations           made cheaper rather than force-started, see the note on .red_sea
+#   CBs and geography      narrow casus belli, unlocked as the chain progresses
+#
+# NOTE ON EXPLORATIONS. start_exploration takes a character and a price and creates a live
+# exploration immediately. Forcing one on the player would consume a court character and a
+# price they did not agree to spend, so these effects lower the cost and open the ocean
+# instead, and the event chain offers the actual expedition as a choice.
+#
+# Strain: the eastern theatres cost LESS strain than the western ones, and Spice Islands
+# costs none. This is deliberate. The west was reconquest, garrisoned by armies that had to
+# be paid; the east is trade, and trade pays for itself. An emperor who goes east instead of
+# west is making a genuinely different and cheaper bet.
+
+cc_byz_theatre_red_sea_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_red_sea  value = yes }
+
+	add_prestige = prestige_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_red_sea_transit
+		years = -1
+		mode = add
+	}
+	if = {
+		limit = {
+			NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_indian_ocean } }
+		}
+		unlock_casus_belli_effect = { type = cc_byz_cb_indian_ocean }
+	}
+	change_variable = { name = cc_byz_strain  add = 1 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+cc_byz_theatre_horn_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_horn  value = yes }
+
+	add_prestige = prestige_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_horn_stations
+		years = -1
+		mode = add
+	}
+	change_variable = { name = cc_byz_strain  add = 1 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+cc_byz_theatre_india_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_india  value = yes }
+
+	add_prestige = prestige_severe_bonus
+	add_gold = 400
+	add_country_modifier = {
+		modifier = cc_byz_indian_factories
+		years = -1
+		mode = add
+	}
+
+	# An actual charter on the Malabar coast, not merely a modifier saying we trade there.
+	#
+	# SCOPE. These iterators run scripted_geography -> province_definition, so they are
+	# entered FROM the geography and take no geography parameter. Pattern from vanilla
+	# country_four_yearly.txt:334.
+	#
+	# random_ rather than ordered_, and NO order_by, for a reason worth recording.
+	#
+	# The docs list random_'s output scope as "province" while every_ and ordered_ say
+	# "province_definition", so an earlier revision used ordered_ to be safe and sorted by
+	# development. That failed at runtime with:
+	#     Wrong scope for trigger for compare trigger 'development'
+	#     (got province_definition, expected location)
+	# which settles both questions at once. development is LOCATION scope and a province
+	# definition is not a location, so there is nothing sensible to sort these by here. And
+	# the error proves the family really does yield province_definition, so the docs' "province"
+	# for random_ is the typo it looked like.
+	#
+	# random_ needs no order_by, so the whole failing comparison disappears rather than being
+	# replaced with a different guess about what a province definition can be sorted on.
+	scripted_geography:cc_byz_india_geography = {
+		random_province_definition_in_scripted_geography = {
+			save_scope_as = cc_byz_charter_target
+		}
+	}
+	if = {
+		limit = { exists = scope:cc_byz_charter_target }
+		create_colonial_charter = {
+			target = scope:cc_byz_charter_target
+		}
+	}
+
+	change_variable = { name = cc_byz_strain  add = 1 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}
+
+# The end of the eastern line. No strain at all: by this point the trade is paying for the
+# fleet that protects it, which is the whole argument for having gone east.
+cc_byz_theatre_spice_islands_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_spice_islands  value = yes }
+
+	add_prestige = prestige_ultimate_bonus
+	add_gold = 600
+	add_country_modifier = {
+		modifier = cc_byz_spice_monopoly
+		years = -1
+		mode = add
+	}
+
+	# Same scope rule and the same reason for random_ without order_by as the India effect.
+	scripted_geography:cc_byz_spice_islands_geography = {
+		random_province_definition_in_scripted_geography = {
+			save_scope_as = cc_byz_charter_target
+		}
+	}
+	if = {
+		limit = { exists = scope:cc_byz_charter_target }
+		create_colonial_charter = {
+			target = scope:cc_byz_charter_target
+		}
+	}
+
+	# The Italians have spent two centuries as the middlemen on this trade. They are not
+	# middlemen any more, and they know exactly whose fault that is.
+	change_variable = { name = cc_byz_italian_standing  add = -2 }
+	clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+}
+
+
+# The capstone. The only one that pays more than it charges, because by this point the empire
+# has already paid.
+cc_byz_theatre_mare_nostrum_effect = {
+	cc_byz_init_debt_scores_effect = yes
+	set_variable = { name = cc_byz_mem_theatre_mare_nostrum  value = yes }
+
+	add_prestige = prestige_ultimate_bonus
+	add_legitimacy = legitimacy_severe_bonus
+	add_country_modifier = {
+		modifier = cc_byz_mare_nostrum
+		years = -1
+		mode = add
+	}
+	change_societal_value = {
+		type = latinization_vs_hellenization
+		value = societal_value_large_move_to_right
+	}
+	# Restoring the sea does not relieve the strain of having done it. It does mean the
+	# campaigns are over, which is why this is the one theatre that subtracts.
+	change_variable = { name = cc_byz_strain  add = -2 }
+	clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+}

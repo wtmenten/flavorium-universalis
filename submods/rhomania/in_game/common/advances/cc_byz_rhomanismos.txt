@@ -1,0 +1,288 @@
+﻿# Rhomanismos advances: the Greek-side answer to country_ROM.txt.
+#
+# Vanilla's rom_* line is gated on has_or_had_tag = ROM, and the only route to that tag for
+# a Byzantine player is ROM_BYZ_f, which force-moves the capital to Rome and applies
+# societal_value_huge_move_to_left. Every unique payoff in the pack therefore sits behind
+# abandoning Constantinople. This line answers each rom_* advance from the Rhomaios side,
+# available to a player who never leaves the capital.
+#
+# GATING. potential is deliberately stable (dlc, tag, has_societal_value) and the live
+# societal value check lives in allow. No vanilla advance gates potential on a value's
+# numeric position, and doing so would make advances appear and vanish as the value drifts.
+# With the check in allow the advance stays visible and greys out, which also tells the
+# player what the requirement is. Advances support allow: see 0_age_of_absolutism.txt:25.
+#
+# The +25 threshold is the Rhomanismos side of a -100..100 axis. Vanilla uses comparable
+# cutoffs at -50 (restore_rome_primacy) and +/-90 (reestablish_hellenism).
+#
+# WHY THE PAYOFFS ARE SPLIT. BYZ starts around +80, so these are all researched at game
+# start, and an advance's modifiers are permanent once researched. Vanilla's rom_* line
+# gates on has_or_had_tag = ROM, which is sticky forever. Left alone that means a player
+# takes this line free in 1337, Latinizes in 1500, forms ROM, and holds BOTH lines
+# permanently, which is strictly dominant and defeats the point of the pillar. We cannot
+# block vanilla's formable (no vanilla overrides), so the payoff itself has to be the thing
+# that reacts.
+#
+# So each advance keeps only a small permanent core here (the knowledge, and enough that
+# the tech-tree tooltip is never empty), and the bulk lives in auto_modifiers in
+# cc_byz_rhomanismos_active.txt gated on has_advance = <this> AND the value still being
+# above +25. Latinize and the bulk switches off while the advance itself remains.
+# The tagmata units carry the same check in their own country_potential, since unit
+# availability cannot be driven from an auto_modifier.
+
+############################
+# age_1_traditions
+############################
+
+# Answers rom_spqr (parliament_base_support). Rome's reply to power-sharing was the Senate;
+# the Rhomaios reply is the graded hierarchy of court dignities, which binds the powerful
+# to the palace by making rank something the emperor alone can confer.
+cc_byz_taxis_of_offices = {
+	age = age_1_traditions
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = distribution_of_power_advance
+
+	icon = crown_power_advance_renaissance
+
+	monthly_legitimacy = 0.05
+}
+
+# Answers rom_pax_romana (stability and prosperity). Oikonomia is the canonical principle of
+# dispensation: the rule may be relaxed where rigour would cost more than it gains.
+cc_byz_oikonomia = {
+	age = age_1_traditions
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = subjects_advance
+
+	icon = gel_healthy_economy
+
+	tolerance_heretic = 1
+}
+
+# Opens the tagmata line. Mirrors vanilla's unlock_legionaries_1_advance, which sits at
+# age 1 on requires = iron_working; this one hangs off the same feudal levy advance
+# vanilla's byz_cataphracts_advance and byz_akritai_advance use.
+cc_byz_unlock_tagmata_advance = {
+	age = age_1_traditions
+	allow_children = no
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = unlock_feudal_levy_advance
+
+	unlock_unit = a_cc_byz_tagmata_1
+}
+
+############################
+# age_2_renaissance
+############################
+
+# Answers rom_restore_the_legions. The tagmata were the standing central regiments; unlike
+# the legionaries they are a cavalry-weighted force, so the payoff is shaped accordingly.
+cc_byz_tagmata_restored = {
+	age = age_2_renaissance
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = professional_armies_advance
+
+	icon = teu_crusader_discipline
+
+	discipline = 0.025
+	unlock_unit = a_cc_byz_tagmata_2
+}
+
+# Answers rom_revival_of_arts_and_culture. The Palaiologan revival was a real movement in
+# painting, mosaic and letters, and it was Greek.
+cc_byz_palaiologan_revival = {
+	age = age_2_renaissance
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = patron_of_art
+
+	icon = patron_of_art
+
+	skill_of_new_artists = 0.1
+}
+
+############################
+# age_3_discovery
+############################
+
+# Answers rom_new_corpus_juris_civilis. The Basilika are the Greek recension of Justinian's
+# code: the same law, in the language the courts actually used.
+cc_byz_basilika = {
+	age = age_3_discovery
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = printing_press_advance
+
+	icon = legalism_advance
+
+	stability_cost_efficiency = 0.15
+	unlock_unit = a_cc_byz_tagmata_3
+}
+
+# Answers rom_bread_and_circuses. The annona was the grain dole; Constantinople lived on it.
+cc_byz_annona = {
+	age = age_3_discovery
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = crown_power_advance_discovery
+
+	icon = pun_breadbasket_of_india
+
+	global_food_capacity_modifier = 0.1
+}
+
+############################
+# age_4_reformation
+############################
+
+# Answers rom_citizenship. Roman citizenship was a legal status; Rhomaios identity was
+# defined by Orthodoxy and allegiance to the emperor, which is a wider net and a slower one.
+cc_byz_ecumenical_office = {
+	age = age_4_reformation
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = confessionalism_advance
+
+	icon = cultural_acceptance_advance
+
+	cultures_capacity_modifier = 0.2
+	unlock_unit = a_cc_byz_tagmata_4
+}
+
+# Answers rom_all_roads_lead_to_rome. The imperial post ran on the same roads; what the
+# Rhomaioi kept running was the relay system rather than the paving programme.
+cc_byz_dromos = {
+	age = age_4_reformation
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = road_advance_1
+
+	icon = glory_of_rome
+
+	diplomatic_capacity = 1
+}
+
+############################
+# age_5_absolutism
+############################
+
+# Answers rom_provincial_governors. The theme system predates and outlasts the governorship;
+# it is the administrative shape the empire actually used.
+cc_byz_thematic_administration = {
+	age = age_5_absolutism
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = absolutist_court
+
+	icon = modern_road_advance
+
+	global_distance_from_capital_speed_propagation = 0.1
+	unlock_unit = a_cc_byz_tagmata_5
+}
+
+# Answers rom_imperium_sine_fine. The autokrator's claim is not to boundless expansion but
+# to undivided authority within what is already his.
+cc_byz_autokrator = {
+	age = age_5_absolutism
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = absolute_rulership
+
+	icon = expansionism
+
+	global_separatism = -0.05
+}
+
+############################
+# age_6_revolutions
+############################
+
+# Answers rom_roman_architecture. What the empire maintained was not new building but the
+# upkeep of what Justinian had already raised.
+cc_byz_great_church = {
+	age = age_6_revolutions
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+	}
+	requires = industrialization_advance
+
+	icon = efficient_construction_plans
+
+	monthly_prestige = 0.1
+	unlock_unit = a_cc_byz_tagmata_6
+}

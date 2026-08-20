@@ -1,0 +1,37 @@
+﻿# Union arc chain points.
+#
+# The vanilla hook (yearly_country_pulse) is declared in cc_byz_on_actions.txt. This file
+# defines only the custom on_action it points at.
+#
+# The arc is driven by the four generic actions, not by the pulse: an emperor decides to open
+# contacts, to summon a council, to promulgate and to repudiate. The pulse handles the one
+# thing he does not decide, which is whether the resistance keeps growing after he has
+# promulgated. That is why the only event here is .22 and why it is gated on stage 3.
+#
+# The stage 3 gate matters. Without it the ferment would also fire at stage 4 (repudiated),
+# where cc_byz_anti_unionist has been reset to 0 anyway, and at stage 2 (signed but not yet
+# promulgated), where the city has not officially been told and has nothing to riot about.
+
+cc_byz_on_yearly_union = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = {
+				has_variable = cc_byz_union_stage
+				has_variable = cc_byz_anti_unionist
+			}
+			var:cc_byz_union_stage = 3
+			var:cc_byz_anti_unionist >= 3
+		}
+		trigger_else = { always = no }
+	}
+	random_events = {
+		100 = 0
+		15 = cc_byz_union.22
+	}
+}

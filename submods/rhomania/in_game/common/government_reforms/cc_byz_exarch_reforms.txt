@@ -1,0 +1,87 @@
+﻿# The three ways to hold an exarchate, selected when the exarch is appointed.
+#
+# Structural mirror of vanilla's soyurghal_governor_{,banished_,effective_governor_}reform
+# triad (country_specific.txt:4085-4143): each is locked (granted only by the appointing
+# interaction, never picked from the reform screen), and each has a potential block that
+# checks both that this country holds the reform and that its overlord still has the
+# capability. If the emperor loses the Renovatio advance the arrangement lapses.
+#
+# The choice is the classic imperial trade: a governor strong enough to defend Italy is
+# strong enough to keep it.
+
+# The safe appointment. A palace official with no local base, who will do as instructed and
+# accomplish little. Cheap, loyal, ineffective.
+cc_byz_exarch_caretaker_reform = {
+	icon = soyurghal_governor_reform
+
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = cc_byz_exarch_caretaker_reform
+		}
+	}
+
+	potential = {
+		has_reform = government_reform:cc_byz_exarch_caretaker_reform
+		overlord ?= {
+			modifier:cc_byz_can_appoint_exarch = yes
+		}
+	}
+
+	country_modifier = {
+		global_monthly_prosperity = -0.001
+		monthly_legitimacy = 0.05
+	}
+}
+
+# The effective appointment. A capable administrator given room to govern, who will make
+# Italy pay for itself and accumulate a following while doing it.
+cc_byz_exarch_effective_reform = {
+	icon = soyurghal_governor_reform
+
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = cc_byz_exarch_effective_reform
+		}
+	}
+
+	potential = {
+		has_reform = government_reform:cc_byz_exarch_effective_reform
+		overlord ?= {
+			modifier:cc_byz_can_appoint_exarch = yes
+		}
+	}
+
+	country_modifier = {
+		global_monthly_prosperity = 0.002
+		legislative_efficiency = 0.15
+		monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
+	}
+}
+
+# The military appointment. A general sent west with the troops to hold the peninsula,
+# which is what the exarchs of Ravenna actually were. Effective and dangerous.
+cc_byz_exarch_strategos_reform = {
+	icon = soyurghal_governor_reform
+
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = cc_byz_exarch_strategos_reform
+		}
+	}
+
+	potential = {
+		has_reform = government_reform:cc_byz_exarch_strategos_reform
+		overlord ?= {
+			modifier:cc_byz_can_appoint_exarch = yes
+		}
+	}
+
+	country_modifier = {
+		monthly_army_tradition = 0.5
+		global_manpower_modifier = 0.15
+		monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+	}
+}

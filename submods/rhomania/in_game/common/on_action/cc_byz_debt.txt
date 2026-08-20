@@ -1,0 +1,67 @@
+﻿# Debt event chain points.
+#
+# The vanilla hooks (on_loan_taken, on_bankruptcy, yearly_country_pulse) are declared in
+# cc_byz_on_actions.txt. This file defines only the custom on_actions they point at.
+#
+# on_loan_taken gives root = country, scope:target = loan, scope:owner = lender. The lender
+# scope is optional and _hardcoded.txt says so explicitly, so every use of it here is guarded
+# with exists = scope:owner first. A loan from the estates has no owner country.
+
+# The Italian creditors take an interest the moment an emperor borrows from them. This is the
+# entry point to the leverage thread: it does not fire on ordinary domestic borrowing.
+cc_byz_on_loan_taken = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = scope:owner
+		scope:owner = {
+			OR = {
+				has_or_had_tag = VEN
+				has_or_had_tag = GEN
+				has_or_had_tag = PIS
+			}
+		}
+		# Not on the crown jewels loan. Vanilla owns that chain end to end
+		# (flavor_byz_ven.1-14) and the regalia thread here reads its aftermath instead.
+		NOT = { scope:target = { has_loc_key = pawning_of_crown_jewels } }
+	}
+	events = {
+		cc_byz_debt.1
+	}
+}
+
+# Vanilla's on_bankruptcy is NOT empty: it records ach_has_been_bankrupt and fires the
+# crown-jewels seizure branches. Chained through the sub-list so all of that still runs.
+cc_byz_on_bankruptcy = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+	events = {
+		cc_byz_debt.33
+	}
+}
+
+# The conditions rather than the transactions: revenue already spent, creditors comparing
+# notes, a farm that has quietly become hereditary. None of these are triggered by an action
+# the player took this month, which is why they hang off the pulse.
+#
+# Weighting note: the 100 = 0 entry is the do-nothing case and dominates deliberately. These
+# four are in addition to the four bureaucracy events on the same pulse, so the combined
+# chance of some cc_byz event in a given year is what matters, not either list alone.
+cc_byz_on_yearly_debt = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+	random_events = {
+		100 = 0
+		8 = cc_byz_debt.10
+		8 = cc_byz_debt.20
+		8 = cc_byz_debt.30
+		6 = cc_byz_debt.4
+	}
+}

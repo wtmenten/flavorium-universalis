@@ -1,0 +1,260 @@
+# Dev Diary: Rhomania
+
+*Published: 2026-08-19*
+
+*A Byzantine empire that is allowed to stay Greek, a Rome it governs without moving to, a reconquest that costs what reconquests cost, and a road east that does not.*
+
+*Dev Note: this is a standalone submod requiring Fate of the Phoenix. It exists because of one criticism of that pack that we think is correct. Every unique reward in it sits on the Latin side of the Latinitas/Rhomanismos slider, and the only route to the Roman tag force-moves your capital to Rome. A Greek-speaking Orthodox empire in 1337 is therefore mechanically pushed toward re-Latinising itself and abandoning Constantinople, which has no basis in the period. Rhomania answers that by making the Greek path pay, by building a Rome you govern from Constantinople, and by attaching the historical costs to the things that historically cost.*
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_societal_values_both_axes.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_societal_values_both_axes.png" alt="The societal values panel showing both the vanilla and the new axis">
+  </a>
+  <figcaption>Two axes now. Latinitas against Rhomanismos is vanilla's. Taxis against Dynatoi is the internal quarrel that actually governed the late empire.</figcaption>
+</figure>
+
+---
+
+## The second axis
+
+Fate of the Phoenix gives Byzantium one societal value: how Latin or how Greek it is. That is a real question, but it is an outward-facing one, and it leaves the empire's internal politics unmodelled.
+
+**Taxis against Dynatoi** is the other question. Taxis is order: the fisc, the bureaux, the salaried official, the crown. Dynatoi are the powerful: provincial magnates, pronoia-holders, the families who supply the soldiers and expect to be consulted. This was the genuine fault line of the fourteenth-century empire and it decided more than the language question did.
+
+Taxis buys you bureaucratic efficiency, crown power, cabinet efficiency and tax, and costs you manpower and the goodwill of the nobility. Dynatoi buys manpower, levies, cheaper subjects and noble satisfaction, and costs you the treasury's ability to assess anything. Neither is the correct answer.
+
+Crossing the two axes gives four distinct endgames: a westernised administrative empire, a Latin-feudal Romania, the restored bureaucratic autokratoria, and a magnate confederation with an emperor on top of it.
+
+The Greek side now also has something to unlock. A parallel advance line answers the Latin `rom_*` advances point for point, and the **tagmata** give the Greek player a heavy infantry line to set against the legionaries. Both are gated on the Rhomanismos side of the slider, so pushing Latin genuinely costs you access to them rather than merely being flavoured differently.
+
+---
+
+## Rome, without moving to Rome
+
+The Renovatio track is the centrepiece. You appoint an **exarch**: a named character from your court, given a seat in Italy and one of three terms of appointment, governing Rome as your subject while your capital stays where the empire actually is.
+
+You do not have to know the feature exists to find it. Once enough of Italy is in imperial hands, the officials administering it by dispatch write to say they are drowning: they are settling quarrels between Italian lords on evidence three months old, in a legal tradition none of them has studied, and they are doing it badly. The event proposes a solution and nominates a man from your own council to carry it out. The three answers are the three terms of appointment, so the choice that opens the arc is the same choice the interaction offers, made under pressure and about a specific person.
+
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_appoint_exarch.png" target="_blank">
+      <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_appoint_exarch.png" alt="The Appoint an Exarch character interaction">
+    </a>
+    <figcaption>Appointing an exarch: a character, a set of terms, and an area. The terms decide how much rope he gets.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exarchate_map.png" target="_blank">
+      <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exarchate_map.png" alt="The exarchate as a subject in Italy">
+    </a>
+    <figcaption>The result: an imperial governorship in Italy, and a capital still on the Bosphorus.</figcaption>
+  </figure>
+</div>
+
+The exarchate is not a decoration. It is the oldest problem the empire has, restated: a competent official, in a rich city, a very long way from the palace. The friction thread runs across a reign and more. He makes a decision without asking, and it is a good decision. His court adopts Latin usage, because he was sent to govern Rome and he is governing Rome. He corresponds with Venice and Genoa, because a governor who does not talk to his neighbours learns everything six months late.
+
+Then you summon him home, and find out what you built.
+
+The endings range from a hereditary exarchal dynasty that outlives the emperor who created it, to a fully absorbed province administered by salaried officials who expect another posting afterwards. Which one you get is decided by an accumulated loyalty score, not by a final choice, and the score has been moving since the appointment.
+
+Running alongside all of that, and tracked separately, is what he wants. Any Italian ground you still hold directly is ground the exarch can make a case for, and his case is usually a good one: the districts border his own, they are administered at six weeks' remove by men who have never seen them, and their revenue barely covers the cost of collecting it. He is never asking for anything you are making money on.
+
+Refusing is the default and costs you standing with him rather than gold. The better answers are gated on your ruler **or on your cabinet**, which is the point: a mediocre emperor with a charismatic negotiator at council can still make a refusal land as policy rather than a snub, and an administrator can construct the arrangement where the exarch gets the revenue and the crown keeps the authority. Appetite is deliberately not the same number as loyalty. He can be perfectly loyal and still want the Romagna.
+
+Refuse the formal case often enough and he stops asking. His officers were already the nearest authority, the garrisons had been his for years, and at some point the local officials simply began reporting to the man who was actually there. You find out from a tax return that does not arrive. The options then are a war in Italy you cannot presently fund, or a document, and he has been reasonably confident of that for some time.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exarch_demand.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exarch_demand.png" alt="The exarch requesting Italian districts">
+  </a>
+  <figcaption>He asks well. That is most of the problem.</figcaption>
+</figure>
+
+Holding Rome also means holding a quarrel with the papacy that has no resolution, and the diary is not going to pretend otherwise. Which rite is celebrated. Whether the Pope is a guest, a subject or a hostage. Appointments made without your assent. Excommunication, which costs an Orthodox emperor almost nothing and costs his Catholic-governing exarch a great deal, and the Pope knows it.
+
+---
+
+## The union
+
+Vanilla ships two buttons for the schism, both requiring all five patriarchal seats, both instantaneous. Rhomania replaces that with an arc in four stages, and the shape of it is the historical one.
+
+1. **Contacts.** Legates and letters. Cheap, deniable, commits nobody.
+2. **The council.** The filioque, the azymes, and then the primacy, which is the article the Latins actually came for. You can concede, hold, or walk out.
+3. **Promulgation.** Read the act in Hagia Sophia and commemorate the Pope by name.
+4. **Repudiation.** Available from the signature onward.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_union_promulgation.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_union_promulgation.png" alt="The promulgation of the union in Hagia Sophia">
+  </a>
+  <figcaption>Signing was never the hard part.</figcaption>
+</figure>
+
+The union of 1439 was negotiated, signed, and then rejected at home. So signing is stage two of four here, not the end, and stage three is where the arc actually resolves. Reception is decided by everything you did from the first legation onward: concessions made at the council, clergy bought rather than persuaded, and terms you had translated a little generously and hoped nobody would check. That last one costs you nothing visible for years, and then costs you two points of resistance at the exact moment the Latin text becomes public.
+
+Three outcomes: the union takes and the west starts sending men and money, it splits the city, or it is refused outright and you hold the costs of both positions with the benefits of neither. That last square is fully reachable. It is where the empire historically ended up.
+
+Repudiation is a legitimate ending rather than a failure state. It restores your standing at home and among the Orthodox powers, and no fleet is coming.
+
+---
+
+## Bureaucracies, and what funding them means
+
+The eleven Byzantine bureaucracies are now assigned to the Taxis/Dynatoi axis, so what you fund shapes what your state becomes. The bureaux that govern around the magnates drift you toward Taxis; the ones that govern through them drift you toward Dynatoi.
+
+Three new offices compete for slots: the **Genikon** (the general fisc), the **Epi tōn Deēseōn** (the master of petitions, through which a farmer in Thrace can appeal past the man who owns his valley), and the **Oikeioi** (household intimates handed provincial commands on personal favour). The last two are mutually exclusive, because a subject either appeals to a public office or he asks a man who knows the emperor, and running both means the formal channel exists and everyone knows it is not the real one.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_bureaucracy_entrenchment.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_bureaucracy_entrenchment.png" alt="A bureaucracy tooltip showing funding and entrenchment scaling">
+  </a>
+  <figcaption>The matrix that matters: funding across, entrenchment down. The dangerous cell is the bottom-right one.</figcaption>
+</figure>
+
+Two numbers describe every office and the interesting content is in how they combine. A funded, entrenched bureau is a pillar of the state. An unfunded, entrenched one is a fiefdom, and vanilla names that outcome itself. A brand new unfunded office is close to harmless, because nobody has had time to build anything out of it yet, and the malus scaling here is deliberately softened at low entrenchment to make that true.
+
+Underneath it all runs a venality score. It rises whenever an office is treated as property rather than a post, it gates the nastier events, and nothing resets it cheaply except a purge, which is why emperors keep reaching for purges.
+
+---
+
+## Debt
+
+Constantinople borrowed from Italians, and what it cost was not the interest.
+
+Four threads. **Italian creditor leverage** is the spine of it: the money is available, the rate is reasonable, and it becomes more reasonable still with certain small accommodations regarding the customs, mentioned late in the conversation by men who rehearsed it. The score that matters is not how much you owe but how much you have conceded. You can be deep in debt with a creditor grip of zero, and that is a legitimate way to play the thread.
+
+**Tax farming** sells next year's revenue for money today, and the collectors answer to nobody in the palace. **Default** offers renegotiation at their rate, or a lower rate with their factor resident in your capital reading your registers, which is the offer they want you to take. And repudiation, which the republics answer by doing something they have never otherwise managed, which is agreeing with each other.
+
+The fourth thread reads a piece of vanilla rather than replacing it. Fate of the Phoenix already ships the pawning of the crown jewels to Venice in 1343, and it is good content, so Rhomania does not rebuild it. Instead it picks up what happens next: a coronation conducted with gilt and coloured glass, clergy who notice, and a clerk three reigns later copying the regalia forward on the schedule of pledged property in a hand the chancery no longer uses.
+
+---
+
+## The reconquest, and what it costs
+
+Justinian recovered Africa, Italy and a strip of Spain. The plague came with the fleet, the treasury never recovered, and Italy was ruined by the war fought to save it.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mission_tree.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mission_tree.png" alt="The Renovatio Imperii mission tree">
+  </a>
+  <figcaption>Renovatio Imperii: seventy-one tasks, five roots, and no single road through them.</figcaption>
+</figure>
+
+Nine cornerstones carry the campaign: Illyricum, Italy, Africa, Spania and Mare Nostrum in the west, then the Red Sea, the Horn, India and the spice islands in the east. Each western theatre fails differently and none of them fails on the map. Illyricum is won and then populated by people who were never consulted and will outlast every arrangement you make. Italy is recovered as a ruin. Africa is rich, and never settles, and its garrisons go years without pay. Spania is the cheapest to take and the hardest to justify keeping, and its garrison commander has submitted a professionally worded assessment concluding that the position is untenable in any circumstance where it matters.
+
+The other sixty-two tasks are the empire the reconquest is launched from.
+
+### The house before the campaign
+
+Five opening tasks need no wars at all: maintain the Theodosian Walls, keep the Hippodrome, seat five men on the council, run four bureaus at full maintenance, hold a working shipyard.
+
+Then the tree splits into **three pillars you can pursue in any order**. The **Fisc** restores the nomisma, the silk looms and a literate administration, ending with the Logothete of the Course, the office that ran the post and the roads and eventually the foreign policy because it was the only one that knew what was happening. The **Faith** runs through Athos, the icons and leadership of the autocephalous churches to the Ecumenical Throne. The **Sword** goes veterans, dromons and the Varangian Guard to a restored field army.
+
+**You only need two of the three.** No emperor was ever strong in every respect at once, and the tree does not ask you to be. Neglecting a pillar entirely is a legitimate way to play.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_stepping_stones.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_stepping_stones.png" alt="The three pillars of the mission tree">
+  </a>
+  <figcaption>Fisc, Faith and Sword. Two of the three carry you to The State Restored.</figcaption>
+</figure>
+
+### Choices that close doors
+
+Five points in the tree offer two roads and let you walk one. Take the **Venetian Alliance** and the Genoese Compact disappears. End the Ottomans, or make them your **tributary**, which is the historically ironic answer and considerably cheaper, since the empire spent decades paying them tribute and sending troops on their campaigns. Restore the **Tagmata** as a salaried professional army, or raise the **Pronoia Host** from men who bring soldiers with them, which is the Taxis and Dynatoi argument settled with regiments instead of offices. Settle the Levant by **treaty with Cairo** or fight the **Pentarchy War**. Run the spice as a **crown monopoly** or charter a **company**.
+
+The road not taken vanishes from the tree, so each fork's description names what it closes. That is the only place the information can live once the alternative is gone.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exclusive_fork.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exclusive_fork.png" alt="An exclusive fork with both options still open">
+  </a>
+  <figcaption>Two answers to one question, while both are still on the table.</figcaption>
+</figure>
+
+### The west, unlocked
+
+Illyricum opens Italy, Africa and Spania as three independent lines, takeable **in whatever order the map offers**, reconverging at the Western Sea once any two are done. This is a correction as much as a feature: the previous chain forced Italy before Africa, which forbade the order Justinian actually used. He took Africa in 533 and Italy afterwards, and the sequence was opportunity rather than plan.
+
+Alongside all of it sit seven optional spurs that gate nothing. Rediscover Greek fire. Maintain Hagia Sophia, furnish the Great Palace and hold Thessaloniki, and an optional capstone recognises a city worth looking at. Hold a triumph in the Hippodrome, using forms recorded in the ceremonial books and not performed in two hundred years.
+
+### And what it costs
+
+Every theatre raises **strain**. Strain rises further with unintegrated conquests, with fighting while already holding two theatres, and with borrowing at war; it falls with peace and with integration. Past the thresholds the provinces stop remitting, a permanent western army assembles that nobody decided to create, and a general appears who has done everything asked of him and rather more, which is the problem.
+
+**One thing to be clear about.** Mission packs are off by default in EU5, and the nine cornerstones are delivered as ordinary actions for everyone playing that way, calling exactly the same code. The other sixty-two tasks are not. They exist only with mission packs enabled.
+
+That is deliberate rather than an oversight. Sixty-two more entries in the action panel would bury the nine that matter. Nothing structural is behind them: the theatres, their permanent modifiers and every event chain are reachable either way. Turning missions on gets you the scaffolding, the forks and the small rewards, not the content.
+
+---
+
+## The Levant
+
+Once Anatolia is settled, a two-phase confrontation with Cairo opens over the holy places.
+
+Phase one is a cold war and it is **fully resolvable by diplomacy**. A written condominium over the custody of the Holy Sepulchre is a real ending, several emperors thought it the best available one, and you can reach it without declaring war. Five threads run in parallel: the holy places, the eastern patriarchs, the spice trade and the republics selling to both sides, the frontier, and Cairo's own succession disputes, which move the situation whether or not you do anything about them.
+
+Phase two is the Pentarchy War, and it escalates only if you press for it. Jerusalem, Antioch and Alexandria are three of the five ancient sees. Take them, with Rome already under your exarch, and you hold all five for the first time since the seventh century, which makes vanilla's `mend_schism` available on your terms.
+
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mamluk_situation.png" target="_blank">
+      <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mamluk_situation.png" alt="The Levantine Confrontation situation panel">
+    </a>
+    <figcaption>The Levantine Confrontation. Both progress tracks are live and only one of them is yours.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Rhomania/art_justinian_san_vitale.jpg" target="_blank">
+      <img src="../assets/screenshots/Rhomania/art_justinian_san_vitale.jpg" alt="The Justinian mosaic at San Vitale, Ravenna">
+    </a>
+    <figcaption>Justinian at San Vitale, Ravenna. He did this once. It nearly finished the empire that managed it.</figcaption>
+  </figure>
+</div>
+
+---
+
+## Past Suez
+
+Take Alexandria, Cairo and the Sinai together and something changes that has nothing to do with the pentarchy. For the first time since Justinian the empire controls the entire passage between the Indian Ocean and the Mediterranean.
+
+The spice does not come from Cairo. It comes *through* Cairo, from ports the empire has never seen, carried in ships it does not own, and for two centuries the men growing rich on that have been the sultan's customs officials at one end and the Venetians at the other. Both of those positions are now available.
+
+The eastern branch grows out of the Levant spine rather than running beside it. Antioch, then Jerusalem, then Egypt and the Delta, then the Sinai Road, and the Sinai Road is the hinge: hold it and the tree opens the Red Sea strait, then victualling stations on the Horn, then factories on the Malabar coast, then the islands where the spice actually grows. The road east begins where the reconquest actually reaches it. All four eastern cornerstones have their own actions for players with missions off, exactly like the west.
+
+It is a genuinely different kind of expansion and the mechanics say so. The reconquest is territory: armies, garrisons, provinces that cost more than they return, and strain to price all of it. The east is trade. It needs ships rather than soldiers, it pays for itself, and reaching the spice islands costs no strain at all. What it costs instead is Italy. Venice and Genoa have been the middlemen on this route since before the empire lost Anatolia, and they are about to stop being, and an emperor who spent the debt threads carefully keeping his creditors sweet will find that bill arrives in a currency the map does not show.
+
+The choices along the way are about what kind of power you intend to be out there. Tax the strait and let everyone use it, or close it to Latin shipping. Build the African stations properly, or come to terms with the harbour masters who already run them. On the Malabar coast the Indian Ocean has been running an orderly international trade for a thousand years, in which foreign merchants live in a designated quarter, pay local dues and settle disputes in local courts. Arabs, Persians and Chinese have grown wealthy on those terms for centuries. Several of your factors find them beneath the dignity of the Roman Empire. The ones who have been out there longest are the ones arguing hardest to accept them.
+
+<div class="fig-row">
+  <figure>
+    <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_eastern_branch.png" target="_blank">
+      <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_eastern_branch.png" alt="The eastern branch of the mission tree">
+    </a>
+    <figcaption>The eastern branch, growing out of the Sinai Road once Egypt and the Sinai are held together.</figcaption>
+  </figure>
+  <figure>
+    <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_spice_trade.png" target="_blank">
+      <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_spice_trade.png" alt="Reaching the spice islands">
+    </a>
+    <figcaption>The source. The striking thing about the islands is how small they are.</figcaption>
+  </figure>
+</div>
+
+One caveat worth stating, since it is a real limitation rather than a design choice: a mission pack can have only one completing task, and in this tree that is Mare Nostrum. The eastern line cannot finish the pack by itself. It ends in its own payoff instead, where you decide whether the trade runs as a crown monopoly, gets farmed to the burghers who then no longer need Italian credit, or is sold back to the republics at your price.
+
+---
+
+## Playing well with the rest of the map
+
+An exarchate is a new country appearing in Italy in the middle of somebody else's century, so a fair amount of this submod is about not breaking things.
+
+Vanilla enrols the Guelph and Ghibelline factions once, at the situation's start, so a later-created exarchate would see the whole quarrel and be unable to touch it. Rhomania offers an explicit three-way choice instead: join the Ghibellines, which for an eastern emperor's governor is the more interesting reading; join the Guelphs, since you hold the Pope's city; or stand apart as a third imperial party and forfeit any say in how it ends.
+
+The larger hazard is the Western Schism. Its start conditions require the Papal States to exist with cardinals between 1360 and 1402, so annexing them before 1360 does not delay that situation, it deletes it. There is now a guard event that fires when the papacy is one step from erasure, offering subjugation as the better-paying alternative and weighting the AI heavily toward taking it. It does not forbid anything. If you erase the papacy anyway there is a substitute thread covering a western church with no head and three kings offering to host an election.
+
+The Italian Wars needed nothing. Vanilla already selects a Constantinople-holding Balkan Christian power as the Balkan league leader, which is you, by construction.
+
+One thing worth stating plainly: vanilla's `restore_rome_primacy` action relocates your capital to Rome. That is a legitimate path and Rhomania does not block it, but it will disable the exarchate track and every Renovatio advance, all of which require you to still be in Constantinople. Pick one.
+
+---
+
+*Rhomania is a standalone submod. It requires the **Fate of the Phoenix** DLC and does not depend on the main Flavorium Universalis mod. It overrides no vanilla file except the eleven Byzantine bureaucracies, which are redefined to add axis drift and entrenchment-scaled maluses; the header of that file lists every change. Known incompatibility: **Basileia Romaion: 1337**, which replaces the campaign setup and overrides cultures.*

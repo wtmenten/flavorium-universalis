@@ -1,0 +1,117 @@
+﻿# Appoint an Exarch.
+#
+# Structural copy of vanilla assign_governor (assign_governor.txt), which is the only place
+# in the game that spins a governed subject out of owned territory under a named character.
+# The create_country_from_location + change_location_owner pattern is taken from there
+# verbatim, because it is the one proven route and it needs no country tag of its own.
+#
+# The point of this interaction is what it does NOT do: the capital stays where it is.
+# Vanilla's ROM_BYZ_f formable is the alternative and it moves you to Rome permanently.
+
+cc_byz_appoint_exarch = {
+	on_own_nation = yes
+	message = yes
+
+	potential = {
+		scope:actor = {
+			has_dlc = "d008_fate_of_the_phoenix"
+			has_or_had_tag = BYZ
+			modifier:cc_byz_can_appoint_exarch = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			stability >= 0
+			# The whole premise. An emperor who has already moved to Rome has no use for a
+			# governor there, and the Renovatio advance requires this too.
+			capital = location:constantinople
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_byz_choose_exarch"
+		column = {
+			data = name
+		}
+		visible = {
+			is_alive = yes
+			is_ruler = no
+		}
+		enabled = {
+			is_adult = yes
+			is_loyal = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = government_reform
+		source = actor
+		target_flag = target_reform
+		name = "cc_byz_select_exarch_type"
+		none_available_msg_key = "cc_byz_select_exarch_type_none"
+		column = {
+		}
+		visible = {
+			OR = {
+				this = government_reform:cc_byz_exarch_caretaker_reform
+				this = government_reform:cc_byz_exarch_effective_reform
+				this = government_reform:cc_byz_exarch_strategos_reform
+			}
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = area
+		source = actor
+		target_flag = target_area
+		name = "cc_byz_select_exarchate_area"
+		none_available_msg_key = "cc_byz_select_exarchate_area_none"
+		column = {
+			data = name
+		}
+		visible = {
+			# The old western provinces, not wherever happens to be convenient.
+			OR = {
+				region = region:italy_region
+				region = region:maghreb_region
+			}
+			region != scope:actor.capital.region
+			any_location_in_area = {
+				percent >= 0.75
+				OR = {
+					owner ?= scope:actor
+					has_owner = no
+					is_ownable = no
+				}
+			}
+		}
+	}
+
+	# The creation itself lives in cc_byz_create_exarchate_effect (scripted_effects/
+	# cc_byz_exarchate_effects.txt), because the prompt event cc_byz_exarch.10 has to do
+	# exactly the same eight things and duplicating them here would let the two drift.
+	# This block only translates the select_trigger results into the scopes that effect
+	# expects, then calls it.
+	effect = {
+		custom_tooltip = cc_byz_appoint_exarch_effect_tt
+
+		hidden_effect = {
+			scope:actor = { save_scope_as = cc_byz_exarch_overlord }
+			scope:recipient = { save_scope_as = cc_byz_exarch_candidate }
+			scope:target_reform = { save_scope_as = cc_byz_exarch_reform }
+			scope:target_area = { save_scope_as = cc_byz_exarch_area }
+
+			scope:actor = {
+				cc_byz_create_exarchate_effect = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		value = 0
+	}
+}

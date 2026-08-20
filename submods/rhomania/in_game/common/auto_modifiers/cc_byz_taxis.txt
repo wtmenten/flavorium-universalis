@@ -1,0 +1,97 @@
+﻿# Feeders for the cc_taxis_vs_cc_dynatoi societal value.
+#
+# Vanilla's byzantium.txt feeds latinization_vs_hellenization from language and culture
+# state. This axis is fed from political state instead: who actually holds the land,
+# the soldiers and the offices.
+#
+# Every entry gates on has_societal_value first. Countries without the value would
+# otherwise error on the monthly_towards_* modifiers, exactly as vanilla's
+# byzantium.txt guards each of its own entries.
+#
+# scales_with takes a script value (see cc_byz_values.txt), never an inline iterator.
+
+#############################################
+# Toward Dynatoi: the provincial magnates
+#############################################
+
+# Pronoia grants are how land and its soldiers pass out of the fisc into private hands.
+cc_byz_pronoia_grants = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = {
+			is_subject_type = pronoia
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_byz_pronoia_count
+		divide = 4
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+}
+
+# A weak crown estate means the magnates are setting the terms.
+cc_byz_weak_crown = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		"estate_power(estate_type:crown_estate)" < 0.35
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+
+# A powerful and contented nobility entrenches itself.
+cc_byz_ascendant_nobles = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		"estate_power(estate_type:nobles_estate)" >= 0.4
+		estate_satisfaction:nobles_estate >= 0.6
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+
+#############################################
+# Toward Taxis: the imperial bureaus
+#############################################
+
+# Every bureau actually staffed and funded is an argument for government by office.
+cc_byz_staffed_bureaus = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			bureaucracy_maintenance > 0
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_byz_funded_bureau_count
+		divide = 3
+	}
+
+	monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+}
+
+# A crown that can appoint and dismiss does not need to bargain.
+cc_byz_strong_crown = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		"estate_power(estate_type:crown_estate)" >= 0.5
+	}
+
+	monthly_towards_cc_taxis = societal_value_minor_monthly_move
+}
+
+# A state that runs on paper: literate clerks are the fisc's real infrastructure.
+# average_location_literacy is location scope; average_country_literacy is the country one.
+cc_byz_literate_administration = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		average_country_literacy > 20
+	}
+
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+}

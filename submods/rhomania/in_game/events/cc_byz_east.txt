@@ -1,0 +1,379 @@
+﻿namespace = cc_byz_east
+
+# The eastern trade, and the empire's second life as a maritime power.
+#
+# Fired from whichever front-end the player uses: the eastern generic actions call these
+# directly, and the mission tasks do the same through on_persistent_completion. Both routes
+# call the same cc_byz_theatre_*_effect first.
+#
+#   .1   the Red Sea strait
+#   .10  the Horn, and the long run to India
+#   .20  the Malabar factories
+#   .30  the source
+#
+# THE ARGUMENT THIS CHAIN MAKES. The western reconquest is territory: armies, garrisons,
+# provinces that cost more than they return, and cc_byz_strain to price it. The east is
+# trade, and it works the other way round. It needs ships rather than soldiers, it pays for
+# itself, and what it costs is a relationship with the Italian republics who have been the
+# middlemen on this route for two centuries and are about to stop being.
+#
+# So the east charges almost no strain and a great deal of cc_byz_italian_standing, and an
+# emperor who has spent the debt threads keeping Venice sweet will find this expensive in a
+# way the map does not show.
+#
+# Memory variables:
+#   cc_byz_mem_theatre_red_sea / _horn / _india / _spice_islands   set by the theatre effects
+#   cc_byz_mem_east_by_treaty      the route was opened by agreement rather than by force
+#   cc_byz_mem_east_by_force       the route was taken and held by the fleet
+#   cc_byz_mem_broke_the_republics the Italians were deliberately cut out
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  The strait
+#############################################
+cc_byz_east.1 = {
+	type = country_event
+	title = cc_byz_east.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_creditor_grip >= 3 }
+				desc = cc_byz_east.1.desc_indebted
+			}
+			desc = cc_byz_east.1.desc
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Tax the passage and let everyone use it. The Italians keep their trade and pay us for it.
+	option = {
+		name = cc_byz_east.1.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_east_by_treaty  value = yes }
+		add_gold = 200
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Close it to Latin shipping. The spice comes to Alexandria in our bottoms or not at all.
+	option = {
+		name = cc_byz_east.1.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_broke_the_republics  value = yes }
+		change_variable = { name = cc_byz_italian_standing  add = -3 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		every_country = {
+			limit = {
+				OR = {
+					has_or_had_tag = VEN
+					has_or_had_tag = GEN
+					has_or_had_tag = PIS
+				}
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_rival_privilege_granted
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_byz_creditors_wary
+			years = 25
+			mode = add_and_extend
+		}
+	}
+
+	# Charter a company and let it carry the risk. Needs an administrator who can draft the
+	# terms so the crown takes the profit and the merchants take the losses.
+	option = {
+		name = cc_byz_east.1.c
+		ai_chance = { base = 25 }
+		trigger = {
+			OR = {
+				ruler ?= { adm >= 75 }
+				any_cabinet_character = { has_trait = administrator }
+			}
+		}
+
+		set_variable = { name = cc_byz_mem_east_by_treaty  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_eastern_company
+			years = -1
+			mode = add
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+}
+
+
+#############################################
+# .10  The long run
+#############################################
+cc_byz_east.10 = {
+	type = country_event
+	title = cc_byz_east.10.title
+	desc = cc_byz_east.10.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = exterior
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Build the stations properly: cisterns, warehouses, a garrison at each.
+	option = {
+		name = cc_byz_east.10.a
+		ai_chance = { base = 40 }
+
+		add_gold = -250
+		add_country_modifier = {
+			modifier = cc_byz_horn_stations
+			years = -1
+			mode = add
+		}
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Come to terms with the Somali and Yemeni harbour masters instead of garrisoning.
+	# Cheaper, and it depends on their goodwill every single season.
+	option = {
+		name = cc_byz_east.10.b
+		ai_chance = { base = 35 }
+		trigger = {
+			OR = {
+				ruler ?= { dip >= 70 }
+				any_cabinet_character = {
+					OR = {
+						has_trait = charismatic_negotiator
+						has_trait = silver_tongue
+					}
+				}
+			}
+		}
+
+		add_gold = -80
+		set_variable = { name = cc_byz_mem_east_by_treaty  value = yes }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Send the fleet ahead of the merchants and take what the route needs.
+	option = {
+		name = cc_byz_east.10.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		set_variable = { name = cc_byz_mem_east_by_force  value = yes }
+		add_navy_tradition = navy_tradition_mild_bonus
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+}
+
+
+#############################################
+# .20  The factories
+#############################################
+cc_byz_east.20 = {
+	type = country_event
+	title = cc_byz_east.20.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_east_by_force }
+				desc = cc_byz_east.20.desc_force
+			}
+			desc = cc_byz_east.20.desc
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Trade as a guest, under local law, paying local dues. The Indian Ocean has worked this
+	# way for a thousand years and it works.
+	option = {
+		name = cc_byz_east.20.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_east_by_treaty  value = yes }
+		add_gold = 250
+		add_country_modifier = {
+			modifier = cc_byz_indian_factories
+			years = -1
+			mode = add
+		}
+	}
+
+	# Fortify the factories. It ends the guest arrangement and begins something else.
+	option = {
+		name = cc_byz_east.20.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_east_by_force  value = yes }
+		add_gold = -200
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		add_prestige = prestige_mild_bonus
+		if = {
+			limit = {
+				NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_indian_ocean } }
+			}
+			unlock_casus_belli_effect = { type = cc_byz_cb_indian_ocean }
+		}
+	}
+
+	# Send scholars with the merchants. The cheapest thing in this event and the one that
+	# outlasts every factory in it.
+	option = {
+		name = cc_byz_east.20.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 70 }
+		}
+
+		add_gold = -100
+		add_country_modifier = {
+			modifier = cc_byz_eastern_learning
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+}
+
+
+#############################################
+# .30  The source
+#
+# The eastern branch's terminal event. Not final = yes in the mission pack, since only Mare
+# Nostrum can carry that, so this is where the eastern line actually pays out.
+#############################################
+cc_byz_east.30 = {
+	type = country_event
+	title = cc_byz_east.30.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_broke_the_republics }
+				desc = cc_byz_east.30.desc_monopoly
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_east_by_treaty }
+				desc = cc_byz_east.30.desc_treaty
+			}
+			desc = cc_byz_east.30.desc
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = happy
+		10 = trading
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Run it as a monopoly through the crown.
+	option = {
+		name = cc_byz_east.30.a
+		ai_chance = { base = 40 }
+
+		add_gold = 400
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+	}
+
+	# Farm it to the burghers and take a share. Less money, and a merchant class that can
+	# finance the state without Italian help.
+	option = {
+		name = cc_byz_east.30.b
+		ai_chance = { base = 35 }
+
+		add_gold = 150
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_country_modifier = {
+			modifier = cc_byz_sound_credit
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	# Sell the Italians their access back, at our price. The most lucrative option and the
+	# one that requires having beaten them first.
+	option = {
+		name = cc_byz_east.30.c
+		ai_chance = { base = 25 }
+		trigger = {
+			has_variable = cc_byz_mem_broke_the_republics
+			ruler ?= { dip >= 75 }
+		}
+
+		add_gold = 500
+		change_variable = { name = cc_byz_italian_standing  add = 2 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_variable = { name = cc_byz_creditor_grip  add = -1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+	}
+}

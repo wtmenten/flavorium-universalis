@@ -1,0 +1,52 @@
+﻿# Reconquest chain points.
+#
+# The vanilla hook (yearly_country_pulse) is declared in cc_byz_on_actions.txt.
+#
+# TWO SEPARATE on_actions, deliberately. The strain DRIFT has to run every single year for the
+# arithmetic in cc_byz_strain_pulse_effect to mean anything, so it lives in an effect block
+# rather than a random_events list. The strain EVENTS are chance-based on top of that, because
+# a threshold that fired the same event every year at strain 5 would be unplayable.
+
+# The drift. Runs yearly, unconditionally, for any Byzantine emperor who has begun a theatre.
+# Gated on having claimed at least one, so an empire that never went west never accumulates
+# strain and never sees any of this.
+cc_byz_on_yearly_strain_drift = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		OR = {
+			has_variable = cc_byz_mem_theatre_illyricum
+			has_variable = cc_byz_mem_theatre_italy
+			has_variable = cc_byz_mem_theatre_africa
+			has_variable = cc_byz_mem_theatre_spania
+		}
+	}
+	effect = {
+		cc_byz_strain_pulse_effect = yes
+	}
+}
+
+# The thresholds. Each event carries its own strain gate in its trigger, so the weights here
+# only control how often the game checks, not which one is eligible.
+cc_byz_on_yearly_strain_events = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_strain }
+			var:cc_byz_strain >= 5
+		}
+		trigger_else = { always = no }
+	}
+	random_events = {
+		100 = 0
+		14 = cc_byz_reconquest.50
+		10 = cc_byz_reconquest.51
+		10 = cc_byz_reconquest.52
+	}
+}

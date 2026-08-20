@@ -1,0 +1,65 @@
+﻿# Taxis vs Dynatoi
+#
+# The internal fault line of the late Byzantine state: the imperial bureaucratic
+# apparatus in Constantinople against the provincial magnates and pronoia-holders
+# who supply its soldiers.
+#
+# Taxis  (left)  = order. The fisc, the sekreta, the crown.
+# Dynatoi (right) = the powerful. Land, levies, and provincial families.
+#
+# Requires all three of:
+#   in_game/common/societal_values/cc_byz_societal_values.txt          (this file)
+#   main_menu/common/modifier_type_definitions/cc_byz_societal_values.txt
+#   main_menu/common/static_modifiers/cc_byz_societal_values.txt
+# Omitting any one leaves the value silently inert.
+#
+# POLE NAMES ARE DERIVED FROM THIS KEY, split on _vs_. That is why the key is
+# cc_taxis_vs_cc_dynatoi and not cc_taxis_vs_dynatoi: the latter yields the poles
+# cc_taxis and dynatoi, so every asset and modifier type has to be named against a
+# mismatched pair. Poles here are cc_taxis and cc_dynatoi.
+#
+# ART. Six files, all placeholders copied from vanilla centralization_vs_decentralization,
+# which is the closest vanilla pairing in both meaning and silhouette. Replace with bespoke
+# art before release; the paths are what matter and they are:
+#   main_menu/gfx/interface/icons/modifier_types/monthly_towards_cc_taxis.dds
+#   main_menu/gfx/interface/icons/modifier_types/monthly_towards_cc_dynatoi.dds
+#   main_menu/gfx/interface/icons/societal_values/cc_taxis_vs_cc_dynatoi_{left,right}.dds
+#   main_menu/gfx/interface/illustrations/societal_values/cc_taxis_vs_cc_dynatoi_{left,right}.dds
+# A missing icon renders blank without logging anything, so these are checked by eye.
+
+cc_taxis_vs_cc_dynatoi = {
+	content_priority = 900
+
+	allow = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+	}
+
+	left_modifier = { #Taxis
+		global_bureaucracy_maintenance_efficiency = 0.25
+		global_bureaucracy_entrenchment_speed_modifier = 0.2
+		global_crown_estate_power = 0.25
+		country_cabinet_efficiency = 0.15
+		global_estate_max_tax = 0.15
+
+		monthly_towards_centralization = societal_value_monthly_move
+
+		global_levy_size_modifier = -0.15
+		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+	}
+
+	right_modifier = { #Dynatoi
+		global_manpower_modifier = 0.2
+		global_levy_size_modifier = 0.2
+		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction
+		subject_loyalty = 15
+
+		monthly_towards_decentralization = societal_value_monthly_move
+
+		global_bureaucracy_maintenance_efficiency = -0.25
+		global_crown_estate_power = -0.25
+		global_estate_max_tax = -0.15
+	}
+
+	opinion_importance_multiplier = 0.5
+}

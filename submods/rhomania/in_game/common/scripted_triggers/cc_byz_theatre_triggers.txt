@@ -1,0 +1,156 @@
+﻿# THE THEATRE LIST. Single source of truth for both front-ends.
+#
+#   1  cc_byz_theatre_illyricum   Salona, Split, Durres
+#   2  cc_byz_theatre_italy       Rome, Ravenna, Naples, and an exarchate to govern them
+#   3  cc_byz_theatre_africa      Palermo, Syracuse, Tunis, Tripoli
+#   4  cc_byz_theatre_spania      Cartagena, Malaga
+#   5  cc_byz_theatre_mare_nostrum  all four
+#
+# If a theatre is added here it must be added to BOTH front-ends:
+#   in_game/common/generic_actions/cc_byz_theatre_actions.txt   (missions off, the default)
+#   in_game/common/missions/cc_byz_renovatio_imperii.txt        (missions on)
+# and to the matching effect in ../scripted_effects/cc_byz_theatre_effects.txt.
+#
+# WHY LOCATIONS RATHER THAN AREAS. The Justinianic reconquest was a campaign for specific
+# cities, not for regions, and the vanilla area names for the Dalmatian coast and the Maghreb
+# do not line up with it. Naming the cities is both historically right and verifiable: every
+# location key below was checked against map_data/named_locations/00_default.txt. Note that
+# carthage, ragusa and dyrrhachium are NOT location keys in EU5; the equivalents are tunis,
+# split and durres.
+#
+# owns_or_has_subject_in takes a GEOGRAPHY, not a location, so the per-city checks use
+# owns_or_non_sovereign_subject_owns instead. That form counts territory held by a direct
+# non-sovereign subject, which is exactly what an exarchate holding Rome is.
+
+cc_byz_theatre_illyricum_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_illyricum_tt
+		owns_or_non_sovereign_subject_owns = location:salona
+		owns_or_non_sovereign_subject_owns = location:split
+		owns_or_non_sovereign_subject_owns = location:durres
+	}
+}
+
+cc_byz_theatre_italy_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_italy_tt
+		owns_or_non_sovereign_subject_owns = location:rome
+		owns_or_non_sovereign_subject_owns = location:ravenna
+		owns_or_non_sovereign_subject_owns = location:naples
+		# The theatre is not complete until Rome is being GOVERNED, which on this track means
+		# an exarch rather than a garrison. This is the one theatre that requires the
+		# pillar 2 mechanics, deliberately.
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+}
+
+cc_byz_theatre_africa_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_africa_tt
+		owns_or_non_sovereign_subject_owns = location:palermo
+		owns_or_non_sovereign_subject_owns = location:syracuse
+		owns_or_non_sovereign_subject_owns = location:tunis
+		owns_or_non_sovereign_subject_owns = location:tripoli
+	}
+}
+
+cc_byz_theatre_spania_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_spania_tt
+		owns_or_non_sovereign_subject_owns = location:cartagena
+		owns_or_non_sovereign_subject_owns = location:malaga
+	}
+}
+
+# ---- The eastern branch ----
+#
+# A PARALLEL branch inside the same mission pack, not a chain off the western one. The
+# eastern tasks carry no requires-link, so they become available on their own terms once the
+# gate below is satisfied, and a player can pursue them without finishing the west.
+#
+# CONSEQUENCE OF THAT, stated plainly: only one task per pack may carry final = yes, and that
+# is Mare Nostrum. The eastern line therefore cannot complete the pack by itself. It ends in
+# its own payoff event instead, which is the trade-off of branching inside one tree rather
+# than shipping a second pack.
+#
+# THE GATE. Alexandria, Cairo and the Sinai together are what put the empire astride the Red
+# Sea transit. Holding Egypt without the Sinai leaves the land route open to somebody else,
+# which is why all three are required rather than Alexandria alone.
+cc_byz_eastern_gate_trigger = {
+	custom_tooltip = {
+		text = cc_byz_eastern_gate_tt
+		owns_or_non_sovereign_subject_owns = location:alexandria
+		owns_or_non_sovereign_subject_owns = location:cairo
+		owns_or_non_sovereign_subject_owns = location:sinai_desert
+	}
+}
+
+# The first foothold outside the Mediterranean world. Aden and the Yemeni coast control the
+# strait, and taking them is what turns Egypt from a terminus into a corridor.
+cc_byz_theatre_red_sea_trigger = {
+	cc_byz_eastern_gate_trigger = yes
+	custom_tooltip = {
+		text = cc_byz_theatre_red_sea_tt
+		owns_or_has_subject_in = scripted_geography:cc_byz_red_sea_geography
+	}
+}
+
+# The African shore of the same passage, and the victualling stations the long run to India
+# cannot be made without.
+cc_byz_theatre_horn_trigger = {
+	cc_byz_eastern_gate_trigger = yes
+	custom_tooltip = {
+		text = cc_byz_theatre_horn_tt
+		owns_or_has_subject_in = scripted_geography:cc_byz_horn_geography
+	}
+}
+
+# Presence rather than conquest. A factory at Calicut and a charter behind it is what the
+# period actually produced; annexing the Deccan is not the goal and the trigger does not ask
+# for it.
+cc_byz_theatre_india_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_india_tt
+		has_variable = cc_byz_mem_theatre_red_sea
+		owns_or_has_subject_in = scripted_geography:cc_byz_india_geography
+	}
+}
+
+# The source of the trade, and the end of the eastern line.
+cc_byz_theatre_spice_islands_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_spice_islands_tt
+		has_variable = cc_byz_mem_theatre_india
+		owns_or_has_subject_in = scripted_geography:cc_byz_spice_islands_geography
+	}
+}
+
+
+# Two or more theatres claimed. Consumed by the strain pulse, where fighting a fresh war while
+# already holding down two conquests is the condition that turns a successful reconquest into
+# an unsustainable one.
+#
+# Written as an OR of pairs rather than by counting, because there is no count operator over
+# arbitrary variables and the theatre memory variables are booleans rather than a list.
+cc_byz_two_theatres_held_trigger = {
+	OR = {
+		AND = { has_variable = cc_byz_mem_theatre_illyricum  has_variable = cc_byz_mem_theatre_italy }
+		AND = { has_variable = cc_byz_mem_theatre_illyricum  has_variable = cc_byz_mem_theatre_africa }
+		AND = { has_variable = cc_byz_mem_theatre_illyricum  has_variable = cc_byz_mem_theatre_spania }
+		AND = { has_variable = cc_byz_mem_theatre_italy      has_variable = cc_byz_mem_theatre_africa }
+		AND = { has_variable = cc_byz_mem_theatre_italy      has_variable = cc_byz_mem_theatre_spania }
+		AND = { has_variable = cc_byz_mem_theatre_africa     has_variable = cc_byz_mem_theatre_spania }
+	}
+}
+
+# The capstone. Reads the memory variables rather than re-testing every city, so a theatre
+# completed and later lost still counts: the campaign happened.
+cc_byz_theatre_mare_nostrum_trigger = {
+	custom_tooltip = {
+		text = cc_byz_theatre_mare_nostrum_tt
+		has_variable = cc_byz_mem_theatre_illyricum
+		has_variable = cc_byz_mem_theatre_italy
+		has_variable = cc_byz_mem_theatre_africa
+		has_variable = cc_byz_mem_theatre_spania
+	}
+}

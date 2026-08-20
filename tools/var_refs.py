@@ -112,6 +112,26 @@ _VARNAME_RE  = re.compile(r"(?<!\w)variable\s*=\s*(\w+)")
 # Inline "variable_map(X|...)" comparison
 _MAP_INLINE_STR_RE = re.compile(r'"variable_map\((\w+)\|')
 
+# name = X inside a multi-line named op block (detected via frame context).
+#
+# _NAMED_OP_RE above only matches when the whole op fits on one line, because references are
+# extracted line by line. The equally common block form
+#     set_variable = {
+#         name = cc_byz_union_stage
+#         value = 2
+#     }
+# was therefore invisible, which silently undercounted WRITES. That is the dangerous
+# direction for this tool: a variable written only in block form and never read produced no
+# output at all rather than being reported as write-only, which is the exact failure the
+# audit exists to catch.
+_NAMED_OP_KEYS = {
+    "set_variable",
+    "change_variable",
+    "clamp_variable",
+    "add_to_variable_map",
+}
+_NAME_ASSIGN_RE = re.compile(r"(?<!\w)name\s*=\s*(\w+)")
+
 
 def find_var_refs_on_line(line: str, frames: list) -> list:
     """Return list of (op, var_name) for all variable references on this line."""
@@ -145,6 +165,18 @@ def find_var_refs_on_line(line: str, frames: list) -> list:
 
     for m in _MAP_INLINE_STR_RE.finditer(line):
         refs.append(("variable_map", m.group(1)))
+
+    # Multi-line named op: the innermost open block is set/change/clamp_variable or
+    # add_to_variable_map, so a bare `name = X` on this line names the variable.
+    #
+    # Checks the INNERMOST frame rather than any open frame, so that an option's own
+    # `name = <loc key>` is not mistaken for a variable when a named op appears later in the
+    # same option. Single-line ops cannot reach here: their frame is pushed and popped during
+    # the character walk that runs before this function, so _NAMED_OP_RE keeps those and
+    # there is no double count.
+    if frames and frames[-1]["key"] in _NAMED_OP_KEYS:
+        for m in _NAME_ASSIGN_RE.finditer(line):
+            refs.append((frames[-1]["key"], m.group(1)))
 
     return refs
 

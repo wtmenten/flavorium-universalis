@@ -1,0 +1,427 @@
+﻿namespace = cc_byz_demand
+
+# The exarch asks for more.
+#
+# A RECURRING thread on the yearly pulse, deliberately separate from the five-event friction
+# arc in cc_byz_exarch_friction.txt. Two reasons:
+#
+#   1. The friction arc is a fixed chain with delayed continuations and a terminal event that
+#      reads accumulated cc_byz_exarch_loyalty. A recurring demand thread writing hard into
+#      that same score would make the arc's ending a function of how many times the pulse
+#      happened to fire, which is not a decision the player made.
+#   2. Appetite and loyalty are genuinely different things. An exarch can be perfectly loyal
+#      and still want the Romagna, and a resentful one can want nothing.
+#
+# So this owns cc_byz_exarch_appetite (0..5) and touches loyalty only lightly, by one point,
+# and only when the emperor's answer is unusually generous or unusually blunt.
+#
+# ENTRY CONDITION. Fires only while the empire still holds Italian territory directly. Once
+# everything in Italy belongs to the exarchate there is nothing left to demand and the thread
+# goes quiet on its own without needing an end state.
+#
+#   .1   the request
+#   .2   the argument for it, once refused twice
+#   .3   what he did about it
+#
+# Memory variables:
+#   cc_byz_mem_ceded_italy       territory was handed over
+#   cc_byz_mem_refused_twice     two refusals in a row
+#   cc_byz_mem_exarch_took_it    he took it without asking
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+#
+# Traits used below are all vanilla and were checked against in_game/common/traits/:
+# administrator, charismatic_negotiator, fierce_negotiator, silver_tongue, schemer, greedy.
+
+
+#############################################
+# .1  The request
+#############################################
+cc_byz_demand.1 = {
+	type = country_event
+	title = cc_byz_demand.1.title
+	desc = {
+		first_valid = {
+			# Ordered first. Once he has taken ground without asking, a subsequent request is
+			# a courtesy rather than a request, and that outranks every other reading.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_exarch_took_it }
+				desc = cc_byz_demand.1.desc_after_seizure
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_exarch_appetite >= 3 }
+				desc = cc_byz_demand.1.desc_persistent
+			}
+			triggered_desc = {
+				trigger = { scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -2 } }
+				desc = cc_byz_demand.1.desc_hostile
+			}
+			desc = cc_byz_demand.1.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		# Something left to ask for.
+		any_owned_location = {
+			count >= 3
+			region = region:italy_region
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+
+		# The specific ground he wants: our least developed Italian holding, because he has
+		# picked the request the palace is most likely to grant.
+		#
+		# ordered_* has no ascending option. The documented parameters are limit, order_by,
+		# position, min, max and check_range_bounds, and it always takes the highest, so
+		# "least developed" is expressed by negating the sort value rather than by a flag.
+		ordered_owned_location = {
+			limit = { region = region:italy_region }
+			order_by = {
+				value = 0
+				subtract = development
+			}
+			check_range_bounds = no
+			max = 1
+			save_scope_as = cc_byz_demanded_location
+		}
+	}
+
+	# Refuse. The default, and it costs standing with the man rather than gold.
+	option = {
+		name = cc_byz_demand.1.a
+		ai_chance = { base = 45 }
+
+		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Grant it. He governs it better than we do from here, and both parties know it.
+	option = {
+		name = cc_byz_demand.1.b
+		ai_chance = { base = 30 }
+		trigger = {
+			exists = scope:cc_byz_demanded_location
+		}
+
+		set_variable = { name = cc_byz_mem_ceded_italy  value = yes }
+		scope:cc_byz_demanded_location = {
+			change_location_owner = scope:cc_byz_exarch
+			add_core = scope:cc_byz_exarch
+		}
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Refuse, and make the refusal land as policy rather than as a snub. A ruler who can
+	# argue, or a negotiator at the council table who can do it for him.
+	option = {
+		name = cc_byz_demand.1.c
+		ai_chance = { base = 35 }
+		trigger = {
+			OR = {
+				ruler ?= { dip >= 70 }
+				any_cabinet_character = {
+					OR = {
+						has_trait = charismatic_negotiator
+						has_trait = fierce_negotiator
+						has_trait = silver_tongue
+					}
+				}
+			}
+		}
+
+		change_variable = { name = cc_byz_exarch_appetite  add = -1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Give him the revenue without the title. An administrator can construct this; it buys
+	# the loyalty a grant would buy and concedes none of the ground.
+	option = {
+		name = cc_byz_demand.1.d
+		ai_chance = { base = 30 }
+		trigger = {
+			OR = {
+				ruler ?= { adm >= 75 }
+				any_cabinet_character = {
+					has_trait = administrator
+				}
+			}
+		}
+
+		add_gold = -150
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_variable = { name = cc_byz_exarch_appetite  add = -1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_exarch_appetite >= 3 }
+				trigger_event_silently = { id = cc_byz_demand.2  years = 5 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .2  The argument
+#
+# Once refused often enough, the exarch stops asking and starts making a case, in writing,
+# that other people are invited to read.
+#############################################
+cc_byz_demand.2 = {
+	type = country_event
+	title = cc_byz_demand.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_ceded_italy }
+				desc = cc_byz_demand.2.desc_precedent
+			}
+			desc = cc_byz_demand.2.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_exarch_appetite }
+			var:cc_byz_exarch_appetite >= 3
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+		set_variable = { name = cc_byz_mem_refused_twice  value = yes }
+	}
+
+	# Concede the principle: Italian ground is administered from Rome, not Constantinople.
+	option = {
+		name = cc_byz_demand.2.a
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_mem_ceded_italy  value = yes }
+		every_owned_location = {
+			limit = {
+				region = region:italy_region
+				NOT = { this = root.capital }
+			}
+			change_location_owner = scope:cc_byz_exarch
+			add_core = scope:cc_byz_exarch
+		}
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_large_move_to_right
+		}
+	}
+
+	# Refuse the argument and put the refusal in the same public form he used.
+	option = {
+		name = cc_byz_demand.2.b
+		ai_chance = { base = 40 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Recall him over it. Available to a ruler who has the standing to survive doing so, or a
+	# schemer at court who can arrange the vacancy quietly.
+	option = {
+		name = cc_byz_demand.2.c
+		ai_chance = { base = 25 }
+		trigger = {
+			OR = {
+				ruler ?= { mil >= 75 }
+				any_cabinet_character = {
+					has_trait = schemer
+				}
+			}
+		}
+
+		set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			add_reform = government_reform:cc_byz_exarch_caretaker_reform
+		}
+		add_stability = stability_mild_penalty
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			if = {
+				limit = {
+					var:cc_byz_exarch_appetite >= 4
+					scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -2 }
+				}
+				trigger_event_silently = { id = cc_byz_demand.3  years = 4 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .3  He stopped asking
+#
+# Entirely forced. An exarch who has been refused repeatedly, holds the ground militarily and
+# has no loyalty left to spend simply administers what he wants and reports it afterwards.
+#############################################
+cc_byz_demand.3 = {
+	type = country_event
+	title = cc_byz_demand.3.title
+	desc = cc_byz_demand.3.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+		# He only helps himself AFTER the formal case was made and rejected. Without this
+		# gate the event could fire off a bare appetite score, which would make it a random
+		# seizure rather than the end of an argument the player took part in.
+		has_variable = cc_byz_mem_refused_twice
+		any_owned_location = {
+			count >= 1
+			region = region:italy_region
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = armed
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_exarch
+		}
+		set_variable = { name = cc_byz_mem_exarch_took_it  value = yes }
+
+		# Not offered. The garrisons in those towns are his men and have been for years.
+		ordered_owned_location = {
+			limit = {
+				region = region:italy_region
+				NOT = { this = root.capital }
+			}
+			# Negated for the same reason as .1: ordered_* has no ascending option.
+			order_by = {
+				value = 0
+				subtract = development
+			}
+			check_range_bounds = no
+			max = 2
+			change_location_owner = scope:cc_byz_exarch
+			add_core = scope:cc_byz_exarch
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Ratify it after the fact and call it a grant. Saves the appearance and nothing else.
+	option = {
+		name = cc_byz_demand.3.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_ceded_italy  value = yes }
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		add_prestige = prestige_mild_penalty
+	}
+
+	# Refuse to recognise it, and let the discrepancy between the registers and the ground
+	# stand as the empire's position.
+	option = {
+		name = cc_byz_demand.3.b
+		ai_chance = { base = 50 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		add_legitimacy = legitimacy_mild_bonus
+		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+	}
+}

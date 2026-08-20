@@ -1,0 +1,622 @@
+﻿namespace = cc_byz_reconquest
+
+# The Justinianic reconquest, and what it cost.
+#
+# Fired from whichever front-end the player is using: the theatre generic_actions call these
+# directly, and the mission tree's on_persistent_completion does the same. Both routes reach
+# the same events because both call the same cc_byz_theatre_*_effect first.
+#
+#   .1   Illyricum and Dalmatia
+#   .10  Italy
+#   .20  Africa
+#   .30  Spania
+#   .40  Mare Nostrum, the capstone
+#   .50 .51 .52   strain thresholds, from the yearly pulse
+#
+# THE POINT. Each theatre fails differently, and none of them fails on the map. Illyricum is
+# won and populated by people who were never asked. Italy is recovered as a ruin. Africa never
+# settles. Spania is indefensible and everyone involved knows it. The events are where that
+# lands, because the map cannot show it.
+#
+# Score: cc_byz_strain 0..10, driven by cc_byz_strain_pulse_effect.
+#
+# Memory variables:
+#   cc_byz_mem_theatre_*          set by the theatre effects, read by the capstone trigger
+#   cc_byz_mem_slavs_settled      the Slavic and Vlach population was accommodated
+#   cc_byz_mem_italy_ruined       Italy was taken by storm rather than by terms
+#   cc_byz_mem_africa_garrisoned  Africa is held by unpaid garrisons
+#   cc_byz_mem_spania_abandoned   Spania was traded away
+#   cc_byz_mem_general_problem    a victorious general became a political problem
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  Illyricum: the people who are already there
+#############################################
+cc_byz_reconquest.1 = {
+	type = country_event
+	title = cc_byz_reconquest.1.title
+	desc = cc_byz_reconquest.1.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = location
+		10 = peasant
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Settle them on imperial terms: land for service, as the empire has always done.
+	option = {
+		name = cc_byz_reconquest.1.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_slavs_settled  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_federate_settlement
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Move them. It has been done before and it works, at a cost nobody records.
+	option = {
+		name = cc_byz_reconquest.1.b
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		add_gold = -200
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		add_stability = stability_mild_penalty
+	}
+
+	# Leave the coastal cities their liberties and the interior to itself. Cheap, and the
+	# interior stops being the empire's in any sense but the map's.
+	option = {
+		name = cc_byz_reconquest.1.c
+		ai_chance = { base = 25 }
+
+		add_gold = 100
+		change_variable = { name = cc_byz_italian_standing  add = 1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+	}
+
+	after = {
+		# Not offered. Hungary and Venice both have coasts to lose and both have noticed.
+		hidden_effect = {
+			change_variable = { name = cc_byz_italian_standing  add = -1 }
+			clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		}
+	}
+}
+
+
+#############################################
+# .10  Italy: the country the war was fought to recover
+#############################################
+cc_byz_reconquest.10 = {
+	type = country_event
+	title = cc_byz_reconquest.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_strain >= 5 }
+				desc = cc_byz_reconquest.10.desc_strained
+			}
+			desc = cc_byz_reconquest.10.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = location
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		cc_byz_init_exarch_scores_effect = yes
+
+		# Hidden and forced. Whether Italy came in by terms or by storm was settled by how
+		# hard the empire was already pressed when it got there.
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_strain >= 5 }
+				set_variable = { name = cc_byz_mem_italy_ruined  value = yes }
+			}
+		}
+	}
+
+	# Rebuild it at imperial expense. The only answer that leaves Italy worth holding.
+	option = {
+		name = cc_byz_reconquest.10.a
+		ai_chance = { base = 35 }
+
+		add_gold = -400
+		add_country_modifier = {
+			modifier = cc_byz_italy_restored
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Tax it to pay for the next theatre. Italy has been paying for other people's wars for
+	# two centuries and will not notice one more.
+	option = {
+		name = cc_byz_reconquest.10.b
+		ai_chance = { base = 40 }
+
+		add_gold = 250
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_variable = { name = cc_byz_papal_standing  add = -1 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# Remit its taxes for a generation and let it recover on its own. Requires an
+	# administrator who can defend an empty column in the ledger for twenty years.
+	option = {
+		name = cc_byz_reconquest.10.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		change_variable = { name = cc_byz_strain  add = -2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_variable = { name = cc_byz_papal_standing  add = 2 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+
+#############################################
+# .20  Africa: the frontier that never settles
+#############################################
+cc_byz_reconquest.20 = {
+	type = country_event
+	title = cc_byz_reconquest.20.title
+	desc = cc_byz_reconquest.20.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = location
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Pay the garrisons properly and keep the frontier forts manned.
+	option = {
+		name = cc_byz_reconquest.20.a
+		ai_chance = { base = 35 }
+
+		add_gold = -350
+		add_country_modifier = {
+			modifier = cc_byz_african_limes
+			years = -1
+			mode = add
+		}
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Let the garrisons live off the country. They will, whatever is decided.
+	option = {
+		name = cc_byz_reconquest.20.b
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_africa_garrisoned  value = yes }
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# Buy the Moorish chiefs instead of fighting them. Cheaper than the forts and it needs a
+	# ruler who can tell which of them are worth buying.
+	option = {
+		name = cc_byz_reconquest.20.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_gold = -150
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		# Not offered. Unpaid soldiers a thousand miles from the capital produce a general
+		# before they produce a mutiny, and the general is the larger problem.
+		hidden_effect = {
+			if = {
+				limit = {
+					has_variable = cc_byz_mem_africa_garrisoned
+					NOT = { has_variable = cc_byz_mem_general_problem }
+				}
+				trigger_event_silently = { id = cc_byz_reconquest.52  years = 5 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .30  Spania: a coast with nothing behind it
+#############################################
+cc_byz_reconquest.30 = {
+	type = country_event
+	title = cc_byz_reconquest.30.title
+	desc = cc_byz_reconquest.30.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = location
+		10 = exterior
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Reinforce it. It can be held, at a price that has to be paid every year.
+	option = {
+		name = cc_byz_reconquest.30.a
+		ai_chance = { base = 30 }
+
+		add_gold = -300
+		add_country_modifier = {
+			modifier = cc_byz_spania_reinforced
+			years = -1
+			mode = add
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Trade it away for something on this side of the sea.
+	option = {
+		name = cc_byz_reconquest.30.b
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_spania_abandoned  value = yes }
+		add_gold = 400
+		add_prestige = prestige_mild_penalty
+		change_variable = { name = cc_byz_strain  add = -3 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Hold it with a fleet rather than a garrison. Cheaper, and it only works while the fleet
+	# has nothing else to do.
+	option = {
+		name = cc_byz_reconquest.30.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		add_country_modifier = {
+			modifier = cc_byz_spania_reinforced
+			years = 30
+			mode = add_and_extend
+		}
+		add_navy_tradition = navy_tradition_mild_bonus
+	}
+}
+
+
+#############################################
+# .40  Mare Nostrum
+#############################################
+cc_byz_reconquest.40 = {
+	type = country_event
+	title = cc_byz_reconquest.40.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_strain >= 6 }
+				desc = cc_byz_reconquest.40.desc_exhausted
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_spania_abandoned }
+				desc = cc_byz_reconquest.40.desc_traded
+			}
+			desc = cc_byz_reconquest.40.desc
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = happy
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	option = {
+		name = cc_byz_reconquest.40.a
+		ai_chance = { base = 100 }
+	}
+}
+
+
+#############################################
+# .50  Strain: the provinces stop paying
+#
+# From the yearly pulse at strain >= 5.
+#############################################
+cc_byz_reconquest.50 = {
+	type = country_event
+	title = cc_byz_reconquest.50.title
+	desc = {
+		first_valid = {
+			# An Italy that came in by storm is not merely paying less, it is the specific
+			# reason the western account does not balance, and the ledger says so by name.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_italy_ruined }
+				desc = cc_byz_reconquest.50.desc_ruined
+			}
+			desc = cc_byz_reconquest.50.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_strain }
+			var:cc_byz_strain >= 5
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = economy
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Borrow against next year and hold everything.
+	option = {
+		name = cc_byz_reconquest.50.a
+		ai_chance = { base = 40 }
+
+		add_gold = 250
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_variable = { name = cc_byz_creditor_grip  add = 1 }
+		clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+	}
+
+	# Give the furthest provinces to whoever can hold them out of their own pocket.
+	option = {
+		name = cc_byz_reconquest.50.b
+		ai_chance = { base = 40 }
+
+		change_variable = { name = cc_byz_strain  add = -2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_large_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+	}
+
+	# Retrench: abandon the least defensible holdings deliberately, before they are lost
+	# accidentally. The unpopular answer and the correct one.
+	option = {
+		name = cc_byz_reconquest.50.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		change_variable = { name = cc_byz_strain  add = -3 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		add_prestige = prestige_mild_penalty
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+}
+
+
+#############################################
+# .51  Strain: the plague arrives with the fleet
+#
+# From the yearly pulse at strain >= 7. Entirely forced; the player is told, not asked.
+#############################################
+cc_byz_reconquest.51 = {
+	type = country_event
+	title = cc_byz_reconquest.51.title
+	desc = cc_byz_reconquest.51.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
+		# evaluated; every trigger in a block is evaluated, so an unset variable errors
+		# regardless. trigger_if is the idiom (banish_character.txt:9).
+		trigger_if = {
+			limit = { has_variable = cc_byz_strain }
+			var:cc_byz_strain >= 7
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = peasant
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		add_country_modifier = {
+			modifier = cc_byz_army_of_the_west
+			years = 20
+			mode = add_and_extend
+		}
+		add_stability = stability_mild_penalty
+	}
+
+	option = {
+		name = cc_byz_reconquest.51.a
+		ai_chance = { base = 100 }
+	}
+}
+
+
+#############################################
+# .52  The victorious general
+#
+# Reached from Africa's unpaid garrisons, and from the pulse at high strain. A commander a
+# thousand miles away with soldiers who are loyal to him because he feeds them is the oldest
+# way this empire has changed rulers.
+#############################################
+cc_byz_reconquest.52 = {
+	type = country_event
+	title = cc_byz_reconquest.52.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_africa_garrisoned }
+				desc = cc_byz_reconquest.52.desc_unpaid
+			}
+			desc = cc_byz_reconquest.52.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		NOT = { has_variable = cc_byz_mem_general_problem }
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		set_variable = { name = cc_byz_mem_general_problem  value = yes }
+	}
+
+	# Recall him and honour him. Expensive, public, and it works about half the time.
+	option = {
+		name = cc_byz_reconquest.52.a
+		ai_chance = { base = 40 }
+
+		add_gold = -250
+		add_prestige = prestige_mild_bonus
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+	}
+
+	# Leave him where he is and pay his men directly from the capital.
+	option = {
+		name = cc_byz_reconquest.52.b
+		ai_chance = { base = 35 }
+
+		add_gold = -350
+		add_army_tradition = army_tradition_mild_bonus
+		change_variable = { name = cc_byz_strain  add = -2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Divide his command between three officers who dislike each other. The classic answer,
+	# and it costs exactly what the classic answer always costs.
+	option = {
+		name = cc_byz_reconquest.52.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 70 }
+		}
+
+		add_army_tradition = army_tradition_mild_penalty
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+}

@@ -1,0 +1,69 @@
+﻿# Renovatio: the capability to govern the west from Constantinople.
+#
+# SCOPE NOTE. The plan originally had this file also re-mirroring the rom_* payoffs. That
+# work already exists in cc_byz_rhomanismos.txt, so duplicating it here would just hand the
+# player the same bonuses twice. This file is therefore only about the exarchate: the
+# capability to appoint one, and the administrative reach to run it.
+#
+# The capital requirement is the entire point and appears in three places that must agree:
+# here, in cc_byz_appoint_exarch's allow block, and in the loc. An emperor who takes
+# vanilla's ROM_BYZ_f formable moves to Rome and loses all of this, which is the trade.
+#
+# Advances cannot run effects and there is no on_advance on_action, so the reconquest CB
+# is granted by the appoint interaction rather than here. Establishing the exarchate is the
+# act that revives the claim, which reads better anyway.
+
+# The capability itself.
+cc_byz_renovatio_imperii = {
+	age = age_2_renaissance
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+	allow = {
+		societal_value:latinization_vs_hellenization > 25
+		custom_tooltip = {
+			text = cc_byz_capital_is_constantinople_tt
+			capital = location:constantinople
+		}
+	}
+	requires = power_projection_advance_2
+
+	icon = glory_of_rome
+
+	# The capability is safe to grant permanently: cc_byz_appoint_exarch's allow block also
+	# requires capital = constantinople, so a player who later forms ROM keeps the flag but
+	# can never use it. The numeric payoff is in the overlay like the rest of the line.
+	cc_byz_can_appoint_exarch = yes
+	diplomatic_capacity = 1
+}
+
+# Running a province you cannot see from the palace. The exarchate sits a long way from
+# Constantinople and everything about it is slower than governing Thrace.
+# CROSS-AGE PREREQUISITE. This depends on cc_byz_renovatio_imperii, which sits in age 2,
+# and per docs/scripting-gotchas.md a plain `requires` across ages breaks. The documented
+# workaround is has_advance in both potential and allow, with requires pointing at an
+# advance inside this age instead.
+cc_byz_exarchal_chancery = {
+	age = age_3_discovery
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_advance = cc_byz_renovatio_imperii
+	}
+	allow = {
+		has_advance = cc_byz_renovatio_imperii
+		societal_value:latinization_vs_hellenization > 25
+		custom_tooltip = {
+			text = cc_byz_capital_is_constantinople_tt
+			capital = location:constantinople
+		}
+	}
+	requires = printing_press_advance
+
+	icon = modern_road_advance
+
+	monthly_prestige = 0.05
+}

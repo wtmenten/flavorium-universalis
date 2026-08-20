@@ -1,0 +1,1003 @@
+﻿# VANILLA OVERRIDE of all eleven Byzantine bureaucracies from
+# game/in_game/common/bureaucracies/byz.txt.
+#
+# THE REPLACE: PREFIX IS LOAD-BEARING. A bare `key = { ... }` for a key vanilla already
+# defines does NOT win on load order. The engine refuses it and keeps vanilla:
+#   [gamedatabase.h:408]: Duplicated key <name> will not be created from file: ...
+# The file is then silently ignored while looking entirely correct. Directives available:
+#   REPLACE:key  REPLACE_OR_CREATE:key  TRY_REPLACE:key  INJECT:key  TRY_INJECT:key
+# INJECT: merges at the entry's TOP level and cannot reach inside an existing
+# positive_modifier to alter its nested scale, which is why this file uses REPLACE:.
+#
+#
+# ENTRENCHMENT: ENGINE ON THE BOONS, EXTRA SOFTENING ON THE MALUSES
+#
+# The engine ALREADY multiplies both the positive and the negative modifier of every
+# bureaucracy by entrenchment by itself. See game_concept_bureaucracy_desc, "increasing the
+# power of both positive and negative modifiers", and the ADDITIONAL_MODIFIER_ENTRENCHMENT
+# line rendered under a bureaucracy tooltip as "Entrenchment +N%".
+#
+# An earlier revision of this file multiplied BOTH sides by scope:entrenchment on the mistaken
+# reading that because no bureaucracy SCRIPT reads scope:entrenchment, entrenchment must be an
+# inert timer. It is not. The scripting hook is for ADDITIONAL entrenchment-dependent
+# behaviour; the base scaling is automatic, and doing it again squares it. The boon side is
+# therefore left completely alone now.
+#
+# The MALUS side keeps one deliberate extra factor of entrenchment. The engine's linear
+# scaling still has a brand new unfunded office doing real harm, and it should not: nobody has
+# had time to build anything out of it yet. With the extra factor the penalty is quadratic
+# below full entrenchment and identical to vanilla at 100%:
+#
+#     entrenchment      20%     50%     80%    100%
+#     engine only      0.20    0.50    0.80    1.00
+#     with ours        0.04    0.25    0.64    1.00
+#
+#
+# WHAT CHANGED, and nothing else. Vanilla text is otherwise untouched, so a patch can be
+# re-synced by diffing against byz.txt and re-applying these per entry:
+#
+#   1. negative_modifier scale: APPENDED a multiply by (entrenchment/100). Appended rather
+#      than replaced so vanilla's own scale logic survives intact.
+#   2. negative_modifier body: Dynatoi drift plus a little noble power, universal to all
+#      eleven, since a starved office of any kind ends up serving somebody local.
+#   3. positive_modifier body: own-pole Taxis/Dynatoi drift and a small crown power cost.
+#      The positive SCALE is untouched.
+#   4. on_maintenance_changed firing cc_byz_bureaucracy.60 on a cut to <= 0.25. NOTE that
+#      sixty_books_of_the_basilika_bureaucracy ALREADY has this hook in vanilla, where it
+#      records maintenance into a variable; ours is merged into that block rather than
+#      declared alongside it, since a duplicate key silently drops one of the two.
+#
+# Three entries needed ARITHMETIC merges because vanilla already sets the same key in that
+# block, and a repeated key inside one modifier block does not stack:
+#   nomos_empsychos  positive global_crown_estate_power 0.15 - 0.02 = 0.13
+#   magister_militum negative global_nobles_estate_power 0.5 + 0.03 = 0.53
+#   themata          negative global_nobles_estate_power 0.5 + 0.03 = 0.53
+#
+# Pole assignment follows vanilla's own estates_that_like / estates_that_dislike: a bureau
+# that dislikes nobles governs around the magnates (Taxis), one that likes them governs
+# through them (Dynatoi). romanitas_bureaucracy is unassigned, being about imperial identity
+# rather than about who governs.
+#
+# PATCH RISK. This shadows vanilla definitions. Any EU5 patch touching byz.txt diverges
+# silently until re-synced. Re-check on every game update.
+
+REPLACE:nomos_empsychos_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	allow = {
+		uses_government_power = legitimacy
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		global_estate_satisfaction_from_legitimacy = 0.05
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		
+		global_crown_estate_power = 0.13
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_estate_satisfaction_decay = 0.025		
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:honorary_titles_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	estates_that_like = {
+		nobles_estate
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	#neutral
+	neutral_modifier = {
+		country_cabinet_efficiency = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_estate_target_satisfaction = small_permanent_target_satisfaction
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_crown_estate_power = -0.3
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:court_eunuchs_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	estates_that_like = {
+		crown_estate
+		clergy_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	#neutral
+	neutral_modifier = {
+		may_hire_eunuch_advisors = yes
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		country_child_education = 0.1
+		global_monthly_literacy = 0.01
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		stability_decay = 0.0025
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:ritualistic_court_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	estates_that_like = {
+		crown_estate
+		clergy_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		monthly_legitimacy = 0.1
+		monthly_republican_tradition = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		diplomatic_reputation = 1
+		annexation_speed_modifier = 0.10
+		cultural_influence_modifier = 0.15
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:sixty_books_of_the_basilika_bureaucracy = {
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	on_fully_activated = {
+		set_variable = {
+			name = sixty_books_basilika_maintenance
+			value = 1
+		}
+	}
+	on_maintenance_changed = {
+		set_variable = {
+			name = sixty_books_basilika_maintenance
+			value = scope:new_maintenance
+		}
+	
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+	on_deactivate = {
+		remove_variable = sixty_books_basilika_maintenance
+	}
+
+	#neutral
+	neutral_modifier = {
+		tax_income_efficiency = 0.05
+		monthly_legitimacy = 0.05
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { 
+			value = scope:maintenance 
+			if = {
+				limit = { 
+					has_or_had_tag = BYZ
+					has_variable = reformed_imperial_code_flag
+				}
+				multiply = {
+					value = 2
+					desc = variable_tt_reformed_imperial_code_flag_via_flavor_byz_52
+				}
+			}
+		}
+		global_estate_power = -0.5
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		pop_join_rebel_threshold = 0.05
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:romanitas_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	allow = {
+		OR = {
+			AND = {
+				has_societal_value = societal_value_type:latinization_vs_hellenization
+				societal_value:latinization_vs_hellenization < -50
+			}
+			owns = location:rome
+		}
+	}
+
+	estates_that_like = {
+		crown_estate
+		clergy_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		monthly_prestige = 0.2
+		cultural_influence_modifier = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_integration_speed_modifier = 0.25
+		monthly_legitimacy = 0.1
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		diplomatic_reputation = -1
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:imperial_senate_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	estates_that_like = {
+		nobles_estate
+	}
+	estates_that_dislike = {
+		crown_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		parliament_duration_modifier = 0.3
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		parliament_base_support = 0.075
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		monthly_legitimacy = -0.2
+		monthly_republican_tradition = -0.2
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:kephalai_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	allow = {
+		OR = {
+			custom_tooltip = {
+				text = won_fate_of_the_phoenix_disaster_tt
+				has_variable = won_fate_of_the_phoenix_disaster_variable
+			}
+
+			AND = {
+				has_or_had_tag = TRE
+				owns = location:constantinople
+			}
+		}
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		government_size = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		num_local_governors = 1
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		estate_enrichment = 0.3
+		global_non_rural_monthly_prosperity = -0.003
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:magister_militum_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			AND = {
+				has_or_had_tag = TRE
+				has_variable = tre_unlocked_byz_bureaucracies
+			}
+		}
+	}
+
+	allow = {
+		OR = {
+			custom_tooltip = {
+				text = has_unlocked_bureaucracy_via_flavor_byz_31_tt
+				has_reform = government_reform:modern_imperial_army
+			}
+		}
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		monthly_army_tradition = 0.2
+		monthly_navy_tradition = 0.2
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+
+		train_general_ability = 25
+		train_admiral_ability = 25
+		military_tactics = 0.2
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_minor_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		monthly_legitimacy = -0.2
+		global_nobles_estate_power = 0.53
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+	}
+}
+
+REPLACE:themata_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = TRE
+		}
+	}
+
+	allow = {
+		OR = {
+			NOT = {
+				any_current_bureaucracy = {
+					bureaucracy_type = bureaucracy_type:magister_militum_bureaucracy
+				}
+			}
+			has_reform = government_reform:theme_system
+		}
+	}
+
+	estates_that_like = {
+		nobles_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		global_manpower_modifier = 0.075
+		global_levy_size_modifier = 0.075
+		monthly_army_tradition = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_defensive = 0.2
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		levy_recovery_modifier = -0.2
+		global_nobles_estate_power = 0.53
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+	}
+}
+
+REPLACE:allelengyon_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				has_dlc = "d008_fate_of_the_phoenix"
+				has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_byz_bureaucracy.60
+		}
+	}
+
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.003
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_or_had_tag = TRE
+		}
+	}
+
+	allow = {
+		OR = {
+			custom_tooltip = {
+				text = won_fate_of_the_phoenix_disaster_tt
+				has_variable = won_fate_of_the_phoenix_disaster_variable
+			}
+
+			AND = {
+				has_or_had_tag = TRE
+				owns = location:constantinople
+			}
+		}
+	}
+
+	estates_that_like = {
+		peasants_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		estate_enrichment = -0.1
+		global_peasant_enfranchisment = 0.05
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_monthly_prosperity = 0.001
+	
+		# A funded office shapes the state's character, and runs increasingly to its own
+		# standards rather than the emperor's.
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+		
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_monthly_development = -0.0025
+	
+		# Any starved office becomes somebody's private asset, whatever it was for.
+		# Small per bureau: this applies to all eleven and stacks.
+		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_nobles_estate_power = 0.03
+	}
+}
+

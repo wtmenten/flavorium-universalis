@@ -1,0 +1,655 @@
+﻿namespace = cc_byz_bureaucracy
+
+# The bureaucracy thread.
+#
+# Chained from cc_byz_bureaucracy.txt in common/on_action, which hangs off vanilla's empty
+# on_bureaucracy_added / on_bureaucracy_removed hooks plus the yearly pulse.
+#
+# Running score: cc_byz_bureau_venality, clamped 0..5. It rises whenever an office is
+# treated as property rather than a post, and it gates the later events in the thread.
+# Nothing resets it cheaply, which is the point: venality is easy to permit and expensive
+# to undo.
+#
+# Memory variables set here and read elsewhere in the thread:
+#   cc_byz_mem_sold_offices     an office was sold outright
+#   cc_byz_mem_purged_bureau    a bureau's staff were purged rather than reassigned
+#   cc_byz_mem_eunuchs_backed   the palace service was backed against the army
+#   cc_byz_mem_army_backed      the army was backed against the palace service
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100 (MAX_ABILITY_VALUE = 100 in
+# defines). total_abilities is their SUM and therefore runs 0..300, which is why vanilla
+# compares it against 250 for an exceptional ruler and 150 for a poor one. Do not carry a
+# total_abilities-sized number over to a single stat: a gate of mil >= 150 can never be
+# satisfied and the option silently never appears.
+#
+# For calibration, the highest single-stat comparison anywhere in vanilla is 94. Roughly:
+#   >= 65   above average
+#   >= 75   genuinely capable
+#   >= 85   exceptional
+
+
+#############################################
+# .1  A new bureau is founded. Who staffs it?
+#############################################
+cc_byz_bureaucracy.1 = {
+	type = country_event
+	title = cc_byz_bureaucracy.1.title
+	desc = {
+		first_valid = {
+			# Ordered before the venality branch: a service that was purged inside living
+			# memory is the more specific situation, and it is the reason there are posts
+			# to fill at all.
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_purged_bureau }
+				desc = cc_byz_bureaucracy.1.desc_purged
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_bureau_venality >= 3 }
+				desc = cc_byz_bureaucracy.1.desc_venal
+			}
+			desc = cc_byz_bureaucracy.1.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = scope:bureaucracy_type
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+	}
+
+	# Career clerks. Slow, cheap, and the office outlives the man.
+	option = {
+		name = cc_byz_bureaucracy.1.a
+		ai_chance = { base = 40 }
+
+		add_country_modifier = {
+			modifier = cc_byz_staffed_by_career_clerks
+			years = 20
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Magnates' sons. Free, and every post is now owed to a family.
+	option = {
+		name = cc_byz_bureaucracy.1.b
+		ai_chance = { base = 30 }
+
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+	}
+
+	# Sell the posts outright. Only worth considering once the practice is already normal,
+	# which is what the venality gate represents.
+	option = {
+		name = cc_byz_bureaucracy.1.c
+		ai_chance = { base = 20 }
+		trigger = {
+			var:cc_byz_bureau_venality >= 2
+		}
+
+		add_gold = 150
+		set_variable = { name = cc_byz_mem_sold_offices  value = yes }
+		change_variable = { name = cc_byz_bureau_venality  add = 2 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	after = {
+		# Whoever staffed it, the men already in post read the appointment as a precedent
+		# and act on it before anyone asks them. Not offered as a choice.
+		hidden_effect = {
+			if = {
+				limit = { var:cc_byz_bureau_venality >= 4 }
+				add_country_modifier = {
+					modifier = cc_byz_offices_are_property
+					years = 25
+					mode = add_and_extend
+				}
+			}
+		}
+	}
+}
+
+
+#############################################
+# .10  A bureau is dissolved. What of its staff?
+#############################################
+cc_byz_bureaucracy.10 = {
+	type = country_event
+	title = cc_byz_bureaucracy.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_sold_offices }
+				desc = cc_byz_bureaucracy.10.desc_sold
+			}
+			desc = cc_byz_bureaucracy.10.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = scope:bureaucracy_type
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+	}
+
+	# Reassign them. Expensive, and the service remembers that it was not abandoned.
+	option = {
+		name = cc_byz_bureaucracy.10.a
+		ai_chance = { base = 50 }
+
+		add_gold = -100
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Dismiss them. Cheap now.
+	option = {
+		name = cc_byz_bureaucracy.10.b
+		ai_chance = { base = 30 }
+
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+	}
+
+	# Purge them. Available only to a ruler with the stomach for it.
+	option = {
+		name = cc_byz_bureaucracy.10.c
+		ai_chance = { base = 10 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		set_variable = { name = cc_byz_mem_purged_bureau  value = yes }
+		add_stability = stability_mild_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		# A purge does reset venality. That is why rulers keep reaching for it.
+		set_variable = { name = cc_byz_bureau_venality  value = 0 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+}
+
+
+#############################################
+# .20  Underfunded bureaus and the quiet sale of offices
+#############################################
+cc_byz_bureaucracy.20 = {
+	type = country_event
+	title = cc_byz_bureaucracy.20.title
+	desc = cc_byz_bureaucracy.20.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			bureaucracy_maintenance < 0.5
+			count > 0
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+	}
+
+	# Fund them properly.
+	option = {
+		name = cc_byz_bureaucracy.20.a
+		ai_chance = { base = 40 }
+
+		add_gold = -200
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Let them find their own income. Everyone understands what this means.
+	option = {
+		name = cc_byz_bureaucracy.20.b
+		ai_chance = { base = 60 }
+
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:peasants_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# Available to a capable administrator: retrench without conceding the principle.
+	option = {
+		name = cc_byz_bureaucracy.20.c
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		add_gold = -75
+		add_country_modifier = {
+			modifier = cc_byz_retrenched_bureaus
+			years = 10
+			mode = add_and_extend
+		}
+	}
+}
+
+
+#############################################
+# .30  The palace service against the army
+#############################################
+cc_byz_bureaucracy.30 = {
+	type = country_event
+	title = cc_byz_bureaucracy.30.title
+	desc = cc_byz_bureaucracy.30.desc
+	outcome = neutral
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_bureaucracy_of_type = bureaucracy_type:court_eunuchs_bureaucracy
+		NOR = {
+			has_variable = cc_byz_mem_eunuchs_backed
+			has_variable = cc_byz_mem_army_backed
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+	}
+
+	# Back the palace service.
+	option = {
+		name = cc_byz_bureaucracy.30.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_eunuchs_backed  value = yes }
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Back the commanders.
+	option = {
+		name = cc_byz_bureaucracy.30.b
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_army_backed  value = yes }
+		add_army_tradition = army_tradition_mild_bonus
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Refuse to arbitrate. Needs a ruler with the standing to make silence read as strength
+	# rather than weakness.
+	option = {
+		name = cc_byz_bureaucracy.30.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_prestige = prestige_mild_bonus
+	}
+
+	after = {
+		# Refusing to choose does not mean nothing happened. Both sides conclude the
+		# emperor is available to be worked on, and start working on him.
+		hidden_effect = {
+			if = {
+				limit = {
+					NOR = {
+						has_variable = cc_byz_mem_eunuchs_backed
+						has_variable = cc_byz_mem_army_backed
+					}
+				}
+				trigger_event_silently = { id = cc_byz_bureaucracy.30  years = 12 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# Funding x entrenchment
+#
+# Two independent numbers describe every bureau, and the interesting content is in how they
+# combine rather than in either alone:
+#
+#                  low entrenchment          high entrenchment
+#   funded         a new office               a pillar of the state   (.50)
+#   unfunded       a paper office             a FIEFDOM               (.40)
+#
+# Vanilla names the dangerous cell itself, in china.txt's negative_modifier comment:
+# "entrenched ministries without funding become fiefdoms of powerful officials".
+#
+# Scales, verified against vanilla usage:
+#   bureaucracy_maintenance   0..1    (vanilla compares >= 0.25)
+#   entrenchment              0..100  (hire_advisor.txt:74 steps 10..60)
+#
+# SIGN WARNING on change_entrenchment. The named values invert: entrenchment_severe_penalty
+# is +5 and entrenchment_extreme_bonus is -10. High entrenchment is treated as the penalty,
+# because it means a bureau that cannot easily be dislodged. So REDUCING entrenchment uses a
+# _bonus name. Read those two option blocks carefully before editing them.
+#############################################
+
+
+#############################################
+# .40  Entrenched and unfunded: the fiefdom
+#############################################
+cc_byz_bureaucracy.40 = {
+	type = country_event
+	title = cc_byz_bureaucracy.40.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_bureau_venality >= 3 }
+				desc = cc_byz_bureaucracy.40.desc_venal
+			}
+			desc = cc_byz_bureaucracy.40.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			entrenchment >= 60
+			bureaucracy_maintenance <= 0.25
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+
+		random_current_bureaucracy = {
+			limit = {
+				entrenchment >= 60
+				bureaucracy_maintenance <= 0.25
+			}
+			save_scope_as = cc_byz_fief_bureau
+		}
+	}
+
+	# Pay it properly and take it back. Expensive, and the only option that restores the
+	# principle rather than trading it away.
+	option = {
+		name = cc_byz_bureaucracy.40.a
+		ai_chance = { base = 35 }
+
+		add_gold = -300
+		scope:cc_byz_fief_bureau ?= {
+			set_maintenance = 1
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Break it up. Entrenchment falls, which is what the _bonus naming means here.
+	# Cheap in gold and expensive in everything else.
+	option = {
+		name = cc_byz_bureaucracy.40.b
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		scope:cc_byz_fief_bureau ?= {
+			change_entrenchment = entrenchment_very_extreme_bonus
+		}
+		add_stability = stability_mild_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+
+	# Recognise what has already happened. The office becomes a family's property in law as
+	# well as in fact, and the treasury is paid for the privilege.
+	option = {
+		name = cc_byz_bureaucracy.40.c
+		ai_chance = { base = 40 }
+
+		add_gold = 250
+		set_variable = { name = cc_byz_mem_fiefdom_formalised  value = yes }
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+	}
+
+	after = {
+		# Whatever was decided, the other entrenched offices were watching to see whether
+		# the palace still enforces anything. Not offered as a choice.
+		hidden_effect = {
+			if = {
+				limit = { has_variable = cc_byz_mem_fiefdom_formalised }
+				every_current_bureaucracy = {
+					limit = { bureaucracy_maintenance <= 0.25 }
+					change_entrenchment = entrenchment_mild_penalty
+				}
+			}
+		}
+	}
+}
+
+
+#############################################
+# .50  Entrenched and funded: a pillar of the state
+#############################################
+cc_byz_bureaucracy.50 = {
+	type = country_event
+	title = cc_byz_bureaucracy.50.title
+	desc = cc_byz_bureaucracy.50.desc
+	outcome = positive
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			entrenchment >= 60
+			bureaucracy_maintenance >= 0.75
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+
+		random_current_bureaucracy = {
+			limit = {
+				entrenchment >= 60
+				bureaucracy_maintenance >= 0.75
+			}
+			save_scope_as = cc_byz_pillar_bureau
+		}
+	}
+
+	# Make it the model. Other offices are reorganised to match.
+	option = {
+		name = cc_byz_bureaucracy.50.a
+		ai_chance = { base = 50 }
+
+		add_gold = -150
+		add_country_modifier = {
+			modifier = cc_byz_staffed_by_career_clerks
+			years = 25
+			mode = add_and_extend
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Lean on its reputation instead of spending on it.
+	option = {
+		name = cc_byz_bureaucracy.50.b
+		ai_chance = { base = 30 }
+
+		add_prestige = prestige_mild_bonus
+		add_legitimacy = legitimacy_mild_bonus
+	}
+
+	# An administrator can see the risk: an office this secure answers to itself.
+	option = {
+		name = cc_byz_bureaucracy.50.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { adm >= 75 }
+		}
+
+		scope:cc_byz_pillar_bureau ?= {
+			change_entrenchment = entrenchment_severe_bonus
+		}
+		add_country_modifier = {
+			modifier = cc_byz_retrenched_bureaus
+			years = 15
+			mode = add_and_extend
+		}
+	}
+}
+
+
+#############################################
+# .60  A funding cut lands
+#
+# Fired from on_maintenance_changed, which is declared per bureaucracy and gives
+# scope:old_maintenance and scope:new_maintenance. Only reachable for our own three bureaus,
+# since vanilla's eleven cannot be edited to add the hook.
+#############################################
+cc_byz_bureaucracy.60 = {
+	type = country_event
+	title = cc_byz_bureaucracy.60.title
+	desc = cc_byz_bureaucracy.60.desc
+	outcome = negative
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+	}
+
+	# Accept the consequences quietly.
+	option = {
+		name = cc_byz_bureaucracy.60.a
+		ai_chance = { base = 60 }
+
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+	}
+
+	# Announce it as a reform so the cut is at least seen as a decision.
+	option = {
+		name = cc_byz_bureaucracy.60.b
+		ai_chance = { base = 40 }
+		trigger = {
+			ruler ?= { dip >= 65 }
+		}
+
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+}

@@ -1,0 +1,314 @@
+﻿# FRONT-END 1: theatre actions, for players with mission packs OFF.
+#
+# This is the path MOST PLAYERS WILL SEE. mission_packs_enabled_rule declares
+# default = mission_packs_disabled (main_menu/common/game_rules/00_game_rules.txt:155-167),
+# and mission_packs_disabled additionally carries proficiency_expert, so it is also what an
+# experienced player gets picked for them. A mission-only delivery of the reconquest would be
+# invisible to the majority of the audience.
+#
+# The two front-ends are mutually exclusive on the game rule, so no player can claim a theatre
+# twice and neither mode has content the other lacks. Both call the same
+# cc_byz_theatre_*_effect, so rewards cannot drift apart.
+#
+# has_game_rule is an ordinary trigger usable in any trigger context; vanilla uses it for
+# byz_name_greek in customizable_localization/countries.txt:27.
+#
+# No price block. The cost of a theatre is the war it took to hold the cities, which the
+# trigger already required, plus the strain the effect applies afterwards. Charging gold on
+# top would be taxing the player for having done the thing.
+
+cc_byz_claim_theatre_illyricum = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_illyricum }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_illyricum_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_illyricum_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.1
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_italy = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_italy }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_italy_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_italy_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.10
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_africa = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_africa }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_africa_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_africa_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.20
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_spania = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_spania }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_spania_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_spania_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.30
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_mare_nostrum = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_mare_nostrum }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_mare_nostrum_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_mare_nostrum_effect = yes
+			trigger_event_non_silently = cc_byz_reconquest.40
+		}
+	}
+
+	ai_will_do = { add = 20 }
+}
+
+
+# ---- The eastern branch ----
+#
+# PARITY IS THE WHOLE POINT OF THIS FILE. Every task added to the mission tree must have a
+# matching action here, or players on default settings (mission packs OFF) silently lose that
+# content. The four below mirror cc_byz_task_{red_sea,horn,india,spice_islands} exactly and
+# call the same shared effects.
+
+cc_byz_claim_theatre_red_sea = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_red_sea }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_red_sea_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_red_sea_effect = yes
+			trigger_event_non_silently = cc_byz_east.1
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_horn = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_horn }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_horn_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_horn_effect = yes
+			trigger_event_non_silently = cc_byz_east.10
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_india = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_india }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_india_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_india_effect = yes
+			trigger_event_non_silently = cc_byz_east.20
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_claim_theatre_spice_islands = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		NOT = { has_game_rule = mission_packs_enabled }
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_theatre_spice_islands }
+		}
+	}
+
+	allow = {
+		scope:actor = { cc_byz_theatre_spice_islands_trigger = yes }
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_theatre_spice_islands_effect = yes
+			trigger_event_non_silently = cc_byz_east.30
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}

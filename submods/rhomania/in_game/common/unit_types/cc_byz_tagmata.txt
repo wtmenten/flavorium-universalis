@@ -1,0 +1,215 @@
+﻿# The Tagmata: the Rhomaios answer to the legionaries.
+#
+# Vanilla's a_legionaries_1..6 (D008_byzantine_unit_types.txt) are the only elite heavy
+# infantry a Byzantine player can build anywhere in the realm, and they require
+# has_or_had_tag = ROM, which in turn requires forming ROM and moving the capital to Rome.
+# The Greek-side alternatives are both location-locked: varangians are is_capital = yes only,
+# akritai are frontier-only and stop at age 1. A Rhomaios empire therefore has no
+# empire-wide elite infantry line at all.
+#
+# The tagmata were the standing central regiments as against the thematic provincial
+# levies, so an empire-wide professional line is the historically correct shape here.
+#
+# Profile is deliberately the inverse of the legionaries. Legionaries are tanky and slow
+# (strength/morale damage taken -0.10, initiative -0.5, combat_speed -1). Tagmata are the
+# mobile field army: quicker to commit and harder-hitting, but they do not absorb a line
+# the way the legionaries do.
+#
+# GATING. country_potential carries the live societal value check as well as the tag.
+# Vanilla's legionaries only need has_or_had_tag = ROM because that gate is sticky forever;
+# ours is not, and the advance's own allow block is not enough on its own: BYZ starts around
+# +80, so the line is researched at game start and stays researched no matter how far the
+# player later drifts. Without this check a Latinized empire would keep recruiting an elite
+# Greek line it has abandoned, on top of the legionaries it gains by forming ROM.
+#
+# Effect of failing the check is that tagmata become unrecruitable and unreinforceable.
+# Regiments already raised are not deleted, so switching axis mid-war is a real cost rather
+# than an army-destroying trap.
+
+a_cc_byz_tagmata_1 = {
+	copy_from = a_age_1_traditions_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	upgrades_to_only = a_cc_byz_tagmata_2
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	#root = location. Checks location_potential first so don't need that scripting in
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	maintenance_demand = early_heavy_infantry_maintenance
+	construction_demand = early_heavy_infantry_construction
+
+	gfx_tags = { sword_tag heavy_tag }
+}
+
+a_cc_byz_tagmata_2 = {
+	copy_from = a_age_2_renaissance_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	upgrades_to_only = a_cc_byz_tagmata_3
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	gfx_tags = { sword_tag heavy_tag }
+}
+
+a_cc_byz_tagmata_3 = {
+	copy_from = a_age_3_discovery_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	upgrades_to_only = a_cc_byz_tagmata_4
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	gfx_tags = { sword_tag heavy_tag }
+}
+
+a_cc_byz_tagmata_4 = {
+	copy_from = a_age_4_reformation_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	upgrades_to_only = a_cc_byz_tagmata_5
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	gfx_tags = { sword_tag heavy_tag }
+}
+
+a_cc_byz_tagmata_5 = {
+	copy_from = a_age_5_absolutism_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	upgrades_to_only = a_cc_byz_tagmata_6
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	gfx_tags = { sword_tag heavy_tag }
+}
+
+a_cc_byz_tagmata_6 = {
+	copy_from = a_age_6_revolutions_heavy_infantry
+
+	limit = cc_byz_tagmata_unit_limit
+
+	morale_damage_done = 0.15
+	initiative = 0.5
+	combat_speed = 1
+	strength_damage_taken = 0.05
+
+	buildable = yes
+	country_potential = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		societal_value:latinization_vs_hellenization > 25
+	}
+
+	location_potential = {
+	}
+
+	mercenaries_per_location = {
+		pop_type = soldiers
+		multiply = 0.1
+	}
+
+	gfx_tags = { sword_tag heavy_tag }
+}
