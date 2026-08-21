@@ -1260,4 +1260,4 @@ Numerous AI agents were used in the creation of this project: Claude, Gemini, Qw
 
   
   
-Report issues on the Steam Workshop discussion page or the mod's [GitHub repository](https://github.com/wtmenten/flavorium-universalis).
+Report issues on the Steam Workshop discussion page, the mod's [GitHub repository](https://github.com/wtmenten/flavorium-universalis), or the [Discord server](https://discord.gg/wUV6KJSkqd).
