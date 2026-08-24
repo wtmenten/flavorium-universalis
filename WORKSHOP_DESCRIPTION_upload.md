@@ -950,7 +950,7 @@ cc_wc| 9| War council: active-war events, post-war reform proposals, outdated ge
   
 cc_fac| 3| Estate faction capture events  
   
-cc_xp| 18| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
+cc_xp| 27| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
   
 cc_colonial| 6| Colonial divan: charter company events + decolonization crisis chain  
   
@@ -966,7 +966,7 @@ cc_balance_of_power| 54| European Balance of Power situation: alignment, congres
   
   
   
- _~507 events total_  
+ _~516 events total_  
   
 
 
