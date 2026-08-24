@@ -1,0 +1,215 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: schools of thought
+#
+# A school is a prestigious institution: a standing body of thought that outlives the
+# people in it. Founding one attaches a discipline to a place and to a founder, and
+# everyone enrolled thereafter grows in that discipline whether or not they hold office.
+#
+# CAPACITY IS DELIBERATELY SCARCE. A realm may hold at most three, and each is unlocked
+# separately (cc_xp_school_capacity in script_values/cc_xp_values.txt):
+#   1st  a university in the capital
+#   2nd  the scholarly_orders_advance     (age 4)
+#   3rd  the enlightened_administration   (age 6)
+# So the first is an early-game building decision, the second and third are research
+# decisions a century apart, and no court ever has more than three.
+#
+# STATE. Kept small on purpose:
+#   country   cc_xp_school_count            0-3
+#             cc_xp_school_N_track          1 adm / 2 dip / 3 mil
+#             cc_xp_school_N_founder        character ref, for the panel to print a name
+#   character cc_xp_school                  which school they belong to, 1-3
+#             cc_xp_school_track            that school's track, copied at enrolment
+#
+# The track is copied onto the member rather than looked up through the country each
+# year, for the same reason mentorship copies it: the yearly pulse then never has to
+# dereference anything, and a school survives its founder.
+###############################################################################
+
+
+###############################################################################
+# FOUND AN INSTITUTION
+#
+# The founder defines the discipline. Their dominant track becomes the school's, so
+# who you choose is the decision, not a separate picker.
+###############################################################################
+
+cc_xp_found_institution = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_found_institution
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_xp_has_institution_room = yes
+			any_cabinet_character = { cc_xp_can_found_school = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_founder"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_found_school = yes
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:recipient }
+
+			scope:actor = {
+				if = {
+					limit = { NOT = { has_variable = cc_xp_school_count } }
+					set_variable = { name = cc_xp_school_count value = 0 }
+				}
+				change_variable = { name = cc_xp_school_count add = 1 }
+
+				# Record the new school's discipline and founder in the matching slot.
+				if = {
+					limit = { var:cc_xp_school_count = 1 }
+					set_variable = { name = cc_xp_school_1_track    value = scope:recipient.var:cc_track }
+					set_variable = { name = cc_xp_school_1_founder  value = scope:recipient }
+				}
+				else_if = {
+					limit = { var:cc_xp_school_count = 2 }
+					set_variable = { name = cc_xp_school_2_track    value = scope:recipient.var:cc_track }
+					set_variable = { name = cc_xp_school_2_founder  value = scope:recipient }
+				}
+				else_if = {
+					limit = { var:cc_xp_school_count = 3 }
+					set_variable = { name = cc_xp_school_3_track    value = scope:recipient.var:cc_track }
+					set_variable = { name = cc_xp_school_3_founder  value = scope:recipient }
+				}
+
+				add_prestige = prestige_mild_bonus
+
+				# A standing institution is a visible ornament of the realm, and the
+				# clergy notice who is now teaching in it.
+				add_estate_satisfaction = {
+					type = estate_type:clergy_estate
+					value = estate_satisfaction_weak_penalty
+				}
+				add_estate_satisfaction = {
+					type = estate_type:burghers_estate
+					value = estate_satisfaction_weak_bonus
+				}
+			}
+
+			# The founder is its first member.
+			scope:recipient = {
+				set_variable = { name = cc_xp_school        value = scope:actor.var:cc_xp_school_count }
+				set_variable = { name = cc_xp_school_track  value = scope:recipient.var:cc_track }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+
+###############################################################################
+# ENROL SOMEONE IN A SCHOOL
+#
+# The school is identified by picking one of its existing members rather than by a
+# numeric picker, which reads far better ("enrol them under Alonso's school") and lets
+# the engine's own character selector do the work.
+#
+# This is what makes a protege distinct from a junior minister. A protege enrolled in a
+# school accrues that school's discipline every year while waiting for a seat, so they
+# arrive in the cabinet already pointed at its ladders rather than starting from nothing.
+###############################################################################
+
+cc_xp_enrol_in_school = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_enrolment
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_character = { cc_xp_is_school_member = yes }
+			any_character = { cc_xp_can_enrol = yes }
+		}
+	}
+
+	# The student first, then whoever represents the school they are joining.
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_student_school"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+		}
+
+		enabled = {
+			cc_xp_can_enrol = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = target
+		name = "cc_xp_choose_school_by_member"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			has_variable = cc_xp_school
+		}
+
+		enabled = {
+			cc_xp_is_school_member = yes
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = scope:recipient
+				exists = scope:target
+			}
+			scope:recipient = {
+				set_variable = { name = cc_xp_school        value = scope:target.var:cc_xp_school }
+				set_variable = { name = cc_xp_school_track  value = scope:target.var:cc_xp_school_track }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

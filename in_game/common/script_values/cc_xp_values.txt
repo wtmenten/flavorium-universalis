@@ -172,3 +172,36 @@ cc_xp_brokerage_gain = { value = 45 }
 # done at dinner tables, so it credits the diplomatic track.
 cc_xp_patron_tick = { value = 12 }
 
+
+###############################################################################
+# 6. SCHOOLS OF THOUGHT
+###############################################################################
+
+# How many prestigious institutions this realm may hold. Each source is unlocked
+# separately and a century or so apart, so the third is a late-game achievement rather
+# than something a wealthy court simply buys three of on day one.
+#
+# Script values do support if/limit blocks (vanilla does this in
+# script_values/albanian_migrations.txt), so the capacity is computed rather than
+# maintained as another variable.
+cc_xp_school_capacity = {
+	value = 0
+	if = {
+		limit = { capital ?= { has_building = building_type:university } }
+		add = 1
+	}
+	if = {
+		limit = { has_advance = scholarly_orders_advance }
+		add = 1
+	}
+	if = {
+		limit = { has_advance = enlightened_administration }
+		add = 1
+	}
+}
+
+# Yearly experience a school member earns in the school's discipline, whether or not
+# they hold office. Between the protege trickle and a mentorship: a school is less
+# attentive than a mentor and more consistent than watching from the sidelines.
+cc_xp_school_tick = { value = 14 }
+

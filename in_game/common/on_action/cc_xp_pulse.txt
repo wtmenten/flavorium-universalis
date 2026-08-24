@@ -39,6 +39,7 @@ yearly_country_pulse = {
 		cc_xp_yearly_advance
 		cc_xp_yearly_flavour
 		cc_xp_yearly_patronage
+		cc_xp_yearly_schools
 	}
 }
 
@@ -485,6 +486,51 @@ cc_xp_yearly_patronage = {
 				is_alive = yes
 			}
 			cc_xp_gain_dip = { AMOUNT = cc_xp_patron_tick }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — SCHOOLS OF THOUGHT (phase 7)
+#
+# Every member grows in their school's discipline, in office or not. This is what makes
+# a school an institution rather than a title: a protege enrolled in one arrives in the
+# cabinet already pointed at that discipline's ladders, having spent years absorbing it
+# while waiting for a seat.
+#
+# cc_xp_school_track is copied onto the member at enrolment, so nothing here has to
+# reach back through the country to find out what the school teaches, and a school keeps
+# teaching after its founder is dead.
+###############################################################################
+
+cc_xp_yearly_schools = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_character = { has_variable = cc_xp_school_track }
+	}
+
+	effect = {
+		every_character = {
+			limit = {
+				has_variable = cc_xp_school_track
+				is_alive = yes
+			}
+
+			if = {
+				limit = { var:cc_xp_school_track = 1 }
+				cc_xp_gain_adm = { AMOUNT = cc_xp_school_tick }
+			}
+			else_if = {
+				limit = { var:cc_xp_school_track = 2 }
+				cc_xp_gain_dip = { AMOUNT = cc_xp_school_tick }
+			}
+			else_if = {
+				limit = { var:cc_xp_school_track = 3 }
+				cc_xp_gain_mil = { AMOUNT = cc_xp_school_tick }
+			}
+
 			cc_xp_recompute = yes
 		}
 	}

@@ -235,6 +235,56 @@ cc_xp_can_broker = {
 
 
 ###############################################################################
+# SCHOOL GATES (phase 7)
+###############################################################################
+
+# Country scope. Is there room for another institution?
+#
+# Guarded with trigger_if because cc_xp_school_count is created by the first founding,
+# so before that it genuinely does not exist. A realm with capacity and no schools yet
+# passes through trigger_else.
+cc_xp_has_institution_room = {
+	trigger_if = {
+		limit = { has_variable = cc_xp_school_count }
+		var:cc_xp_school_count < cc_xp_school_capacity
+	}
+	trigger_else = {
+		cc_xp_school_capacity >= 1
+	}
+}
+
+# Character scope. Who may found one: someone senior enough to define a discipline,
+# and who actually has a discipline to define.
+cc_xp_can_found_school = {
+	in_cabinet = yes
+	is_alive = yes
+	cc_xp_level_at_least = { LEVEL = 5 }
+	NOT = { cc_xp_track_is = { TRACK = 0 } }
+	NOT = { cc_xp_is_away = yes }
+	NOT = { has_variable = cc_xp_school }
+}
+
+# Character scope. Already belongs to a school, so can represent it when enrolling others.
+cc_xp_is_school_member = {
+	is_alive = yes
+	has_variable = cc_xp_school
+	has_variable = cc_xp_school_track
+}
+
+# Character scope. Eligible to be enrolled: at court, tracked, not already a member.
+cc_xp_can_enrol = {
+	is_alive = yes
+	is_adult = yes
+	OR = {
+		in_cabinet = yes
+		has_variable = cc_protege
+	}
+	cc_xp_is_tracked = yes
+	NOT = { has_variable = cc_xp_school }
+}
+
+
+###############################################################################
 # DISPATCHER GATES
 #
 # The trait dispatcher used to hand out any trait to any minister on a weighted roll,
