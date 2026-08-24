@@ -62,18 +62,25 @@ cc_xp_sponsor_protege = {
 	}
 
 	effect = {
-		scope:recipient = {
-			set_variable = { name = cc_protege value = yes }
-			cc_xp_init = yes
-			cc_xp_recompute = yes
-		}
-
-		scope:actor = {
-			add_estate_satisfaction = {
-				type = estate_type:nobles_estate
-				value = estate_satisfaction_weak_penalty
+		# Guarded on `exists`. A character interaction's effect block is evaluated to
+		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
+		# during that pass any more than a second target is. Without this the log fills
+		# with "Undefined event target 'recipient'" every time the panel is opened.
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = {
+				set_variable = { name = cc_protege value = yes }
+				cc_xp_init = yes
+				cc_xp_recompute = yes
 			}
-			cc_xp_sync_slots = yes
+
+			scope:actor = {
+				add_estate_satisfaction = {
+					type = estate_type:nobles_estate
+					value = estate_satisfaction_weak_penalty
+				}
+				cc_xp_sync_slots = yes
+			}
 		}
 	}
 
@@ -124,12 +131,19 @@ cc_xp_release_protege = {
 	}
 
 	effect = {
-		scope:recipient = {
-			remove_variable = cc_protege
-		}
+		# Guarded on `exists`. A character interaction's effect block is evaluated to
+		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
+		# during that pass any more than a second target is. Without this the log fills
+		# with "Undefined event target 'recipient'" every time the panel is opened.
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = {
+				remove_variable = cc_protege
+			}
 
-		scope:actor = {
-			cc_xp_sync_slots = yes
+			scope:actor = {
+				cc_xp_sync_slots = yes
+			}
 		}
 	}
 

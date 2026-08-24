@@ -264,18 +264,24 @@ cc_xp_can_broker = {
 
 # Country scope. Is there room for another institution?
 #
-# Guarded with trigger_if because cc_xp_school_count is created by the first founding,
-# so before that it genuinely does not exist. A realm with capacity and no schools yet
-# passes through trigger_else.
+# Asks slot by slot with has_variable rather than comparing a running total, so there is
+# no counter to exist-or-not and nothing to drift out of step with the actual slots.
 cc_xp_has_institution_room = {
 	custom_tooltip = {
 		text = cc_xp_tt_institution_room
-		trigger_if = {
-			limit = { has_variable = cc_xp_school_count }
-			var:cc_xp_school_count < cc_xp_school_capacity
-		}
-		trigger_else = {
-			cc_xp_school_capacity >= 1
+		OR = {
+			AND = {
+				NOT = { has_variable = cc_xp_school_1_founder }
+				cc_xp_school_capacity >= 1
+			}
+			AND = {
+				NOT = { has_variable = cc_xp_school_2_founder }
+				cc_xp_school_capacity >= 2
+			}
+			AND = {
+				NOT = { has_variable = cc_xp_school_3_founder }
+				cc_xp_school_capacity >= 3
+			}
 		}
 	}
 }

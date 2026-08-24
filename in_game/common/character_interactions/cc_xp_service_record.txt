@@ -53,8 +53,15 @@ cc_xp_inspect_service_record = {
 	}
 
 	effect = {
-		scope:recipient = { save_scope_as = cc_xp_subject }
-		scope:actor = { trigger_event_silently = { id = cc_xp.1 } }
+		# Guarded on `exists`. A character interaction's effect block is evaluated to
+		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
+		# during that pass any more than a second target is. Without this the log fills
+		# with "Undefined event target 'recipient'" every time the panel is opened.
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = { save_scope_as = cc_xp_subject }
+			scope:actor = { trigger_event_silently = { id = cc_xp.1 } }
+		}
 	}
 
 	ai_will_do = {

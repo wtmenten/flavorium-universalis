@@ -69,18 +69,25 @@ cc_xp_court_examination = {
 	# delayed event and marks them as occupied: someone organising an examination is not
 	# also available to be sent abroad.
 	effect = {
-		scope:recipient = {
-			set_variable = {
-				name = cc_xp_examining
-				value = yes
-				months = 36
+		# Guarded on `exists`. A character interaction's effect block is evaluated to
+		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
+		# during that pass any more than a second target is. Without this the log fills
+		# with "Undefined event target 'recipient'" every time the panel is opened.
+		if = {
+			limit = { exists = scope:recipient }
+			scope:recipient = {
+				set_variable = {
+					name = cc_xp_examining
+					value = yes
+					months = 36
+				}
 			}
-		}
 
-		scope:actor = {
-			trigger_event_silently = {
-				id = cc_xp.11
-				months = { 5 7 }
+			scope:actor = {
+				trigger_event_silently = {
+					id = cc_xp.11
+					months = { 5 7 }
+				}
 			}
 		}
 	}
