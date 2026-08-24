@@ -1,0 +1,257 @@
+﻿# The steward's impact bonus: one static modifier per bureaucracy.
+#
+# WHY THIS FILE EXISTS, AND IT IS A CORRECTION.
+#
+# The steward effect originally did this:
+#
+#     add_country_modifier = { modifier = cc_scholarly_concordat_impact_modifier ... }
+#
+# and the game refused it at load with
+#     PostValidate of effect 'add_country_modifier' returned false
+#
+# <name>_impact_modifier is a MODIFIER TYPE, not a static modifier. Modifier types are the
+# individual keys you write INSIDE a modifier block; add_country_modifier takes the name of a
+# static modifier, which is a named bundle of such keys. The two live in different namespaces
+# and the engine will not substitute one for the other.
+#
+# The confusion was easy to fall into and worth recording. All 34 impact types are registered
+# by vanilla, so grepping for the name found it and the reference looked resolved. It was
+# resolved, as a type, in a namespace add_country_modifier does not read from. Vanilla appears
+# to offer a precedent in flavor_pol.txt:2406, which grants
+# piotrokow_wislica_statutes_impact_modifier by name, but that is an ordinary static modifier in
+# country.txt:8120 that merely shares the suffix. It is not a bureaucracy impact type at all.
+#
+# So: one static modifier per bureaucracy, each carrying that bureaucracy's own impact type.
+# This is the layer that was missing, not a workaround.
+#
+#
+# 0.15 ON EVERY ONE, deliberately uniform. The steward is the same person doing the same job
+# whichever office he is sent to, and a per-bureau table of values would be a balance surface
+# nobody asked for. The interesting choice is WHICH bureau, not how much.
+#
+# The list must stay in step with scripted_effects/cc_bureau_steward.txt and with the override
+# files. A bureaucracy present in one and absent from another fails silently.
+
+# board_of_revenue_bureaucracy
+cc_steward_impact_board_of_revenue_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	board_of_revenue_bureaucracy_impact_modifier = 0.15
+}
+
+# privy_council_bureaucracy
+cc_steward_impact_privy_council_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	privy_council_bureaucracy_impact_modifier = 0.15
+}
+
+# audit_bureau_bureaucracy
+cc_steward_impact_audit_bureau_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	audit_bureau_bureaucracy_impact_modifier = 0.15
+}
+
+# colonial_office_bureaucracy
+cc_steward_impact_colonial_office_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	colonial_office_bureaucracy_impact_modifier = 0.15
+}
+
+# admiralty_board_bureaucracy
+cc_steward_impact_admiralty_board_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	admiralty_board_bureaucracy_impact_modifier = 0.15
+}
+
+# foreign_ministry_bureaucracy
+cc_steward_impact_foreign_ministry_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	foreign_ministry_bureaucracy_impact_modifier = 0.15
+}
+
+# trade_commission_bureaucracy
+cc_steward_impact_trade_commission_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	trade_commission_bureaucracy_impact_modifier = 0.15
+}
+
+# war_council_bureaucracy
+cc_steward_impact_war_council_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	war_council_bureaucracy_impact_modifier = 0.15
+}
+
+# ordnance_board_bureaucracy
+cc_steward_impact_ordnance_board_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	ordnance_board_bureaucracy_impact_modifier = 0.15
+}
+
+# commissariat_bureaucracy
+cc_steward_impact_commissariat_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	commissariat_bureaucracy_impact_modifier = 0.15
+}
+
+# central_secretariat_bureaucracy
+cc_steward_impact_central_secretariat_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	central_secretariat_bureaucracy_impact_modifier = 0.15
+}
+
+# imperial_censorate_bureaucracy
+cc_steward_impact_imperial_censorate_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	imperial_censorate_bureaucracy_impact_modifier = 0.15
+}
+
+# six_boards_bureaucracy
+cc_steward_impact_six_boards_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	six_boards_bureaucracy_impact_modifier = 0.15
+}
+
+# grand_secretariat_bureaucracy
+cc_steward_impact_grand_secretariat_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	grand_secretariat_bureaucracy_impact_modifier = 0.15
+}
+
+# nomos_empsychos_bureaucracy
+cc_steward_impact_nomos_empsychos_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	nomos_empsychos_bureaucracy_impact_modifier = 0.15
+}
+
+# honorary_titles_bureaucracy
+cc_steward_impact_honorary_titles_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	honorary_titles_bureaucracy_impact_modifier = 0.15
+}
+
+# court_eunuchs_bureaucracy
+cc_steward_impact_court_eunuchs_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	court_eunuchs_bureaucracy_impact_modifier = 0.15
+}
+
+# ritualistic_court_bureaucracy
+cc_steward_impact_ritualistic_court_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	ritualistic_court_bureaucracy_impact_modifier = 0.15
+}
+
+# sixty_books_of_the_basilika_bureaucracy
+cc_steward_impact_sixty_books_of_the_basilika_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	sixty_books_of_the_basilika_bureaucracy_impact_modifier = 0.15
+}
+
+# romanitas_bureaucracy
+cc_steward_impact_romanitas_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	romanitas_bureaucracy_impact_modifier = 0.15
+}
+
+# imperial_senate_bureaucracy
+cc_steward_impact_imperial_senate_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	imperial_senate_bureaucracy_impact_modifier = 0.15
+}
+
+# kephalai_bureaucracy
+cc_steward_impact_kephalai_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	kephalai_bureaucracy_impact_modifier = 0.15
+}
+
+# magister_militum_bureaucracy
+cc_steward_impact_magister_militum_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	magister_militum_bureaucracy_impact_modifier = 0.15
+}
+
+# themata_bureaucracy
+cc_steward_impact_themata_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	themata_bureaucracy_impact_modifier = 0.15
+}
+
+# allelengyon_bureaucracy
+cc_steward_impact_allelengyon_bureaucracy = {
+	game_data = {
+		category = country
+	}
+	allelengyon_bureaucracy_impact_modifier = 0.15
+}
+
+# cc_shadow_court_bureau
+cc_steward_impact_cc_shadow_court_bureau = {
+	game_data = {
+		category = country
+	}
+	cc_shadow_court_bureau_impact_modifier = 0.15
+}
+
+# cc_royal_trading_bureau
+cc_steward_impact_cc_royal_trading_bureau = {
+	game_data = {
+		category = country
+	}
+	cc_royal_trading_bureau_impact_modifier = 0.15
+}
+
+# cc_scholarly_concordat
+cc_steward_impact_cc_scholarly_concordat = {
+	game_data = {
+		category = country
+	}
+	cc_scholarly_concordat_impact_modifier = 0.15
+}

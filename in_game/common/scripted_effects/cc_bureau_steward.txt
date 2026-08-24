@@ -14,9 +14,12 @@
 #                       maintenance_price_modifier is evaluated in COUNTRY scope
 #                       (bureaucracies/readme.txt) and cannot ask which bureau it is pricing.
 #
-#   the impact bonus    grants <type>_impact_modifier, and add_country_modifier takes a literal
-#                       modifier name. All 34 of these are registered by vanilla already, so
-#                       this half costs no overrides at all.
+#   the impact bonus    grants cc_steward_impact_<type>, a static modifier carrying that
+#                       bureaucracy's own <type>_impact_modifier key. It CANNOT grant the
+#                       impact type directly: that is a modifier type, not a static modifier,
+#                       and add_country_modifier reads only the latter. Getting this wrong is
+#                       a load error, not a silent no-op. See
+#                       main_menu/common/static_modifiers/cc_bureau_steward_impact.txt.
 #
 # There is no dynamic variable naming in this engine and no way to derive either name from a
 # scope, so the branch list is the only available shape. It is generated against the same key
@@ -70,34 +73,34 @@ cc_clear_bureau_steward_effect = {
 
 	# The impact half. add_and_extend was not used when granting these, so a plain
 	# removal is enough and there is no residual duration to run down.
-	remove_country_modifier = board_of_revenue_bureaucracy_impact_modifier
-	remove_country_modifier = privy_council_bureaucracy_impact_modifier
-	remove_country_modifier = audit_bureau_bureaucracy_impact_modifier
-	remove_country_modifier = colonial_office_bureaucracy_impact_modifier
-	remove_country_modifier = admiralty_board_bureaucracy_impact_modifier
-	remove_country_modifier = foreign_ministry_bureaucracy_impact_modifier
-	remove_country_modifier = trade_commission_bureaucracy_impact_modifier
-	remove_country_modifier = war_council_bureaucracy_impact_modifier
-	remove_country_modifier = ordnance_board_bureaucracy_impact_modifier
-	remove_country_modifier = commissariat_bureaucracy_impact_modifier
-	remove_country_modifier = central_secretariat_bureaucracy_impact_modifier
-	remove_country_modifier = imperial_censorate_bureaucracy_impact_modifier
-	remove_country_modifier = six_boards_bureaucracy_impact_modifier
-	remove_country_modifier = grand_secretariat_bureaucracy_impact_modifier
-	remove_country_modifier = nomos_empsychos_bureaucracy_impact_modifier
-	remove_country_modifier = honorary_titles_bureaucracy_impact_modifier
-	remove_country_modifier = court_eunuchs_bureaucracy_impact_modifier
-	remove_country_modifier = ritualistic_court_bureaucracy_impact_modifier
-	remove_country_modifier = sixty_books_of_the_basilika_bureaucracy_impact_modifier
-	remove_country_modifier = romanitas_bureaucracy_impact_modifier
-	remove_country_modifier = imperial_senate_bureaucracy_impact_modifier
-	remove_country_modifier = kephalai_bureaucracy_impact_modifier
-	remove_country_modifier = magister_militum_bureaucracy_impact_modifier
-	remove_country_modifier = themata_bureaucracy_impact_modifier
-	remove_country_modifier = allelengyon_bureaucracy_impact_modifier
-	remove_country_modifier = cc_shadow_court_bureau_impact_modifier
-	remove_country_modifier = cc_royal_trading_bureau_impact_modifier
-	remove_country_modifier = cc_scholarly_concordat_impact_modifier
+	remove_country_modifier = cc_steward_impact_board_of_revenue_bureaucracy
+	remove_country_modifier = cc_steward_impact_privy_council_bureaucracy
+	remove_country_modifier = cc_steward_impact_audit_bureau_bureaucracy
+	remove_country_modifier = cc_steward_impact_colonial_office_bureaucracy
+	remove_country_modifier = cc_steward_impact_admiralty_board_bureaucracy
+	remove_country_modifier = cc_steward_impact_foreign_ministry_bureaucracy
+	remove_country_modifier = cc_steward_impact_trade_commission_bureaucracy
+	remove_country_modifier = cc_steward_impact_war_council_bureaucracy
+	remove_country_modifier = cc_steward_impact_ordnance_board_bureaucracy
+	remove_country_modifier = cc_steward_impact_commissariat_bureaucracy
+	remove_country_modifier = cc_steward_impact_central_secretariat_bureaucracy
+	remove_country_modifier = cc_steward_impact_imperial_censorate_bureaucracy
+	remove_country_modifier = cc_steward_impact_six_boards_bureaucracy
+	remove_country_modifier = cc_steward_impact_grand_secretariat_bureaucracy
+	remove_country_modifier = cc_steward_impact_nomos_empsychos_bureaucracy
+	remove_country_modifier = cc_steward_impact_honorary_titles_bureaucracy
+	remove_country_modifier = cc_steward_impact_court_eunuchs_bureaucracy
+	remove_country_modifier = cc_steward_impact_ritualistic_court_bureaucracy
+	remove_country_modifier = cc_steward_impact_sixty_books_of_the_basilika_bureaucracy
+	remove_country_modifier = cc_steward_impact_romanitas_bureaucracy
+	remove_country_modifier = cc_steward_impact_imperial_senate_bureaucracy
+	remove_country_modifier = cc_steward_impact_kephalai_bureaucracy
+	remove_country_modifier = cc_steward_impact_magister_militum_bureaucracy
+	remove_country_modifier = cc_steward_impact_themata_bureaucracy
+	remove_country_modifier = cc_steward_impact_allelengyon_bureaucracy
+	remove_country_modifier = cc_steward_impact_cc_shadow_court_bureau
+	remove_country_modifier = cc_steward_impact_cc_royal_trading_bureau
+	remove_country_modifier = cc_steward_impact_cc_scholarly_concordat
 }
 
 
@@ -109,7 +112,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:board_of_revenue_bureaucracy } }
 		set_variable = { name = cc_steward_board_of_revenue_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = board_of_revenue_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_board_of_revenue_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -118,7 +121,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:privy_council_bureaucracy } }
 		set_variable = { name = cc_steward_privy_council_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = privy_council_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_privy_council_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -127,7 +130,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:audit_bureau_bureaucracy } }
 		set_variable = { name = cc_steward_audit_bureau_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = audit_bureau_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_audit_bureau_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -136,7 +139,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:colonial_office_bureaucracy } }
 		set_variable = { name = cc_steward_colonial_office_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = colonial_office_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_colonial_office_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -145,7 +148,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:admiralty_board_bureaucracy } }
 		set_variable = { name = cc_steward_admiralty_board_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = admiralty_board_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_admiralty_board_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -154,7 +157,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:foreign_ministry_bureaucracy } }
 		set_variable = { name = cc_steward_foreign_ministry_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = foreign_ministry_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_foreign_ministry_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -163,7 +166,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:trade_commission_bureaucracy } }
 		set_variable = { name = cc_steward_trade_commission_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = trade_commission_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_trade_commission_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -172,7 +175,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:war_council_bureaucracy } }
 		set_variable = { name = cc_steward_war_council_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = war_council_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_war_council_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -181,7 +184,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:ordnance_board_bureaucracy } }
 		set_variable = { name = cc_steward_ordnance_board_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = ordnance_board_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_ordnance_board_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -190,7 +193,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:commissariat_bureaucracy } }
 		set_variable = { name = cc_steward_commissariat_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = commissariat_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_commissariat_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -199,7 +202,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:central_secretariat_bureaucracy } }
 		set_variable = { name = cc_steward_central_secretariat_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = central_secretariat_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_central_secretariat_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -208,7 +211,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:imperial_censorate_bureaucracy } }
 		set_variable = { name = cc_steward_imperial_censorate_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = imperial_censorate_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_imperial_censorate_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -217,7 +220,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:six_boards_bureaucracy } }
 		set_variable = { name = cc_steward_six_boards_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = six_boards_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_six_boards_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -226,7 +229,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:grand_secretariat_bureaucracy } }
 		set_variable = { name = cc_steward_grand_secretariat_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = grand_secretariat_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_grand_secretariat_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -235,7 +238,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:nomos_empsychos_bureaucracy } }
 		set_variable = { name = cc_steward_nomos_empsychos_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = nomos_empsychos_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_nomos_empsychos_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -244,7 +247,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:honorary_titles_bureaucracy } }
 		set_variable = { name = cc_steward_honorary_titles_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = honorary_titles_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_honorary_titles_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -253,7 +256,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:court_eunuchs_bureaucracy } }
 		set_variable = { name = cc_steward_court_eunuchs_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = court_eunuchs_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_court_eunuchs_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -262,7 +265,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:ritualistic_court_bureaucracy } }
 		set_variable = { name = cc_steward_ritualistic_court_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = ritualistic_court_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_ritualistic_court_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -271,7 +274,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:sixty_books_of_the_basilika_bureaucracy } }
 		set_variable = { name = cc_steward_sixty_books_of_the_basilika_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = sixty_books_of_the_basilika_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_sixty_books_of_the_basilika_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -280,7 +283,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:romanitas_bureaucracy } }
 		set_variable = { name = cc_steward_romanitas_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = romanitas_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_romanitas_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -289,7 +292,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:imperial_senate_bureaucracy } }
 		set_variable = { name = cc_steward_imperial_senate_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = imperial_senate_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_imperial_senate_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -298,7 +301,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:kephalai_bureaucracy } }
 		set_variable = { name = cc_steward_kephalai_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = kephalai_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_kephalai_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -307,7 +310,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:magister_militum_bureaucracy } }
 		set_variable = { name = cc_steward_magister_militum_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = magister_militum_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_magister_militum_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -316,7 +319,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:themata_bureaucracy } }
 		set_variable = { name = cc_steward_themata_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = themata_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_themata_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -325,7 +328,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:allelengyon_bureaucracy } }
 		set_variable = { name = cc_steward_allelengyon_bureaucracy  value = yes }
 		add_country_modifier = {
-			modifier = allelengyon_bureaucracy_impact_modifier
+			modifier = cc_steward_impact_allelengyon_bureaucracy
 			years = -1
 			mode = add
 		}
@@ -334,7 +337,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:cc_shadow_court_bureau } }
 		set_variable = { name = cc_steward_cc_shadow_court_bureau  value = yes }
 		add_country_modifier = {
-			modifier = cc_shadow_court_bureau_impact_modifier
+			modifier = cc_steward_impact_cc_shadow_court_bureau
 			years = -1
 			mode = add
 		}
@@ -343,7 +346,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:cc_royal_trading_bureau } }
 		set_variable = { name = cc_steward_cc_royal_trading_bureau  value = yes }
 		add_country_modifier = {
-			modifier = cc_royal_trading_bureau_impact_modifier
+			modifier = cc_steward_impact_cc_royal_trading_bureau
 			years = -1
 			mode = add
 		}
@@ -352,7 +355,7 @@ cc_set_bureau_steward_effect = {
 		limit = { scope:target_bureaucracy ?= { bureaucracy_type = bureaucracy_type:cc_scholarly_concordat } }
 		set_variable = { name = cc_steward_cc_scholarly_concordat  value = yes }
 		add_country_modifier = {
-			modifier = cc_scholarly_concordat_impact_modifier
+			modifier = cc_steward_impact_cc_scholarly_concordat
 			years = -1
 			mode = add
 		}
