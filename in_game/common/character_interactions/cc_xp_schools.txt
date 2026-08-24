@@ -18,7 +18,7 @@
 #             cc_xp_school_N_track          1 adm / 2 dip / 3 mil
 #             cc_xp_school_N_founder        character ref, for the panel to print a name
 #   character cc_xp_school                  which school they belong to, 1-3
-#             cc_xp_school_track            that school's track, copied at enrolment
+#             cc_xp_school_track            that school's track, copied at enrollment
 #
 # The track is copied onto the member rather than looked up through the country each
 # year, for the same reason mentorship copies it: the yearly pulse then never has to
@@ -49,7 +49,10 @@ cc_xp_found_institution = {
 		scope:actor = {
 			cc_xp_enabled = yes
 			cc_xp_has_institution_room = yes
-			any_cabinet_character = { cc_xp_can_found_school = yes }
+			custom_tooltip = {
+				text = cc_xp_tt_needs_founder
+				any_cabinet_character = { cc_xp_can_found_school = yes }
+			}
 		}
 	}
 
@@ -130,7 +133,7 @@ cc_xp_found_institution = {
 # ENROL SOMEONE IN A SCHOOL
 #
 # The school is identified by picking one of its existing members rather than by a
-# numeric picker, which reads far better ("enrol them under Alonso's school") and lets
+# numeric picker, which reads far better ("enroll them under Alonso's school") and lets
 # the engine's own character selector do the work.
 #
 # This is what makes a protege distinct from a junior minister. A protege enrolled in a
@@ -138,11 +141,11 @@ cc_xp_found_institution = {
 # arrive in the cabinet already pointed at its ladders rather than starting from nothing.
 ###############################################################################
 
-cc_xp_enrol_in_school = {
+cc_xp_enroll_in_school = {
 	message = yes
 	on_own_nation = yes
 
-	price = price:cc_xp_enrolment
+	price = price:cc_xp_enrollment
 
 	ai_tick = never
 
@@ -153,8 +156,14 @@ cc_xp_enrol_in_school = {
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
-			any_character = { cc_xp_is_school_member = yes }
-			any_character = { cc_xp_can_enrol = yes }
+			custom_tooltip = {
+				text = cc_xp_tt_needs_school
+				any_character = { cc_xp_is_school_member = yes }
+			}
+			custom_tooltip = {
+				text = cc_xp_tt_needs_student
+				any_character = { cc_xp_can_enroll = yes }
+			}
 		}
 	}
 
@@ -175,7 +184,7 @@ cc_xp_enrol_in_school = {
 		}
 
 		enabled = {
-			cc_xp_can_enrol = yes
+			cc_xp_can_enroll = yes
 		}
 	}
 

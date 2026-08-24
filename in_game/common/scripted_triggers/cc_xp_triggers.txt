@@ -10,6 +10,11 @@
 # variable for 'X' due to not being set". This is documented in
 # docs/scripting-gotchas.md under "has_variable does NOT guard a sibling var: read",
 # and these triggers were written the wrong way first.
+#
+# The var: comparisons are also wrapped in custom_tooltip. Without it the engine tries to
+# describe them itself and emits placeholder keys it has no strings for
+# (character_var_greater_or_equal, country_named_script_value_greater_or_equal, ...), so a
+# disabled interaction button gives the player a missing-loc error instead of a reason.
 ###############################################################################
 
 
@@ -56,22 +61,28 @@ cc_xp_is_tracked = {
 
 # Seniority gate. cc_xp_level_at_least = { LEVEL = 6 }
 cc_xp_level_at_least = {
-	trigger_if = {
-		limit = { has_variable = cc_level }
-		var:cc_level >= $LEVEL$
+	custom_tooltip = {
+		text = cc_xp_tt_level_$LEVEL$
+		trigger_if = {
+			limit = { has_variable = cc_level }
+			var:cc_level >= $LEVEL$
+		}
+		trigger_else = { always = no }
 	}
-	trigger_else = { always = no }
 }
 
-# Specialisation gate, the one that gates trait advancement.
+# Specialization gate, the one that gates trait advancement.
 # cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
 # TRACK is adm, dip or mil. TIER is 0-3.
 cc_xp_tier_at_least = {
-	trigger_if = {
-		limit = { has_variable = cc_tier_$TRACK$ }
-		var:cc_tier_$TRACK$ >= $TIER$
+	custom_tooltip = {
+		text = cc_xp_tt_tier_$TIER$
+		trigger_if = {
+			limit = { has_variable = cc_tier_$TRACK$ }
+			var:cc_tier_$TRACK$ >= $TIER$
+		}
+		trigger_else = { always = no }
 	}
-	trigger_else = { always = no }
 }
 
 # Raw experience gate, for the rare case that wants a precise amount rather than a tier.
@@ -98,11 +109,14 @@ cc_xp_task_family_at_least = {
 # Is this minister's dominant track the given one?
 # cc_xp_track_is = { TRACK = 2 }   0 none, 1 adm, 2 dip, 3 mil
 cc_xp_track_is = {
-	trigger_if = {
-		limit = { has_variable = cc_track }
-		var:cc_track = $TRACK$
+	custom_tooltip = {
+		text = cc_xp_tt_track_$TRACK$
+		trigger_if = {
+			limit = { has_variable = cc_track }
+			var:cc_track = $TRACK$
+		}
+		trigger_else = { always = no }
 	}
-	trigger_else = { always = no }
 }
 
 
@@ -254,12 +268,15 @@ cc_xp_can_broker = {
 # so before that it genuinely does not exist. A realm with capacity and no schools yet
 # passes through trigger_else.
 cc_xp_has_institution_room = {
-	trigger_if = {
-		limit = { has_variable = cc_xp_school_count }
-		var:cc_xp_school_count < cc_xp_school_capacity
-	}
-	trigger_else = {
-		cc_xp_school_capacity >= 1
+	custom_tooltip = {
+		text = cc_xp_tt_institution_room
+		trigger_if = {
+			limit = { has_variable = cc_xp_school_count }
+			var:cc_xp_school_count < cc_xp_school_capacity
+		}
+		trigger_else = {
+			cc_xp_school_capacity >= 1
+		}
 	}
 }
 
@@ -282,7 +299,7 @@ cc_xp_is_school_member = {
 }
 
 # Character scope. Eligible to be enrolled: at court, tracked, not already a member.
-cc_xp_can_enrol = {
+cc_xp_can_enroll = {
 	is_alive = yes
 	is_adult = yes
 	OR = {
@@ -312,7 +329,7 @@ cc_xp_can_host = {
 # SECONDMENT GATES (phase 7)
 ###############################################################################
 
-# Character scope. Who can be posted abroad: someone with a discipline to practise and
+# Character scope. Who can be posted abroad: someone with a discipline to practice and
 # nothing else claiming them.
 cc_xp_can_be_seconded = {
 	in_cabinet = yes

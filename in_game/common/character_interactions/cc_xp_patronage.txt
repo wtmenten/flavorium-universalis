@@ -44,8 +44,17 @@ cc_xp_sponsor_artist = {
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
-			any_cabinet_character = { cc_xp_can_patronise = yes }
-			any_artist = { is_alive = yes }
+			custom_tooltip = {
+				text = cc_xp_tt_needs_patron
+				any_cabinet_character = { cc_xp_can_patronise = yes }
+			}
+			custom_tooltip = {
+				text = cc_xp_tt_needs_artist
+				any_artist = {
+					is_alive = yes
+					NOT = { has_variable = cc_xp_patron }
+				}
+			}
 		}
 	}
 
@@ -138,8 +147,14 @@ cc_xp_sell_art_discreetly = {
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
-			has_sellable_art = yes
-			any_cabinet_character = { cc_xp_can_broker = yes }
+			custom_tooltip = {
+				text = cc_xp_tt_needs_sellable_art
+				has_sellable_art = yes
+			}
+			custom_tooltip = {
+				text = cc_xp_tt_needs_broker
+				any_cabinet_character = { cc_xp_can_broker = yes }
+			}
 		}
 	}
 
