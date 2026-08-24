@@ -63,35 +63,22 @@ cc_byz_exarch.10 = {
 	}
 	outcome = neutral
 
-	fire_only_once = yes
-
+	# NOT fire_only_once, and no longer Italy-only.
+	#
+	# This used to prompt exactly once, for Italy, and only while the empire had no exarchate
+	# anywhere. That was right when Italy was the only possibility. It stopped being right the
+	# moment the area picker permitted maghreb_region, and it is wrong four ways over now that
+	# there are four prefectures: an emperor who seated Ravenna in 1400 would never have been
+	# offered Carthage, Spania or the Gauls at all.
+	#
+	# The guard is now per-region and lives in the scripted triggers, so this fires again each
+	# time a NEW prefecture becomes seatable and never fires for one already seated.
 	trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
 		has_advance = cc_byz_renovatio_imperii
 		capital = location:constantinople
-		NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
 
-		# Enough of Italy to be worth governing rather than garrisoning.
-		any_owned_location = {
-			count >= 8
-			region = region:italy_region
-		}
-
-		# And at least one area complete enough to seat an exarchate on, matching the 75%
-		# threshold the interaction's area select_trigger uses.
-		#
-		# SCOPE. any_area_in_region runs region -> area, so it must be entered FROM a region
-		# and does not take a region parameter. Vanilla does the same
-		# (age_of_discovery_tests.txt:113). root inside is still the country, so the
-		# ownership test below reads correctly.
-		region:italy_region = {
-			any_area_in_region = {
-				any_location_in_area = {
-					percent >= 0.75
-					owner ?= root
-				}
-			}
-		}
+		cc_byz_prefecture_open_any_trigger = yes
 
 		any_cabinet_character = {
 			is_alive = yes
@@ -125,15 +112,64 @@ cc_byz_exarch.10 = {
 		#
 		# The limit below already guarantees a viable seat, so picking among viable areas is
 		# all that was ever needed.
-		region:italy_region = {
-			random_area_in_region = {
-				limit = {
-					any_location_in_area = {
-						percent >= 0.75
-						owner ?= root
+		# Four-way dispatch, most-established prefecture first. Italy before Africa before
+		# Spania before Gaul is the order the empire actually recovered them in and the order
+		# of how much the claim is worth arguing; an emperor eligible for two at once is
+		# offered the older one first and the other next time.
+		if = {
+			limit = { cc_byz_prefecture_open_italy_trigger = yes }
+			region:italy_region = {
+				random_area_in_region = {
+					limit = {
+						any_location_in_area = {
+							percent >= 0.75
+							owner ?= root
+						}
 					}
+					save_scope_as = cc_byz_exarch_area
 				}
-				save_scope_as = cc_byz_exarch_area
+			}
+		}
+		else_if = {
+			limit = { cc_byz_prefecture_open_africa_trigger = yes }
+			region:maghreb_region = {
+				random_area_in_region = {
+					limit = {
+						any_location_in_area = {
+							percent >= 0.75
+							owner ?= root
+						}
+					}
+					save_scope_as = cc_byz_exarch_area
+				}
+			}
+		}
+		else_if = {
+			limit = { cc_byz_prefecture_open_spania_trigger = yes }
+			region:iberia_region = {
+				random_area_in_region = {
+					limit = {
+						any_location_in_area = {
+							percent >= 0.75
+							owner ?= root
+						}
+					}
+					save_scope_as = cc_byz_exarch_area
+				}
+			}
+		}
+		else_if = {
+			limit = { cc_byz_prefecture_open_gaul_trigger = yes }
+			region:france_region = {
+				random_area_in_region = {
+					limit = {
+						any_location_in_area = {
+							percent >= 0.75
+							owner ?= root
+						}
+					}
+					save_scope_as = cc_byz_exarch_area
+				}
 			}
 		}
 

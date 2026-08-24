@@ -1,0 +1,128 @@
+﻿l_english:
+ # Tasks added by the second structural pass: the four gateways, the new stones and spurs, and
+ # the trigger tooltips that replace unlocalised engine fallbacks.
+ #
+ # DESCRIPTION STYLE, and it is the opposite of what this file used to do.
+ #
+ # Descriptions carry NO mechanical condition. The engine renders the enabled trigger above
+ # them, which is what the custom_tooltip wrappers in this pack exist for, so a description that
+ # restates the requirement is spending the only line of flavour the task gets on information
+ # already on screen. Vanilla's own mission descriptions never state a condition either
+ # (missions/generic_missions_l_english.yml: "The expansion of our realm at the expense of
+ # weaker neighbors is merely the natural law").
+ #
+ # Register is mixed by tier: court voice in the first person plural for the stepping stones,
+ # an attributed quotation on the capstones WHERE ONE IS GENUINELY KNOWN, and a third-person
+ # historical note where neither fits.
+ #
+ # QUOTATIONS ARE REAL OR THEY ARE NOT ATTRIBUTED. Where the attribution is traditional rather
+ # than contemporary, the text says so: Justinian's line at the dedication of Hagia Sophia comes
+ # from an account written centuries later, and is marked as tradition rather than credited to
+ # anyone. In-world lines carry no attribution at all.
+ #
+ # The exceptions are the tasks whose requirement cannot be guessed from the name: the two
+ # subset reconvergences, the bureau funding average, and the five exclusive forks. Those close
+ # on one short sentence naming what is actually being asked.
+
+ # ---- The four gateways ----
+ # The State Restored used to open twelve tasks at once. These four sit between it and that
+ # cluster, so each branch of the empire's problem has a door of its own.
+ cc_byz_task_roman_title: "The Roman Title"
+ cc_byz_task_roman_title_desc: "Three courts in Europe call themselves Roman. One of them is in Rome and has a bishop rather than an emperor, one is German and was crowned by that bishop, and one has held the office in unbroken succession since Augustus.\n\nOnly the third is embarrassed about the subject."
+ cc_byz_task_balkan_frontier: "The Balkan Frontier"
+ cc_byz_task_balkan_frontier_desc: "Everything north of Thessaloniki is a road to Constantinople. The Avars knew it, the Bulgars knew it, the Serbs know it now, and the empire has learned it more times than it cares to have recorded."
+ cc_byz_task_latin_powers: "The Latin Powers"
+ cc_byz_task_latin_powers_desc: "The West is not one thing. It is a pope, two republics who hate each other, a French king, a German emperor and a great many people with claims to our provinces. They agree on nothing except that we are schismatics.\n\nOne of them will take our letters. That is where it starts."
+ cc_byz_task_anatolian_return: "The Anatolian Return"
+ cc_byz_task_anatolian_return_desc: "The recruiting ground. The granary. The place every soldier in the old army came from, and the reason there was an old army.\n\nIt has been gone for two hundred and fifty years and the men who live there now were born there too."
+
+ # ---- New stones: the Fisc ----
+ cc_byz_task_mint: "The Mint at Thessaloniki"
+ cc_byz_task_mint_desc: "The second city struck its own coin for centuries. An empire that mints in one place is an empire that a single siege can leave without money."
+ cc_byz_task_bank: "The Debt Discharged"
+ cc_byz_task_bank_desc: "In 1343 the crown jewels went to Venice for thirty thousand ducats. They were never redeemed, and the glass copies are what the empress wore to her own coronation.\n\nWe should like to owe nobody anything."
+
+ # ---- New stones: the Faith ----
+ cc_byz_task_orthodox_concord: "The Orthodox Concord"
+ cc_byz_task_orthodox_concord_desc: "We share a rite with the men who have taken most from us. Whether that is the beginning of an argument or the end of one has never been settled, and no emperor has tried very hard to settle it."
+
+ # ---- New stones: the Sword ----
+ cc_byz_task_fleet_restored: "The Fleet Restored"
+ cc_byz_task_fleet_restored_desc: "The imperial fleet was paid off in 1284 as an economy. The saving has since been spent several times over on Genoese and Venetian hulls, and the empire has learned what it costs to be at sea in someone else's ships."
+
+ # ---- New spurs, by region ----
+ cc_byz_task_purple_born: "Born in the Purple"
+ cc_byz_task_purple_born_desc: "A child born in the porphyry chamber while his father reigned outranks any general who ever seized a throne, and everyone in the empire accepts this without being able to say why.\n\nIt is the only argument that has ever made a Byzantine succession quiet."
+ cc_byz_task_bulgarian_question: "The Bulgarian Question"
+ cc_byz_task_bulgarian_question_desc: "Basil II spent twenty-eight years on this and earned a surname for it. Within two hundred years there was a Bulgarian tsar again, in a new capital, with a patriarch of his own.\n\nThe lesson is available to anyone who wants it."
+ cc_byz_task_danube: "The Danube Reached"
+ cc_byz_task_danube_desc: "The river was the frontier for eight hundred years. It has not been for a hundred and fifty, and everything between it and the capital is open country that nobody is defending."
+ cc_byz_task_union_received: "The Union Received"
+ cc_byz_task_union_received_desc: "The signature is the easy part and always has been. Emperors have signed at Lyon and will sign again at Florence, and the city has rejected every one of them from the pulpit within the month.\n\nThis asks only that the ink exists."
+ cc_byz_task_cataphracts: "The Cataphract Wing"
+ cc_byz_task_cataphracts_desc: "Man and horse both in mail, lance and mace and bow on the same rider, drawn up in a wedge and asked to break a line frontally. Ruinously expensive, and the reason the empire's enemies spent six centuries writing about its cavalry."
+ cc_byz_task_akritai: "The Akritai Settled"
+ cc_byz_task_akritai_desc: "The frontier songs are still sung: Digenes Akritas, born of two peoples, holding the line on the Euphrates against everyone. The men in the songs held their land because they held the border, and the arrangement outlasted the empire's memory of why it worked."
+ cc_byz_task_pilgrim_road: "The Pilgrim Road"
+ cc_byz_task_pilgrim_road_desc: "Custody of the holy places is worth arguing about because of the traffic, and the traffic lands at Jaffa. Hold the shrine without the port and you hold the argument without the revenue."
+
+ # ---- Trigger tooltips ----
+ #
+ # These wrap triggers the engine cannot localise on its own.
+ #
+ # BOTH religion_percentage FORMS NEED WRAPPING, for two different reasons, and the second one
+ # was learned the hard way.
+ #
+ # In LOCATION scope, religion_percentage has only NONE/GLOBAL/THIRD trigger_localization
+ # forms, so a direct comparison falls back to religion_percentage_greater_or_equal, which
+ # vanilla does not define at all.
+ #
+ # In COUNTRY scope, religion_percentage_in_country_greater_or_equal DOES exist in vanilla, so
+ # that use was left bare. It still errors: the vanilla string interpolates
+ # [TARGET_RELIGION.GetAdjective] and the token is not populated when the trigger is written in
+ # the parameterised string form, giving "FetchData failed for 'TARGET_RELIGION.GetAdjective'".
+ #
+ # The lesson is that a vanilla loc key existing says nothing about whether its tokens resolve
+ # from our call site. Wrap parameterised triggers in custom_tooltip and write the line
+ # ourselves.
+ cc_byz_athens_orthodox_tt: "Athens is at least three-fifths Orthodox"
+ cc_byz_jerusalem_orthodox_tt: "Jerusalem is owned and at least half Orthodox"
+ cc_byz_second_patriarchal_seat_tt: "Hold the seat of a second autocephalous patriarchate: Tarnovo, Nicosia, Tbilisi or Sis"
+ cc_byz_union_signed_tt: "The union with Rome has been signed"
+ cc_byz_anatolia_orthodox_tt: "At least seven in ten of the empire's people are Orthodox"
+
+ # ---- Casus belli ----
+ cc_byz_cb_reclaim_the_balkans: "Reclaim the Balkan Frontier"
+ cc_byz_cb_reclaim_the_balkans_desc: "The empire never renounced the Danube line. This claim rests on nothing that can be lost: not on Rome, not on an exarch, not on a pope's opinion. It is simply the territory, and the argument has not changed since 1185."
+
+ # ---- Reward modifiers ----
+ STATIC_MODIFIER_NAME_cc_byz_reward_levies: "The Theme Called Out"
+ STATIC_MODIFIER_DESC_cc_byz_reward_levies: "Levies raised, and raised again before the first host has finished coming home."
+ STATIC_MODIFIER_NAME_cc_byz_reward_credit: "Credit on Better Terms"
+ STATIC_MODIFIER_DESC_cc_byz_reward_credit: "The lenders have seen the assessment and revised their opinion of the risk."
+
+ # ---- Permanent capstone modifiers ----
+ STATIC_MODIFIER_NAME_cc_byz_perm_logothete: "The Course Restored"
+ STATIC_MODIFIER_DESC_cc_byz_perm_logothete: "The post runs, the roads are reported on, and the treasury knows what it is owed before it is owed it."
+ STATIC_MODIFIER_NAME_cc_byz_perm_ecumenical: "The Ecumenical Throne"
+ STATIC_MODIFIER_DESC_cc_byz_perm_ecumenical: "The patriarch is the emperor's, and the daughter churches know it."
+ STATIC_MODIFIER_NAME_cc_byz_perm_field_army: "The Field Army"
+ STATIC_MODIFIER_DESC_cc_byz_perm_field_army: "A host that can march twice in a reign, which no Byzantine emperor since Manuel has had."
+ STATIC_MODIFIER_NAME_cc_byz_perm_state_restored: "The State Restored"
+ STATIC_MODIFIER_DESC_cc_byz_perm_state_restored: "The empire has stopped managing its decline and started choosing what to do next."
+ STATIC_MODIFIER_NAME_cc_byz_perm_anatolia: "Anatolia Secured"
+ STATIC_MODIFIER_DESC_cc_byz_perm_anatolia: "The recruiting ground is imperial again, whichever way the Turkish question was settled."
+ STATIC_MODIFIER_NAME_cc_byz_perm_eastern_sees: "The Eastern Sees"
+ STATIC_MODIFIER_DESC_cc_byz_perm_eastern_sees: "The patriarchates of the east under the emperor's protection, and the caravan routes that follow them."
+ STATIC_MODIFIER_NAME_cc_byz_perm_western_sea: "The Western Sea"
+ STATIC_MODIFIER_DESC_cc_byz_perm_western_sea: "Ports on both shores, and hulls enough to sail between them without asking a republic first."
+ STATIC_MODIFIER_NAME_cc_byz_perm_city_adorned: "The City Adorned"
+ STATIC_MODIFIER_DESC_cc_byz_perm_city_adorned: "People still come here to see what an empire looks like."
+ STATIC_MODIFIER_NAME_cc_byz_perm_greek_fire: "Greek Fire Restored"
+ STATIC_MODIFIER_DESC_cc_byz_perm_greek_fire: "The siphons are rebuilt, the crews are trained, and the composition is written down in more than one place this time."
+
+ # ---- Bureau funding average ----
+ # The tasks read a five-year running mean maintained monthly, not an instant maintenance
+ # check, so a month of full funding before the tooltip is inspected achieves nothing.
+ cc_byz_bureau_funding_avg_tt: "Bureaucracies funded at 50% or better, averaged over the last five years"
+ cc_byz_bureau_funding_avg_high_tt: "Bureaucracies funded at 75% or better, averaged over the last five years"

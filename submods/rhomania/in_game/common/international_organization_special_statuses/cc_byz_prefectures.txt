@@ -1,0 +1,121 @@
+﻿# The Praetorian Prefectures of the West: voting statuses.
+#
+# THE ARITHMETIC IS THE MECHANIC. special_status_power is what the vanilla policy_vote
+# resolution reads once the parliament type carries uses_parliament_for_law_votes, so these
+# three numbers decide who governs the west:
+#
+#     Augustus       3     the emperor
+#     Senior Exarch  2     the first among the prefects
+#     Exarch         1     each of the others
+#
+#     1 prefecture   3 v 1      the emperor cannot lose
+#     2 prefectures  3 v 3      deadlock, and the ratio of 0.5 means motions fail
+#     3 prefectures  3 v 4      the west carries
+#     4 prefectures  3 v 5      the west carries comfortably
+#
+# So an emperor who takes all four western prefectures has, by that act alone, built a body
+# that can outvote him on the command of his own armies. Nothing needs to be tuned for this to
+# become dangerous; it becomes dangerous because he succeeded.
+#
+# The counter-play is real and is deliberately unattractive: dissolve a prefecture and take the
+# territory back under direct rule, which costs the modifiers, the manpower and the loyalty of
+# whoever was governing it.
+#
+#
+# SENIOR EXARCH is bestowed by script, not automatically. auto_bestowal_trigger = always = no
+# and the emperor elevates one through cc_byz_io_elevate_senior_exarch. Left automatic on
+# something like development, it would move on its own as provinces grew and the player would
+# watch the balance shift for reasons they never chose.
+
+cc_byz_augustus = {
+	max_countries = 1
+	priority = 20
+	leader = yes
+
+	can_bestow_trigger = {
+		is_leader_of_international_organization = scope:recipient
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	auto_rescind_trigger = {
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_LEADER_COLOR
+	special_status_power = 3
+}
+
+cc_byz_senior_exarch = {
+	max_countries = 1
+	priority = 10
+
+	can_bestow_trigger = {
+		is_member_of_international_organization = scope:recipient
+		has_variable = cc_byz_is_exarchate
+		NOT = { is_leader_of_international_organization = scope:recipient }
+	}
+	# Bestowed by the emperor, never assumed. See the note above.
+	auto_bestowal_trigger = {
+		always = no
+	}
+	auto_rescind_trigger = {
+		OR = {
+			NOT = { is_member_of_international_organization = scope:recipient }
+			NOT = { has_variable = cc_byz_is_exarchate }
+		}
+	}
+
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_TIER1_COLOR
+	special_status_power = 2
+}
+
+# THE SENIOR EXCLUSION BELOW IS LOAD-BEARING, NOT TIDINESS.
+#
+# Vanilla's policy_vote resolution weights a vote by
+# country_combined_special_status_power (policy_vote.txt:697-706), and "combined" is literal:
+# the docs define it as the power of the country "with all of its special statuses combined".
+# Statuses STACK.
+#
+# So without this exclusion an elevated senior exarch would hold cc_byz_senior_exarch (2) AND
+# cc_byz_exarch_seat (1, auto-bestowed) and cast THREE votes, exactly matching the Augustus.
+# The intended 3 / 2 / 1 would silently be 3 / 3 / 1, the emperor would lose control of the
+# consistory at two prefectures instead of three, and nothing whatsoever would appear in the
+# log: the votes would simply come out wrong.
+#
+# The main mod's Concert avoids the same trap by accident rather than by design, because it has
+# only two statuses and the president is excluded from the seat by the leader check. Three
+# statuses need the exclusion written out.
+cc_byz_exarch_seat = {
+	priority = 5
+
+	can_bestow_trigger = {
+		is_member_of_international_organization = scope:recipient
+		has_variable = cc_byz_is_exarchate
+		NOT = { is_leader_of_international_organization = scope:recipient }
+		NOT = {
+			has_special_status_in_international_organization = {
+				type = special_status:cc_byz_senior_exarch
+				international_organization = scope:recipient
+			}
+		}
+	}
+	auto_bestowal_trigger = {
+		always = yes
+	}
+	# Rescinds the moment the senior status is granted, so the elevation swaps 1 vote for 2
+	# rather than adding 2 on top of 1.
+	auto_rescind_trigger = {
+		OR = {
+			NOT = { is_member_of_international_organization = scope:recipient }
+			NOT = { has_variable = cc_byz_is_exarchate }
+			has_special_status_in_international_organization = {
+				type = special_status:cc_byz_senior_exarch
+				international_organization = scope:recipient
+			}
+		}
+	}
+
+	map_color = define:NMapColors|INTERNATIONAL_ORGANIZATION_TIER2_COLOR
+	special_status_power = 1
+}

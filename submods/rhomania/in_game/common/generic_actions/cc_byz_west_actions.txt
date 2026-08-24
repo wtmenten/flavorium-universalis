@@ -1,0 +1,531 @@
+﻿# Governing the West: the repeatable business of holding provinces at a distance.
+#
+# ALL OF THESE GATE ON THE SITUATION, not on the mission tree. Mission packs default to OFF, so
+# anything delivered as a mission task is invisible to most players; the exarchates are a
+# systemic feature and have to be reachable without them. cc_byz_the_west starts the moment the
+# first exarch is seated and these appear with it.
+#
+# type = owncountry for the seven administrative actions, because they are things the emperor
+# does to his own realm. A targeted type (religious, diplomatic) requires a recipient and
+# errors without one; that mistake cost thirteen actions a release ago and is recorded in
+# CLAUDE.md.
+#
+#
+# EVERY ACTION MOVES THE COUNTERS THROUGH THE SHARED EFFECTS, never with an inline
+# change_variable. The counters live on the situation, so touching them requires guarding both
+# that the situation is active and that the variable exists, and there are enough callers here
+# that inlining the guard is how one of them ends up missing it. See
+# scripted_effects/cc_byz_west_effects.txt.
+#
+# scope:cc_byz_west_delta carries the amount.
+#
+#
+# COOLDOWNS. Each carries a country modifier as its own cooldown rather than a shared one, so
+# an emperor can take a census and pay the donative in the same year but not two censuses.
+
+
+#############################################
+# The seven. Governing.
+#############################################
+
+# ORDER A CENSUS. The thing a Roman administration did that nothing else in Europe could.
+cc_byz_west_order_census = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = monthly
+	automation_tick_frequency = 24
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_country_modifier = cc_byz_west_census_taken }
+		}
+	}
+
+	allow = {
+		scope:actor = { gold >= 150 }
+	}
+
+	effect = {
+		scope:actor = {
+			change_gold_effect = { scale = -2 }
+			add_country_modifier = {
+				modifier = cc_byz_west_census_taken
+				years = 15
+				mode = add
+			}
+			save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+			cc_byz_west_grip_up_effect = yes
+
+			# A census is the state looking at people who would rather not be looked at.
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_minor_move_to_left
+			}
+		}
+	}
+
+	ai_will_do = { add = 20 }
+}
+
+# THE ANNUAL DONATIVE. Paying the western garrisons, which is the single thing that most
+# reliably kept a Roman frontier loyal and the single thing emperors most reliably stopped
+# doing when money was short.
+cc_byz_west_donative = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_country_modifier = cc_byz_west_donative_paid }
+		}
+	}
+
+	allow = {
+		scope:actor = { gold >= 200 }
+	}
+
+	effect = {
+		scope:actor = {
+			change_gold_effect = { scale = -3 }
+			add_country_modifier = {
+				modifier = cc_byz_west_donative_paid
+				years = 5
+				mode = add
+			}
+			save_scope_value_as = { name = cc_byz_west_delta  value = 4 }
+			cc_byz_west_grip_up_effect = yes
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+		}
+	}
+
+	ai_will_do = { add = 30 }
+}
+
+# DEMAND THE TRIBUTE. Gold now, above what the subject arrangement already yields.
+cc_byz_west_demand_tribute = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = monthly
+	automation_tick_frequency = 24
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_country_modifier = cc_byz_west_tribute_taken }
+		}
+	}
+
+	allow = {
+		always = yes
+	}
+
+	effect = {
+		scope:actor = {
+			add_gold = 400
+			add_country_modifier = {
+				modifier = cc_byz_west_tribute_taken
+				years = 10
+				mode = add
+			}
+			save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+			cc_byz_west_autonomy_up_effect = yes
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+				cc_byz_init_exarch_scores_effect = yes
+			}
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+# SEND THE STRATEGOS WEST. Reinforcement, and a general in the west with troops of his own.
+cc_byz_west_send_strategos = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = monthly
+	automation_tick_frequency = 24
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_country_modifier = cc_byz_west_strategos_sent }
+		}
+	}
+
+	allow = {
+		scope:actor = { army_tradition >= 30 }
+	}
+
+	effect = {
+		scope:actor = {
+			add_country_modifier = {
+				modifier = cc_byz_west_strategos_sent
+				years = 20
+				mode = add
+			}
+			save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+			cc_byz_west_autonomy_up_effect = yes
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				add_army_tradition = army_tradition_mild_bonus
+				add_manpower = { value = monthly_manpower  multiply = 8 }
+			}
+
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_minor_move_to_right
+			}
+		}
+	}
+
+	ai_will_do = { add = 15 }
+}
+
+# CONFIRM THE EXARCH'S SON. The moment an office becomes a family's property.
+#
+# THE MOST CONSEQUENTIAL ACTION HERE, and the only one with no cooldown modifier: it can only
+# be taken once because the succession law it implies is the thing it sets.
+cc_byz_west_confirm_son = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = monthly
+	automation_tick_frequency = 36
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_variable = cc_byz_mem_west_hereditary }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				trigger_if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					var:cc_byz_exarch_loyalty >= 1
+				}
+				trigger_else = { always = no }
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_mem_west_hereditary  value = yes }
+			save_scope_value_as = { name = cc_byz_west_delta  value = 20 }
+			cc_byz_west_autonomy_up_effect = yes
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+
+			add_estate_satisfaction = {
+				type = estate_type:nobles_estate
+				value = estate_satisfaction_mild_bonus
+			}
+			change_societal_value = {
+				type = cc_taxis_vs_cc_dynatoi
+				value = societal_value_move_to_right
+			}
+		}
+	}
+
+	ai_will_do = { add = 5 }
+}
+
+# RECALL THE EXARCH. THE ONLY ACTION WHOSE OUTCOME THE EMPEROR DOES NOT CONTROL.
+#
+# The refusal chance reads off the loyalty the other six actions have been moving, which is the
+# point of having them. An emperor who has taken tribute twice, never paid the donative and
+# confirmed nobody's son is issuing an order to a man with no reason to obey it.
+#
+# Resolved in cc_byz_west.20, not here, because a refusal is an event and not a number.
+cc_byz_west_recall_exarch = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = monthly
+	automation_tick_frequency = 24
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			any_subject = { has_variable = cc_byz_is_exarchate }
+			NOT = { has_country_modifier = cc_byz_west_recall_issued }
+		}
+	}
+
+	allow = {
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		scope:actor = {
+			add_country_modifier = {
+				modifier = cc_byz_west_recall_issued
+				years = 15
+				mode = add
+			}
+			trigger_event_non_silently = cc_byz_west.20
+		}
+	}
+
+	ai_will_do = { add = 8 }
+}
+
+# GRANT A COMMUNE ITS CHARTER. Italy and Gaul only: the communes are a western European
+# phenomenon and there is nothing in Carthage or Cartagena to charter.
+cc_byz_west_grant_charter = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = monthly
+	automation_tick_frequency = 24
+	player_automated_category = governmentreforms
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			has_or_had_tag = BYZ
+			OR = {
+				any_subject = { cc_byz_exarch_in_italy_trigger = yes }
+				any_subject = { cc_byz_exarch_in_gaul_trigger = yes }
+			}
+			NOT = { has_country_modifier = cc_byz_west_charter_granted }
+		}
+	}
+
+	allow = {
+		always = yes
+	}
+
+	effect = {
+		scope:actor = {
+			add_country_modifier = {
+				modifier = cc_byz_west_charter_granted
+				years = 20
+				mode = add
+			}
+			add_estate_satisfaction = {
+				type = estate_type:burghers_estate
+				value = estate_satisfaction_mild_bonus
+			}
+			save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+			cc_byz_west_autonomy_up_effect = yes
+
+			# The first charter is the precedent every other commune cites.
+			set_variable = { name = cc_byz_mem_west_charter  value = yes }
+		}
+	}
+
+	ai_will_do = { add = 12 }
+}
+
+
+#############################################
+# The three. The consistory.
+#############################################
+
+# CONVENE THE CONSISTORY. Swaps the parliament form from dormant to assembly, exactly as the
+# Balancing Coalition's chief balancer convenes its congress.
+#
+# THIS IS THE DECISION THE WHOLE DESIGN TURNS ON. Until it is taken there are no votes, and an
+# emperor who never takes it never loses one. The price is in the friction thread: exarchs with
+# no forum take their grievances elsewhere.
+cc_byz_io_convene_consistory = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = parliament
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		exists = international_organization:cc_byz_prefectures
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_byz_prefectures
+		}
+		# ?= on the scope change itself, not just on parliament_type. The main mod's equivalent
+		# action errored before its IO existed because only the inner read was guarded.
+		international_organization:cc_byz_prefectures ?= {
+			parliament_type ?= parliament_type:cc_byz_consistorium_dormant
+		}
+	}
+
+	allow = {
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		international_organization:cc_byz_prefectures = {
+			set_parliament_type = parliament_type:cc_byz_consistorium_assembly
+		}
+		scope:actor = {
+			trigger_event_non_silently = cc_byz_west.10
+		}
+	}
+
+	ai_will_do = { add = 25 }
+}
+
+# ELEVATE A SENIOR EXARCH. Bestowed, never automatic: left to sort on development it would move
+# on its own as provinces grew and the player would watch the consistory's arithmetic shift for
+# reasons they never chose.
+cc_byz_io_elevate_senior_exarch = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = monthly
+	automation_tick_frequency = 36
+	player_automated_category = parliament
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		exists = international_organization:cc_byz_prefectures
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_byz_prefectures
+			any_subject = { count >= 2  has_variable = cc_byz_is_exarchate }
+		}
+	}
+
+	allow = {
+		always = yes
+	}
+
+	effect = {
+		scope:actor = {
+			# The most loyal, not the largest. A senior exarch casts two votes and the emperor
+			# is choosing who to hand the second one to.
+			#
+			# random_ with a limit rather than ordered_ by a loyalty script value. order_by
+			# would need a script value reading var:cc_byz_exarch_loyalty, and an unguarded
+			# variable read inside a sort is the failure that scores every candidate zero while
+			# looking deliberate: the pick would be arbitrary and nothing would log. The limit
+			# below already restricts to exarchs worth elevating, which is all that is needed.
+			random_subject = {
+				limit = {
+					has_variable = cc_byz_is_exarchate
+					trigger_if = {
+						limit = { has_variable = cc_byz_exarch_loyalty }
+						var:cc_byz_exarch_loyalty >= 1
+					}
+					trigger_else = { always = no }
+				}
+				save_scope_as = cc_byz_senior_pick
+			}
+			if = {
+				limit = { exists = scope:cc_byz_senior_pick }
+				international_organization:cc_byz_prefectures = {
+					international_organization_add_special_status = {
+						type = special_status:cc_byz_senior_exarch
+						country = scope:cc_byz_senior_pick
+					}
+				}
+				scope:cc_byz_senior_pick = {
+					change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+					clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+				}
+			}
+		}
+	}
+
+	ai_will_do = { add = 15 }
+}
+
+# DISSOLVE A PREFECTURE. The counter-play, and it is deliberately unattractive.
+#
+# It is the only way to reduce the consistory's opposition, and it costs the reform modifiers,
+# the manpower, and the goodwill of every exarch who watched it happen.
+cc_byz_io_dissolve_prefecture = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = monthly
+	automation_tick_frequency = 36
+	player_automated_category = parliament
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_the_west
+		scope:actor = {
+			is_leader_of_international_organization = international_organization:cc_byz_prefectures
+			any_subject = { has_variable = cc_byz_is_exarchate }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			stability >= 1
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				trigger_if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					var:cc_byz_exarch_loyalty <= 0
+				}
+				trigger_else = { always = no }
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			trigger_event_non_silently = cc_byz_west.30
+		}
+	}
+
+	ai_will_do = { add = 5 }
+}

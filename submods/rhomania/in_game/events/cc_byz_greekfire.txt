@@ -1,0 +1,321 @@
+﻿namespace = cc_byz_fire
+
+# Greek Fire, recovered deliberately rather than stumbled upon.
+#
+#   .1   the formula sought      fired by the cc_byz_task_greek_fire mission task
+#   .2   the siphon trials       the arsenal tests it, and something gets out
+#   .3   the fire restored       sets unlocked_greek_fire
+#
+#
+# WHAT THIS IS FOR, AND WHY IT IS WORTH THREE EVENTS.
+#
+# unlocked_greek_fire is a real vanilla country variable and it gates FOUR unit types:
+# n_greek_fire_galley_renaissance, n_greek_fire_galley_discovery, a_greek_fire_renaissance_infantry
+# and a_greek_fire_discovery_infantry (D008_byzantine_unit_types.txt:549-604). Vanilla's only
+# route to it is d008_flavor_byz.1, a 5%/month dynamic historical event that additionally
+# requires an idle scientist above 0.7 skill, and which then coin-flips between .2 (fail, retry)
+# and .3 (succeed) with no bound on how long it can fail. A Byzantine player can finish a
+# campaign having never seen it.
+#
+# So this is the largest optional prize in the mission tree, and a one-click grant would have
+# been a poor way to hand over four unit types.
+#
+#
+# THE VANILLA-ALREADY-FIRED GUARD, which is the load-bearing part of this file.
+#
+# .1 opens with a triggered_desc split on has_variable = unlocked_greek_fire and a first option
+# gated the same way. If vanilla's lottery already paid out, the player gets the short "the
+# arsenal already has it" branch, takes the permanent modifier, and the chain ends there. .3 then
+# guards the set_variable with an if-limit so it is never set twice.
+#
+# The reverse race is also handled: vanilla's d008_flavor_byz.1 can fire WHILE this chain is
+# mid-flight, because nothing in vanilla knows this chain exists. That is why .3 checks the
+# variable rather than assuming it is unset, and why nothing here removes
+# searching_for_greek_fire from a character: that variable belongs to vanilla's chain and is read
+# by character_death_pulses.txt:162 to fire d008_flavor_byz.4 when the alchemist dies. Clearing
+# it would suppress a vanilla event.
+#
+#
+# Memory variables (set-and-read only; no arithmetic, so no init effect is needed for them):
+#   cc_byz_mem_fire_scholar     recovered from the court's own scientists
+#   cc_byz_mem_fire_archive     recovered from the monastic archives
+#   cc_byz_mem_fire_captive     recovered from a captured Muslim naval engineer
+#   cc_byz_mem_fire_leaked      the composition got out to the Italians
+#   cc_byz_mem_fire_restored    the chain completed
+#
+# cc_byz_italian_standing IS arithmetic, so every event that touches it calls
+# cc_byz_init_debt_scores_effect first. See scripted_effects/cc_byz_scores.txt for why that is
+# lazy rather than hung off on_game_start.
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum, 0..300.
+
+
+#############################################
+# .1  The formula sought
+#############################################
+cc_byz_fire.1 = {
+	type = country_event
+	title = cc_byz_fire.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = unlocked_greek_fire }
+				desc = cc_byz_fire.1.desc_already
+			}
+			triggered_desc = {
+				trigger = { average_country_literacy > 30 }
+				desc = cc_byz_fire.1.desc_lettered
+			}
+			desc = cc_byz_fire.1.desc
+		}
+	}
+	outcome = neutral
+
+	image = "gfx/interface/illustrations/event/backgrounds/special/greek_fire.dds"
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		# Saved for the scholar option's text. Not required for the option to appear: the
+		# option's own trigger tests the same thing, and an option gated on a scope that
+		# might not exist is the standard way to get a blank line in a tooltip.
+		random_artist = {
+			limit = {
+				artist_type = scientist
+				is_alive = yes
+			}
+			save_scope_as = cc_byz_fire_scholar
+		}
+	}
+
+	# The short branch. Vanilla's lottery already paid out, so there is nothing to discover
+	# and the task pays for the arsenal rather than the formula.
+	option = {
+		name = cc_byz_fire.1.a_already
+		trigger = { has_variable = unlocked_greek_fire }
+
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_byz_perm_greek_fire
+			years = -1
+			mode = add
+		}
+		set_variable = { name = cc_byz_mem_fire_restored  value = yes }
+	}
+
+	# Route 1: the court's own scientists. Needs one, costs gold, and is the fastest.
+	option = {
+		name = cc_byz_fire.1.a
+		trigger = {
+			NOT = { has_variable = unlocked_greek_fire }
+			any_artist = {
+				artist_type = scientist
+				is_alive = yes
+			}
+		}
+
+		change_gold_effect = { scale = -4 }
+		set_variable = { name = cc_byz_mem_fire_scholar  value = yes }
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		trigger_event_silently = { id = cc_byz_fire.2  years = 2 }
+	}
+
+	# Route 2: the monastic archives. No scientist needed, but it costs standing with a
+	# clergy who did not expect the libraries of Athos to be turned over for a weapon.
+	option = {
+		name = cc_byz_fire.1.b
+		trigger = {
+			NOT = { has_variable = unlocked_greek_fire }
+			average_country_literacy > 15
+		}
+
+		set_variable = { name = cc_byz_mem_fire_archive  value = yes }
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		add_religious_influence = -10
+		trigger_event_silently = { id = cc_byz_fire.2  years = 3 }
+	}
+
+	# Route 3: a captured engineer. Wartime only, and the fastest of the three, because
+	# somebody who has built a siphon is worth more than a library that describes one.
+	option = {
+		name = cc_byz_fire.1.c
+		trigger = {
+			NOT = { has_variable = unlocked_greek_fire }
+			at_war = yes
+			navy_tradition >= 30
+		}
+
+		set_variable = { name = cc_byz_mem_fire_captive  value = yes }
+		add_navy_tradition = navy_tradition_mild_bonus
+		trigger_event_silently = { id = cc_byz_fire.2  years = 1 }
+	}
+
+	# Always available. The empire has survived without it for four hundred years.
+	option = {
+		name = cc_byz_fire.1.d
+		trigger = { NOT = { has_variable = unlocked_greek_fire } }
+
+		add_gold = 100
+		add_navy_tradition = navy_tradition_mild_bonus
+	}
+}
+
+
+#############################################
+# .2  The siphon trials
+#############################################
+cc_byz_fire.2 = {
+	type = country_event
+	title = cc_byz_fire.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_fire_captive }
+				desc = cc_byz_fire.2.desc_captive
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_fire_archive }
+				desc = cc_byz_fire.2.desc_archive
+			}
+			desc = cc_byz_fire.2.desc
+		}
+	}
+	outcome = neutral
+
+	image = "gfx/interface/illustrations/event/backgrounds/special/greek_fire.dds"
+
+	trigger = {
+		NOT = { has_variable = cc_byz_mem_fire_restored }
+	}
+
+	# THE HIDDEN OUTCOME. Resolved before the player is asked anything. A composition worked out
+	# in the arsenal of a city with two foreign merchant quarters in it does not stay in the
+	# arsenal, and whether it gets out is not something the emperor is offered a choice about.
+	#
+	# Weighted by how the formula was recovered: the archive route is the quietest, because a
+	# monastery in Macedonia has no Genoese factor living in it, and the captive route is the
+	# loudest, because the man was bought and can be bought again.
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+
+		random_list = {
+			55 = {
+				modifier = {
+					factor = 2
+					has_variable = cc_byz_mem_fire_captive
+				}
+				modifier = {
+					factor = 0.7
+					has_variable = cc_byz_mem_fire_scholar
+				}
+				modifier = {
+					factor = 0.4
+					has_variable = cc_byz_mem_fire_archive
+				}
+
+				set_variable = { name = cc_byz_mem_fire_leaked  value = yes }
+				change_variable = { name = cc_byz_italian_standing  add = -1 }
+				clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+			}
+			45 = { }
+		}
+	}
+
+	option = {
+		name = cc_byz_fire.2.a
+
+		add_navy_tradition = navy_tradition_mild_bonus
+		trigger_event_silently = { id = cc_byz_fire.3  years = 2 }
+	}
+
+	# Pay for a second arsenal and a proper trial. Costs gold, and the money buys the one
+	# thing the chain otherwise cannot: the leak being worth something.
+	option = {
+		name = cc_byz_fire.2.b
+		trigger = {
+			gold >= 200
+		}
+
+		change_gold_effect = { scale = -3 }
+		add_navy_tradition = navy_tradition_severe_bonus
+		if = {
+			limit = { has_variable = cc_byz_mem_fire_leaked }
+			change_variable = { name = cc_byz_italian_standing  add = 1 }
+			clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		}
+		trigger_event_silently = { id = cc_byz_fire.3  years = 1 }
+	}
+}
+
+
+#############################################
+# .3  The fire restored
+#############################################
+cc_byz_fire.3 = {
+	type = country_event
+	title = cc_byz_fire.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_fire_leaked }
+				desc = cc_byz_fire.3.desc_leaked
+			}
+			desc = cc_byz_fire.3.desc
+		}
+	}
+	outcome = positive
+
+	image = "gfx/interface/illustrations/event/backgrounds/special/greek_fire.dds"
+
+	trigger = {
+		NOT = { has_variable = cc_byz_mem_fire_restored }
+	}
+
+	immediate = {
+		set_variable = { name = cc_byz_mem_fire_restored  value = yes }
+	}
+
+	option = {
+		name = cc_byz_fire.3.a
+
+		# GUARDED. Vanilla's d008_flavor_byz.1 lottery can have paid out at any point while
+		# this chain was running, and nothing in vanilla knows this chain exists.
+		custom_tooltip = {
+			text = cc_byz_fire_unlocked_tt
+			if = {
+				limit = { NOT = { has_variable = unlocked_greek_fire } }
+				set_variable = unlocked_greek_fire
+			}
+		}
+
+		add_prestige = prestige_severe_bonus
+		add_navy_tradition = navy_tradition_severe_bonus
+		add_country_modifier = {
+			modifier = cc_byz_perm_greek_fire
+			years = -1
+			mode = add
+		}
+
+		# The route taken still matters at the end. Scholars who reassembled it in the palace
+		# are a standing capability; monks who found it in an inventory are owed a favour.
+		if = {
+			limit = { has_variable = cc_byz_mem_fire_scholar }
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 25  mode = add_and_extend }
+		}
+		if = {
+			limit = { has_variable = cc_byz_mem_fire_archive }
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+			add_religious_influence = 20
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_right
+		}
+	}
+}

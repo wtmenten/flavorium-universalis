@@ -1,0 +1,205 @@
+﻿# The West: action cooldowns and outcome modifiers.
+#
+# SEVEN OF THESE ARE COOLDOWNS AND THEY CARRY REAL EFFECTS ANYWAY.
+#
+# The generic actions in cc_byz_west_actions.txt each apply one of these and each tests for its
+# own absence in potential, so the modifier IS the cooldown. A cooldown that did nothing but
+# block the button would be a timer wearing a modifier's clothes, so every one of them also
+# describes what the action actually left behind: a census produces a register, a donative
+# produces a season of contented garrisons, a strategos in the west produces a western army.
+#
+# Durations vary by how long the thing plausibly lasts, not by how long the player should wait:
+# a census is good for fifteen years because that is roughly how long the figures stay useful,
+# and a donative for five because soldiers remember being paid for about that long.
+
+# ORDER A CENSUS. The register exists, and for as long as it is current the fisc knows what is
+# out there.
+cc_byz_west_census_taken = {
+	game_data = {
+		category = country
+	}
+	tax_income_efficiency = 0.05
+	global_bureaucracy_maintenance_efficiency = 0.08
+}
+
+# THE ANNUAL DONATIVE. Paid garrisons.
+cc_byz_west_donative_paid = {
+	game_data = {
+		category = country
+	}
+	global_manpower_modifier = 0.05
+	land_morale = 0.03
+}
+
+# DEMAND THE TRIBUTE. The money arrived. So did the resentment, which lives on the exarchs'
+# loyalty rather than here.
+cc_byz_west_tribute_taken = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = 0.05
+}
+
+# SEND THE STRATEGOS WEST. There is now a general in the west with troops who know him.
+cc_byz_west_strategos_sent = {
+	game_data = {
+		category = country
+	}
+	monthly_army_tradition = 0.3
+	army_maintenance_efficiency = 0.05
+}
+
+# THE RECALL SUMMONS. Issued, whatever came of it.
+cc_byz_west_recall_issued = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = 0.02
+}
+
+# A COMMUNE'S CHARTER. The first one is the precedent every other commune cites, which is why
+# the trade benefit is real and the control cost is real.
+cc_byz_west_charter_granted = {
+	game_data = {
+		category = country
+	}
+	global_trade_center_power = 0.08
+	global_merchant_power = 0.05
+	global_crown_estate_power = -0.05
+}
+
+# THE RECALL OBEYED. He came back. Not every emperor gets this.
+cc_byz_west_recall_obeyed = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = 0.05
+	country_cabinet_efficiency = 0.05
+	global_crown_estate_power = 0.08
+}
+
+# THE RECALL REFUSED. He did not, and every other governor in the empire now knows it can be
+# done. The largest single penalty in the submod and it is entirely the emperor's own doing:
+# the refusal chance reads off loyalty the player spent the previous decades moving.
+cc_byz_west_recall_refused = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = -0.08
+	global_crown_estate_power = -0.15
+	stability_decay = 0.003
+}
+
+# A PREFECTURE DISSOLVED. The territory is back under direct rule and everyone watched it
+# happen. Governing it directly costs what governing distant provinces directly always cost.
+cc_byz_west_prefecture_dissolved = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = 0.10
+	country_cabinet_efficiency = -0.05
+	global_monthly_prosperity = -0.002
+}
+
+
+# ---- The four endings. Permanent, one each, mutually exclusive by construction. ----
+#
+# Reabsorption pays best in raw numbers and is the LEAST interesting empire: it is only
+# reachable by keeping the west weak, which means never having got the manpower or the revenue
+# out of it. The diarchy pays slightly less on paper and is the outcome an emperor who actually
+# recovered the west can reach, because it is the only one that wants both counters high.
+
+# REABSORPTION. The prefectures dissolved into the empire and governed from the capital.
+cc_byz_west_end_reabsorbed = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = 0.15
+	country_cabinet_efficiency = 0.08
+	tax_income_efficiency = 0.08
+	global_bureaucracy_maintenance_efficiency = 0.10
+}
+
+# THE DIARCHY. A co-emperor in the west, formalised, and it holds.
+cc_byz_west_end_diarchy = {
+	game_data = {
+		category = country
+	}
+	global_manpower_modifier = 0.15
+	land_morale = 0.05
+	monthly_legitimacy = 0.05
+	global_trade_center_power = 0.10
+	diplomatic_reputation = 1
+}
+
+# ACCLAMATION. The western armies proclaimed their own emperor, which is how the empire
+# acquired a western half the first time.
+cc_byz_west_end_acclamation = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = -0.05
+	global_crown_estate_power = -0.15
+	diplomatic_reputation = -1
+	stability_decay = 0.002
+}
+
+# NEGLECT. Nobody governs the west, including the men nominally appointed to.
+cc_byz_west_end_neglect = {
+	game_data = {
+		category = country
+	}
+	global_monthly_prosperity = -0.002
+	country_cabinet_efficiency = -0.05
+	global_crown_estate_power = -0.05
+}
+
+
+# ---- Visible signals ----
+#
+# THESE EXIST BECAUSE THE RISING USED TO ARRIVE FROM NOWHERE.
+#
+# cc_byz_west.40 needs four conditions at once: the situation running, the consistory convened,
+# a prefect at loyalty -3 or worse, and western autonomy at 55. Two of those the player could
+# see. The other two they could not: nothing states what autonomy threshold matters, and
+# exarch loyalty is a country variable on a subject with no interface anywhere.
+#
+# So the three modifiers below are maintained live by the situation's on_monthly, added when
+# the condition holds and removed when it stops. They are the readout. Each carries a small
+# real effect rather than being a bare flag, because a modifier that does nothing is a status
+# icon wearing a modifier's clothes and players correctly learn to ignore those.
+
+# On the EMPEROR, while the west is close to the conditions for a rising. Deliberately worded
+# and named to be alarming: this is the one that has to make a player look at the west.
+cc_byz_west_restive = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = -0.03
+	global_crown_estate_power = -0.05
+}
+
+# On a PREFECT at loyalty -2 or worse. This is what tells the player WHICH of the four is the
+# problem, which the overlord-level warning cannot.
+#
+# The manpower line is the signal, not a gift: a disaffected prefecture raising men is the
+# thing that makes the rising possible, and the player should be able to see it happening in
+# the subject panel before it does.
+cc_byz_exarch_disaffected = {
+	game_data = {
+		category = country
+	}
+	global_manpower_modifier = 0.10
+	monthly_army_tradition = 0.2
+	global_monthly_prosperity = -0.002
+}
+
+# On a PREFECT at loyalty +2 or better. The mirror, so loyalty reads in both directions rather
+# than only appearing when something has already gone wrong.
+cc_byz_exarch_contented = {
+	game_data = {
+		category = country
+	}
+	global_monthly_prosperity = 0.002
+	tax_income_efficiency = 0.05
+}

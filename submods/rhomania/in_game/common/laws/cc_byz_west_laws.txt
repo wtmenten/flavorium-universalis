@@ -1,0 +1,385 @@
+﻿# The Praetorian Prefectures of the West: the four questions.
+#
+# These ARE the balance between the empire and its western provinces, expressed as things that
+# get voted on rather than as a number that drifts. Command, revenue, rite and succession are
+# the four powers a late-Roman prefecture actually exercised, and the difference between a
+# governed province and an independent one is entirely a matter of which way each of them
+# points.
+#
+# Voted in the consistory (parliament_types/cc_byz_consistorium.txt) once the emperor convenes
+# it. Vote weight is special_status_power: the emperor three, the senior exarch two, each other
+# exarch one, simple majority, ties fail. See the special statuses file for why that turns
+# against the emperor at three prefectures.
+#
+#
+# EACH SETTING FEEDS BOTH SOCIETAL AXES, through auto_modifiers in
+# auto_modifiers/cc_byz_the_west.txt rather than through modifiers here, because a law's
+# non_leader_modifier applies to the exarchates and the drift belongs on the EMPIRE.
+#
+# The Rite is the one that bites. A west that votes itself local usage is a west drifting
+# Latin, and it was the emperor's own reconquest that gave it the votes to do so. That is the
+# submod's whole argument arriving by the back door: recovering the west in Greek terms is
+# work, and the work is political rather than military.
+#
+# law_category = foreign_policy, which is the valid vanilla category. "diplomatic" is not one.
+
+
+############################ COMMAND ############################
+# Who the western armies obey. The oldest of the four questions and the one that decided it in
+# the sixth century: Ravenna became ungovernable from Constantinople the moment the exarch
+# commanded troops the emperor could not.
+cc_byz_west_command_law = {
+	type = international_organization
+	law_category = foreign_policy
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default. Officers appointed from the capital, rotated before they take root.
+	cc_byz_command_imperial = {
+		non_leader_modifier = {
+			global_manpower_modifier = -0.10
+			land_morale = -0.03
+		}
+		leader_modifier = {
+			country_cabinet_efficiency = 0.05
+			monthly_legitimacy = 0.02
+		}
+		# NOT a never-propose sentinel. The emperor must be able to table a motion to restore
+		# his own prerogative after the west has voted it away, and the lean value is what
+		# makes that his motion rather than anyone's: he scores +50 here, a resentful
+		# prefect -30.
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 5 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_keep_policy = {
+			subtract = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+	}
+
+	# The exarch commands. Effective, and the exarchs of Ravenna were generals precisely
+	# because Italy could not be defended by a committee in another continent.
+	cc_byz_command_exarchal = {
+		non_leader_modifier = {
+			global_manpower_modifier = 0.15
+			land_morale = 0.05
+			monthly_army_tradition = 0.3
+		}
+		leader_modifier = {
+			army_maintenance_efficiency = 0.10
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 20 }
+			add = cc_byz_west_lean_value
+		}
+	}
+
+	# Joint command. Works, slowly, and nobody is happy.
+	cc_byz_command_joint = {
+		non_leader_modifier = {
+			global_manpower_modifier = 0.05
+		}
+		leader_modifier = {
+			army_maintenance_efficiency = 0.05
+			country_cabinet_efficiency = 0.02
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 15 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 15 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_west_lean_value
+		}
+	}
+}
+
+
+############################ THE FISC ############################
+# Where the western revenue goes. An exarchate that remits everything cannot pay its own
+# garrisons, which is how Africa lost its frontier; one that retains everything is a state.
+cc_byz_west_fisc_law = {
+	type = international_organization
+	law_category = foreign_policy
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default. Everything to Constantinople, and the west asks for it back.
+	cc_byz_fisc_remitted = {
+		non_leader_modifier = {
+			global_monthly_prosperity = -0.002
+			tax_income_efficiency = -0.05
+		}
+		leader_modifier = {
+			tax_income_efficiency = 0.05
+		}
+		# NOT a never-propose sentinel. The emperor must be able to table a motion to restore
+		# his own prerogative after the west has voted it away, and the lean value is what
+		# makes that his motion rather than anyone's: he scores +50 here, a resentful
+		# prefect -30.
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 5 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_keep_policy = {
+			subtract = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+	}
+
+	# Split at the prefecture. The historical arrangement, and the workable one.
+	cc_byz_fisc_split = {
+		non_leader_modifier = {
+			global_monthly_prosperity = 0.002
+			tax_income_efficiency = 0.05
+		}
+		leader_modifier = {
+			global_bureaucracy_maintenance_efficiency = 0.05
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 25 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 25 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 15 }
+			add = cc_byz_west_lean_value
+		}
+	}
+
+	# Retained. The west pays for itself and owes the capital a courtesy.
+	cc_byz_fisc_retained = {
+		non_leader_modifier = {
+			global_monthly_prosperity = 0.004
+			tax_income_efficiency = 0.12
+			global_crown_estate_power = 0.10
+		}
+		leader_modifier = {
+			tax_income_efficiency = -0.08
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 40 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 40 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+	}
+}
+
+
+############################ THE RITE ############################
+# What is celebrated in the western churches. THE LOAD-BEARING LAW.
+#
+# The emperor's exarchates take his religion at creation (see cc_byz_create_exarchate_effect),
+# which closes vanilla's three papal Rome-return routes. This law is the west arguing about it
+# afterwards, and a west that carries local usage or the Latin rite drags the whole empire
+# toward Latinitas through the auto_modifiers.
+cc_byz_west_rite_law = {
+	type = international_organization
+	law_category = foreign_policy
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default. Greek in the western churches, which is what the exarch's own chapel does and
+	# what nobody outside it wants.
+	cc_byz_rite_greek = {
+		non_leader_modifier = {
+			tolerance_own = 0.5
+			global_monthly_prosperity = -0.002
+		}
+		leader_modifier = {
+			monthly_religious_influence = 0.05
+		}
+		# NOT a never-propose sentinel. The emperor must be able to table a motion to restore
+		# his own prerogative after the west has voted it away, and the lean value is what
+		# makes that his motion rather than anyone's: he scores +50 here, a resentful
+		# prefect -30.
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 5 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_keep_policy = {
+			subtract = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+	}
+
+	# Local usage tolerated. The pragmatic answer, and the slope.
+	cc_byz_rite_local = {
+		non_leader_modifier = {
+			global_monthly_prosperity = 0.003
+			global_estate_satisfaction_from_legitimacy = 0.05
+		}
+		leader_modifier = {
+			monthly_religious_influence = -0.02
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 20 }
+			add = cc_byz_west_lean_value
+		}
+	}
+
+	# The Latin rite, openly. The west has decided which church it belongs to.
+	cc_byz_rite_latin = {
+		non_leader_modifier = {
+			global_monthly_prosperity = 0.005
+			tolerance_own = -0.5
+			global_estate_satisfaction_from_legitimacy = 0.08
+		}
+		leader_modifier = {
+			monthly_religious_influence = -0.06
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 35 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 35 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 25 }
+			add = cc_byz_west_lean_value
+		}
+	}
+}
+
+
+############################ SUCCESSION ############################
+# How a dead exarch is replaced. The question that turns an office into a family.
+cc_byz_west_succession_law = {
+	type = international_organization
+	law_category = foreign_policy
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	allow = { always = yes }
+	locked = {}
+
+	# Default. Appointed from the capital, which is what makes it an office.
+	cc_byz_succession_appointed = {
+		non_leader_modifier = {
+			monthly_legitimacy = -0.02
+		}
+		leader_modifier = {
+			monthly_legitimacy = 0.03
+			country_cabinet_efficiency = 0.03
+		}
+		# NOT a never-propose sentinel. The emperor must be able to table a motion to restore
+		# his own prerogative after the west has voted it away, and the lean value is what
+		# makes that his motion rather than anyone's: he scores +50 here, a resentful
+		# prefect -30.
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 5 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+		wants_keep_policy = {
+			subtract = { desc = "CC_BYZ_WEST_BASE"  value = 10 }
+			add = cc_byz_imperial_lean_value
+		}
+	}
+
+	# Acclaimed locally. The army and the notables choose, and the emperor confirms.
+	cc_byz_succession_acclaimed = {
+		non_leader_modifier = {
+			monthly_legitimacy = 0.03
+			land_morale = 0.03
+		}
+		leader_modifier = {
+			monthly_legitimacy = -0.02
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 30 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 20 }
+			add = cc_byz_west_lean_value
+		}
+	}
+
+	# Hereditary. The office has become a family's property, and the empire has a dynasty in
+	# the west that did not come from the palace.
+	cc_byz_succession_hereditary = {
+		non_leader_modifier = {
+			monthly_legitimacy = 0.06
+			global_monthly_prosperity = 0.003
+			nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+		}
+		leader_modifier = {
+			monthly_legitimacy = -0.04
+			global_crown_estate_power = -0.05
+		}
+		wants_propose_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 45 }
+			add = cc_byz_west_lean_value
+		}
+		wants_this_policy_bias = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 45 }
+			add = cc_byz_west_lean_value
+		}
+		wants_keep_policy = {
+			add = { desc = "CC_BYZ_WEST_BASE"  value = 35 }
+			add = cc_byz_west_lean_value
+		}
+	}
+}

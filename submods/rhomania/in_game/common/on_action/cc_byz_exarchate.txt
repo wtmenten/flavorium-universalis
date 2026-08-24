@@ -27,20 +27,48 @@ cc_byz_on_yearly_exarchate = {
 	}
 }
 
-# The prompt that offers an exarchate in the first place. Separate from the list above
-# because that one requires an exarchate to already exist and this one requires the opposite.
-# cc_byz_exarch.10 is fire_only_once and carries its own advance, capital and territory gates,
-# so the weight here only controls how soon after qualifying it appears.
+# The prompt that offers a prefecture.
+#
+# THIS USED TO REQUIRE THAT NO EXARCHATE EXISTED ANYWHERE, which was correct while Italy was
+# the only possibility and is wrong four ways over now. An emperor who seated Ravenna in 1400
+# would never have been offered Carthage, Spania or the Gauls at all: the pulse would have
+# stopped calling the event and the event's own fire_only_once would have finished the job.
+#
+# The guard is now per-region and lives in cc_byz_prefecture_open_any_trigger, and
+# cc_byz_exarch.10 is no longer fire_only_once, so this fires again each time a NEW prefecture
+# becomes seatable and never for one already seated.
 cc_byz_on_yearly_exarch_prompt = {
 	trigger = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		has_or_had_tag = BYZ
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
-		NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
+		cc_byz_prefecture_open_any_trigger = yes
 	}
 	random_events = {
 		10 = 0
 		10 = cc_byz_exarch.10
+	}
+}
+
+# The three regional threads. Each is gated on its own prefecture existing, so an emperor who
+# only ever holds Italy never sees any of them and an emperor who holds all four sees all three
+# running at once alongside the shared friction and demand arcs.
+#
+# Italy is deliberately absent: it already has cc_byz_papal.1 and cc_byz_italy.1 in the list
+# above, and giving the oldest prefecture a fourth thread purely because it was written first
+# would be the wrong kind of depth.
+cc_byz_on_yearly_west_regions = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { has_variable = cc_byz_is_exarchate }
+	}
+	random_events = {
+		100 = 0
+		10 = cc_byz_prov.1
+		10 = cc_byz_prov.10
+		10 = cc_byz_prov.20
 	}
 }
 
@@ -61,5 +89,38 @@ cc_byz_on_yearly_papal_guard = {
 		10 = 0
 		10 = cc_byz_papal.10
 		10 = cc_byz_papal.11
+	}
+}
+
+
+# The deadline warning. Separate from the regional pulse because it must fire for an emperor
+# whose prefectures are all in Italy, and because its own trigger already restricts it to one
+# age window and one firing.
+cc_byz_on_yearly_west_deadline = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		is_situation_active = situation:cc_byz_the_west
+	}
+	random_events = {
+		4 = 0
+		10 = cc_byz_west.80
+	}
+}
+
+
+# The western civil war flashpoint. Its own trigger carries the real gates (a convened
+# consistory, a prefect at loyalty -3 or worse, autonomy at 55) and fire_only_once, so the
+# weight here only decides how soon after qualifying the rising comes.
+cc_byz_on_yearly_west_rising = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		is_situation_active = situation:cc_byz_the_west
+		NOT = { has_variable = cc_byz_mem_west_civil_war }
+	}
+	random_events = {
+		6 = 0
+		10 = cc_byz_west.40
 	}
 }

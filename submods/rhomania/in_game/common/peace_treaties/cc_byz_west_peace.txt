@@ -1,0 +1,96 @@
+﻿# Reducing a prefecture: the peace treaty that ends the western civil war.
+#
+# The emperor is not conquering a country. He is revoking an appointment, and the fiction the
+# whole submod runs on is that the exarchates never stopped being administrative divisions of
+# the empire. That fiction is what this treaty prices in: fifteen warscore for the entire
+# country, where an ordinary annexation of a state that size would cost several times as much
+# and generate a coalition.
+#
+#
+# WHY FIFTEEN.
+#
+# Flat, and deliberately not scaled by population the way vanilla's claim_timurid_empire is
+# (it adds total_population * 0.009 on top of a base of 5, so a large loser gets expensive).
+# Scaling would make the richest prefecture the hardest to bring back, which is exactly
+# backwards: a prefecture is expensive to hold precisely because it is large and productive,
+# and an emperor who has just won the war should not be told he cannot afford to finish it.
+#
+# Fifteen also leaves room under a normal war's warscore for a second treaty, so an emperor
+# fighting two risen prefectures at once can reduce both in one peace if he won convincingly.
+#
+#
+# NO ANTAGONISM. This treaty does nothing about that itself, because antagonism is generated
+# engine-side by the annexation. The lever is on the CB
+# (antagonism_reduction_per_warworth_defender on cc_byz_cb_reduce_the_prefectures), which is
+# documented in casus_belli/readme.txt:23 and used by no vanilla CB, so it is UNVERIFIED. If it
+# turns out not to suppress antagonism, the fallback is to add a set_aggressive_expansion call
+# to the effect below: that effect is registered in effect_localization/country_effects.txt:630
+# but appears nowhere in vanilla script, so it is equally untested and is not the first choice.
+#
+# potential runs with scope:winner, scope:loser and scope:war (peace_treaties/readme.txt:3).
+
+cc_byz_reduce_prefecture = {
+
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 15
+		}
+	}
+
+	potential = {
+		scope:war = {
+			casus_belli ?= casus_belli:cc_byz_cb_reduce_the_prefectures
+		}
+		scope:loser = {
+			has_variable = cc_byz_is_exarchate
+		}
+	}
+
+	allow = {
+		scope:winner = {
+			has_or_had_tag = BYZ
+		}
+	}
+
+	effect = {
+		custom_tooltip = {
+			text = cc_byz_reduce_prefecture_tt
+
+			# Clear the exarchate marker BEFORE annexing, so nothing downstream sees a
+			# half-dissolved prefecture. The situation's can_end and every action's potential
+			# read this variable, and an annexed country that still claims to be an exarchate
+			# would leave the consistory holding a seat for a country that no longer exists.
+			scope:loser = {
+				remove_variable = cc_byz_is_exarchate
+			}
+
+			annex_country = {
+				country = scope:loser
+			}
+		}
+
+		# The other prefects watched the emperor dissolve one of their own by force. Whether
+		# that frightens them into obedience or convinces them they are next is not something
+		# the emperor gets to decide, and the friction thread reads this either way.
+		scope:winner = {
+			set_variable = { name = cc_byz_mem_west_reduced_by_force  value = yes }
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+			}
+
+			save_scope_value_as = { name = cc_byz_west_delta  value = 15 }
+			cc_byz_west_grip_up_effect = yes
+		}
+	}
+
+	ai_desire = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 40
+		}
+	}
+}

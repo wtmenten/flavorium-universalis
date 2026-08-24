@@ -40,6 +40,16 @@ on_bankruptcy = {
 	on_actions = { cc_byz_on_bankruptcy }
 }
 
+# monthly_country_pulse. Vanilla's copy (country_monthly.txt:1) carries a long on_actions list
+# and a random_events block, so this is chained rather than redefined, exactly like the others.
+#
+# ONLY ONE THING HANGS OFF THE MONTHLY PULSE, and it is deliberate that it stays that way. This
+# runs for every country every month; the sub-action's own trigger narrows it to Byzantium
+# immediately, but anything added here is paid for twelve times as often as the yearly pulse.
+monthly_country_pulse = {
+	on_actions = { cc_byz_on_monthly_bureau_funding }
+}
+
 yearly_country_pulse = {
 	on_actions = {
 		cc_byz_on_yearly_bureaucracy
@@ -47,6 +57,9 @@ yearly_country_pulse = {
 		cc_byz_on_yearly_union
 		cc_byz_on_yearly_exarchate
 		cc_byz_on_yearly_exarch_prompt
+		cc_byz_on_yearly_west_regions
+		cc_byz_on_yearly_west_deadline
+		cc_byz_on_yearly_west_rising
 		cc_byz_on_yearly_papal_guard
 		cc_byz_on_yearly_strain_drift
 		cc_byz_on_yearly_strain_events

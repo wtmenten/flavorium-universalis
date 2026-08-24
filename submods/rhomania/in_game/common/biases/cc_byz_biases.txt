@@ -140,3 +140,27 @@ cc_byz_abandoned_the_east = {
 	min = -100
 	yearly_decay = 1
 }
+
+# ---- Required by the IO system ----
+#
+# EVERY international_organization_type NEEDS ONE OF THESE OR IT FAILS TO LOAD:
+#
+#   [international_organization_type.cpp:1845]: International Organization Type needs an
+#   opinion of other members, add a value for io_opinion_<type> in /biases/
+#
+# It is the member-to-member opinion bonus, and vanilla defines one for all thirty-odd of its
+# IO types. The main mod hit the same error for all four of its own and answers it in
+# in_game/common/biases/cc_biases.txt:237-253, which is the shape copied here.
+#
+# The value is deliberately LOW compared with the main mod's blocs (15 to 20 there). Those are
+# alliances of sovereigns who chose each other. This is an administrative body whose members
+# were appointed separately, at different times, to govern provinces a thousand miles apart,
+# and whose only shared interest is the one the consistory gives them. Five is the warmth of
+# colleagues who have met.
+#
+# yearly_decay is omitted on purpose, unlike the bloc biases. Prefectural collegiality does not
+# fade while the prefectures exist; it ends when they do.
+io_opinion_cc_byz_prefectures = {
+	value = 5
+	opinion_modifier = yes
+}

@@ -1,0 +1,252 @@
+﻿# The four prefectures: availability, occupancy, and "where is this exarch".
+#
+# WHY THESE ARE SCRIPTED TRIGGERS. The same four-way region test appears in the appoint
+# interaction, the prompt event, the friction thread and the demand thread. Written inline it
+# is roughly twenty lines each time, and the failure mode of copying it is silent: a branch
+# that names iberia_region but tests maghreb_region reads correctly and is simply always false.
+#
+# capital.region = region:X is a STATIC dot-chain comparison against a fixed value, which is
+# the safe form. The dynamic form CLAUDE.md forbids (root.culture.culture_group) is parsed as
+# an event target link and fails.
+
+
+# ---- Is a prefecture seat open in region X? Country scope, the overlord. ----
+#
+# Two conditions: enough territory to be worth governing, and no exarchate already seated there.
+# The 8-location floor and the 75% area threshold both match the appoint interaction, so the
+# prompt cannot offer something the interaction would refuse.
+
+cc_byz_prefecture_open_italy_trigger = {
+	any_owned_location = {
+		count >= 8
+		region = region:italy_region
+	}
+	NOT = {
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			capital.region = region:italy_region
+		}
+	}
+	region:italy_region = {
+		any_area_in_region = {
+			any_location_in_area = {
+				percent >= 0.75
+				owner ?= root
+			}
+		}
+	}
+}
+
+cc_byz_prefecture_open_africa_trigger = {
+	any_owned_location = {
+		count >= 6
+		region = region:maghreb_region
+	}
+	NOT = {
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			capital.region = region:maghreb_region
+		}
+	}
+	region:maghreb_region = {
+		any_area_in_region = {
+			any_location_in_area = {
+				percent >= 0.75
+				owner ?= root
+			}
+		}
+	}
+}
+
+# Spania was a narrow coastal strip and is deliberately the cheapest to qualify for. It is also
+# the one that is hardest to keep, which the Hispanian thread is about.
+cc_byz_prefecture_open_spania_trigger = {
+	any_owned_location = {
+		count >= 4
+		region = region:iberia_region
+	}
+	NOT = {
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			capital.region = region:iberia_region
+		}
+	}
+	region:iberia_region = {
+		any_area_in_region = {
+			any_location_in_area = {
+				percent >= 0.75
+				owner ?= root
+			}
+		}
+	}
+}
+
+# Gaul is the most demanding, because no eastern emperor ever held any of it and a toehold on
+# the Rhone is not a prefecture.
+cc_byz_prefecture_open_gaul_trigger = {
+	any_owned_location = {
+		count >= 10
+		region = region:france_region
+	}
+	NOT = {
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			capital.region = region:france_region
+		}
+	}
+	region:france_region = {
+		any_area_in_region = {
+			any_location_in_area = {
+				percent >= 0.75
+				owner ?= root
+			}
+		}
+	}
+}
+
+# Any of the four. Used by the prompt event's trigger.
+cc_byz_prefecture_open_any_trigger = {
+	OR = {
+		cc_byz_prefecture_open_italy_trigger = yes
+		cc_byz_prefecture_open_africa_trigger = yes
+		cc_byz_prefecture_open_spania_trigger = yes
+		cc_byz_prefecture_open_gaul_trigger = yes
+	}
+}
+
+
+# ---- Which prefecture is THIS exarchate? Country scope, the exarchate. ----
+#
+# The friction and demand threads used to test region:italy_region directly, which was correct
+# while Italy was the only possibility and quietly wrong the moment Africa became creatable
+# (the area picker has permitted maghreb since the first release). These let a shared event ask
+# where it is happening without naming Italy.
+
+cc_byz_exarch_in_italy_trigger = {
+	has_variable = cc_byz_is_exarchate
+	capital.region = region:italy_region
+}
+
+cc_byz_exarch_in_africa_trigger = {
+	has_variable = cc_byz_is_exarchate
+	capital.region = region:maghreb_region
+}
+
+cc_byz_exarch_in_spania_trigger = {
+	has_variable = cc_byz_is_exarchate
+	capital.region = region:iberia_region
+}
+
+cc_byz_exarch_in_gaul_trigger = {
+	has_variable = cc_byz_is_exarchate
+	capital.region = region:france_region
+}
+
+
+# ---- "Ground the exarch could plausibly ask for" ----
+#
+# The demand thread is about an exarch wanting more of the province he governs. It used to test
+# region:italy_region directly in five places, which asked whether the EMPEROR held Italian
+# ground regardless of where the exarch actually sat. An African exarch would have demanded
+# Italian towns.
+#
+# Two forms, because the two contexts differ in what is in scope:
+#
+#   _trigger    country scope, no saved exarch yet. Used in event triggers, which run before
+#               immediate has had a chance to save anything.
+#   _location_  location scope, WITH scope:cc_byz_exarch saved. Used inside the iterators that
+#               pick the specific ground.
+#
+# Both are ORs of static AND pairs rather than a dynamic comparison against
+# scope:cc_byz_exarch.capital.region. The dynamic dot-chain form is parsed as an event target
+# link and fails (CLAUDE.md), and here it would fail by matching nothing, so the demand thread
+# would simply go quiet rather than error.
+
+cc_byz_overlord_holds_prefecture_ground_trigger = {
+	OR = {
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:italy_region
+			}
+			any_owned_location = { count >= 3  region = region:italy_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:maghreb_region
+			}
+			any_owned_location = { count >= 3  region = region:maghreb_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:iberia_region
+			}
+			any_owned_location = { count >= 3  region = region:iberia_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:france_region
+			}
+			any_owned_location = { count >= 3  region = region:france_region }
+		}
+	}
+}
+
+# The seizure variant only needs one location to be worth taking.
+cc_byz_overlord_holds_any_prefecture_ground_trigger = {
+	OR = {
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:italy_region
+			}
+			any_owned_location = { count >= 1  region = region:italy_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:maghreb_region
+			}
+			any_owned_location = { count >= 1  region = region:maghreb_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:iberia_region
+			}
+			any_owned_location = { count >= 1  region = region:iberia_region }
+		}
+		AND = {
+			any_subject = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:france_region
+			}
+			any_owned_location = { count >= 1  region = region:france_region }
+		}
+	}
+}
+
+# Location scope. Requires scope:cc_byz_exarch to be saved.
+cc_byz_location_in_exarch_region_trigger = {
+	OR = {
+		AND = {
+			region = region:italy_region
+			scope:cc_byz_exarch ?= { cc_byz_exarch_in_italy_trigger = yes }
+		}
+		AND = {
+			region = region:maghreb_region
+			scope:cc_byz_exarch ?= { cc_byz_exarch_in_africa_trigger = yes }
+		}
+		AND = {
+			region = region:iberia_region
+			scope:cc_byz_exarch ?= { cc_byz_exarch_in_spania_trigger = yes }
+		}
+		AND = {
+			region = region:france_region
+			scope:cc_byz_exarch ?= { cc_byz_exarch_in_gaul_trigger = yes }
+		}
+	}
+}

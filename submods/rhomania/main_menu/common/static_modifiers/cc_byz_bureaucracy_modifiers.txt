@@ -34,3 +34,44 @@ cc_byz_retrenched_bureaus = {
 	global_bureaucracy_maintenance_efficiency = 0.2
 	tax_income_efficiency = 0.03
 }
+
+# ---- The underfunded-bureau rework ----
+#
+# The three options on cc_byz_bureaucracy.20 used to be a gold cost, a venality point, and a
+# slightly smaller gold cost. Nothing lasted, so nothing was a decision. These three are what
+# each route actually leaves behind, and two of them are read again by the delayed follow-ups
+# (.21 and .61) years after the player chose.
+
+# .20a, .40a, .60c, .61a. The arrears cleared. Slow to earn and the only route in the thread
+# that reduces venality, which is why it costs five to six years of a small realm's income.
+cc_byz_bureaus_paid_in_full = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = 0.15
+	country_cabinet_efficiency = 0.08
+	tax_income_efficiency = 0.05
+}
+
+# .20b, .60a. The office found its own income and the fees are becoming the custom. Not
+# catastrophic on its own; the damage is that it schedules the follow-up.
+cc_byz_fees_became_custom = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = -0.10
+	global_crown_estate_power = -0.08
+	peasants_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+}
+
+# .21b, .40c, .61b. PERMANENT. The office belongs to somebody else now and the crown is a
+# rentier of its own administration. The tax line is real: farming an office does pay.
+cc_byz_office_farmed_out = {
+	game_data = {
+		category = country
+	}
+	tax_income_efficiency = 0.05
+	global_bureaucracy_maintenance_efficiency = -0.20
+	global_crown_estate_power = -0.15
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+}

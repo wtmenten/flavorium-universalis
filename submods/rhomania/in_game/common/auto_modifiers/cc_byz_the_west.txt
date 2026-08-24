@@ -1,0 +1,181 @@
+﻿# The West feeding BOTH societal axes.
+#
+# This is the file that connects the exarchates to the submod's central argument.
+#
+# The four western laws and the two situation counters push the EMPIRE, not the exarchates.
+# That is why the drift lives here rather than in the laws' non_leader_modifier blocks: a law's
+# non_leader_modifier applies to the members, and the members are the prefectures. What we want
+# to model is the effect on Constantinople of governing the west one way rather than another.
+#
+#
+# WHY THE WEST DRAGS THE EMPIRE LATIN.
+#
+# An autonomous west pushes cc_dynatoi (provincial magnates deciding for themselves) AND
+# latinization, because the western provinces are where Latin usages actually live. The emperor
+# does not choose this. He chooses to recover Italy, Africa, Spania and Gaul, and the recovery
+# brings four provinces full of Latin-rite clergy, Latin law and Latin-speaking notables into a
+# body that votes.
+#
+# So the Renovatio-without-relocation path has a real cost, and defending the Greek character of
+# the empire while holding the west is work rather than a default. That is the tension the
+# submod exists to create: vanilla makes re-Latinisation the mechanically rewarded path, and
+# this makes it the mechanically NATURAL one that must be actively resisted.
+#
+# An empire that keeps its grip pushes cc_taxis and hellenization, for the mirror reason.
+#
+#
+# EVERY ENTRY GATES ON has_societal_value FIRST. Countries without the value error on the
+# monthly_towards_* modifiers, exactly as vanilla's byzantium.txt guards each of its own.
+#
+# The situation-variable reads are guarded a second way: is_situation_active before any
+# var: read, because a potential_trigger is evaluated for every country every tick and reading
+# a variable on a situation that is not running is the error class documented in
+# docs/scripting-gotchas.md.
+
+
+#############################################
+# The counters
+#############################################
+
+# A west that decides for itself. The magnates win twice over: the exarchs are magnates, and
+# the men they rely on locally are magnates too.
+cc_byz_west_autonomous = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		is_situation_active = situation:cc_byz_the_west
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_western_autonomy }
+				var:cc_byz_western_autonomy >= 50
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
+}
+
+# And the same west drags the empire's character with it.
+cc_byz_west_latin_drift = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		is_situation_active = situation:cc_byz_the_west
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_western_autonomy }
+				var:cc_byz_western_autonomy >= 50
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	monthly_towards_latinization = societal_value_tiny_monthly_move
+}
+
+# An empire that actually governs the west governs it through offices.
+cc_byz_west_gripped = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		is_situation_active = situation:cc_byz_the_west
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_imperial_grip }
+				var:cc_byz_imperial_grip >= 60
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+}
+
+cc_byz_west_greek_hold = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		is_situation_active = situation:cc_byz_the_west
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_imperial_grip }
+				var:cc_byz_imperial_grip >= 60
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	monthly_towards_hellenization = societal_value_tiny_monthly_move
+}
+
+
+#############################################
+# The laws
+#############################################
+#
+# THE RITE IS THE ONE THAT BITES, and it is the only law whose drift is larger than tiny. A
+# west celebrating the Latin rite under an Orthodox emperor is not a preference, it is a fact
+# about what the empire has become.
+
+cc_byz_west_law_rite_local = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures = {
+			international_organization_has_policy = policy:cc_byz_rite_local
+		}
+	}
+
+	monthly_towards_latinization = societal_value_tiny_monthly_move
+}
+
+cc_byz_west_law_rite_latin = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures = {
+			international_organization_has_policy = policy:cc_byz_rite_latin
+		}
+	}
+
+	monthly_towards_latinization = societal_value_minor_monthly_move
+}
+
+# Command in the exarchs' hands is the Dynatoi answer stated militarily, which is the same
+# argument the tagmata-or-pronoia mission fork makes at the level of the whole empire.
+cc_byz_west_law_command_exarchal = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures = {
+			international_organization_has_policy = policy:cc_byz_command_exarchal
+		}
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
+}
+
+# A hereditary prefecture is a family holding an office, which is the definition of the thing
+# the Taxis pole exists to prevent.
+cc_byz_west_law_hereditary = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures = {
+			international_organization_has_policy = policy:cc_byz_succession_hereditary
+		}
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+
+# Revenue remitted in full is the capital reaching into the province every year, which is what
+# an imperial bureaucracy is for.
+cc_byz_west_law_fisc_remitted = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures = {
+			international_organization_has_policy = policy:cc_byz_fisc_remitted
+		}
+	}
+
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+}

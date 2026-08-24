@@ -16,8 +16,57 @@
 # mainland CB by the papal thread once the exarchate's position in Italy is contested. The
 # chains are what open the map, which is the point of writing the chains.
 
+# The old Balkan frontier. THE EARLIEST CB IN THE SUBMOD.
+#
+# Granted by the Varangian Guard mission task, which hangs directly off the walls root, so a
+# player can hold this within the opening years. That is the point: everything else in this file
+# unlocks off a theatre or an exarchate, decades in, and the empire's actual 1337 problem is the
+# Serbian and Bulgarian frontier rather than Italy.
+#
+# NO EXARCHATE CLAUSE and no advance requirement, unlike the other three. The claim here is not
+# derived from Rome at all, it is the plain territorial one the empire never renounced, so it
+# rests on nothing that can be lost.
+#
+# speed = 8, the fastest of the four. A short war on the empire's own border against a neighbour
+# it shares a frontier with should not take as long to justify as a naval expedition to Iberia.
+cc_byz_cb_reclaim_the_balkans = {
+	create_visible = {
+		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_reclaim_the_balkans }
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_balkan_frontier_geography
+		}
+	}
+	declare_enabled = {
+		scope:target = {
+			is_subject = no
+			owns_or_has_subject_in = scripted_geography:cc_byz_balkan_frontier_geography
+		}
+	}
+	create_enabled = {
+		OR = {
+			is_neighbor_of_country_or_across_one_seazone = scope:target
+			scope:target = {
+				any_subject = {
+					is_neighbor_of_country_or_across_one_seazone = root
+				}
+			}
+			any_subject = {
+				is_neighbor_of_country_or_across_one_seazone = scope:target
+			}
+		}
+	}
+	speed = 8
+	war_goal_type = superiority_restore_roman_borders
+}
+
 # The Latin islands. Narrow, cheap and fast, because these are raids on a scattered set of
 # holdings rather than a war of conquest against a state.
+#
+# GRANTED BY THE MERCHANT FLEET TASK, which sits three tasks from the start (bureaus root ->
+# Galata -> Merchant Fleet). It used to be granted by an optional spur gated on 30 researched
+# advances, which put a CB against Rhodes and Chios most of a campaign away from the point at
+# which the player cares about them.
 cc_byz_cb_recover_the_islands = {
 	create_visible = {
 		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands }
@@ -132,4 +181,70 @@ cc_byz_cb_indian_ocean = {
 	}
 	speed = 20
 	war_goal_type = superiority_restore_roman_borders
+}
+
+
+# THE CIVIL WAR. The emperor against his own prefects.
+#
+# Granted by cc_byz_west.40, the flashpoint event, and by nothing else. This is not a CB an
+# emperor keeps in his pocket: it exists only once the west has actually risen.
+#
+#
+# allow_wars_on_own_subjects = yes IS THE WHOLE THING.
+#
+# Per casus_belli/readme.txt:25 the flag is "for CBs which are supposed to be usable against
+# your own subject countries", and vanilla uses it in exactly one place: cb_disloyal_subject,
+# where an overlord makes war on a subject whose loyalty has collapsed. That is precisely this
+# war, so the structure is copied from there including war_goal_type = take_capital.
+#
+# The exarchates REMAIN SUBJECTS while it is fought. That is what makes it a civil war rather
+# than a war of reconquest against foreign states: the prefects have not repudiated the empire,
+# they are fighting over who governs it, and every one of them still holds an imperial
+# appointment while doing so.
+#
+#
+# ANTAGONISM. antagonism_reduction_per_warworth_defender is the documented lever
+# (readme.txt:23) and NO VANILLA CB USES IT, so the value here is a guess at the right
+# magnitude and needs checking in game. The intent is that reducing a prefecture the emperor
+# himself created generates no coalition pressure: nobody in Europe regards the Exarchate of
+# Ravenna as a country whose destruction concerns them, because it was an administrative
+# division of Byzantium eighty years ago and everyone knows it.
+cc_byz_cb_reduce_the_prefectures = {
+	create_visible = {
+		has_unlocked_casus_belli_trigger = { type = cc_byz_cb_reduce_the_prefectures }
+		is_subject = no
+		scope:target = {
+			has_variable = cc_byz_is_exarchate
+			overlord ?= root
+		}
+	}
+
+	create_enabled = {
+		scope:target = {
+			has_variable = cc_byz_is_exarchate
+			overlord ?= root
+		}
+	}
+
+	declare_enabled = {
+		is_subject = no
+		scope:target = {
+			has_variable = cc_byz_is_exarchate
+			overlord ?= root
+		}
+	}
+
+	allow_wars_on_own_subjects = yes
+
+	# A civil war does not end because both sides got bored.
+	allow_white_peace = no
+
+	# Fast. The empire does not need three years to justify disciplining its own governors.
+	speed = 35
+
+	antagonism_reduction_per_warworth_defender = {
+		value = 100
+	}
+
+	war_goal_type = take_capital
 }

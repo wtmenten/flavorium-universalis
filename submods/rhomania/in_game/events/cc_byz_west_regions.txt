@@ -1,0 +1,662 @@
+﻿namespace = cc_byz_prov
+
+# The three new prefectures, each failing in its own way.
+#
+#   .1  .2  .3     AFRICA     the Moorish frontier
+#   .10 .11 .12    SPANIA     the narrow province
+#   .20 .21 .22    GAUL       the Rhone command
+#
+# Italy is not here. It already has two full threads (cc_byz_papal.txt and cc_byz_italy.txt)
+# plus the shared friction and demand arcs, and adding a third would make the oldest prefecture
+# the one with the most events for no reason other than that it was written first.
+#
+#
+# WHAT THESE ARE FOR. The shared threads in cc_byz_exarch_friction.txt and
+# cc_byz_exarch_demands.txt now run region-neutral, so an African exarch gets the same first
+# independent decision, the same recall summons and the same unauthorised succession as an
+# Italian one. That is correct: those are things governors do everywhere. What it cannot give
+# is why Africa is a different problem from Italy, and these are that.
+#
+# Each is three events, gated on its own region through the cc_byz_exarch_in_*_trigger scripted
+# triggers, and each ends somewhere the other two cannot reach.
+#
+#
+# HISTORICAL POSITION.
+#
+# Only Ravenna and Carthage were ever exarchates. Spania was governed by a magister militum and
+# never had one; Gaul was never recovered by the eastern empire at all. The PREFECTURES of
+# Italy, Africa and Gaul, and the Spanish diocese under Gaul, are real late-Roman administrative
+# units, which is why the four countries are named for those rather than for exarchates that
+# mostly did not exist. The Gallic thread in particular is counterfactual and is written as one:
+# it is about a Provencal aristocracy that never stopped being Roman being told it has been
+# recovered.
+#
+# Memory variables, all set-and-read:
+#   cc_byz_mem_africa_limes / _client / _coast
+#   cc_byz_mem_spania_traded / _station / _latin
+#   cc_byz_mem_gaul_march / _protectorate / _absorbed
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum, 0..300.
+
+
+#############################################
+# AFRICA .1  The limes
+#############################################
+cc_byz_prov.1 = {
+	type = country_event
+	title = cc_byz_prov.1.title
+	desc = cc_byz_prov.1.desc
+	outcome = negative
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { cc_byz_exarch_in_africa_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { cc_byz_exarch_in_africa_trigger = yes }
+			save_scope_as = cc_byz_africa_exarch
+		}
+	}
+
+	# Pay the frontier. What Rome did, for as long as Rome could afford it.
+	option = {
+		name = cc_byz_prov.1.a
+		ai_chance = { base = 40 }
+
+		change_gold_effect = { scale = -4 }
+		set_variable = { name = cc_byz_mem_africa_limes  value = yes }
+		scope:cc_byz_africa_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		trigger_event_silently = { id = cc_byz_prov.2  years = 6 }
+	}
+
+	# Buy a confederation instead of fighting it. Cheaper, and it makes somebody else's
+	# authority the thing holding the frontier.
+	option = {
+		name = cc_byz_prov.1.b
+		ai_chance = { base = 35 }
+		trigger = {
+			ruler ?= { dip >= 65 }
+		}
+
+		change_gold_effect = { scale = -2 }
+		set_variable = { name = cc_byz_mem_africa_client  value = yes }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+		cc_byz_west_autonomy_up_effect = yes
+		trigger_event_silently = { id = cc_byz_prov.2  years = 6 }
+	}
+
+	# Hold the coast and let the interior go. Honest, and it is what happened.
+	option = {
+		name = cc_byz_prov.1.c
+		ai_chance = { base = 25 }
+
+		set_variable = { name = cc_byz_mem_africa_coast  value = yes }
+		change_variable = { name = cc_byz_strain  add = -1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 4 }
+		cc_byz_west_grip_up_effect = yes
+		trigger_event_silently = { id = cc_byz_prov.2  years = 6 }
+	}
+}
+
+
+#############################################
+# AFRICA .2  The bishop in the interior
+#############################################
+cc_byz_prov.2 = {
+	type = country_event
+	title = cc_byz_prov.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_africa_coast }
+				desc = cc_byz_prov.2.desc_coast
+			}
+			desc = cc_byz_prov.2.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_africa_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		random_subject = {
+			limit = { cc_byz_exarch_in_africa_trigger = yes }
+			save_scope_as = cc_byz_africa_exarch
+		}
+	}
+
+	# Condemn it, which is what every emperor did and what never once worked.
+	option = {
+		name = cc_byz_prov.2.a
+		ai_chance = { base = 45 }
+
+		add_religious_influence = 15
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		scope:cc_byz_africa_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		trigger_event_silently = { id = cc_byz_prov.3  years = 8 }
+	}
+
+	# Leave them alone. The province is quieter and the patriarch is not.
+	option = {
+		name = cc_byz_prov.2.b
+		ai_chance = { base = 55 }
+
+		add_religious_influence = -15
+		save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+		cc_byz_west_autonomy_up_effect = yes
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		trigger_event_silently = { id = cc_byz_prov.3  years = 8 }
+	}
+}
+
+
+#############################################
+# AFRICA .3  The arrears
+#############################################
+cc_byz_prov.3 = {
+	type = country_event
+	title = cc_byz_prov.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_africa_limes }
+				desc = cc_byz_prov.3.desc_paid
+			}
+			desc = cc_byz_prov.3.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_africa_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = armed
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { cc_byz_exarch_in_africa_trigger = yes }
+			save_scope_as = cc_byz_africa_exarch
+		}
+
+		# THE HIDDEN OUTCOME. Whether the garrison waits is not the emperor's decision, and
+		# an emperor who paid the limes in .1 has bought himself better odds here without
+		# being told that was what he was buying.
+		random_list = {
+			50 = {
+				modifier = {
+					factor = 0.3
+					has_variable = cc_byz_mem_africa_limes
+				}
+				modifier = {
+					factor = 2
+					is_during_bankruptcy = yes
+				}
+				set_variable = { name = cc_byz_mem_africa_mutiny  value = yes }
+				change_variable = { name = cc_byz_strain  add = 1 }
+				clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+			}
+			50 = { }
+		}
+	}
+
+	option = {
+		name = cc_byz_prov.3.a
+		trigger = { has_variable = cc_byz_mem_africa_mutiny }
+
+		change_gold_effect = { scale = -5 }
+		add_manpower = { value = monthly_manpower  multiply = -6 }
+		scope:cc_byz_africa_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+		cc_byz_west_autonomy_up_effect = yes
+	}
+
+	option = {
+		name = cc_byz_prov.3.b
+		trigger = { NOT = { has_variable = cc_byz_mem_africa_mutiny } }
+
+		add_prestige = prestige_mild_bonus
+		save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+		cc_byz_west_grip_up_effect = yes
+	}
+}
+
+
+#############################################
+# SPANIA .10  Visigothic law
+#############################################
+cc_byz_prov.10 = {
+	type = country_event
+	title = cc_byz_prov.10.title
+	desc = cc_byz_prov.10.desc
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { cc_byz_exarch_in_spania_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		random_subject = {
+			limit = { cc_byz_exarch_in_spania_trigger = yes }
+			save_scope_as = cc_byz_spania_exarch
+		}
+	}
+
+	# Impose the Roman law. It is, after all, the empire's own.
+	option = {
+		name = cc_byz_prov.10.a
+		ai_chance = { base = 40 }
+
+		save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+		cc_byz_west_grip_up_effect = yes
+		scope:cc_byz_spania_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+		trigger_event_silently = { id = cc_byz_prov.11  years = 5 }
+	}
+
+	# Let the towns keep their code. A capable administrator can see that a law nobody follows
+	# is worse than a law that is not ours.
+	option = {
+		name = cc_byz_prov.10.b
+		ai_chance = { base = 60 }
+		trigger = {
+			ruler ?= { adm >= 65 }
+		}
+
+		set_variable = { name = cc_byz_mem_spania_latin  value = yes }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+		cc_byz_west_autonomy_up_effect = yes
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		trigger_event_silently = { id = cc_byz_prov.11  years = 5 }
+	}
+}
+
+
+#############################################
+# SPANIA .11  The taifa's offer
+#############################################
+cc_byz_prov.11 = {
+	type = country_event
+	title = cc_byz_prov.11.title
+	desc = cc_byz_prov.11.desc
+	outcome = neutral
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_spania_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = exterior
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+	}
+
+	# Trade with them. The province pays for itself for the first time.
+	option = {
+		name = cc_byz_prov.11.a
+		ai_chance = { base = 55 }
+
+		add_gold = 300
+		add_country_modifier = {
+			modifier = cc_byz_reward_trade
+			years = 25
+			mode = add_and_extend
+		}
+		trigger_event_silently = { id = cc_byz_prov.12  years = 10 }
+	}
+
+	# Refuse. A Christian emperor does not treat with them, and the garrison eats imported grain.
+	option = {
+		name = cc_byz_prov.11.b
+		ai_chance = { base = 45 }
+
+		add_religious_influence = 20
+		change_gold_effect = { scale = -2 }
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		trigger_event_silently = { id = cc_byz_prov.12  years = 10 }
+	}
+}
+
+
+#############################################
+# SPANIA .12  The indefensible province
+#############################################
+cc_byz_prov.12 = {
+	type = country_event
+	title = cc_byz_prov.12.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_spania_latin }
+				desc = cc_byz_prov.12.desc_latin
+			}
+			desc = cc_byz_prov.12.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_spania_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = location
+	}
+
+	# Trade it away in a treaty for something that matters. The honest answer.
+	option = {
+		name = cc_byz_prov.12.a
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_spania_traded  value = yes }
+		add_gold = 500
+		add_prestige = prestige_mild_penalty
+		change_variable = { name = cc_byz_strain  add = -2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_grip_up_effect = yes
+	}
+
+	# Keep it as a naval station and nothing more. Cheap, and it does one job well.
+	option = {
+		name = cc_byz_prov.12.b
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_spania_station  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_reward_naval
+			years = 30
+			mode = add_and_extend
+		}
+		add_sailors = { value = monthly_sailors  multiply = 10 }
+	}
+
+	# Reinforce it properly. Expensive, and everyone in the palace knows why it is a mistake.
+	option = {
+		name = cc_byz_prov.12.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		change_gold_effect = { scale = -5 }
+		add_manpower = { value = monthly_manpower  multiply = -5 }
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		add_prestige = prestige_mild_bonus
+		save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+		cc_byz_west_grip_up_effect = yes
+	}
+}
+
+
+#############################################
+# GAUL .20  Already Roman
+#############################################
+cc_byz_prov.20 = {
+	type = country_event
+	title = cc_byz_prov.20.title
+	desc = cc_byz_prov.20.desc
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_subject = { cc_byz_exarch_in_gaul_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		random_subject = {
+			limit = { cc_byz_exarch_in_gaul_trigger = yes }
+			save_scope_as = cc_byz_gaul_exarch
+		}
+	}
+
+	# Confirm their standing. They were Roman before Constantinople was.
+	option = {
+		name = cc_byz_prov.20.a
+		ai_chance = { base = 50 }
+
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		set_variable = { name = cc_byz_mem_gaul_march  value = yes }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_autonomy_up_effect = yes
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		trigger_event_silently = { id = cc_byz_prov.21  years = 6 }
+	}
+
+	# Govern them as a recovered province like any other.
+	option = {
+		name = cc_byz_prov.20.b
+		ai_chance = { base = 50 }
+
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_grip_up_effect = yes
+		trigger_event_silently = { id = cc_byz_prov.21  years = 6 }
+	}
+}
+
+
+#############################################
+# GAUL .21  The Frankish claim
+#############################################
+cc_byz_prov.21 = {
+	type = country_event
+	title = cc_byz_prov.21.title
+	desc = cc_byz_prov.21.desc
+	outcome = negative
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_gaul_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = armed
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_debt_scores_effect = yes
+		random_subject = {
+			limit = { cc_byz_exarch_in_gaul_trigger = yes }
+			save_scope_as = cc_byz_gaul_exarch
+		}
+	}
+
+	# Hold the passes. The only line that has ever made Gaul defensible from the south.
+	option = {
+		name = cc_byz_prov.21.a
+		ai_chance = { base = 45 }
+
+		change_gold_effect = { scale = -3 }
+		add_country_modifier = {
+			modifier = cc_byz_reward_fortifications
+			years = 25
+			mode = add_and_extend
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_grip_up_effect = yes
+		trigger_event_silently = { id = cc_byz_prov.22  years = 8 }
+	}
+
+	# Buy them off. It is what the empire did on the Danube for three centuries.
+	option = {
+		name = cc_byz_prov.21.b
+		ai_chance = { base = 40 }
+		trigger = {
+			ruler ?= { dip >= 70 }
+		}
+
+		change_gold_effect = { scale = -4 }
+		change_variable = { name = cc_byz_italian_standing  add = -1 }
+		clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+		trigger_event_silently = { id = cc_byz_prov.22  years = 8 }
+	}
+
+	# Let the exarch handle it, with whatever he has.
+	option = {
+		name = cc_byz_prov.21.c
+		ai_chance = { base = 15 }
+
+		scope:cc_byz_gaul_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+		cc_byz_west_autonomy_up_effect = yes
+		trigger_event_silently = { id = cc_byz_prov.22  years = 8 }
+	}
+}
+
+
+#############################################
+# GAUL .22  What the Rhone command became
+#############################################
+cc_byz_prov.22 = {
+	type = country_event
+	title = cc_byz_prov.22.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_gaul_march }
+				desc = cc_byz_prov.22.desc_march
+			}
+			desc = cc_byz_prov.22.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		any_subject = { cc_byz_exarch_in_gaul_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = location
+	}
+
+	# A marcher lordship. It holds the passes and takes its own decisions.
+	option = {
+		name = cc_byz_prov.22.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_gaul_march  value = yes }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 12 }
+		cc_byz_west_autonomy_up_effect = yes
+		add_country_modifier = {
+			modifier = cc_byz_reward_manpower
+			years = 30
+			mode = add_and_extend
+		}
+	}
+
+	# A Frankish protectorate in all but name. The title stays, the substance goes.
+	option = {
+		name = cc_byz_prov.22.b
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_gaul_protectorate  value = yes }
+		add_prestige = prestige_mild_penalty
+		add_gold = 250
+		change_variable = { name = cc_byz_strain  add = -2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_left
+		}
+	}
+
+	# Absorb it. Govern the Rhone directly and pay what that costs.
+	option = {
+		name = cc_byz_prov.22.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 70 }
+		}
+
+		set_variable = { name = cc_byz_mem_gaul_absorbed  value = yes }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 14 }
+		cc_byz_west_grip_up_effect = yes
+		change_variable = { name = cc_byz_strain  add = 2 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+}

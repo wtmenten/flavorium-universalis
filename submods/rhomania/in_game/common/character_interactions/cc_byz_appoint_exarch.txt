@@ -73,12 +73,24 @@ cc_byz_appoint_exarch = {
 		column = {
 			data = name
 		}
+		# THE FOUR PREFECTURES, ONE EACH.
+		#
+		# The late-Roman praetorian prefectures of the west: Italy, Africa, Gaul, and the
+		# Spanish diocese under Gaul. Only Ravenna and Carthage were ever real exarchates, but
+		# the prefectures are what an eastern emperor restoring the west would be restoring,
+		# and they give the four a naming and a structure that is not invented.
+		#
+		# ONE PER REGION, TESTED LIVE. Each branch below pairs "this area is in region X" with
+		# "no existing subject is an exarchate seated in region X". Note what this is NOT: a
+		# marker variable on the overlord. A variable would need on_annexed, on_released_country
+		# and on_subject_type_changed all chained correctly to clear it, and any one of them
+		# missed leaves a prefecture slot permanently closed with nothing in the log. Reading
+		# the subjects directly self-heals: lose the exarchate and the slot reopens.
+		#
+		# capital.region = region:italy_region is a STATIC dot-chain comparison against a fixed
+		# value, which is the safe form. The form CLAUDE.md forbids is the dynamic one
+		# (root.culture.culture_group), which the parser reads as an event target link.
 		visible = {
-			# The old western provinces, not wherever happens to be convenient.
-			OR = {
-				region = region:italy_region
-				region = region:maghreb_region
-			}
 			region != scope:actor.capital.region
 			any_location_in_area = {
 				percent >= 0.75
@@ -86,6 +98,52 @@ cc_byz_appoint_exarch = {
 					owner ?= scope:actor
 					has_owner = no
 					is_ownable = no
+				}
+			}
+			OR = {
+				AND = {
+					region = region:italy_region
+					NOT = {
+						scope:actor = {
+							any_subject = {
+								has_variable = cc_byz_is_exarchate
+								capital.region = region:italy_region
+							}
+						}
+					}
+				}
+				AND = {
+					region = region:maghreb_region
+					NOT = {
+						scope:actor = {
+							any_subject = {
+								has_variable = cc_byz_is_exarchate
+								capital.region = region:maghreb_region
+							}
+						}
+					}
+				}
+				AND = {
+					region = region:iberia_region
+					NOT = {
+						scope:actor = {
+							any_subject = {
+								has_variable = cc_byz_is_exarchate
+								capital.region = region:iberia_region
+							}
+						}
+					}
+				}
+				AND = {
+					region = region:france_region
+					NOT = {
+						scope:actor = {
+							any_subject = {
+								has_variable = cc_byz_is_exarchate
+								capital.region = region:france_region
+							}
+						}
+					}
 				}
 			}
 		}

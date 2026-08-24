@@ -1,7 +1,11 @@
 ﻿# FRONT-END 2: the mission tree, for players with mission packs ON.
 #
-# 71 tasks. A spine with three braided pillars, five exclusive forks, four reconvergence
-# points and seven optional spurs.
+# 86 tasks. A spine with three braided pillars, four gateways, five exclusive forks, four
+# reconvergence points and eleven optional spurs.
+#
+# NO NODE HAS MORE THAN FOUR VISIBLE CHILDREN. Verified by walking the requires graph; the two
+# nodes at five raw children (Anatolia Secured, The Latin Powers) each have an exclusive fork
+# among them, and a fork shows one sibling at a time.
 #
 #
 # READ THIS BEFORE ADDING A TASK.
@@ -19,8 +23,24 @@
 #
 # 3. Only ONE task may carry final = yes. That is cc_byz_task_mare_nostrum.
 #
+# 4. PERMANENT MODIFIERS ARE CAPSTONE-TIER ONLY. Nine of them, defined in
+#    static_modifiers/cc_byz_mission_capstones.txt, on the three pillar capstones, the three
+#    reconvergences, Anatolia Secured, The City Adorned and Greek Fire. Stepping stones draw
+#    from the six TEMPORARY pools in cc_byz_mission_rewards.txt. The nine theatre cornerstones
+#    are excluded because cc_byz_theatre_*_effect already gives them permanent modifiers, and
+#    a second one would pay the mission-mode player twice for what the action-mode player does
+#    once.
 #
-# THE FOUR STRUCTURES, and how each is expressed.
+#
+# THE FIVE STRUCTURES, and how each is expressed.
+#
+# GATEWAY. The State Restored used to have TWELVE direct children, which made the third rank of
+# the tree unreadable. Four gateways now sit between it and that cluster: The Roman Title, The
+# Balkan Frontier, The Latin Powers and The Anatolian Return. Each is a small objective in its
+# own right rather than a pure connector, and no node in the tree now has more than four
+# children. Nothing downstream needed rewriting, because requires is AND across the whole pack
+# and not just within a branch: Illyricum still names Despotate, No Second Emperor and Adriatic
+# even though those three now hang off two different gateways.
 #
 # ANY ORDER. Several tasks share one requires parent and reconverge later. The three western
 # theatres all require only cc_byz_task_illyricum, so Italy, Africa and Spania can be taken in
@@ -52,18 +72,72 @@
 # condition only gets easier with time (a NOT-exists, an income threshold) need none.
 #
 #
+# TASKS THAT ARE TRUE AT GAME START ARE NOT TASKS. Six were, and every one had the same shape:
+# a condition that reads like an objective and is already satisfied in 1337. Recorded here
+# because the checks are not obvious from the trigger names.
+#
+#   any_work_of_art IS THE WORLD ITERATOR. "Iterate through all WorkOfArts in the world"
+#   (trigger.md:364). It has no country filter at all, so count >= 3 counted every artwork on
+#   the map. This is also why any_work_of_art_count has no localisation: vanilla localises
+#   any_work_of_art_in_country_count and any_work_of_art_in_location_count and never the world
+#   form, because nothing sane uses it. Both art tasks now use the country iterator.
+#
+#   EVEN THEN A BARE COUNT DOES NOT WORK. BYZ starts with NINE works of art totalling 503
+#   quality (11_art.txt:86-94: Hagia Sophia 91, crown jewels 65, Hagia Irene 57, Syntagma
+#   Canonum 51, Ecclesiastica Historia 51, Apoheteftiko 50, Theodosian Walls 48, Song of
+#   Armouris 46, Paris Psalter 44). So the art tasks are keyed to quality, not count.
+#
+#   BYZ LEADS THE ECUMENICAL PATRIARCHATE FROM SETUP. 15_international_organizations.txt:547
+#   creates it with seat = constantinople and sixty-odd members, BYZ among them. "Be the leader
+#   of an autocephalous patriarchate" was therefore true before the player pressed unpause.
+#
+#   THE WALLS AND THESSALONIKI ARE OWNED AT START, so "has the walls" and "owns Thessaloniki"
+#   were free. The walls now use duration; Thessaloniki now needs control.
+#
+#
+# NO TASK USES duration. Every one of them is duration = 0.
+#
+# cc_byz_task_walls briefly used duration = 3650 to express "the walls must still be standing
+# ten years on", and the mechanic turned out to be the wrong tool. duration is a progress timer
+# on a task the player has already qualified for, not a condition, and its behaviour when the
+# enabled trigger goes false again is undocumented: if the timer does not reset, the anti-cheese
+# it was there to provide does not exist, and there is no way to tell from script which it does.
+# Vanilla's whole range across fourteen generic packs is 30 to 730 days, so 3650 was also an
+# order of magnitude outside anything Paradox has tested.
+#
+# The replacement is a hard date in enabled: current_date > 1347.1.1, ten years from the 1337
+# start. It is a plain trigger with no hidden state, it reads correctly in the tooltip, and it
+# says exactly what was meant, which is that the walls have to be standing in 1347 rather than
+# merely at some point.
+#
+# Date form is current_date > 1347.1.1, matching vanilla (bubonic_plague.txt:39,
+# guelphs_and_ghibellines.txt:8).
+#
+#
+# THE BUREAU TASKS DO NOT TEST MAINTENANCE DIRECTLY. They used to, and it was cheesable in the
+# most direct way available: fund every bureau for one month, let the task tick over, defund the
+# next month, and the tree permanently records that the empire runs its bureaus properly.
+#
+# Both now read cc_byz_bureau_funding_avg, a five-year running mean maintained monthly off
+# monthly_country_pulse (scripted_effects/cc_byz_bureau_funding.txt). The sample is the mean
+# across EVERY bureaucracy the country has, funded or not, so four bureaus with one funded
+# samples 0.25. The root task wants a five-year average of 50 percent, the Logothete capstone
+# 75 percent. A single month of full funding moves the average by under two percent of the gap,
+# so there is no burst of spending that reaches either.
+#
+#
 # SHAPE
 #
 #   T0  House in Order      5 roots, any order
 #   T1  Three pillars       Fisc / Faith / Sword, any order -> The State Restored (2 of 3)
-#   T2  The Greek World     claimants, neighbours, FORK 1 Venice or Genoa
+#   T2  Four gateways       Roman Title / Balkan Frontier / Latin Powers / Anatolian Return
 #   T3  Anatolia            FORK 2 destroy or vassalise the Turks, FORK 3 tagmata or pronoia
 #   T4  The Levant          the seats (2 of 3), FORK 4 treaty or Pentarchy War
 #   T5  The West            Illyricum -> Italy / Africa / Spania in ANY ORDER (2 of 3)
 #   T6  The East            off the Sinai Road, FORK 5 monopoly or company
-#   S   Spurs               7 optional, none gate anything
+#   S   Spurs               11 optional, none gate anything
 #
-# ART. 71 icons are named and none are supplied. A missing .dds renders a BLANK button without
+# ART. 85 icons are named and none are supplied. A missing .dds renders a BLANK button without
 # logging, so this is checked by eye. Cornerstones and pillar capstones are worth doing first.
 
 cc_byz_renovatio_campaign = {
@@ -88,10 +162,14 @@ cc_byz_renovatio_campaign = {
 	# T0. THE HOUSE IN ORDER. Five roots, any order, no wars required.
 	######################################################################
 
+	# The only timed task in the tree. See the duration note in the header: the walls are owned
+	# at the start date, so without a timer this completed on the first evaluation and the
+	# player could then demolish them.
 	cc_byz_task_walls = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_walls.dds"
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
+			current_date > 1347.1.1
 			location:constantinople = {
 				owner ?= root
 				has_building_with_at_least_one_level = theodosian_walls
@@ -133,13 +211,29 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# TWO funded bureaus, not four. Slot sources for BYZ are byz_bureaucracy_advance (+2,
+	# age 1), the Greek/Orthodox legal-system law (+1), and a metropolis capital (+1), then
+	# nothing until generic_bureaucracy_4_advance in AGE 4. Four funded bureaus is therefore
+	# close to the practical ceiling for most of the campaign and belongs on the pillar
+	# capstone, not on a root.
 	cc_byz_task_bureaus = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_bureaus.dds"
-		enabled = { any_current_bureaucracy = { count >= 4  bureaucracy_maintenance >= 1 } }
+		enabled = {
+			any_current_bureaucracy = { count >= 2 }
+			custom_tooltip = {
+				text = cc_byz_bureau_funding_avg_tt
+				trigger_if = {
+					limit = { has_variable = cc_byz_bureau_funding_avg }
+					var:cc_byz_bureau_funding_avg >= 0.5
+				}
+				trigger_else = { always = no }
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 150
 			add_country_modifier = { modifier = cc_byz_reward_administration  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_credit  years = 20  mode = add_and_extend }
 			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_left }
 		}
 	}
@@ -178,6 +272,7 @@ cc_byz_renovatio_campaign = {
 		on_persistent_completion = {
 			add_gold = 150
 			add_country_modifier = { modifier = cc_byz_reward_administration  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_credit  years = 20  mode = add_and_extend }
 		}
 	}
 
@@ -204,17 +299,64 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# The second city's mint. A stone, and the only Fisc task that names a place.
+	cc_byz_task_mint = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_mint.dds"
+		requires = { cc_byz_task_nomisma }
+		highlight = { scope:province = { this = location:thessaloniki } }
+		enabled = {
+			location:thessaloniki = {
+				owner ?= root
+				has_building_with_at_least_one_level = minting_office
+			}
+		}
+		bypass = { NOT = { owns = location:thessaloniki } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 150
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 15  mode = add_and_extend }
+		}
+	}
+
+	# Debt cleared. Ties the mission tree to the debt pillar: an empire that has run the Italian
+	# creditor threads will arrive here owing a great deal, and this is the task that asks
+	# whether any of it was ever paid off.
+	cc_byz_task_bank = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_bank.dds"
+		requires = { cc_byz_task_silk_looms }
+		enabled = {
+			num_loans < 1
+			gold >= 500
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_credit  years = 30  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_left }
+		}
+	}
+
+	# PILLAR CAPSTONE. Four funded bureaus, not five: see cc_byz_task_bureaus above for why
+	# five was unreachable before age 4 and therefore gated The State Restored behind it.
 	cc_byz_task_logothete = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_logothete.dds"
 		requires = { cc_byz_task_silk_looms  cc_byz_task_literate_admin }
 		enabled = {
 			country_tax_base >= 100
-			any_current_bureaucracy = { count >= 5  bureaucracy_maintenance >= 1 }
+			any_current_bureaucracy = { count >= 4 }
+			custom_tooltip = {
+				text = cc_byz_bureau_funding_avg_high_tt
+				trigger_if = {
+					limit = { has_variable = cc_byz_bureau_funding_avg }
+					var:cc_byz_bureau_funding_avg >= 0.75
+				}
+				trigger_else = { always = no }
+			}
 		}
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 300
-			add_country_modifier = { modifier = cc_byz_reward_administration  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_logothete  years = -1  mode = add }
 			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_move_to_left }
 		}
 	}
@@ -232,10 +374,18 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# COUNTRY iterator with a quality filter, not the world iterator with a bare count. At the
+	# start date exactly two BYZ works clear 60 (Hagia Sophia 91, the crown jewels 65), so this
+	# needs one commissioned rather than nothing at all.
 	cc_byz_task_icons = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_icons.dds"
 		requires = { cc_byz_task_athonite }
-		enabled = { any_work_of_art = { count >= 3 } }
+		enabled = {
+			any_work_of_art_in_country = {
+				count >= 3
+				art_quality >= 60
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
@@ -243,6 +393,10 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# Leading the Ecumenical Patriarchate is the START CONDITION, not the objective. The
+	# objective is the daughter churches: hold the seat of a SECOND autocephalous patriarchate.
+	# The nine seats at 1337 are Constantinople (ours), Tarnovo, Tbilisi, Nicosia, Sis, Antioch,
+	# Alexandria, Mosul and Kollam; Tarnovo and Nicosia are the ones an early empire can reach.
 	cc_byz_task_autocephalous = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_autocephalous.dds"
 		requires = { cc_byz_task_hippodrome }
@@ -252,6 +406,15 @@ cc_byz_renovatio_campaign = {
 				international_organization_has_leader = yes
 				leader_country = root
 			}
+			custom_tooltip = {
+				text = cc_byz_second_patriarchal_seat_tt
+				OR = {
+					owns_or_non_sovereign_subject_owns = location:tarnovo
+					owns_or_non_sovereign_subject_owns = location:nicosia_cyp
+					owns_or_non_sovereign_subject_owns = location:tbilisi
+					owns_or_non_sovereign_subject_owns = location:sis
+				}
+			}
 		}
 		duration = 0
 		on_persistent_completion = {
@@ -260,6 +423,29 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# Foreign relations through religion, which nothing else in the tree covered. Three Orthodox
+	# powers at real warmth, which for a Byzantium that has been fighting Serbia and Bulgaria is
+	# a genuine change of policy rather than a formality.
+	cc_byz_task_orthodox_concord = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_orthodox_concord.dds"
+		requires = { cc_byz_task_athonite }
+		enabled = {
+			any_country = {
+				count >= 3
+				religion = religion:orthodox
+				NOT = { this = root }
+				opinion = { target = root  value >= 100 }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 25
+			add_prestige = prestige_mild_bonus
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+		}
+	}
+
+	# PILLAR CAPSTONE.
 	cc_byz_task_ecumenical_throne = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_ecumenical_throne.dds"
 		requires = { cc_byz_task_icons  cc_byz_task_autocephalous }
@@ -270,7 +456,7 @@ cc_byz_renovatio_campaign = {
 		duration = 0
 		on_persistent_completion = {
 			add_religious_influence = 50
-			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_ecumenical  years = -1  mode = add }
 			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
 		}
 	}
@@ -284,7 +470,7 @@ cc_byz_renovatio_campaign = {
 		duration = 0
 		on_persistent_completion = {
 			add_army_tradition = army_tradition_mild_bonus
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
 		}
 	}
 
@@ -299,23 +485,57 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# THE EARLIEST CB IN THE SUBMOD. Everything else unlocks off a theatre or an exarchate,
+	# decades in; the empire's actual 1337 problem is the Serbian and Bulgarian frontier.
+	#
+	# The unit test is an OR over all six variants. It used to name a_varangians alone, which is
+	# the age-1 type: a player who researched the DLC's unlock_byzantine_varangians line and
+	# upgraded to a_varangians_2 would have stopped satisfying a task they had already met.
 	cc_byz_task_varangians = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_varangians.dds"
 		requires = { cc_byz_task_walls }
 		enabled = {
 			any_country_sub_unit = {
 				count >= 1
-				sub_unit_type = unit_type:a_varangians
+				OR = {
+					sub_unit_type = unit_type:a_varangians
+					sub_unit_type = unit_type:a_varangians_2
+					sub_unit_type = unit_type:a_varangians_3
+					sub_unit_type = unit_type:a_varangians_4
+					sub_unit_type = unit_type:a_varangians_5
+					sub_unit_type = unit_type:a_varangians_6
+				}
 			}
 		}
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
-			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
 			add_legitimacy = legitimacy_mild_bonus
+			if = {
+				limit = { NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_reclaim_the_balkans } } }
+				unlock_casus_belli_effect = { type = cc_byz_cb_reclaim_the_balkans }
+			}
 		}
 	}
 
+	# Naval spur off the Sword pillar. A dead end with a reward; nothing requires it.
+	cc_byz_task_fleet_restored = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_fleet_restored.dds"
+		requires = { cc_byz_task_dromon }
+		enabled = {
+			navy_size >= 40
+			navy_tradition >= 60
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_navy_tradition = navy_tradition_severe_bonus
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 30  mode = add_and_extend }
+			add_sailors = { value = root.monthly_sailors  multiply = 8 }
+		}
+	}
+
+	# PILLAR CAPSTONE.
 	cc_byz_task_field_army = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_field_army.dds"
 		requires = { cc_byz_task_veterans  cc_byz_task_dromon  cc_byz_task_varangians }
@@ -326,7 +546,7 @@ cc_byz_renovatio_campaign = {
 		duration = 0
 		on_persistent_completion = {
 			add_manpower = { value = root.monthly_manpower  multiply = 10 }
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_field_army  years = -1  mode = add }
 		}
 	}
 
@@ -359,18 +579,86 @@ cc_byz_renovatio_campaign = {
 			add_prestige = prestige_severe_bonus
 			add_legitimacy = legitimacy_mild_bonus
 			add_gold = 300
-			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_state_restored  years = -1  mode = add }
 		}
 	}
 
 
 	######################################################################
-	# T2. THE GREEK WORLD
+	# T2. THE FOUR GATEWAYS.
+	#
+	# These exist to break up what used to be a twelve-wide rank. Each is
+	# a small objective in its own right rather than a pure connector, and
+	# each carries three or four children.
+	######################################################################
+
+	# GATEWAY A. The claim itself, before any of the claimants are dealt with.
+	cc_byz_task_roman_title = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_roman_title.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = {
+			prestige >= 50
+			legitimacy >= 75
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# GATEWAY B. The Balkan hinterland, which the empire has to hold before any of its
+	# individual quarrels there can be settled.
+	cc_byz_task_balkan_frontier = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_balkan_frontier.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { any_owned_location = { count >= 15  region = region:balkan_region } }
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
+			add_manpower = { value = root.monthly_manpower  multiply = 6 }
+		}
+	}
+
+	# GATEWAY C. One Catholic power that will take the empire's calls. Deliberately cheap: the
+	# point of the gateway is that the Latin branch opens on a single working relationship, and
+	# the tasks under it are where the price of that relationship is argued.
+	cc_byz_task_latin_powers = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_latin_powers.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = {
+			any_country = {
+				religion = religion:catholic
+				opinion = { target = root  value >= 50 }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 100
+			add_prestige = prestige_weak_bonus
+		}
+	}
+
+	# GATEWAY D. A foothold in Anatolia before the Turkish question is put.
+	cc_byz_task_anatolian_return = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_anatolian_return.dds"
+		requires = { cc_byz_task_state_restored }
+		enabled = { any_owned_location = { count >= 10  region = region:anatolia_region } }
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
+		}
+	}
+
+
+	######################################################################
+	# T2a. UNDER THE ROMAN TITLE. The rival claimants.
 	######################################################################
 
 	cc_byz_task_no_second_emperor = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_no_second_emperor.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_roman_title }
 		enabled = { NOT = { country_exists = c:TRE } }
 		duration = 0
 		on_persistent_completion = {
@@ -381,7 +669,7 @@ cc_byz_renovatio_campaign = {
 
 	cc_byz_task_duchy_dissolved = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_duchy_dissolved.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_roman_title }
 		enabled = { NOT = { country_exists = c:ATH } }
 		duration = 0
 		on_persistent_completion = {
@@ -390,26 +678,15 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
-	cc_byz_task_despotate = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_despotate.dds"
-		requires = { cc_byz_task_state_restored }
-		enabled = {
-			own_entire_province = province_definition:achaea_province
-			own_entire_province = province_definition:arcadia_province
-		}
-		duration = 0
-		on_persistent_completion = {
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
-			add_manpower = { value = root.monthly_manpower  multiply = 6 }
-		}
-	}
-
 	cc_byz_task_greek_again = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_greek_again.dds"
 		requires = { cc_byz_task_duchy_dissolved }
 		enabled = {
 			own_entire_province = province_definition:attica_province
-			location:athens = { "religion_percentage(religion:orthodox)" >= 0.6 }
+			custom_tooltip = {
+				text = cc_byz_athens_orthodox_tt
+				location:athens = { "religion_percentage(religion:orthodox)" >= 0.6 }
+			}
 		}
 		bypass = { NOT = { own_entire_province = province_definition:attica_province } }
 		duration = 0
@@ -419,9 +696,48 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	cc_byz_task_despotate = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_despotate.dds"
+		requires = { cc_byz_task_roman_title }
+		enabled = {
+			own_entire_province = province_definition:achaea_province
+			own_entire_province = province_definition:arcadia_province
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
+			add_manpower = { value = root.monthly_manpower  multiply = 6 }
+		}
+	}
+
+	# SPUR. A porphyrogenitus heir, which is the only thing that ever made a Byzantine
+	# succession quiet. Dead end with a reward.
+	cc_byz_task_purple_born = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_purple_born.dds"
+		requires = { cc_byz_task_roman_title }
+		enabled = {
+			legitimacy >= 90
+			heir ?= {
+				is_alive = yes
+				total_abilities >= 150
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_legitimacy = legitimacy_severe_bonus
+			add_prestige = prestige_mild_bonus
+			add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+
+	######################################################################
+	# T2b. UNDER THE BALKAN FRONTIER.
+	######################################################################
+
 	cc_byz_task_serbian_question = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_serbian_question.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_balkan_frontier }
 		enabled = {
 			OR = {
 				NOT = { country_exists = c:SER }
@@ -431,13 +747,68 @@ cc_byz_renovatio_campaign = {
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
 		}
 	}
 
+	# The other half of the Balkan problem, and the one that carried a rival patriarchate at
+	# Tarnovo rather than merely a rival army.
+	cc_byz_task_bulgarian_question = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_bulgarian_question.dds"
+		requires = { cc_byz_task_balkan_frontier }
+		enabled = {
+			OR = {
+				NOT = { country_exists = c:BUL }
+				c:BUL ?= { is_subject_of = root }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_religious_influence = 20
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
+		}
+	}
+
+	cc_byz_task_adriatic = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_adriatic.dds"
+		requires = { cc_byz_task_balkan_frontier }
+		highlight = {
+			scope:province = { OR = { this = location:durres  this = location:split } }
+		}
+		enabled = {
+			owns_or_non_sovereign_subject_owns = location:durres
+			owns_or_non_sovereign_subject_owns = location:split
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 15  mode = add_and_extend }
+			add_sailors = { value = root.monthly_sailors  multiply = 6 }
+		}
+	}
+
+	# SPUR. The old Danube line, which is where the empire's Balkan frontier sat before 1180
+	# and never sat again. Dead end with a reward.
+	cc_byz_task_danube = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_danube.dds"
+		requires = { cc_byz_task_balkan_frontier }
+		enabled = { any_owned_location = { count >= 8  area = area:bulgaria_area } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 200
+			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = 25  mode = add_and_extend }
+			add_manpower = { value = root.monthly_manpower  multiply = 6 }
+		}
+	}
+
+
+	######################################################################
+	# T2c. UNDER THE LATIN POWERS.
+	######################################################################
+
 	cc_byz_task_latin_bride = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_latin_bride.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_latin_powers }
 		enabled = {
 			any_country = {
 				religion = religion:catholic
@@ -454,7 +825,7 @@ cc_byz_renovatio_campaign = {
 
 	cc_byz_task_embassies = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_embassies.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_latin_powers }
 		enabled = { num_of_diplomats >= 4 }
 		duration = 0
 		on_persistent_completion = {
@@ -463,11 +834,34 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# SPUR. Reads the union arc's state rather than setting it, so a player who never opened a
+	# legation simply never sees this complete. Nothing depends on it.
+	cc_byz_task_union_received = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_union_received.dds"
+		requires = { cc_byz_task_latin_bride }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_union_signed_tt
+				trigger_if = {
+					limit = { has_variable = cc_byz_union_stage }
+					var:cc_byz_union_stage >= 2
+				}
+				trigger_else = { always = no }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 250
+			add_prestige = prestige_mild_bonus
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+		}
+	}
+
 	# ---- FORK 1: Venice or Genoa ----
 
 	cc_byz_task_venetian_alliance = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_venetian_alliance.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_latin_powers }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_genoese_compact } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_genoese_compact }
 		enabled = {
@@ -483,7 +877,7 @@ cc_byz_renovatio_campaign = {
 
 	cc_byz_task_genoese_compact = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_genoese_compact.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_latin_powers }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance }
 		enabled = {
@@ -499,14 +893,14 @@ cc_byz_renovatio_campaign = {
 
 
 	######################################################################
-	# T3. ANATOLIA
+	# T3. ANATOLIA, under The Anatolian Return.
 	######################################################################
 
 	# ---- FORK 2: end the Turks, or make them a tributary ----
 
 	cc_byz_task_beylik_ended = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_beylik_ended.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_anatolian_return }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary }
 		enabled = { NOT = { country_exists = c:TUR } }
@@ -522,7 +916,7 @@ cc_byz_renovatio_campaign = {
 	# reversing that arrangement is cheaper than destroying them.
 	cc_byz_task_sultan_tributary = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_sultan_tributary.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_anatolian_return }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_beylik_ended } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_beylik_ended }
 		enabled = {
@@ -538,12 +932,38 @@ cc_byz_renovatio_campaign = {
 
 	cc_byz_task_themes = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_themes.dds"
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_anatolian_return }
 		enabled = { any_owned_location = { count >= 25  region = region:anatolia_region } }
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 200
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# Army composition, which nothing else in the tree tested. OR over all five variants for the
+	# same upgrade reason as the Varangians: the DLC ships a_byzantine_cataphracts_2 through _6
+	# and there is no _1.
+	cc_byz_task_cataphracts = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_cataphracts.dds"
+		requires = { cc_byz_task_anatolian_return }
+		enabled = {
+			any_country_sub_unit = {
+				count >= 6
+				OR = {
+					sub_unit_type = unit_type:a_byzantine_cataphracts_2
+					sub_unit_type = unit_type:a_byzantine_cataphracts_3
+					sub_unit_type = unit_type:a_byzantine_cataphracts_4
+					sub_unit_type = unit_type:a_byzantine_cataphracts_5
+					sub_unit_type = unit_type:a_byzantine_cataphracts_6
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_army_tradition = army_tradition_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 25  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_mild_bonus }
 		}
 	}
 
@@ -564,19 +984,46 @@ cc_byz_renovatio_campaign = {
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
-			add_country_modifier = { modifier = cc_byz_reward_manpower  years = 25  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_anatolia  years = -1  mode = add }
 		}
 	}
 
 	cc_byz_task_convert_anatolia = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_convert_anatolia.dds"
 		requires = { cc_byz_task_anatolia_secured }
-		enabled = { "religion_percentage_in_country(religion:orthodox)" >= 0.7 }
+		# WRAPPED, like the two location-scope uses. The country-scope form looked safe because
+		# vanilla DOES define religion_percentage_in_country_greater_or_equal, unlike the
+		# location-scope key. It is not safe: that string interpolates
+		# [TARGET_RELIGION.GetAdjective], and the token is not populated when the trigger is
+		# written in the parameterised string form, so the game logs
+		#     FetchData failed for 'TARGET_RELIGION.GetAdjective'
+		#     Data error in loc string 'religion_percentage_in_country_greater_or_equal'
+		# The existence of a vanilla loc key says nothing about whether its tokens resolve from
+		# our call site.
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_anatolia_orthodox_tt
+				"religion_percentage_in_country(religion:orthodox)" >= 0.7
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_religious_influence = 40
 			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
 			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
+		}
+	}
+
+	# SPUR. The frontier soldiery of the eastern marches, settled on the land they hold.
+	cc_byz_task_akritai = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_akritai.dds"
+		requires = { cc_byz_task_anatolia_secured }
+		enabled = { any_owned_location = { count >= 40  region = region:anatolia_region } }
+		duration = 0
+		on_persistent_completion = {
+			add_manpower = { value = root.monthly_manpower  multiply = 8 }
+			add_country_modifier = { modifier = cc_byz_reward_levies  years = 30  mode = add_and_extend }
+			change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_right }
 		}
 	}
 
@@ -659,9 +1106,12 @@ cc_byz_renovatio_campaign = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_patriarch.dds"
 		requires = { cc_byz_task_holy_city }
 		enabled = {
-			location:jerusalem = {
-				owner ?= root
-				"religion_percentage(religion:orthodox)" >= 0.5
+			custom_tooltip = {
+				text = cc_byz_jerusalem_orthodox_tt
+				location:jerusalem = {
+					owner ?= root
+					"religion_percentage(religion:orthodox)" >= 0.5
+				}
 			}
 		}
 		bypass = { NOT = { owns = location:jerusalem } }
@@ -669,6 +1119,24 @@ cc_byz_renovatio_campaign = {
 		on_persistent_completion = {
 			add_religious_influence = 40
 			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 20  mode = add_and_extend }
+		}
+	}
+
+	# SPUR. Pilgrim traffic is what made custody of the holy places worth arguing about, and it
+	# is the one thing in the Levant that pays in coin rather than in standing.
+	cc_byz_task_pilgrim_road = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_pilgrim_road.dds"
+		requires = { cc_byz_task_holy_city }
+		enabled = {
+			owns_or_non_sovereign_subject_owns = location:jerusalem
+			owns_or_non_sovereign_subject_owns = location:jaffa
+		}
+		bypass = { NOT = { owns_or_non_sovereign_subject_owns = location:jerusalem } }
+		duration = 0
+		on_persistent_completion = {
+			add_gold = 250
+			add_religious_influence = 20
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 25  mode = add_and_extend }
 		}
 	}
 
@@ -740,7 +1208,7 @@ cc_byz_renovatio_campaign = {
 		on_persistent_completion = {
 			add_religious_influence = 60
 			add_prestige = prestige_severe_bonus
-			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_eastern_sees  years = -1  mode = add }
 		}
 	}
 
@@ -790,23 +1258,6 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 	# T5. THE WEST. Illyricum opens THREE theatres that run in ANY ORDER.
 	######################################################################
-
-	cc_byz_task_adriatic = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_adriatic.dds"
-		requires = { cc_byz_task_state_restored }
-		highlight = {
-			scope:province = { OR = { this = location:durres  this = location:split } }
-		}
-		enabled = {
-			owns_or_non_sovereign_subject_owns = location:durres
-			owns_or_non_sovereign_subject_owns = location:split
-		}
-		duration = 0
-		on_persistent_completion = {
-			add_country_modifier = { modifier = cc_byz_reward_naval  years = 15  mode = add_and_extend }
-			add_sailors = { value = root.monthly_sailors  multiply = 6 }
-		}
-	}
 
 	cc_byz_task_illyricum = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_illyricum.dds"
@@ -975,7 +1426,7 @@ cc_byz_renovatio_campaign = {
 		on_persistent_completion = {
 			add_prestige = prestige_severe_bonus
 			add_gold = 400
-			add_country_modifier = { modifier = cc_byz_reward_naval  years = 30  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_western_sea  years = -1  mode = add }
 		}
 	}
 
@@ -1031,25 +1482,38 @@ cc_byz_renovatio_campaign = {
 		on_persistent_completion = {
 			add_gold = 200
 			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_reward_credit  years = 20  mode = add_and_extend }
 			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
 		}
 	}
 
+	# GRANTS THE ISLANDS CB, and is three tasks from the start (bureaus root -> Galata -> here).
+	# That CB used to be granted by an optional spur gated on 30 researched advances, which put
+	# a casus belli against Rhodes and Chios most of a campaign away from the point at which the
+	# player has a fleet and a reason. The geography now also names athens, thebes and
+	# negroponte so the Duchy of Athens is reachable through it.
+	#
+	# Threshold raised 15 -> 40 so the trade ladder reads 10 / 40 / 100 / 500 rather than
+	# jumping from 15 straight to 100.
 	cc_byz_task_merchant_fleet = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_merchant_fleet.dds"
 		requires = { cc_byz_task_galata }
-		enabled = { monthly_trade_income >= 15 }
+		enabled = { monthly_trade_income >= 40 }
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 250
 			add_country_modifier = { modifier = cc_byz_reward_trade  years = 20  mode = add_and_extend }
+			if = {
+				limit = { NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } } }
+				unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
+			}
 		}
 	}
 
 	cc_byz_task_spice_dues = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_spice_dues.dds"
 		requires = { cc_byz_task_merchant_fleet }
-		enabled = { monthly_trade_income >= 30 }
+		enabled = { monthly_trade_income >= 100 }
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 400
@@ -1086,7 +1550,7 @@ cc_byz_renovatio_campaign = {
 		requires = { cc_byz_task_spice_islands }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_chartered_company } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_chartered_company }
-		enabled = { monthly_trade_income >= 50 }
+		enabled = { monthly_trade_income >= 500 }
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 600
@@ -1111,24 +1575,19 @@ cc_byz_renovatio_campaign = {
 
 	######################################################################
 	# OPTIONAL SPURS. Nothing required depends on any of these.
+	#
+	# The regional spurs live with their regions above (Purple Born, Danube,
+	# Union Received, Akritai, Pilgrim Road, Fleet Restored). What remains
+	# here is the city cluster and the two dead ends.
 	######################################################################
 
-	# --- Unlock content elsewhere ---
-
-	cc_byz_task_reconquest_claim = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_reconquest_claim.dds"
-		requires = { cc_byz_task_illyricum }
-		enabled = { num_of_advances_researched >= 30 }
-		duration = 0
-		on_persistent_completion = {
-			if = {
-				limit = { NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_recover_the_islands } } }
-				unlock_casus_belli_effect = { type = cc_byz_cb_recover_the_islands }
-			}
-			add_prestige = prestige_mild_bonus
-		}
-	}
-
+	# THE LARGEST OPTIONAL PRIZE IN THE TREE. Fires cc_byz_fire.1, a three-event chain ending in
+	# unlocked_greek_fire, which gates four vanilla unit types. Vanilla's only route is a
+	# 5%/month dynamic historical event that additionally needs an idle scientist above 0.7
+	# skill and then coin-flips with no bound on failures, so a campaign can end without it.
+	#
+	# The permanent modifier is granted by cc_byz_fire.3, not here, exactly as the nine theatre
+	# cornerstones grant theirs inside cc_byz_theatre_*_effect rather than in the task.
 	cc_byz_task_greek_fire = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_greek_fire.dds"
 		requires = { cc_byz_task_dromon }
@@ -1138,8 +1597,8 @@ cc_byz_renovatio_campaign = {
 		}
 		duration = 0
 		on_persistent_completion = {
-			add_country_modifier = { modifier = cc_byz_reward_naval  years = 40  mode = add_and_extend }
 			add_navy_tradition = navy_tradition_mild_bonus
+			trigger_event_non_silently = cc_byz_fire.1
 		}
 	}
 
@@ -1163,10 +1622,12 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# country_art_quality, not a count. BYZ starts on 503 across nine works, so a count of six
+	# was satisfied before the player pressed unpause.
 	cc_byz_task_great_palace = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_great_palace.dds"
 		requires = { cc_byz_task_hippodrome }
-		enabled = { any_work_of_art = { count >= 6 } }
+		enabled = { country_art_quality >= 800 }
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
@@ -1174,11 +1635,19 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# Thessaloniki is OWNED at the start date, so ownership alone was not an objective. Control
+	# is: the second city sits at the far end of a road the empire has not policed in a century.
 	cc_byz_task_thessaloniki = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_thessaloniki.dds"
 		requires = { cc_byz_task_walls }
 		highlight = { scope:province = { this = location:thessaloniki } }
-		enabled = { owns_or_non_sovereign_subject_owns = location:thessaloniki }
+		enabled = {
+			location:thessaloniki = {
+				owner ?= root
+				local_control >= 0.3
+			}
+		}
+		bypass = { NOT = { owns = location:thessaloniki } }
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 100
@@ -1186,7 +1655,8 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
-	# The optional capstone. Requires all three wonders and nothing requires it.
+	# THE OPTIONAL CAPSTONE. It used to carry enabled = { always = yes }, so it completed the
+	# instant its three parents did and asked nothing of its own.
 	cc_byz_task_city_adorned = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_city_adorned.dds"
 		requires = {
@@ -1194,25 +1664,55 @@ cc_byz_renovatio_campaign = {
 			cc_byz_task_great_palace
 			cc_byz_task_thessaloniki
 		}
-		enabled = { always = yes }
+		enabled = {
+			country_art_quality >= 1000
+			location:constantinople = {
+				owner ?= root
+				total_building_levels >= 30
+			}
+		}
+		bypass = { NOT = { owns = location:constantinople } }
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_severe_bonus
-			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 40  mode = add_and_extend }
+			add_country_modifier = { modifier = cc_byz_perm_city_adorned  years = -1  mode = add }
 			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
 		}
 	}
 
 	# --- Dead ends with a reward ---
 
+	# Hangs off the Sword capstone rather than off Illyricum. Illyricum had six children, which
+	# made it the new widest node in the tree, and a triumph belongs to the army that earned it
+	# rather than to a Balkan theatre.
 	cc_byz_task_triumph = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_triumph.dds"
-		requires = { cc_byz_task_illyricum }
+		requires = { cc_byz_task_field_army }
 		enabled = { army_tradition >= 70 }
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_severe_bonus
 			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	# REPURPOSED. This used to exist solely to grant cc_byz_cb_recover_the_islands at 30
+	# researched advances; the Merchant Fleet now grants that CB decades earlier, which left
+	# this task with nothing to do. It is now the scholarly spur it always looked like.
+	# Moved off Illyricum to the Fisc capstone for the same width reason as the Triumph, and it
+	# reads better there: recovering the register of the old provinces is the logothete's work.
+	cc_byz_task_notitia = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_notitia.dds"
+		requires = { cc_byz_task_logothete }
+		enabled = {
+			num_of_advances_researched >= 30
+			average_country_literacy > 35
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 30  mode = add_and_extend }
+			add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
 		}
 	}
 

@@ -1,0 +1,120 @@
+﻿# The five-year bureau funding average.
+#
+# WHY THIS EXISTS. The mission tasks used to test bureaucracy_maintenance directly, which is an
+# instant read: fund every bureau for one month, let the task tick over, defund the next month.
+# The task then permanently records that the empire "runs its bureaus at full maintenance",
+# which is the opposite of what it is trying to say. Nothing about the old test could
+# distinguish a working administration from a single funded month.
+#
+#
+# HOW IT WORKS. Sampled monthly off monthly_country_pulse. Each sample is the MEAN maintenance
+# across every bureaucracy the country has, funded or not, so an empire with four bureaus and
+# one funded at full samples 0.25 rather than 1.0. That is what makes it uncheesable: there is
+# no way to raise the mean except by actually funding the bureaus.
+#
+# The running value is an exponential moving average:
+#
+#     new = old * (29/30) + sample * (1/30)
+#
+# EMA RATHER THAN A RING BUFFER, deliberately. A true five-year window needs sixty stored
+# samples, which in this engine means sixty variables or a hand-managed variable list, and every
+# one of them is a thing that can desync from the others. The EMA is one variable and cannot
+# desync with itself.
+#
+# WHY 1/30 AND NOT 1/60. The obvious choice for a five-year window is a sixty-month constant,
+# and it is wrong. An EMA's centre of mass is 1/alpha months, so 1/60 weights samples out to
+# ten years and LAGS five: an empire that funded nothing for a decade and then funded properly
+# would still read 0.38 five years later, failing a test it had genuinely passed. 1/30 puts the
+# centre of mass at thirty months, which is the midpoint of a five-year window, and the same
+# empire reads 0.52 after five years of proper funding.
+#
+# STEADY FUNDING IS AN EXACT FIXED POINT, which is the property that makes the threshold
+# honest: 0.5 * 29/30 + 0.5 * 1/30 = 0.5. An empire funding at half strength forever sits at
+# exactly 0.5 forever and passes, rather than approaching it asymptotically and never arriving.
+#
+# Verified against the cases that matter. One month of full funding in every twelve settles at
+# 0.07 after fifty years, nowhere near either threshold. Six months on and six off oscillates
+# around 0.45, so intermittent funding does not pass either, which is the intended reading:
+# funded means sustained.
+#
+# It also decays honestly. An empire that funds properly for a decade and then stops does not
+# keep the credit; the average falls at the same rate it rose.
+#
+#
+# WARMUP. The average starts at the first sample rather than at zero, so a well-run empire is
+# not punished for the sixty months before the tracker had any history. Without this the task
+# would be unreachable for the first five years of any campaign regardless of play, which is a
+# different unfairness from the one being fixed.
+#
+# cc_byz_bureau_funding_avg   0..1   the running mean maintenance across all bureaus
+# cc_byz_bureau_funding_seen  set once the first sample has been taken
+
+cc_byz_bureau_sample_effect = {
+	if = {
+		limit = {
+			# Nothing to average. An empire with no bureaus is not badly funded, it is
+			# unadministered, and the tasks test the count separately.
+			cc_byz_current_bureau_count >= 1
+		}
+
+		# ---- The monthly sample ----
+		#
+		# ACCUMULATED HERE, NOT IN A SCRIPT VALUE, and the reason is worth keeping.
+		#
+		# The obvious form is a script value doing
+		#     every_current_bureaucracy = { root = { add = bureaucracy_maintenance } }
+		# and it errors with "Event target link 'compare_value' returned an unset scope",
+		# because entering root puts you in COUNTRY scope and bureaucracy_maintenance is a
+		# BUREAUCRACY-scope value. The three accumulators in cc_byz_values.txt that work all add
+		# a constant 1, so none of them ever exposed this.
+		#
+		# save_temporary_scope_value_as reads the number while still in the bureaucracy's scope,
+		# so nothing is asked of the country that the country does not have. prev rather than
+		# root because prev is the enclosing scope by construction and cannot be wrong about it.
+		set_variable = { name = cc_byz_bureau_sum_tmp  value = 0 }
+		every_current_bureaucracy = {
+			save_temporary_scope_value_as = {
+				name = cc_byz_bureau_maint
+				value = bureaucracy_maintenance
+			}
+			prev = {
+				change_variable = {
+					name = cc_byz_bureau_sum_tmp
+					add = scope:cc_byz_bureau_maint
+				}
+			}
+		}
+
+		save_scope_value_as = {
+			name = cc_byz_bureau_sample
+			value = {
+				value = var:cc_byz_bureau_sum_tmp
+				divide = cc_byz_current_bureau_count
+			}
+		}
+
+		if = {
+			# First sample: seed rather than average, so the tracker starts telling the truth
+			# immediately instead of climbing out of a zero it invented.
+			limit = { NOT = { has_variable = cc_byz_bureau_funding_seen } }
+			set_variable = { name = cc_byz_bureau_funding_seen  value = yes }
+			set_variable = { name = cc_byz_bureau_funding_avg   value = scope:cc_byz_bureau_sample }
+		}
+		else = {
+			# new = old * 29/30 + sample / 30
+			change_variable = {
+				name = cc_byz_bureau_funding_avg
+				multiply = 0.9667
+			}
+			change_variable = {
+				name = cc_byz_bureau_funding_avg
+				add = {
+					value = scope:cc_byz_bureau_sample
+					multiply = 0.0333
+				}
+			}
+		}
+
+		clamp_variable = { name = cc_byz_bureau_funding_avg  min = 0  max = 1 }
+	}
+}

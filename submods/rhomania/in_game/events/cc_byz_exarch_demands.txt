@@ -65,11 +65,10 @@ cc_byz_demand.1 = {
 	trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
 		any_subject = { has_variable = cc_byz_is_exarchate }
-		# Something left to ask for.
-		any_owned_location = {
-			count >= 3
-			region = region:italy_region
-		}
+		# Something left to ask for, in the province HE governs. This used to test Italy
+		# outright, which asked whether the emperor held Italian ground regardless of where
+		# the exarch actually sat: an African exarch would have demanded towns in Tuscany.
+		cc_byz_overlord_holds_prefecture_ground_trigger = yes
 	}
 
 	illustration_tags = {
@@ -91,7 +90,7 @@ cc_byz_demand.1 = {
 		# position, min, max and check_range_bounds, and it always takes the highest, so
 		# "least developed" is expressed by negating the sort value rather than by a flag.
 		ordered_owned_location = {
-			limit = { region = region:italy_region }
+			limit = { cc_byz_location_in_exarch_region_trigger = yes }
 			order_by = {
 				value = 0
 				subtract = development
@@ -261,7 +260,7 @@ cc_byz_demand.2 = {
 		set_variable = { name = cc_byz_mem_ceded_italy  value = yes }
 		every_owned_location = {
 			limit = {
-				region = region:italy_region
+				cc_byz_location_in_exarch_region_trigger = yes
 				NOT = { this = root.capital }
 			}
 			change_location_owner = scope:cc_byz_exarch
@@ -356,10 +355,7 @@ cc_byz_demand.3 = {
 		# gate the event could fire off a bare appetite score, which would make it a random
 		# seizure rather than the end of an argument the player took part in.
 		has_variable = cc_byz_mem_refused_twice
-		any_owned_location = {
-			count >= 1
-			region = region:italy_region
-		}
+		cc_byz_overlord_holds_any_prefecture_ground_trigger = yes
 	}
 
 	illustration_tags = {
@@ -378,7 +374,7 @@ cc_byz_demand.3 = {
 		# Not offered. The garrisons in those towns are his men and have been for years.
 		ordered_owned_location = {
 			limit = {
-				region = region:italy_region
+				cc_byz_location_in_exarch_region_trigger = yes
 				NOT = { this = root.capital }
 			}
 			# Negated for the same reason as .1: ordered_* has no ascending option.

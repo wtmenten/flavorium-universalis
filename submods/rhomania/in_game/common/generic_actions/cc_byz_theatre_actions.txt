@@ -13,6 +13,25 @@
 # has_game_rule is an ordinary trigger usable in any trigger context; vanilla uses it for
 # byz_name_greek in customizable_localization/countries.txt:27.
 #
+#
+# THE GUARD IS "has_game_rule = mission_packs_disabled", NOT "NOT = { ... = mission_packs_enabled }".
+#
+# These are the same thing today and would stop being the same thing silently. The mission pack
+# appears when vanilla's game_has_missions_enabled passes, and that trigger is
+#
+#     game_has_missions_enabled = { NOT = { has_game_rule = mission_packs_disabled } }
+#
+# with the comment "Using this formatting in case we add additional types of missions which
+# should be en- and disabled in the settings" (scripted_triggers/game_triggers.txt:37-40).
+# Paradox is explicitly reserving the right to add a third option to mission_packs_enabled_rule.
+#
+# If they do, a rule value that is neither enabled nor disabled makes NOT-disabled true, so the
+# mission pack shows, AND makes NOT-enabled true, so these actions show as well. Every theatre
+# would then be claimable twice, once per front-end, and nothing would log an error.
+#
+# Testing the disabled option positively is the exact complement of vanilla's trigger under any
+# number of options, so the two front-ends stay mutually exclusive whatever gets added.
+#
 # No price block. The cost of a theatre is the war it took to hold the cities, which the
 # trigger already required, plus the strain the effect applies afterwards. Charging gold on
 # top would be taxing the player for having done the thing.
@@ -27,7 +46,7 @@ cc_byz_claim_theatre_illyricum = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -59,7 +78,7 @@ cc_byz_claim_theatre_italy = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -91,7 +110,7 @@ cc_byz_claim_theatre_africa = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -123,7 +142,7 @@ cc_byz_claim_theatre_spania = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -155,7 +174,7 @@ cc_byz_claim_mare_nostrum = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -195,7 +214,7 @@ cc_byz_claim_theatre_red_sea = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -227,7 +246,7 @@ cc_byz_claim_theatre_horn = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -259,7 +278,7 @@ cc_byz_claim_theatre_india = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -291,7 +310,7 @@ cc_byz_claim_theatre_spice_islands = {
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
-		NOT = { has_game_rule = mission_packs_enabled }
+		has_game_rule = mission_packs_disabled
 		scope:actor = {
 			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
@@ -311,4 +330,59 @@ cc_byz_claim_theatre_spice_islands = {
 	}
 
 	ai_will_do = { add = 10 }
+}
+
+
+# ---- Greek Fire ----
+#
+# THE ONE NON-THEATRE ACTION IN THIS FILE, and it is here for the reason stated at the top:
+# mission packs default to OFF, so mission-only content is invisible to most players.
+#
+# Everything else the second structural pass added to the tree is a stepping stone, and the
+# header rule that only cornerstones get an action twin holds for those. Greek Fire is not a
+# stepping stone. It sets unlocked_greek_fire, which gates FOUR vanilla unit types
+# (n_greek_fire_galley_renaissance, n_greek_fire_galley_discovery,
+# a_greek_fire_renaissance_infantry, a_greek_fire_discovery_infantry), and vanilla's only other
+# route to it is a 5%/month dynamic historical event that also needs an idle scientist above
+# 0.7 skill and then coin-flips indefinitely. Leaving that behind a disabled-by-default game
+# rule would hide the largest optional prize in the submod from the majority of the audience.
+#
+# The conditions mirror cc_byz_task_greek_fire exactly, and both routes fire the same chain, so
+# neither front-end can pay differently. The guard is cc_byz_mem_fire_restored rather than
+# unlocked_greek_fire: a player whose vanilla lottery already paid out should still be offered
+# the chain, because cc_byz_fire.1 has a branch for exactly that case which grants the
+# permanent modifier without re-setting the variable.
+cc_byz_recover_greek_fire = {
+	type = owncountry
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	player_automated_category = religiousdoctrines
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_game_rule = mission_packs_disabled
+		scope:actor = {
+			has_or_had_tag = BYZ
+			has_societal_value = societal_value_type:latinization_vs_hellenization
+			NOT = { has_variable = cc_byz_mem_fire_restored }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			navy_tradition >= 50
+			average_country_literacy > 20
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			add_navy_tradition = navy_tradition_mild_bonus
+			trigger_event_non_silently = cc_byz_fire.1
+		}
+	}
+
+	ai_will_do = { add = 15 }
 }

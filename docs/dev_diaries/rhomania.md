@@ -31,9 +31,11 @@ The Greek side now also has something to unlock. A parallel advance line answers
 
 ## Rome, without moving to Rome
 
-The Renovatio track is the centrepiece. You appoint an **exarch**: a named character from your court, given a seat in Italy and one of three terms of appointment, governing Rome as your subject while your capital stays where the empire actually is.
+The Renovatio track is the centrepiece. You appoint an **exarch**: a named character from your court, given a seat in the recovered west and one of three terms of appointment, governing as your subject while your capital stays where the empire actually is.
 
-You do not have to know the feature exists to find it. Once enough of Italy is in imperial hands, the officials administering it by dispatch write to say they are drowning: they are settling quarrels between Italian lords on evidence three months old, in a legal tradition none of them has studied, and they are doing it badly. The event proposes a solution and nominates a man from your own council to carry it out. The three answers are the three terms of appointment, so the choice that opens the arc is the same choice the interaction offers, made under pressure and about a specific person.
+There are **four seats**, one for each of the late-Roman praetorian prefectures: Ravenna in Italy, Carthage in Africa, Spania on the Iberian coast, and the Gauls on the Rhone. One exarch per region, no more. Only Ravenna and Carthage were ever really exarchates, and Gaul was never recovered by the eastern empire at all, but the prefectures themselves are real administrative units of the empire this one claims to continue, which is why the four countries are named for those rather than for offices that mostly did not exist.
+
+You do not have to know the feature exists to find it. Once enough of any of the four regions is in imperial hands, the officials administering it by dispatch write to say they are drowning: they are settling quarrels between Italian lords on evidence three months old, in a legal tradition none of them has studied, and they are doing it badly. The event proposes a solution and nominates a man from your own council to carry it out. The three answers are the three terms of appointment, so the choice that opens the arc is the same choice the interaction offers, made under pressure and about a specific person.
 
 <div class="fig-row">
   <figure>
@@ -56,11 +58,11 @@ Then you summon him home, and find out what you built.
 
 The endings range from a hereditary exarchal dynasty that outlives the emperor who created it, to a fully absorbed province administered by salaried officials who expect another posting afterwards. Which one you get is decided by an accumulated loyalty score, not by a final choice, and the score has been moving since the appointment.
 
-Running alongside all of that, and tracked separately, is what he wants. Any Italian ground you still hold directly is ground the exarch can make a case for, and his case is usually a good one: the districts border his own, they are administered at six weeks' remove by men who have never seen them, and their revenue barely covers the cost of collecting it. He is never asking for anything you are making money on.
+Running alongside all of that, and tracked separately, is what he wants. Any ground in his own province that you still hold directly is ground the exarch can make a case for, and his case is usually a good one: the districts border his own, they are administered at six weeks' remove by men who have never seen them, and their revenue barely covers the cost of collecting it. He is never asking for anything you are making money on.
 
 Refusing is the default and costs you standing with him rather than gold. The better answers are gated on your ruler **or on your cabinet**, which is the point: a mediocre emperor with a charismatic negotiator at council can still make a refusal land as policy rather than a snub, and an administrator can construct the arrangement where the exarch gets the revenue and the crown keeps the authority. Appetite is deliberately not the same number as loyalty. He can be perfectly loyal and still want the Romagna.
 
-Refuse the formal case often enough and he stops asking. His officers were already the nearest authority, the garrisons had been his for years, and at some point the local officials simply began reporting to the man who was actually there. You find out from a tax return that does not arrive. The options then are a war in Italy you cannot presently fund, or a document, and he has been reasonably confident of that for some time.
+Refuse the formal case often enough and he stops asking. His officers were already the nearest authority, the garrisons had been his for years, and at some point the local officials simply began reporting to the man who was actually there. You find out from a tax return that does not arrive. The options then are a war at the far end of the Mediterranean you cannot presently fund, or a document, and he has been reasonably confident of that for some time.
 
 <figure>
   <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_exarch_demand.png" target="_blank">
@@ -69,7 +71,154 @@ Refuse the formal case often enough and he stops asking. His officers were alrea
   <figcaption>He asks well. That is most of the problem.</figcaption>
 </figure>
 
+Each province fails in its own way, and the shared friction thread cannot say why. **Africa** is a frontier that never settles: confederations south of the limes that cannot be defeated the way a state is defeated, garrisons years in arrears, and a congregation four days inland following a discipline the capital condemned eight hundred years ago and which has apparently been waiting. **Spania** is a coastal strip with mountains behind it that cannot feed its own garrison, running on Visigothic law in its own courts, with a neighbour who would rather trade than fight and an assessment every governor has submitted unchanged. **Gaul** is the one place where the locals have been continuously Roman and do not regard themselves as having been recovered; the delegation from the Provencal cities arrives speaking better Latin than your secretaries and congratulates you on your return.
+
 Holding Rome also means holding a quarrel with the papacy that has no resolution, and the diary is not going to pretend otherwise. Which rite is celebrated. Whether the Pope is a guest, a subject or a hostage. Appointments made without your assent. Excommunication, which costs an Orthodox emperor almost nothing and costs his Catholic-governing exarch a great deal, and the Pope knows it.
+
+---
+
+## The West
+
+Seat your first exarch and a situation opens. It is the hub for everything the prefectures do
+afterwards, and it exists because four governed provinces at the far end of the Mediterranean
+are not four separate problems. They are one problem with four sets of correspondence.
+
+Two things are tracked, and they are **not two ends of one bar**. Imperial grip is how firmly
+Constantinople actually governs the west. Western autonomy is how much the west decides for
+itself. Both can be high at once, which is the whole historical interest of the arrangement:
+Ravenna was at its most effective and its most independent at the same time, because the things
+that let it hold Italy were the things that let it hold Italy without being told to.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_the_west_situation.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_the_west_situation.png" alt="The West situation panel with both counters">
+  </a>
+  <figcaption>Grip and autonomy, tracked separately. All four corners are reachable and each is a different empire.</figcaption>
+</figure>
+
+### The consistory, and the arithmetic that turns on you
+
+The prefectures form a body: the Praetorian Prefectures of the West, with the emperor at its
+head and every exarch seated in it. It begins **dormant**. The provinces are governed; they do
+not meet. Calling them into session is your decision alone, and an emperor who never makes it
+never loses a vote.
+
+If you do convene it, votes are weighted:
+
+| | votes |
+|---|---|
+| the Augustus | 3 |
+| the Senior Exarch | 2 |
+| each other exarch | 1 |
+
+With one prefecture you cannot lose, three against one. With two it is three against three and
+a tie fails the motion. With three it is three against four, and the west carries.
+
+Nothing about that needs balancing. It turns against you because you succeeded, one province at
+a time, and the body that outvotes you is the one you summoned.
+
+### Four questions
+
+The consistory votes on the four powers a late-Roman prefecture actually exercised. Who the
+western armies obey. Where the western revenue goes. What is celebrated in the western
+churches. How a dead prefect is replaced.
+
+The rite is the one that bites. A west that votes itself local usage is a west drifting Latin,
+and the drift lands on the **empire**, not on the provinces. Recovering the west in Greek terms
+is work, and the work is political rather than military. This is the submod's central argument
+arriving through a door you built yourself.
+
+<figure>
+  <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_consistory_vote.png" target="_blank">
+    <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_consistory_vote.png" alt="A vote in the consistory">
+  </a>
+  <figcaption>The Rite, in session. The votes on the right are the reconquest coming back around.</figcaption>
+</figure>
+
+### What you can actually do about it
+
+Seven repeatable actions, available whether or not you play with mission packs enabled. Order a
+census. Pay the annual donative. Demand the tribute. Send a strategos west. Confirm an exarch's
+son. Grant a commune its charter. Summon an exarch to the capital.
+
+Six of those are decisions. The seventh is not: **whether he comes when called is not yours to
+decide**, and the odds read off a loyalty score the other six have been moving for decades. An
+emperor who took the tribute twice, never paid the donative and confirmed nobody's son is
+issuing an order to a man with no reason to obey it. When the summons is refused and nothing
+happens to him, every governor in the empire notices.
+
+Loyalty also reaches the chamber. A well-treated prefect moderates almost to the point of
+voting with the capital; a mistreated one nearly doubles his push. The donative is not only
+about manpower.
+
+### The rising
+
+Convene the consistory and you have given four provinces separated by weeks of sailing a way to
+produce a single document with four seals on it. They could not have done that eighty years
+ago.
+
+You are told it is coming. Two conditions have to converge for a rising: the west has to be
+structurally strong, and at least one prefect has to have stopped pretending to be satisfied.
+Both of those used to be invisible. The panel shows the counters but never says which number
+matters, and a prefect's loyalty is not displayed anywhere at all.
+
+So the west now reports on itself. **The West Is Restive** appears on your own modifier list
+when the two conditions are one step from converging, and it comes with a dispatch explaining
+what changed: the prefectures have begun corresponding with each other rather than with the
+capital, settling boundary questions between governors, agreeing grain prices, drafting a joint
+complaint about the assessment and then not sending it. None of it is improper. The Master of
+Offices makes that point twice, which is how you know he is worried.
+
+Individual prefects are marked too, in both directions, so you can see which of the four is the
+problem rather than only that there is one. **A Disaffected Prefect** is raising men, and it is
+not the capital he expects to use them for. **A Contented Prefect** is paid, confirmed, and
+doing well out of the arrangement.
+
+The warning is not decoration. Paying the arrears in full moves every prefect two points, and
+dealing privately with the one drafting the letters moves him three, and either can take the
+west back below the threshold. Ignoring it is also a real answer if the treasury is committed
+elsewhere.
+
+The rising, when it comes, begins as a procedural objection, because the men making it are
+lawyers as well as soldiers. The consistory resolves that appointments to the west require the
+assent of the body, communicates this in the correct form with the correct seals, and cites
+four precedents of which three are genuine. It resolves nothing about obedience, because it
+does not have to. The western armies are in their quarters and have been paid, and not by you.
+
+The war that follows is a **civil war in the strict sense**: the prefects remain your subjects
+while it is fought. They have not repudiated the empire, they are fighting about who runs it.
+Winning lets you revoke an appointment rather than conquer a country, which is why reducing a
+prefecture costs a fraction of what annexing a comparable state would and why nobody else in
+Europe treats it as their business.
+
+You can also decline the war. Concede the substance and keep the forms, which is cheaper and
+which the west correctly reads as a victory, or spend heavily to buy the prefects who can be
+bought and isolate the one who cannot.
+
+### How it ends
+
+|  | autonomy low | autonomy high |
+|---|---|---|
+| **grip high** | the west reabsorbed | **the diarchy** |
+| **grip low** | the west neglected | the acclamation |
+
+Reabsorption pays best on paper and is the least interesting empire, because it is only
+reachable by keeping the provinces weak, which means never having got the manpower or the
+revenue out of them. The **diarchy** is the one that wants both counters high: a colleague in
+the west, invested and acclaimed and named in the prayers, governing provinces strong enough to
+matter. The fourth century tried this and failed because the two halves were rivals from the
+start. This one gets built by an emperor who recovered the west himself and then declined to
+pretend he could administer it from the Bosphorus.
+
+The acclamation is the other outcome, and it happens the way it always happens: a parade
+ground, an army that has not been paid, a general who has been, and the shout going up before
+anyone has decided to shout it.
+
+**The question does not stay open forever.** It is settled by the Age of Revolutions one way or
+another, because that is where the wider mod takes over the business of what a subject is, and
+two systems answering that at once would contradict each other on the same screen. If the
+counters have not reached a corner by then, the nearest one is taken. You get told this is
+coming an age in advance.
 
 ---
 
@@ -112,7 +261,19 @@ Three new offices compete for slots: the **Genikon** (the general fisc), the **E
 
 Two numbers describe every office and the interesting content is in how they combine. A funded, entrenched bureau is a pillar of the state. An unfunded, entrenched one is a fiefdom, and vanilla names that outcome itself. A brand new unfunded office is close to harmless, because nobody has had time to build anything out of it yet, and the malus scaling here is deliberately softened at low entrenchment to make that true.
 
-Underneath it all runs a venality score. It rises whenever an office is treated as property rather than a post, it gates the nastier events, and nothing resets it cheaply except a purge, which is why emperors keep reaching for purges.
+Underneath it all runs a venality score. It rises whenever an office is treated as property rather than a post, and it gates the nastier events. Exactly one thing brings it back down: paying the arrears in full, which costs several years of a small realm's income and is the only reason the score is a decision rather than a countdown.
+
+### The bill arrives later
+
+The salaries fall behind. You can pay them, retrench honestly if your ruler is a capable administrator, or let the offices find their own income, and everyone understands what the third one means.
+
+Choose it and nothing much happens. **Twelve years later** a delegation of clerks comes to the palace to ask, with great respect, that the arrangement be regularised. They are not asking permission. They want a schedule of rates, because the current uncertainty is bad for everyone, and by now the charges are known the way the price of bread is known: not secret, not irregular, not written down anywhere, and a clerk who did not levy them would be regarded by his colleagues as a man making a point.
+
+You can repeal it, which is expensive and hated by everyone who has built a life on it and does actually work. You can tax the fees instead, and the treasury takes its share of an abuse it has stopped pretending to disapprove of. Or you can say nothing, and the custom hardens.
+
+A funding cut announced and then not explained runs the same way. Ten years on the office still answers letters, and answers them accurately. What has changed is that it answers them in an order: a request from a family with a relative in the service moves, a stranger's waits, and there is no rule about this and nobody who could be shown to have decided it. The men who could have been asked left when the salaries stopped. The cut took an afternoon; undoing it is a project of years, and the emperor who ordered it is dead.
+
+Selling an office outright is the one decision in the thread that cannot be walked back. There is no later event that unwinds a sale.
 
 ---
 
@@ -136,18 +297,20 @@ Justinian recovered Africa, Italy and a strip of Spain. The plague came with the
   <a href="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mission_tree.png" target="_blank">
     <img src="../assets/screenshots/Rhomania/EUV_1.3.x_FU_Rhomania_0.1.0_mission_tree.png" alt="The Renovatio Imperii mission tree">
   </a>
-  <figcaption>Renovatio Imperii: seventy-one tasks, five roots, and no single road through them.</figcaption>
+  <figcaption>Renovatio Imperii: eighty-six tasks, five roots, and no single road through them.</figcaption>
 </figure>
 
 Nine cornerstones carry the campaign: Illyricum, Italy, Africa, Spania and Mare Nostrum in the west, then the Red Sea, the Horn, India and the spice islands in the east. Each western theatre fails differently and none of them fails on the map. Illyricum is won and then populated by people who were never consulted and will outlast every arrangement you make. Italy is recovered as a ruin. Africa is rich, and never settles, and its garrisons go years without pay. Spania is the cheapest to take and the hardest to justify keeping, and its garrison commander has submitted a professionally worded assessment concluding that the position is untenable in any circumstance where it matters.
 
-The other sixty-two tasks are the empire the reconquest is launched from.
+The other seventy-seven tasks are the empire the reconquest is launched from.
 
 ### The house before the campaign
 
-Five opening tasks need no wars at all: maintain the Theodosian Walls, keep the Hippodrome, seat five men on the council, run four bureaus at full maintenance, hold a working shipyard.
+Five opening tasks need no wars at all: hold the Theodosian Walls for a decade, keep the Hippodrome, seat five men on the council, run two bureaus at full maintenance, hold a working shipyard.
 
-Then the tree splits into **three pillars you can pursue in any order**. The **Fisc** restores the nomisma, the silk looms and a literate administration, ending with the Logothete of the Course, the office that ran the post and the roads and eventually the foreign policy because it was the only one that knew what was happening. The **Faith** runs through Athos, the icons and leadership of the autocephalous churches to the Ecumenical Throne. The **Sword** goes veterans, dromons and the Varangian Guard to a restored field army.
+The walls are the only timed task in the tree, and they are timed for a reason. Byzantium owns them at the start date, so "maintain the Theodosian Walls" was a task you completed before unpausing and could then demolish. Ten years is the answer.
+
+Then the tree splits into **three pillars you can pursue in any order**. The **Fisc** restores the nomisma, the silk looms and a literate administration, ending with the Logothete of the Course, the office that ran the post and the roads and eventually the foreign policy because it was the only one that knew what was happening. The **Faith** runs through Athos, the icons and leadership of the autocephalous churches to the Ecumenical Throne. The **Sword** goes veterans, dromons and the Varangian Guard to a restored field army, and the Varangians bring a casus belli on the old Balkan frontier with them, which is the earliest one in the submod.
 
 **You only need two of the three.** No emperor was ever strong in every respect at once, and the tree does not ask you to be. Neglecting a pillar entirely is a legitimate way to play.
 
@@ -157,6 +320,8 @@ Then the tree splits into **three pillars you can pursue in any order**. The **F
   </a>
   <figcaption>Fisc, Faith and Sword. Two of the three carry you to The State Restored.</figcaption>
 </figure>
+
+The tree also stopped being a fan. One task, The State Restored, used to open twelve at once, which made the third rank unreadable. Four gateways now sit between it and that cluster: the Roman Title, the Balkan Frontier, the Latin Powers, the Anatolian Return. Each is a small objective in its own right, and no node in the tree opens more than four things.
 
 ### Choices that close doors
 
@@ -175,15 +340,17 @@ The road not taken vanishes from the tree, so each fork's description names what
 
 Illyricum opens Italy, Africa and Spania as three independent lines, takeable **in whatever order the map offers**, reconverging at the Western Sea once any two are done. This is a correction as much as a feature: the previous chain forced Italy before Africa, which forbade the order Justinian actually used. He took Africa in 533 and Italy afterwards, and the sequence was opportunity rather than plan.
 
-Alongside all of it sit seven optional spurs that gate nothing. Rediscover Greek fire. Maintain Hagia Sophia, furnish the Great Palace and hold Thessaloniki, and an optional capstone recognises a city worth looking at. Hold a triumph in the Hippodrome, using forms recorded in the ceremonial books and not performed in two hundred years.
+Alongside all of it sit eleven optional spurs that gate nothing, and they now sit with the regions they belong to rather than clustered at the roots. A porphyrogenitus heir. The Danube reached. The union with Rome received at home. The akritai settled on the frontier they hold. The pilgrim road from Jaffa to Jerusalem, which is where custody of the holy places turns into revenue. Maintain Hagia Sophia, furnish the Great Palace and bring Thessaloniki properly under control, and an optional capstone recognises a city worth looking at. Hold a triumph in the Hippodrome, using forms recorded in the ceremonial books and not performed in two hundred years.
+
+And Greek fire, which is no longer a minor spur. Vanilla gates four unit types behind a variable reachable only through a five-percent monthly event that also wants an idle scientist and then flips a coin with no bound on how often it can fail; a campaign can end without ever seeing it. Here it is a three-event chain with three ways in: the court's own scientists, the monastic archives, or a captured engineer who has actually built a siphon. Whichever route you take, something gets out to the Italians or it does not, and you are not asked about it. It is available whether or not you have mission packs on.
 
 ### And what it costs
 
 Every theatre raises **strain**. Strain rises further with unintegrated conquests, with fighting while already holding two theatres, and with borrowing at war; it falls with peace and with integration. Past the thresholds the provinces stop remitting, a permanent western army assembles that nobody decided to create, and a general appears who has done everything asked of him and rather more, which is the problem.
 
-**One thing to be clear about.** Mission packs are off by default in EU5, and the nine cornerstones are delivered as ordinary actions for everyone playing that way, calling exactly the same code. The other sixty-two tasks are not. They exist only with mission packs enabled.
+**One thing to be clear about.** Mission packs are off by default in EU5, and the nine cornerstones are delivered as ordinary actions for everyone playing that way, calling exactly the same code. Greek fire is the tenth, for the same reason: it unlocks units, and hiding that behind a disabled-by-default rule would hide it from most people. The other seventy-six tasks are not. They exist only with mission packs enabled.
 
-That is deliberate rather than an oversight. Sixty-two more entries in the action panel would bury the nine that matter. Nothing structural is behind them: the theatres, their permanent modifiers and every event chain are reachable either way. Turning missions on gets you the scaffolding, the forks and the small rewards, not the content.
+That is deliberate rather than an oversight. Seventy-six more entries in the action panel would bury the ten that matter. Nothing structural is behind them: the theatres, their permanent modifiers and every event chain are reachable either way. Turning missions on gets you the scaffolding, the forks and the small rewards, not the content.
 
 ---
 

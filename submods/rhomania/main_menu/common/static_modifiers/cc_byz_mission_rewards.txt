@@ -55,6 +55,10 @@ cc_byz_reward_administration = {
 }
 
 # Recruits from a province that has decided it is ours.
+#
+# LATE-GAME PAIR TO cc_byz_reward_levies. Standing manpower is what a fisc with a working
+# assessment buys; levies are what an empire that has not got one calls out. The early Sword
+# tasks draw levies, the later ones draw this.
 cc_byz_reward_manpower = {
 	game_data = {
 		category = country
@@ -62,6 +66,37 @@ cc_byz_reward_manpower = {
 
 	global_manpower_modifier = 0.08
 	global_levy_size_modifier = 0.05
+}
+
+# The theme called out. Fourteenth-century Byzantine armies were levies and mercenaries long
+# before they were anything a treasury could pay monthly, so the EARLY Sword tasks pay in levy
+# recovery and levy size rather than standing manpower. Recovery in particular is what the
+# opening decades are short of: an empire this size can raise a host once and then cannot raise
+# it again for years.
+cc_byz_reward_levies = {
+	game_data = {
+		category = country
+	}
+
+	levy_recovery_modifier = 0.15
+	global_levy_size_modifier = 0.08
+	peasants_estate_levy_size = 0.10
+}
+
+# Credit on better terms.
+#
+# bank_interest IS INVERTED: negative is cheaper. Checked against vanilla, where the positive
+# values sit on penalty modifiers (country.txt:6235 = 0.03) and the negative on boons
+# (country.txt:416 = -0.02). The early Fisc tasks land in exactly the window where a Byzantine
+# player is debt-spending to hold Thrace, and a point of interest is worth more then than any
+# amount of trade power.
+cc_byz_reward_credit = {
+	game_data = {
+		category = country
+	}
+
+	bank_interest = -0.01
+	total_loan_capacity_modifier = 0.10
 }
 
 # A public triumph, and a city that believes in the throne again for a while.

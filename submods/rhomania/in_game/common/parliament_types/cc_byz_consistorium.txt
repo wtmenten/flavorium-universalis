@@ -1,0 +1,55 @@
+﻿# The sacrum consistorium: the imperial council of the western prefectures.
+#
+# Two forms, following the Balancing Coalition's dormant/assembly pattern exactly
+# (cc_bop_parliament.txt in the main mod).
+#
+# DORMANT IS THE STARTING STATE AND IT MATTERS. The prefectures exist as an administrative fact
+# from the moment the first exarch is seated, but a body that meets is a different thing from a
+# set of provinces, and calling it into session is the emperor's own decision. An emperor who
+# governs the west entirely through appointment and never convenes the consistory is playing a
+# legitimate and rather attractive game: no votes means no votes he can lose.
+#
+# The price of never convening it is in the friction thread. Exarchs with no forum take their
+# grievances elsewhere, which is what the correspondence and joint-petition events are about.
+#
+#
+# uses_parliament_for_law_votes routes weight through special_status_power, so the emperor casts
+# three and the exarchs one or two each (see international_organization_special_statuses/
+# cc_byz_prefectures.txt for the full arithmetic and why it turns against the player).
+#
+# policy_vote_required_vote_ratio = 0.5 means a tie FAILS the motion. At two prefectures the
+# vote is 3 against 3 and nothing carries, which is the deadlock the second prefecture buys.
+#
+# Setting this flag also makes vanilla block law debates while a parliament issue is ongoing and
+# end and recalculate the parliament when a law vote resolves. That is documented in CLAUDE.md
+# and is the reason the four western laws are deliberately few: an emperor should not be able to
+# keep the consistory permanently busy.
+
+# DORMANT. The prefectures are governed, not consulted.
+cc_byz_consistorium_dormant = {
+	type = international_organization
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	locked = { parliament_type = parliament_type:cc_byz_consistorium_dormant }
+	modifier = {
+		pure_tooltip_entry = pte_no_international_parliament	# has_international_parliament = no
+	}
+}
+
+# IN SESSION. Convened by cc_byz_io_convene_consistory, which is the emperor's decision alone.
+cc_byz_consistorium_assembly = {
+	type = international_organization
+	potential = {
+		international_organization_type = international_organization_type:cc_byz_prefectures
+	}
+	locked = { parliament_type = parliament_type:cc_byz_consistorium_assembly }
+	modifier = {
+		has_international_parliament = yes
+		uses_parliament_for_law_votes = yes
+		policy_vote_required_vote_ratio = 0.5
+		cc_byz_augustus_can_participate_in_parliament = yes
+		cc_byz_senior_exarch_can_participate_in_parliament = yes
+		cc_byz_exarch_seat_can_participate_in_parliament = yes
+	}
+}

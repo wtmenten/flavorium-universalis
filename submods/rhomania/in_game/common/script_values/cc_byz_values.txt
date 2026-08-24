@@ -77,3 +77,174 @@ cc_byz_entrenched_unfunded_count = {
 	min = 0
 	max = 6
 }
+
+
+#############################################
+# Consistory voting bias
+#############################################
+#
+# WHAT THESE FIX. The four western laws shipped with flat constants in their wants_* blocks, so
+# every prefect voted identically for autonomy by a fixed margin regardless of how he had been
+# treated. cc_byz_exarch_loyalty did not enter the vote at all: it decided the recall roll and
+# nothing else. A loyal prefect and a resentful one were the same voter.
+#
+# These two are added on top of each policy's own flat base, so the base still expresses the
+# institutional interest (a prefect always prefers commanding his own troops) and these express
+# how hard he is willing to push for it this session.
+#
+# SCOPE. Inside wants_this_policy_bias / wants_propose_policy / wants_keep_policy the root is
+# the VOTING COUNTRY (laws/readme.txt:39-41), so root is the exarchate for a prefect's vote and
+# Byzantium for the emperor's. Everything below is written from that scope, which is why the
+# emperor branch tests is_leader_of_international_organization rather than a tag.
+#
+# EVERY VARIABLE READ IS GUARDED. These evaluate for any country the engine polls, including
+# ones that have never had an exarchate, and an unguarded var: read in a script value is the
+# error class in docs/scripting-gotchas.md.
+
+# How hard this voter pushes for the WESTERN side of a question.
+cc_byz_west_lean_value = {
+	value = 0
+
+	# The emperor is never on this side of it.
+	if = {
+		limit = {
+			exists = international_organization:cc_byz_prefectures
+			is_leader_of_international_organization = international_organization:cc_byz_prefectures
+		}
+		subtract = 40
+	}
+
+	# THE MAIN TERM. Loyalty runs -5..5, so this is a -30..+30 swing against a policy base of
+	# 30 to 45: a well-treated prefect moderates almost to the point of voting with the
+	# capital, and a mistreated one nearly doubles his push. This is what makes the donative,
+	# the tribute and the census matter to the consistory rather than only to the recall.
+	if = {
+		limit = { has_variable = cc_byz_exarch_loyalty }
+		subtract = {
+			value = var:cc_byz_exarch_loyalty
+			multiply = 6
+		}
+	}
+
+	# A prefect whose son has already been confirmed thinks the post is his family's, and votes
+	# accordingly whatever his personal feelings about the emperor.
+	if = {
+		limit = { overlord ?= { has_variable = cc_byz_mem_west_hereditary } }
+		add = 10
+	}
+
+	# Somebody has already refused a summons and kept his province. Everyone west of the
+	# Adriatic drew the same conclusion.
+	if = {
+		limit = { overlord ?= { has_variable = cc_byz_mem_west_defied } }
+		add = 12
+	}
+
+	# A west that already runs itself argues from a stronger position.
+	if = {
+		limit = {
+			is_situation_active = situation:cc_byz_the_west
+			situation:cc_byz_the_west = {
+				trigger_if = {
+					limit = { has_variable = cc_byz_western_autonomy }
+					var:cc_byz_western_autonomy >= 60
+				}
+				trigger_else = { always = no }
+			}
+		}
+		add = 10
+	}
+
+	min = -50
+	max = 50
+}
+
+# The mirror, for the IMPERIAL side of a question. Not simply the negation: the emperor's
+# preference for his own prerogative is stronger and steadier than a prefect's opposition to
+# it, which is what lets a determined emperor hold the line at two prefectures.
+cc_byz_imperial_lean_value = {
+	value = 0
+
+	if = {
+		limit = {
+			exists = international_organization:cc_byz_prefectures
+			is_leader_of_international_organization = international_organization:cc_byz_prefectures
+		}
+		add = 50
+	}
+
+	if = {
+		limit = { has_variable = cc_byz_exarch_loyalty }
+		add = {
+			value = var:cc_byz_exarch_loyalty
+			multiply = 6
+		}
+	}
+
+	# Paid garrisons remember it in the chamber as well as in the field.
+	if = {
+		limit = { overlord ?= { has_country_modifier = cc_byz_west_donative_paid } }
+		add = 8
+	}
+
+	# A summons that was obeyed is the clearest possible statement about where authority sits.
+	if = {
+		limit = { overlord ?= { has_country_modifier = cc_byz_west_recall_obeyed } }
+		add = 10
+	}
+
+	if = {
+		limit = {
+			is_situation_active = situation:cc_byz_the_west
+			situation:cc_byz_the_west = {
+				trigger_if = {
+					limit = { has_variable = cc_byz_imperial_grip }
+					var:cc_byz_imperial_grip >= 60
+				}
+				trigger_else = { always = no }
+			}
+		}
+		add = 10
+	}
+
+	min = -50
+	max = 50
+}
+
+
+#############################################
+# Bureau funding, sampled for the five-year average
+#############################################
+#
+# WHAT THIS REPLACES. cc_byz_task_bureaus and cc_byz_task_logothete used to test
+# any_current_bureaucracy with a bureaucracy_maintenance floor, which is an INSTANT test: fund
+# everything for one month, let the task tick over, and defund immediately. The task recorded
+# that the bureaus had been funded once, which is not what "the bureaus are funded" means.
+#
+# They now read a five-year running average maintained by cc_byz_bureau_sample_effect off the
+# monthly pulse. The count below is half of the monthly sample; the other half, the total
+# maintenance, is accumulated in the EFFECT rather than here.
+#
+# WHY THE SUM IS NOT A SCRIPT VALUE. It was, and it errored:
+#
+#     Event target link 'compare_value' returned an unset scope
+#
+# The accumulator idiom is root = { add = X }, and the moment you enter root you are in COUNTRY
+# scope. bureaucracy_maintenance is a BUREAUCRACY-scope value, so reading it there asks the
+# country for a property it does not have. The three accumulators in this file that work all
+# add a constant 1, which is why none of them ever hit this.
+#
+# Vanilla's own summing accumulator (io_policy.txt:81) sidesteps it with a purpose-built
+# prev-aware value. The effect does it by saving the number before changing scope, which needs
+# no new script value at all. See scripted_effects/cc_byz_bureau_funding.txt.
+
+# How many bureaucracies exist at all, funded or not. Distinct from
+# cc_byz_funded_bureau_count above, which counts only those with maintenance above zero: an
+# empire with four bureaus and one funded should sample 25 percent, not 100.
+cc_byz_current_bureau_count = {
+	every_current_bureaucracy = {
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}

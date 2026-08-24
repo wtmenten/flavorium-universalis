@@ -1,0 +1,135 @@
+﻿# Permanent modifiers for the mission tree's capstone tier.
+#
+# NINE ENTRIES, AND DELIBERATELY NOT MORE. These are applied with years = -1 and never expire,
+# so every one of them is a line in the player's country modifier list for the rest of the
+# campaign. Handing them out to stepping stones would produce a tooltip nobody reads and a
+# balance nobody can reason about; the stones draw from the six temporary pools in
+# cc_byz_mission_rewards.txt instead.
+#
+# WHICH TASKS. The three pillar capstones, the three reconvergences, the Anatolian
+# reconvergence, the optional city capstone, and Greek Fire. The NINE THEATRE CORNERSTONES ARE
+# NOT HERE: they already carry permanent modifiers through cc_byz_theatre_*_effect in
+# scripted_effects/cc_byz_theatre_effects.txt, which both front-ends call. Adding a second
+# permanent modifier to those would double-pay the mission-mode player for work the
+# generic-action player does for one.
+#
+# SIZING. Each is roughly one temporary pool's worth of effect, made permanent. That is
+# intentionally modest: the reward for a capstone is mostly that it opens the next branch, and
+# these should read as the empire being structurally better at something rather than as a prize.
+#
+# All modifier names checked with tools/vanilla_search.py modifier <name>. Note bank_interest
+# is inverted (negative is cheaper) and fort_maintenance_efficiency flipped sign in 1.3
+# (efficiency up means cheaper), both per docs/scripting-gotchas.md.
+
+
+# ---- The three pillar capstones ----
+
+# The Logothete of the Course. The assessment is current, the offices are staffed, and the
+# treasury knows what it is owed before it is owed it.
+cc_byz_perm_logothete = {
+	game_data = {
+		category = country
+	}
+
+	tax_income_efficiency = 0.05
+	global_bureaucracy_maintenance_efficiency = 0.10
+	country_cabinet_efficiency = 0.05
+}
+
+# The Ecumenical Throne. The patriarch is the emperor's, and the daughter churches know it.
+cc_byz_perm_ecumenical = {
+	game_data = {
+		category = country
+	}
+
+	monthly_religious_influence = 0.05
+	tolerance_own = 0.5
+	global_estate_satisfaction_from_legitimacy = 0.05
+}
+
+# The Field Army. A host that can march twice in a reign.
+cc_byz_perm_field_army = {
+	game_data = {
+		category = country
+	}
+
+	land_morale = 0.05
+	levy_recovery_modifier = 0.10
+	army_maintenance_efficiency = 0.05
+}
+
+
+# ---- The reconvergences ----
+
+# The State Restored. Two of the three pillars standing, which is the point at which the empire
+# stops managing its decline and starts choosing what to do next.
+cc_byz_perm_state_restored = {
+	game_data = {
+		category = country
+	}
+
+	monthly_legitimacy = 0.03
+	stability_decay = -0.002
+	country_cabinet_efficiency = 0.05
+}
+
+# Anatolia Secured. The Turkish question settled, whichever way it was settled.
+cc_byz_perm_anatolia = {
+	game_data = {
+		category = country
+	}
+
+	global_manpower_modifier = 0.08
+	global_levy_size_modifier = 0.05
+	land_morale = 0.03
+}
+
+# The Eastern Sees. Two of the three eastern patriarchates back under the emperor's protection.
+cc_byz_perm_eastern_sees = {
+	game_data = {
+		category = country
+	}
+
+	monthly_religious_influence = 0.05
+	tolerance_own = 0.5
+	global_trade_center_power = 0.05
+}
+
+# The Western Sea. Two of the three western theatres recovered.
+cc_byz_perm_western_sea = {
+	game_data = {
+		category = country
+	}
+
+	global_sailors_modifier = 0.10
+	navy_maintenance_efficiency = 0.08
+	global_merchant_power = 0.05
+}
+
+
+# ---- The two optional capstones ----
+
+# The City Adorned. Not a military modifier anywhere in it, on purpose: this is the one capstone
+# a player reaches by building rather than by winning.
+cc_byz_perm_city_adorned = {
+	game_data = {
+		category = country
+	}
+
+	monthly_legitimacy = 0.03
+	global_estate_satisfaction_from_legitimacy = 0.08
+	research_speed = 0.03
+}
+
+# Greek Fire Restored. The largest naval modifier in this file, because the task behind it also
+# unlocks four vanilla unit types and is meant to feel like the single best optional prize in
+# the tree.
+cc_byz_perm_greek_fire = {
+	game_data = {
+		category = country
+	}
+
+	global_sailors_modifier = 0.10
+	navy_maintenance_efficiency = 0.10
+	naval_morale_recovery = 0.01
+}

@@ -1,0 +1,1001 @@
+﻿namespace = cc_byz_west
+
+# The West: the situation's own events.
+#
+#   .1    the prefectures constituted     fired by cc_byz_the_west's on_start
+#   .10   the consistory convened         fired by cc_byz_io_convene_consistory
+#   .20   the recall summons              fired by cc_byz_west_recall_exarch, and it can fail
+#   .30   dissolving a prefecture         fired by cc_byz_io_dissolve_prefecture
+#   .35   the warning                     fired by cc_byz_west_signal_effect, with the modifier
+#   .40   the prefects rise               the civil war flashpoint
+#   .41   what the war settled
+#   .80   the deadline warning            one age before the forced resolution
+#   .90   ENDING: reabsorption
+#   .91   ENDING: the diarchy
+#   .92   ENDING: acclamation
+#   .93   ENDING: neglect
+#
+#
+# THE ONE EVENT THE PLAYER CANNOT CONTROL IS .20.
+#
+# Everything else in the western system is an emperor deciding something. The recall is an
+# emperor ISSUING AN ORDER and finding out whether it is obeyed, and the chance is read off
+# cc_byz_exarch_loyalty, which the seven repeatable actions have been moving for decades. An
+# emperor who took the tribute twice, never paid the donative and confirmed nobody's son is
+# summoning a man with no reason to come.
+#
+# That is what makes the other six actions matter. Without a moment where the accumulated
+# number decides something the player cannot argue with, loyalty is a display.
+#
+#
+# Situation variables (on situation:cc_byz_the_west):
+#   cc_byz_imperial_grip      0..100
+#   cc_byz_western_autonomy   0..100
+#   cc_byz_west_ending        0 none, 1 reabsorption, 2 diarchy, 3 acclamation, 4 neglect
+#
+# Country variables (on Byzantium):
+#   cc_byz_mem_west_hereditary   an exarch's son was confirmed
+#   cc_byz_mem_west_charter      a commune was chartered
+#   cc_byz_mem_west_defied       a recall was refused
+#   cc_byz_mem_west_civil_war    the prefects rose
+#   cc_byz_mem_west_conceded     the emperor conceded rather than fight
+#   cc_byz_mem_west_reduced_by_force  a prefecture was annexed by war
+#
+#
+# NOTHING HERE ARRIVES UNANNOUNCED. .40 needs four conditions at once and two of them were
+# invisible to the player: the autonomy threshold is never stated on the panel and exarch
+# loyalty has no interface at all. .35 and the three signal modifiers maintained by
+# cc_byz_west_signal_effect are the fix, and they trip one step inside .40's gates.
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  The prefectures constituted
+#############################################
+cc_byz_west.1 = {
+	type = country_event
+	title = cc_byz_west.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = { count >= 2  has_variable = cc_byz_is_exarchate }
+				}
+				desc = cc_byz_west.1.desc_several
+			}
+			desc = cc_byz_west.1.desc
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	option = {
+		name = cc_byz_west.1.a
+		add_prestige = prestige_mild_bonus
+	}
+}
+
+
+#############################################
+# .10  The consistory convened
+#############################################
+cc_byz_west.10 = {
+	type = country_event
+	title = cc_byz_west.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = { count >= 3  has_variable = cc_byz_is_exarchate }
+				}
+				desc = cc_byz_west.10.desc_outnumbered
+			}
+			desc = cc_byz_west.10.desc
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	# Convening the body is itself an admission that the west has a voice, which is a concession
+	# before a single vote is taken.
+	option = {
+		name = cc_byz_west.10.a
+
+		save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+		cc_byz_west_autonomy_up_effect = yes
+
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+	}
+}
+
+
+#############################################
+# .20  The recall summons
+#############################################
+cc_byz_west.20 = {
+	type = country_event
+	title = cc_byz_west.20.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_west_defied }
+				desc = cc_byz_west.20.desc_again
+			}
+			desc = cc_byz_west.20.desc
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = armed
+	}
+
+	# RESOLVED BEFORE THE PLAYER IS ASKED ANYTHING. By the time this event appears the exarch
+	# has already decided; the options below are what the emperor does about it.
+	#
+	# The weights read straight off loyalty. A loyal exarch obeys almost always, a resentful one
+	# almost never, and the modifier for a hereditary confirmation cuts across both: a man whose
+	# son has been recognised has a great deal more to lose by defying and rather more reason to
+	# think the post is his.
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+
+		random_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			save_scope_as = cc_byz_recalled_exarch
+		}
+
+		if = {
+			limit = { exists = scope:cc_byz_recalled_exarch }
+			random_list = {
+				# He comes back.
+				70 = {
+					modifier = {
+						factor = 2
+						scope:cc_byz_recalled_exarch = {
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty >= 2
+							}
+							trigger_else = { always = no }
+						}
+					}
+					modifier = {
+						factor = 0.25
+						scope:cc_byz_recalled_exarch = {
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty <= -2
+							}
+							trigger_else = { always = no }
+						}
+					}
+					modifier = {
+						factor = 0.6
+						has_variable = cc_byz_mem_west_hereditary
+					}
+
+					set_variable = { name = cc_byz_mem_west_obeyed  value = yes }
+				}
+				# He does not.
+				30 = {
+					modifier = {
+						factor = 3
+						scope:cc_byz_recalled_exarch = {
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty <= -2
+							}
+							trigger_else = { always = no }
+						}
+					}
+					modifier = {
+						factor = 0.2
+						scope:cc_byz_recalled_exarch = {
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty >= 2
+							}
+							trigger_else = { always = no }
+						}
+					}
+
+					set_variable = { name = cc_byz_mem_west_defied  value = yes }
+				}
+			}
+		}
+	}
+
+	# He came.
+	option = {
+		name = cc_byz_west.20.a
+		trigger = { has_variable = cc_byz_mem_west_obeyed }
+
+		add_country_modifier = {
+			modifier = cc_byz_west_recall_obeyed
+			years = 20
+			mode = add_and_extend
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 12 }
+		cc_byz_west_grip_up_effect = yes
+
+		scope:cc_byz_recalled_exarch ?= {
+			set_variable = { name = cc_byz_exarch_loyalty  value = 0 }
+		}
+		remove_variable = cc_byz_mem_west_obeyed
+	}
+
+	# He did not, and the emperor accepts it because the alternative is a western war.
+	option = {
+		name = cc_byz_west.20.b
+		trigger = { has_variable = cc_byz_mem_west_defied }
+
+		add_country_modifier = {
+			modifier = cc_byz_west_recall_refused
+			years = 25
+			mode = add_and_extend
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 15 }
+		cc_byz_west_autonomy_up_effect = yes
+
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+	}
+
+	# He did not, and the emperor is a soldier. Costs the west and settles the question.
+	option = {
+		name = cc_byz_west.20.c
+		trigger = {
+			has_variable = cc_byz_mem_west_defied
+			ruler ?= { mil >= 75 }
+		}
+
+		add_country_modifier = {
+			modifier = cc_byz_west_recall_obeyed
+			years = 15
+			mode = add_and_extend
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+		cc_byz_west_grip_up_effect = yes
+
+		add_manpower = { value = monthly_manpower  multiply = -8 }
+		add_prestige = prestige_mild_bonus
+
+		scope:cc_byz_recalled_exarch ?= {
+			set_variable = { name = cc_byz_exarch_loyalty  value = -2 }
+		}
+	}
+}
+
+
+#############################################
+# .30  Dissolving a prefecture
+#############################################
+cc_byz_west.30 = {
+	type = country_event
+	title = cc_byz_west.30.title
+	desc = cc_byz_west.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				trigger_if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					var:cc_byz_exarch_loyalty <= 0
+				}
+				trigger_else = { always = no }
+			}
+			save_scope_as = cc_byz_dissolved_exarch
+		}
+	}
+
+	# Take the territory back. The only way to reduce the consistory's opposition, and it costs
+	# everything the prefecture was producing.
+	option = {
+		name = cc_byz_west.30.a
+		trigger = { exists = scope:cc_byz_dissolved_exarch }
+
+		add_country_modifier = {
+			modifier = cc_byz_west_prefecture_dissolved
+			years = 25
+			mode = add_and_extend
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 12 }
+		cc_byz_west_grip_up_effect = yes
+
+		scope:cc_byz_dissolved_exarch = {
+			every_owned_location = {
+				change_location_owner = root
+				add_core = root
+			}
+			remove_variable = cc_byz_is_exarchate
+		}
+
+		# Every other exarch watched.
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_left
+		}
+	}
+
+	option = {
+		name = cc_byz_west.30.b
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+#############################################
+# .35  The letters that are not addressed to us
+#############################################
+#
+# THE WARNING. Everything the rising needs is now one step away, and this is the event that
+# says so.
+#
+# It fires from cc_byz_west_signal_effect at the moment cc_byz_west_restive is applied, rather
+# than on its own roll, so the dialogue and the persistent indicator always agree. The player
+# gets a modifier they can hover and an event that explains it, in the same tick.
+#
+# The three options are genuine defusals rather than flavour. Paying the arrears and confirming
+# a succession both move loyalty, which is one of the two gates; the third accepts the drift
+# and is there because refusing to spend is a real answer that a player low on gold may have to
+# give.
+cc_byz_west.35 = {
+	type = country_event
+	title = cc_byz_west.35.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					any_subject = { count >= 3  has_variable = cc_byz_is_exarchate }
+				}
+				desc = cc_byz_west.35.desc_many
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_west_defied }
+				desc = cc_byz_west.35.desc_defied
+			}
+			desc = cc_byz_west.35.desc
+		}
+	}
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+
+		random_subject = {
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				trigger_if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					var:cc_byz_exarch_loyalty <= -2
+				}
+				trigger_else = { always = no }
+			}
+			save_scope_as = cc_byz_restive_exarch
+		}
+	}
+
+	# Pay what is owed. The most direct answer and the one that addresses the actual grievance.
+	option = {
+		name = cc_byz_west.35.a
+		ai_chance = { base = 45 }
+		trigger = { gold >= 400 }
+
+		change_gold_effect = { scale = -5 }
+		add_country_modifier = {
+			modifier = cc_byz_west_donative_paid
+			years = 8
+			mode = add_and_extend
+		}
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+		cc_byz_west_grip_up_effect = yes
+	}
+
+	# Deal with the one man rather than the whole west. Cheaper, and it concedes something
+	# permanent to him alone.
+	option = {
+		name = cc_byz_west.35.b
+		ai_chance = { base = 30 }
+		trigger = {
+			exists = scope:cc_byz_restive_exarch
+			ruler ?= { dip >= 60 }
+		}
+
+		scope:cc_byz_restive_exarch = {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+		cc_byz_west_autonomy_up_effect = yes
+	}
+
+	# Note it and do nothing. An honest answer for an emperor with other problems.
+	option = {
+		name = cc_byz_west.35.c
+		ai_chance = { base = 25 }
+
+		add_prestige = prestige_weak_penalty
+	}
+}
+
+
+#############################################
+# .40  The prefects rise
+#############################################
+#
+# THE FLASHPOINT. The one place the western system produces a war rather than a modifier.
+#
+# It requires the consistory to have been CONVENED. That is the point of the requirement rather
+# than a gate for its own sake: prefects scattered across four provinces separated by weeks of
+# sailing cannot coordinate a rising, and the body that lets them coordinate is the one the
+# emperor summoned himself. An emperor who never convened it never faces this, which is the
+# reward for that whole line of play and also its cost, since he also never got a vote out of
+# them.
+#
+# The war is fought with the exarchates STILL SUBJECTS, using cc_byz_cb_reduce_the_prefectures
+# and its allow_wars_on_own_subjects flag. They have not repudiated the empire; they are
+# fighting about who runs it.
+cc_byz_west.40 = {
+	type = country_event
+	title = cc_byz_west.40.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_west_defied }
+				desc = cc_byz_west.40.desc_defied
+			}
+			triggered_desc = {
+				trigger = {
+					any_subject = { count >= 3  has_variable = cc_byz_is_exarchate }
+				}
+				desc = cc_byz_west.40.desc_all
+			}
+			desc = cc_byz_west.40.desc
+		}
+	}
+	outcome = negative
+
+	fire_only_once = yes
+
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		is_situation_active = situation:cc_byz_the_west
+
+		# They need a forum. See the header.
+		exists = international_organization:cc_byz_prefectures
+		international_organization:cc_byz_prefectures ?= {
+			parliament_type ?= parliament_type:cc_byz_consistorium_assembly
+		}
+
+		# And a reason.
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			trigger_if = {
+				limit = { has_variable = cc_byz_exarch_loyalty }
+				var:cc_byz_exarch_loyalty <= -3
+			}
+			trigger_else = { always = no }
+		}
+
+		situation:cc_byz_the_west ?= {
+			trigger_if = {
+				limit = { has_variable = cc_byz_western_autonomy }
+				var:cc_byz_western_autonomy >= 55
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	illustration_tags = {
+		10 = armed
+		10 = military
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		set_variable = { name = cc_byz_mem_west_civil_war  value = yes }
+
+		random_subject = {
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				trigger_if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					var:cc_byz_exarch_loyalty <= -3
+				}
+				trigger_else = { always = no }
+			}
+			save_scope_as = cc_byz_rebel_exarch
+		}
+
+		# The CB exists only from this moment. An emperor cannot hold it in reserve against
+		# governors who have done nothing.
+		if = {
+			limit = {
+				NOT = { has_unlocked_casus_belli_trigger = { type = cc_byz_cb_reduce_the_prefectures } }
+			}
+			unlock_casus_belli_effect = { type = cc_byz_cb_reduce_the_prefectures }
+		}
+	}
+
+	# Fight it. The CB is granted above; the declaration is the player's, because forcing a war
+	# on a player in an event is the kind of thing that reads as the mod playing itself.
+	option = {
+		name = cc_byz_west.40.a
+		ai_chance = { base = 55 }
+
+		add_prestige = prestige_mild_penalty
+		save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
+		cc_byz_west_autonomy_up_effect = yes
+
+		trigger_event_silently = { id = cc_byz_west.41  years = 12 }
+	}
+
+	# Concede the substance and keep the forms. Cheaper than a war and the west knows it won.
+	option = {
+		name = cc_byz_west.40.b
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { dip >= 65 }
+		}
+
+		save_scope_value_as = { name = cc_byz_west_delta  value = 22 }
+		cc_byz_west_autonomy_up_effect = yes
+
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+
+		set_variable = { name = cc_byz_mem_west_conceded  value = yes }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_large_move_to_right
+		}
+	}
+
+	# Buy the loyal ones and isolate the rest. Expensive, and it splits the west.
+	option = {
+		name = cc_byz_west.40.c
+		ai_chance = { base = 15 }
+		trigger = {
+			gold >= 600
+		}
+
+		change_gold_effect = { scale = -7 }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_grip_up_effect = yes
+
+		every_subject = {
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				NOT = { this = scope:cc_byz_rebel_exarch }
+			}
+			change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+
+		trigger_event_silently = { id = cc_byz_west.41  years = 12 }
+	}
+}
+
+
+#############################################
+# .41  What the war settled
+#############################################
+#
+# Fires twelve years after the rising whether or not a war was actually fought, and reads the
+# map rather than a war result: an emperor who declared and won will hold the prefectures or
+# have annexed them, and one who declared and lost, or never declared at all, will not.
+#
+# THIS DOES NOT END THE SITUATION. It moves the counters hard and lets
+# cc_byz_west_check_endings_effect do its job on the next tick, so the war routes into
+# reabsorption or acclamation rather than being a fifth ending of its own. See the header of
+# the script that added this.
+cc_byz_west.41 = {
+	type = country_event
+	title = cc_byz_west.41.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_west_reduced_by_force }
+				desc = cc_byz_west.41.desc_won
+			}
+			triggered_desc = {
+				trigger = {
+					NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
+				}
+				desc = cc_byz_west.41.desc_none_left
+			}
+			desc = cc_byz_west.41.desc_unresolved
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	# The emperor reduced at least one prefecture by force.
+	option = {
+		name = cc_byz_west.41.a
+		trigger = { has_variable = cc_byz_mem_west_reduced_by_force }
+
+		add_prestige = prestige_severe_bonus
+		add_legitimacy = legitimacy_mild_bonus
+		save_scope_value_as = { name = cc_byz_west_delta  value = 25 }
+		cc_byz_west_grip_up_effect = yes
+	}
+
+	# The war was fought and settled nothing, or was never fought at all.
+	option = {
+		name = cc_byz_west.41.b
+		trigger = { NOT = { has_variable = cc_byz_mem_west_reduced_by_force } }
+
+		add_prestige = prestige_severe_penalty
+		save_scope_value_as = { name = cc_byz_west_delta  value = 25 }
+		cc_byz_west_autonomy_up_effect = yes
+
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = -2 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+	}
+}
+
+
+#############################################
+# .80  The question must be settled
+#############################################
+#
+# THE DEADLINE WARNING. cc_byz_west_check_endings_effect force-resolves the situation on
+# reaching the Age of Revolutions, because the main mod's federalization system takes over the
+# question of what a subject is at that boundary and two systems answering it at once would
+# contradict each other. A forced resolution the player never saw coming would be a worse
+# problem than the one it solves, so this fires in the preceding age and says so plainly.
+#
+# It offers no choice that changes the deadline. What it does is tell the player which way the
+# counters are currently leaning, so the remaining decades are spent deliberately.
+cc_byz_west.80 = {
+	type = country_event
+	title = cc_byz_west.80.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					situation:cc_byz_the_west ?= {
+						trigger_if = {
+							limit = {
+								has_variable = cc_byz_imperial_grip
+								has_variable = cc_byz_western_autonomy
+							}
+							var:cc_byz_western_autonomy > var:cc_byz_imperial_grip
+						}
+						trigger_else = { always = no }
+					}
+				}
+				desc = cc_byz_west.80.desc_westward
+			}
+			desc = cc_byz_west.80.desc
+		}
+	}
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		is_situation_active = situation:cc_byz_the_west
+		current_age_or_later = { age = age_5_absolutism }
+		NOT = { current_age_or_later = { age = age_6_revolutions } }
+		situation:cc_byz_the_west ?= {
+			trigger_if = {
+				limit = { has_variable = cc_byz_west_ending }
+				var:cc_byz_west_ending = 0
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	option = {
+		name = cc_byz_west.80.a
+		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+#############################################
+# .90  ENDING: reabsorption
+#############################################
+cc_byz_west.90 = {
+	type = country_event
+	title = cc_byz_west.90.title
+	desc = cc_byz_west.90.desc
+	outcome = positive
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	option = {
+		name = cc_byz_west.90.a
+
+		add_prestige = prestige_severe_bonus
+		add_legitimacy = legitimacy_severe_bonus
+		add_country_modifier = {
+			modifier = cc_byz_west_end_reabsorbed
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_large_move_to_left
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+
+		# A west that was pruned before it was absorbed. An emperor who traded Spania away or
+		# governed the Rhone directly had already done half of this, and the reabsorption is
+		# correspondingly cheaper.
+		if = {
+			limit = {
+				OR = {
+					has_variable = cc_byz_mem_spania_traded
+					has_variable = cc_byz_mem_gaul_absorbed
+				}
+			}
+			add_gold = 400
+			add_country_modifier = { modifier = cc_byz_reward_administration  years = 30  mode = add_and_extend }
+		}
+
+		# The naval station was the one western holding that never needed governing, so it
+		# survives the dissolution intact.
+		if = {
+			limit = { has_variable = cc_byz_mem_spania_station }
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 40  mode = add_and_extend }
+		}
+	}
+}
+
+
+#############################################
+# .91  ENDING: the diarchy
+#############################################
+#
+# THE BEST AVAILABLE OUTCOME FOR AN EMPIRE THAT ACTUALLY RECOVERED THE WEST, and the only
+# ending that requires both counters high. Reabsorption pays more in raw modifiers and requires
+# keeping the west weak, which means never getting the manpower or the revenue out of it.
+cc_byz_west.91 = {
+	type = country_event
+	title = cc_byz_west.91.title
+	desc = cc_byz_west.91.desc
+	outcome = positive
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = interior
+		10 = ages
+	}
+
+	option = {
+		name = cc_byz_west.91.a
+
+		add_prestige = prestige_ultimate_bonus
+		add_legitimacy = legitimacy_severe_bonus
+		add_country_modifier = {
+			modifier = cc_byz_west_end_diarchy
+			years = -1
+			mode = add
+		}
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+
+		# A diarchy works because the western half already governs itself competently. A
+		# marcher command on the Rhone and a client confederation holding the African limes
+		# are exactly that, and they are why this ending was reachable at all.
+		if = {
+			limit = { has_variable = cc_byz_mem_gaul_march }
+			add_country_modifier = { modifier = cc_byz_reward_fortifications  years = -1  mode = add }
+		}
+		if = {
+			limit = { has_variable = cc_byz_mem_africa_client }
+			add_country_modifier = { modifier = cc_byz_reward_manpower  years = -1  mode = add }
+		}
+		if = {
+			limit = { has_variable = cc_byz_mem_west_charter }
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = -1  mode = add }
+		}
+	}
+}
+
+
+#############################################
+# .92  ENDING: acclamation
+#############################################
+cc_byz_west.92 = {
+	type = country_event
+	title = cc_byz_west.92.title
+	desc = cc_byz_west.92.desc
+	outcome = negative
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = armed
+		10 = military
+	}
+
+	option = {
+		name = cc_byz_west.92.a
+
+		add_prestige = prestige_severe_penalty
+		add_legitimacy = legitimacy_severe_penalty
+		add_country_modifier = {
+			modifier = cc_byz_west_end_acclamation
+			years = -1
+			mode = add
+		}
+
+		# The prefectures survive. That is the point of the ending, and it is why the IO
+		# carries disband_if_no_leader = no.
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			set_variable = { name = cc_byz_exarch_loyalty  value = -5 }
+		}
+
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_left
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_large_move_to_right
+		}
+
+		# An empire that had already let Gaul become a protectorate in all but name, or handed
+		# the African frontier to a confederation, loses less on the day because it had been
+		# losing it for thirty years. The penalty is smaller and that is not a mercy.
+		if = {
+			limit = {
+				OR = {
+					has_variable = cc_byz_mem_gaul_protectorate
+					has_variable = cc_byz_mem_africa_client
+				}
+			}
+			add_prestige = prestige_mild_bonus
+			add_legitimacy = legitimacy_mild_bonus
+		}
+
+		# An emperor who conceded the substance at the rising and kept the forms arrives here
+		# having already made this speech once. The acclamation costs him less because the
+		# empire has had a generation to get used to the idea, and it costs him more in the
+		# only currency that matters afterwards: nobody believes the forms.
+		if = {
+			limit = { has_variable = cc_byz_mem_west_conceded }
+			add_prestige = prestige_mild_bonus
+			add_estate_satisfaction = {
+				type = estate_type:nobles_estate
+				value = estate_satisfaction_severe_penalty
+			}
+		}
+	}
+}
+
+
+#############################################
+# .93  ENDING: neglect
+#############################################
+cc_byz_west.93 = {
+	type = country_event
+	title = cc_byz_west.93.title
+	desc = cc_byz_west.93.desc
+	outcome = negative
+
+	fire_only_once = yes
+
+	illustration_tags = {
+		10 = exterior
+		10 = location
+	}
+
+	option = {
+		name = cc_byz_west.93.a
+
+		add_prestige = prestige_mild_penalty
+		add_country_modifier = {
+			modifier = cc_byz_west_end_neglect
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_move_to_right
+		}
+
+		# Two things survive being let go, because neither ever depended on being governed:
+		# a naval station and a chartered town.
+		if = {
+			limit = { has_variable = cc_byz_mem_spania_station }
+			add_country_modifier = { modifier = cc_byz_reward_naval  years = 30  mode = add_and_extend }
+		}
+		if = {
+			limit = { has_variable = cc_byz_mem_west_charter }
+			add_estate_satisfaction = {
+				type = estate_type:burghers_estate
+				value = estate_satisfaction_mild_bonus
+			}
+		}
+
+		# The coast held. It was the only thing the empire ever actually decided to hold.
+		if = {
+			limit = { has_variable = cc_byz_mem_africa_coast }
+			add_country_modifier = { modifier = cc_byz_reward_trade  years = 25  mode = add_and_extend }
+		}
+	}
+}

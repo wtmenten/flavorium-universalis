@@ -103,6 +103,44 @@ cc_byz_create_exarchate_effect = {
 				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 			}
 
+			# NAMED FOR THE PREFECTURE, not left as a dynamic country name.
+			#
+			# create_country_from_location produces a generated name, which for four western
+			# exarchates would give four countries the player cannot tell apart in a subject
+			# list. The late-Roman prefectures are what an eastern emperor restoring the west
+			# would be restoring, so the four take those names. Only Ravenna and Carthage were
+			# ever real exarchates; Spania was run by a magister militum and Gaul was never
+			# recovered at all, but the PREFECTURES of Italy, Africa, Gaul and the Spanish
+			# diocese under Gaul are all real administrative units of the empire this one
+			# claims to continue.
+			scope:cc_byz_exarch_country = {
+				if = {
+					limit = { capital.region = region:italy_region }
+					change_country_name = cc_byz_exarchate_ravenna_name
+					change_country_adjective = cc_byz_exarchate_ravenna_adj
+				}
+				else_if = {
+					limit = { capital.region = region:maghreb_region }
+					change_country_name = cc_byz_exarchate_carthage_name
+					change_country_adjective = cc_byz_exarchate_carthage_adj
+				}
+				else_if = {
+					limit = { capital.region = region:iberia_region }
+					change_country_name = cc_byz_exarchate_spania_name
+					change_country_adjective = cc_byz_exarchate_spania_adj
+				}
+				else_if = {
+					limit = { capital.region = region:france_region }
+					change_country_name = cc_byz_exarchate_gaul_name
+					change_country_adjective = cc_byz_exarchate_gaul_adj
+				}
+			}
+
+			# Seat it in the consistory. Does nothing if the situation has not started yet,
+			# which is the case for the FIRST exarchate: that one is what starts the situation,
+			# and cc_byz_the_west's on_start enrols every exarchate that already exists.
+			cc_byz_west_enrol_prefecture_effect = yes
+
 			scope:cc_byz_exarch_overlord = {
 				# Asserting a governor over the old capital is the act that revives the claim
 				# to the old borders. Vanilla grants this from ROM_BYZ_f's form_effect; this

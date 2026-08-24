@@ -1,0 +1,262 @@
+﻿# The West: the standing question of what the recovered provinces are.
+#
+# Starts when the first exarchate exists and runs for as long as the arrangement does. This is
+# the hub for everything the exarchates do: the repeatable actions gate on it, the Praetorian
+# Prefectures IO and its consistory are created by its on_start, and the two counters below are
+# what every western event reads.
+#
+#
+# TWO COUNTERS, NOT ONE INDEX.
+#
+# cc_byz_imperial_grip      0..100  how firmly Constantinople actually governs the west
+# cc_byz_western_autonomy   0..100  how much the west decides for itself
+#
+# These are DELIBERATELY NOT two ends of one bar. A single index would force the reading that
+# imperial control and provincial strength trade off one-for-one, and the whole historical
+# interest of the exarchates is that they did not: Ravenna was at its most effective and its
+# most independent at the same time, because the things that made it able to hold Italy were
+# the things that made it able to hold Italy without being told to.
+#
+# So all four corners are reachable and each is a different empire (see the endings below).
+# The Mamluk situation uses the same two-counter shape for the same reason.
+#
+#
+# AGGREGATED, NOT AUTHORITATIVE. cc_byz_exarch_loyalty and cc_byz_exarch_appetite stay on each
+# exarchate country, where the friction and demand threads already read them across some thirty
+# sites. on_monthly reads those and folds them into the counters here. Nothing was migrated,
+# so no tested event logic was rewritten, and each exarchate keeps its own character rather
+# than dissolving into a single number.
+#
+#
+# Situation scopes, per common/situations/readme.txt:
+#   can_start / can_end / on_start / on_monthly / on_ending / on_ended   root = situation
+#   visible                                                             root = country, scope:target = situation
+#   map_color / secondary_map_color / tooltip                           root = location, scope:target = situation
+#
+# Situation variables:
+#   cc_byz_imperial_grip      0..100
+#   cc_byz_western_autonomy   0..100
+#   cc_byz_west_ending        0 none, 1 reabsorption, 2 diarchy, 3 acclamation, 4 neglect
+#   cc_byz_west_consistory    set once the consistory has been convened
+#
+# NO has_enabled_situation_trigger GATE, for the same reason the Mamluk situation has none:
+# this is a submod and a second declaration of on_game_start would be last-one-wins against the
+# main mod's entire game-start block. can_start is narrow enough on its own.
+
+cc_byz_the_west = {
+	content_priority = 640
+
+	monthly_spawn_chance = monthly_spawn_chance_unique
+
+	international_organization_type = cc_byz_prefectures
+
+	can_start = {
+		has_dlc = "d008_fate_of_the_phoenix"
+
+		# NOT IN THE AGE OF REVOLUTIONS. The western question is an early and mid game arc and
+		# it has to be finished before the main mod's federalization system starts deciding
+		# what subjects are: cc_bond_pulse.txt:61 arms the Age of Revolutions subject payoffs
+		# on that age boundary, and cc_peoples_assembly_reform gates the same way. Two systems
+		# both resolving the status of the same exarchates would be two systems contradicting
+		# each other on the same screen.
+		#
+		# An emperor who seats his first exarch this late simply gets the subject type and the
+		# friction threads without the consistory, which is a coherent outcome rather than a
+		# situation that starts and force-ends in the same decade.
+		NOT = { current_age_or_later = { age = age_6_revolutions } }
+
+		country_exists = c:BYZ
+		c:BYZ = {
+			has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+			capital = location:constantinople
+			any_subject = { has_variable = cc_byz_is_exarchate }
+		}
+	}
+
+	can_end = {
+		OR = {
+			# An ending was reached. Guarded rather than assumed: can_end runs every tick for
+			# the life of the situation and reading an unset variable in a trigger errors even
+			# when a sibling condition would have short-circuited it.
+			trigger_if = {
+				limit = { has_variable = cc_byz_west_ending }
+				var:cc_byz_west_ending > 0
+			}
+			trigger_else = { always = no }
+
+			# The arrangement simply stopped existing.
+			NOT = { country_exists = c:BYZ }
+			c:BYZ ?= {
+				NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
+			}
+
+			# THE HARD DEADLINE. The Age of Revolutions is where the main mod takes over the
+			# question of what a subject is, so the west has to have an answer by then. This is
+			# safe to leave as a bare age test because on_monthly force-resolves an ending
+			# first: cc_byz_west_check_endings_effect has a second tier that fires only in this
+			# age and cannot fail to pick one of the four. So by the time can_end sees the age,
+			# cc_byz_west_ending is already set and the first clause above has usually caught
+			# it. This is the backstop for the one tick in between.
+			current_age_or_later = { age = age_6_revolutions }
+		}
+	}
+
+	visible = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		OR = {
+			has_or_had_tag = BYZ
+			has_variable = cc_byz_is_exarchate
+			any_owned_location = {
+				OR = {
+					region = region:italy_region
+					region = region:maghreb_region
+					region = region:iberia_region
+					region = region:france_region
+				}
+			}
+		}
+	}
+
+	on_start = {
+		set_variable = { name = cc_byz_imperial_grip     value = 50 }
+		set_variable = { name = cc_byz_western_autonomy  value = 20 }
+		set_variable = { name = cc_byz_west_ending       value = 0 }
+
+		# The consistory is NOT convened here. The IO is created dormant and the emperor must
+		# call it into session (cc_byz_io_convene_consistory), exactly as the Balancing
+		# Coalition's congress works. An emperor who never convenes it never gives the west a
+		# forum, which is a legitimate and rather tempting way to play.
+		c:BYZ ?= {
+			# prev, NOT root. In on_start the root scope is the SITUATION, so root here would
+			# try to seat the situation itself as a member and leader. Inside
+			# create_international_organization the enclosing country is prev, which is the
+			# idiom vanilla and the main mod both use (cc_bop_effects.txt:176-179).
+			if = {
+				limit = { NOT = { exists = international_organization:cc_byz_prefectures } }
+				create_international_organization = {
+					type = international_organization_type:cc_byz_prefectures
+					add_country_to_international_organization = prev
+					set_leader_country = prev
+				}
+			}
+
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				international_organization:cc_byz_prefectures = {
+					add_country_to_international_organization = prev
+				}
+			}
+
+			trigger_event_non_silently = cc_byz_west.1
+		}
+	}
+
+	# Recomputed monthly from the exarchates themselves rather than accumulated, so the counters
+	# cannot desync from the countries they describe. Action effects nudge them directly on top
+	# of this, which is why the drift below is deliberately small: it is a pull toward the value
+	# the west's actual condition implies, not the whole story.
+	on_monthly = {
+		if = {
+			limit = { exists = c:BYZ }
+
+			# --- Autonomy pulls up with every prefecture and every disloyal exarch ---
+			if = {
+				limit = {
+					c:BYZ = {
+						any_subject = {
+							count >= 3
+							has_variable = cc_byz_is_exarchate
+						}
+					}
+				}
+				change_variable = { name = cc_byz_western_autonomy  add = 0.10 }
+			}
+			else_if = {
+				limit = {
+					c:BYZ = {
+						any_subject = {
+							count >= 2
+							has_variable = cc_byz_is_exarchate
+						}
+					}
+				}
+				change_variable = { name = cc_byz_western_autonomy  add = 0.05 }
+			}
+
+			# A resentful exarch anywhere pulls the whole west with him.
+			if = {
+				limit = {
+					c:BYZ = {
+						any_subject = {
+							has_variable = cc_byz_is_exarchate
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty <= -2
+							}
+							trigger_else = { always = no }
+						}
+					}
+				}
+				change_variable = { name = cc_byz_western_autonomy  add = 0.10 }
+				change_variable = { name = cc_byz_imperial_grip     add = -0.05 }
+			}
+
+			# --- Grip pulls up when the exarchs are content and the emperor is present ---
+			if = {
+				limit = {
+					c:BYZ = {
+						any_subject = {
+							has_variable = cc_byz_is_exarchate
+							trigger_if = {
+								limit = { has_variable = cc_byz_exarch_loyalty }
+								var:cc_byz_exarch_loyalty >= 2
+							}
+							trigger_else = { always = no }
+						}
+					}
+				}
+				change_variable = { name = cc_byz_imperial_grip  add = 0.10 }
+			}
+
+			# An empire that cannot pay is an empire that cannot govern at this distance.
+			if = {
+				limit = { c:BYZ = { is_during_bankruptcy = yes } }
+				change_variable = { name = cc_byz_imperial_grip     add = -0.15 }
+				change_variable = { name = cc_byz_western_autonomy  add = 0.10 }
+			}
+
+			clamp_variable = { name = cc_byz_imperial_grip     min = 0  max = 100 }
+			clamp_variable = { name = cc_byz_western_autonomy  min = 0  max = 100 }
+
+			cc_byz_west_signal_effect = yes
+			cc_byz_west_check_endings_effect = yes
+		}
+	}
+
+	on_ending = {
+		if = {
+			limit = { exists = c:BYZ }
+			c:BYZ = { cc_byz_west_resolve_ending_effect = yes }
+		}
+	}
+
+	# if/else_if, not trigger_if. map_color is an effect-shaped block that returns a value, and
+	# the mamluk situation uses the same three-branch form.
+	map_color = {
+		if = {
+			limit = { owner ?= { has_variable = cc_byz_is_exarchate } }
+			value = define:NMapColors|MAP_COLOR_LOW
+		}
+		else_if = {
+			limit = { owner ?= c:BYZ }
+			value = define:NMapColors|MAP_COLOR_HIGH
+		}
+		else = {
+			value = define:NMapColors|MAP_COLOR_NULL
+		}
+	}
+
+	tooltip = {
+		custom_tooltip = cc_byz_the_west_map_tt
+	}
+}

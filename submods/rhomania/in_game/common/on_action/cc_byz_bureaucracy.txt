@@ -45,3 +45,23 @@ cc_byz_on_yearly_bureaucracy = {
 		10 = cc_byz_bureaucracy.50
 	}
 }
+
+
+# The five-year funding average, sampled monthly.
+#
+# Deliberately NOT a random_events block: this has to run every single month for the average to
+# mean anything, so it is a plain effect. The trigger is as narrow as it can be made, because
+# monthly_country_pulse fires for every country in the game.
+#
+# See scripted_effects/cc_byz_bureau_funding.txt for why an instant maintenance test was not
+# good enough and what the average replaces.
+cc_byz_on_monthly_bureau_funding = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+	}
+	effect = {
+		cc_byz_bureau_sample_effect = yes
+	}
+}

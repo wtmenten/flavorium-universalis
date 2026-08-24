@@ -1,0 +1,344 @@
+﻿# The West: ending detection, ending resolution, and the shared action effects.
+#
+# ENDING DETECTION RUNS IN SITUATION SCOPE, from cc_byz_the_west's on_monthly. Resolution runs
+# in COUNTRY scope on Byzantium, from on_ending. The two are separate because on_ending fires
+# once, after can_end has already passed, and by then the situation is on its way out: anything
+# that has to happen to the empire or the exarchates has to be done from a country scope that
+# will still exist afterwards.
+#
+#
+# THE FOUR CORNERS. Both counters run 0..100 and are independent, so all four are reachable:
+#
+#                     autonomy LOW              autonomy HIGH
+#   grip HIGH    1  REABSORPTION            2  THE DIARCHY
+#                   the prefectures are        a co-emperor in the west,
+#                   dissolved into the         formalised, and it holds
+#                   empire
+#
+#   grip LOW     4  NEGLECT                 3  ACCLAMATION
+#                   the west drifts into       the western armies proclaim
+#                   local hands and no         their own emperor
+#                   empire governs it
+#
+# THE DIARCHY IS NOT A CONSOLATION. It is the best available outcome for an empire that
+# actually recovered the west, and it is only reachable by an emperor who both governed hard
+# and let the provinces be strong. Reabsorption pays better in raw modifiers and requires
+# keeping the west weak, which means never getting the manpower or the revenue out of it.
+
+cc_byz_west_check_endings_effect = {
+	if = {
+		limit = {
+			has_variable = cc_byz_imperial_grip
+			has_variable = cc_byz_western_autonomy
+			has_variable = cc_byz_west_ending
+			var:cc_byz_west_ending = 0
+		}
+
+		# Ordered most specific first. Acclamation is checked before neglect because a
+		# collapsed grip with a strong west is a different event from a collapsed grip with
+		# nothing on the other side of it.
+		if = {
+			limit = {
+				var:cc_byz_imperial_grip >= 65
+				var:cc_byz_western_autonomy < 35
+			}
+			set_variable = { name = cc_byz_west_ending  value = 1 }
+		}
+		else_if = {
+			limit = {
+				var:cc_byz_imperial_grip >= 60
+				var:cc_byz_western_autonomy >= 60
+			}
+			set_variable = { name = cc_byz_west_ending  value = 2 }
+		}
+		else_if = {
+			limit = {
+				var:cc_byz_western_autonomy >= 80
+				var:cc_byz_imperial_grip < 40
+			}
+			set_variable = { name = cc_byz_west_ending  value = 3 }
+		}
+		else_if = {
+			limit = {
+				var:cc_byz_imperial_grip < 25
+				var:cc_byz_western_autonomy < 30
+			}
+			set_variable = { name = cc_byz_west_ending  value = 4 }
+		}
+
+		# ---- SECOND TIER: the deadline ----
+		#
+		# THE FOUR CORNERS ABOVE DO NOT COVER THE MIDDLE, and that was a real hole. A campaign
+		# sitting at grip 50 and autonomy 50 satisfies none of them and would have run to 1837
+		# with the situation still live, overlapping the main mod's federalization system where
+		# the same exarchates are getting Age of Revolutions bond payoffs. Two systems deciding
+		# what a subject is, at once, on the same subject.
+		#
+		# So on reaching the Age of Revolutions the question is settled whatever state it is
+		# in, by asking which corner the counters most resemble. This CANNOT fail to pick one:
+		# the final else has no condition. That is deliberate, because a deadline that can
+		# decline to resolve is not a deadline.
+		#
+		# The thresholds are deliberately looser than the first tier and the diarchy is checked
+		# first, so an empire that governed the west well and let it be strong gets the good
+		# ending on the buzzer rather than being dropped into neglect on a technicality.
+		else_if = {
+			limit = { current_age_or_later = { age = age_6_revolutions } }
+
+			if = {
+				limit = {
+					var:cc_byz_imperial_grip >= 55
+					var:cc_byz_western_autonomy >= 55
+				}
+				set_variable = { name = cc_byz_west_ending  value = 2 }
+			}
+			else_if = {
+				limit = {
+					var:cc_byz_imperial_grip >= 40
+					var:cc_byz_imperial_grip > var:cc_byz_western_autonomy
+				}
+				set_variable = { name = cc_byz_west_ending  value = 1 }
+			}
+			else_if = {
+				limit = {
+					var:cc_byz_western_autonomy >= 40
+					var:cc_byz_western_autonomy > var:cc_byz_imperial_grip
+				}
+				set_variable = { name = cc_byz_west_ending  value = 3 }
+			}
+			else = {
+				# Neither counter got anywhere. Nobody governed the west, including us.
+				set_variable = { name = cc_byz_west_ending  value = 4 }
+			}
+		}
+	}
+}
+
+# Country scope, on Byzantium. Reads the ending off the situation and fires the matching event;
+# the events carry the effects, because an ending the player is told about in a dialogue is a
+# different experience from a modifier that appears in the corner.
+cc_byz_west_resolve_ending_effect = {
+	if = {
+		limit = {
+			is_situation_active = situation:cc_byz_the_west
+			situation:cc_byz_the_west = {
+				trigger_if = {
+					limit = { has_variable = cc_byz_west_ending }
+					var:cc_byz_west_ending > 0
+				}
+				trigger_else = { always = no }
+			}
+		}
+
+		if = {
+			limit = { situation:cc_byz_the_west = { var:cc_byz_west_ending = 1 } }
+			trigger_event_non_silently = cc_byz_west.90
+		}
+		else_if = {
+			limit = { situation:cc_byz_the_west = { var:cc_byz_west_ending = 2 } }
+			trigger_event_non_silently = cc_byz_west.91
+		}
+		else_if = {
+			limit = { situation:cc_byz_the_west = { var:cc_byz_west_ending = 3 } }
+			trigger_event_non_silently = cc_byz_west.92
+		}
+		else_if = {
+			limit = { situation:cc_byz_the_west = { var:cc_byz_west_ending = 4 } }
+			trigger_event_non_silently = cc_byz_west.93
+		}
+	}
+}
+
+
+# ---- Counter movement, shared by every action and event ----
+#
+# WHY THESE ARE EFFECTS AND NOT INLINE change_variable. Every caller has to guard the situation
+# being active AND the variable existing before touching it, and there are roughly twenty
+# callers. Inlining that guard twenty times is how one of them ends up missing it, which in an
+# EFFECT context means a blank-text error in the log with only a file and line to go on. See
+# docs/scripting-gotchas.md on change_variable against an unset variable.
+#
+# Callers set scope:cc_byz_west_delta to the amount before calling.
+
+cc_byz_west_grip_up_effect = {
+	if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			if = {
+				limit = { has_variable = cc_byz_imperial_grip }
+				change_variable = { name = cc_byz_imperial_grip  add = scope:cc_byz_west_delta }
+				clamp_variable = { name = cc_byz_imperial_grip  min = 0  max = 100 }
+			}
+		}
+	}
+}
+
+cc_byz_west_autonomy_up_effect = {
+	if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			if = {
+				limit = { has_variable = cc_byz_western_autonomy }
+				change_variable = { name = cc_byz_western_autonomy  add = scope:cc_byz_west_delta }
+				clamp_variable = { name = cc_byz_western_autonomy  min = 0  max = 100 }
+			}
+		}
+	}
+}
+
+
+# ---- Enrolling a new prefecture ----
+#
+# Called from cc_byz_create_exarchate_effect. Separate from that effect because the situation
+# may not have started yet: the FIRST exarchate is what starts it, and its on_start enrols
+# every existing exarchate. So this handles the second and subsequent ones, and does nothing
+# harmful if called before the situation exists.
+cc_byz_west_enrol_prefecture_effect = {
+	if = {
+		limit = {
+			exists = international_organization:cc_byz_prefectures
+			exists = scope:cc_byz_exarch_country
+		}
+		international_organization:cc_byz_prefectures = {
+			add_country_to_international_organization = scope:cc_byz_exarch_country
+		}
+	}
+
+	# Each additional prefecture is territory governed by somebody who is not the emperor,
+	# and the arithmetic of the consistory shifts with it whether or not anyone notices.
+	if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+		cc_byz_west_autonomy_up_effect = yes
+	}
+}
+
+
+# ---- The visible signals ----
+#
+# Called from the situation's on_monthly, so root here is the SITUATION and every country-scope
+# test has to be reached through c:BYZ explicitly.
+#
+# WHY THIS EXISTS. cc_byz_west.40, the rising, needs four things at once, and the player could
+# only see two of them. The situation panel shows the counters but never states that 55 is the
+# number that matters, and exarch loyalty is a bare country variable on a subject with no
+# interface anywhere in the game. A player could do everything wrong for forty years with no
+# indication until the consistory produced a document with four seals on it.
+#
+# So this maintains three modifiers as a live readout: added when their condition holds, removed
+# when it stops. The thresholds are deliberately ONE STEP INSIDE the rising's own gates
+# (autonomy 45 against 55, loyalty -2 against -3) so the warning appears while there is still
+# time to act on it rather than confirming a decision already made.
+#
+# ADD-IF-ABSENT AND REMOVE-IF-PRESENT rather than add_and_extend with a short duration. A
+# refreshing timer would leave the icon lingering for its remaining months after the player
+# fixed the problem, which teaches them the signal is unreliable.
+cc_byz_west_signal_effect = {
+
+	# ---- The emperor's warning ----
+	if = {
+		limit = {
+			has_variable = cc_byz_western_autonomy
+			var:cc_byz_western_autonomy >= 45
+			exists = c:BYZ
+			c:BYZ = {
+				any_subject = {
+					has_variable = cc_byz_is_exarchate
+					trigger_if = {
+						limit = { has_variable = cc_byz_exarch_loyalty }
+						var:cc_byz_exarch_loyalty <= -2
+					}
+					trigger_else = { always = no }
+				}
+			}
+		}
+		c:BYZ = {
+			if = {
+				limit = { NOT = { has_country_modifier = cc_byz_west_restive } }
+				add_country_modifier = {
+					modifier = cc_byz_west_restive
+					years = -1
+					mode = add
+				}
+				# Fired once per onset rather than once per campaign: an emperor who defuses
+				# the west and later lets it slip again should be told again.
+				trigger_event_non_silently = cc_byz_west.35
+			}
+		}
+	}
+	else = {
+		if = {
+			limit = {
+				exists = c:BYZ
+				c:BYZ = { has_country_modifier = cc_byz_west_restive }
+			}
+			c:BYZ = { remove_country_modifier = cc_byz_west_restive }
+		}
+	}
+
+	# ---- Which prefect, and which way ----
+	#
+	# The overlord warning says the west is restive. It cannot say who, and with four
+	# prefectures that is most of what the player needs to know.
+	if = {
+		limit = { exists = c:BYZ }
+		c:BYZ = {
+			every_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+
+				if = {
+					limit = {
+						trigger_if = {
+							limit = { has_variable = cc_byz_exarch_loyalty }
+							var:cc_byz_exarch_loyalty <= -2
+						}
+						trigger_else = { always = no }
+					}
+					if = {
+						limit = { NOT = { has_country_modifier = cc_byz_exarch_disaffected } }
+						add_country_modifier = {
+							modifier = cc_byz_exarch_disaffected
+							years = -1
+							mode = add
+						}
+					}
+					if = {
+						limit = { has_country_modifier = cc_byz_exarch_contented }
+						remove_country_modifier = cc_byz_exarch_contented
+					}
+				}
+				else_if = {
+					limit = {
+						trigger_if = {
+							limit = { has_variable = cc_byz_exarch_loyalty }
+							var:cc_byz_exarch_loyalty >= 2
+						}
+						trigger_else = { always = no }
+					}
+					if = {
+						limit = { NOT = { has_country_modifier = cc_byz_exarch_contented } }
+						add_country_modifier = {
+							modifier = cc_byz_exarch_contented
+							years = -1
+							mode = add
+						}
+					}
+					if = {
+						limit = { has_country_modifier = cc_byz_exarch_disaffected }
+						remove_country_modifier = cc_byz_exarch_disaffected
+					}
+				}
+				else = {
+					if = {
+						limit = { has_country_modifier = cc_byz_exarch_disaffected }
+						remove_country_modifier = cc_byz_exarch_disaffected
+					}
+					if = {
+						limit = { has_country_modifier = cc_byz_exarch_contented }
+						remove_country_modifier = cc_byz_exarch_contented
+					}
+				}
+			}
+		}
+	}
+}
