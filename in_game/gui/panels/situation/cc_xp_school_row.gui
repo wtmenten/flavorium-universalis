@@ -1,0 +1,85 @@
+######################################################################
+# Flavorium Universalis — Court Ledger: one school's row
+#
+# Expects the FOUNDER as its Character datacontext, which is what the country's
+# cc_xp_school_N_founder variable holds. The founder may well be dead by the time this
+# renders; that is the point of an institution, and the row says so.
+#
+# Properties are declared at top level, not wrapped in a widget. `using = <template>`
+# merges a template's contents into the widget it is used on, so an extra layer here
+# would collapse to zero size and take its children's mouse input with it.
+# See docs/scripting-gotchas.md.
+######################################################################
+
+template cc_xp_school_row {
+	layoutpolicy_horizontal = expanding
+	size = { -1 46 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	hbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 6 3 }
+		spacing = 6
+
+		portrait_standard_head_framed_button = {
+			size = { 34 38 }
+			onclick = "[ShowCharacter(Character.Self)]"
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 0
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 5
+				text_single = {
+					fontsize = 12
+					default_format = "#weak"
+					text = "CC_XP_SCHOOL_FOUNDED_BY"
+				}
+				text_single = {
+					fontsize = 13
+					text = "[Character.GetShortNameWithNoTooltip]"
+				}
+				expand = {}
+			}
+
+			# The discipline the school teaches, from the founder's own track.
+			hbox = {
+				spacing = 4
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					visible = "[Character.MakeScope.GetVariable('cc_xp_school_track').IsSet]"
+					text = "CC_XP_SCHOOL_TEACHES"
+				}
+				text_single = {
+					fontsize = 11
+					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)1')]"
+					text = "CC_XP_COL_ADM"
+				}
+				text_single = {
+					fontsize = 11
+					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)2')]"
+					text = "CC_XP_COL_DIP"
+				}
+				text_single = {
+					fontsize = 11
+					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)3')]"
+					text = "CC_XP_COL_MIL"
+				}
+
+				# An institution outlives the person who founded it. Worth saying plainly.
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					visible = "[Not(Character.IsAlive)]"
+					text = "CC_XP_SCHOOL_FOUNDER_DEAD"
+					tooltip = "CC_XP_SCHOOL_FOUNDER_DEAD_TT"
+				}
+			}
+		}
+	}
+}

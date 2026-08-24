@@ -145,4 +145,171 @@ situation_panel = {
 			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_protege_3').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_protege_3').GetCharacter]"  using = cc_xp_court_row }
 		}
 	}
+
+
+	##################################### EXTRA TABS #####################################
+	#
+	# The roster above is the DEFAULT tab: common.gui shows situation_panel_main_content
+	# whenever situation_tab NotExistOrHasValue 'situation_breakdown', so it needs no
+	# button of its own. These two add themselves alongside it.
+	#
+	# Tab state is a view variable (SituationView.Vars), not a country variable, so it is
+	# per-viewer and per-session and costs the save nothing.
+	######################################################################################
+
+	blockoverride "situation_extra_tabs_content" {
+
+		button_secondary_tab_alt = {
+			using = layoutpolicy_expanding
+			blockoverride "tab_text" { text = "CC_XP_TAB_PATRONAGE" }
+			action_tooltip = {
+				title = "OPEN_TAB"
+				on_action = "[SituationView.Vars.Set( 'situation_tab', 'cc_xp_patronage' )]"
+			}
+			down = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_patronage' )]"
+		}
+
+		button_secondary_tab_alt = {
+			using = layoutpolicy_expanding
+			blockoverride "tab_text" { text = "CC_XP_TAB_SCHOOLS" }
+			action_tooltip = {
+				title = "OPEN_TAB"
+				on_action = "[SituationView.Vars.Set( 'situation_tab', 'cc_xp_schools' )]"
+			}
+			down = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_schools' )]"
+		}
+	}
+
+	blockoverride "situation_extra_tab_panels" {
+
+		################################ PATRONAGE ################################
+		#
+		# Summary plus a live artist roster. NOTHING here is backed by a variable: works
+		# are counted with Country.GetNumWorksOfArt and artists come from the
+		# Country.GetLivingArtistsForUI datamodel. Artists, unlike cabinet members, DO
+		# have a datamodel, so this list needs no slot sync at all.
+		#
+		# Individual works are deliberately not listed. A realm can hold hundreds, and
+		# the only per-work interaction that matters reaches them through the engine's
+		# own `looking_for_a = work_of_art` selector instead.
+		###########################################################################
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_patronage' )]"
+			using = bg_secondary_inner_alt
+			margin = { 10 10 }
+			spacing = 6
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 10
+				text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_WORKS_LABEL" }
+				text_single = { fontsize = 15  raw_text = "[Player.GetNumWorksOfArt]" }
+				expand = {}
+				text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_ARTISTS_LABEL" }
+				text_single = { fontsize = 15  raw_text = "[GetDataModelSize(Player.GetLivingArtistsForUI)]" }
+			}
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 11
+				default_format = "#weak"
+				visible = "[IsDataModelEmpty(Player.GetLivingArtistsForUI)]"
+				text = "CC_XP_NO_ARTISTS"
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 3
+				datamodel = "[Player.GetLivingArtistsForUI]"
+				item = {
+					widget = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 44 }
+						background = { using = color_whiteish_texture  alpha = 0.10 }
+
+						hbox = {
+							layoutpolicy_horizontal = expanding
+							layoutpolicy_vertical = expanding
+							margin = { 6 3 }
+							spacing = 6
+
+							portrait_standard_head_framed_button = {
+								size = { 32 36 }
+								onclick = "[ShowCharacter(Character.Self)]"
+							}
+
+							vbox = {
+								layoutpolicy_horizontal = expanding
+								spacing = 0
+								text_single = {
+									fontsize = 13
+									text = "[Character.GetShortNameWithNoTooltip]"
+								}
+								hbox = {
+									spacing = 5
+									text_single = { fontsize = 10  default_format = "#weak"  text = "[Character.GetArtistType.GetNameWithNoTooltip]" }
+									text_single = { fontsize = 10  default_format = "#weak"  raw_text = "[Character.GetArtistSkill]" }
+									text_single = {
+										fontsize = 10
+										default_format = "#weak"
+										visible = "[Character.MakeScope.GetVariable('cc_xp_patron').IsSet]"
+										text = "CC_XP_HAS_PATRON"
+										tooltip = "CC_XP_HAS_PATRON_TT"
+									}
+								}
+							}
+
+							expand = {}
+
+							text_single = {
+								fontsize = 10
+								default_format = "#weak"
+								raw_text = "[GetDataModelSize(Character.GetWorksOfArt)]"
+								tooltip = "CC_XP_WORKS_BY_TT"
+							}
+						}
+					}
+				}
+			}
+		}
+
+		################################ SCHOOLS ################################
+		#
+		# Reads the country's own school slots. Capacity is a script value and cannot be
+		# read from GUI, so the three slots simply show or hide on whether they were
+		# founded; the interaction itself enforces the cap.
+		#########################################################################
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_schools' )]"
+			using = bg_secondary_inner_alt
+			margin = { 10 10 }
+			spacing = 6
+
+			text_multi = {
+				layoutpolicy_horizontal = expanding
+				autoresize = yes
+				multiline = yes
+				max_width = 460
+				fontsize = 11
+				default_format = "#weak"
+				text = "CC_XP_SCHOOLS_DESC"
+			}
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 11
+				default_format = "#weak"
+				visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet)]"
+				text = "CC_XP_NO_SCHOOLS"
+			}
+
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter]"  using = cc_xp_school_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter]"  using = cc_xp_school_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter]"  using = cc_xp_school_row }
+		}
+	}
 }
