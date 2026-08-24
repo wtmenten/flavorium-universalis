@@ -1,4 +1,18 @@
-﻿# Three additional Byzantine bureaus.
+﻿# AXIS DRIFT IS NOT IN THESE DEFINITIONS, and removing it fixed a live cross-axis bug.
+#
+# All three gate on has_or_had_tag = BYZ OR TRE. Byzantium holds cc_taxis_vs_cc_dynatoi, but
+# TREBIZOND DOES NOT: that value's allow block names BYZ alone, and the main mod's generalised
+# cc_order_vs_cc_magnates excludes only BYZ and ROM, so a Trebizond that unlocked these
+# bureaucracies held the generic axis while the bureaucracy pushed monthly_towards_cc_taxis at
+# it. That is a modifier for a societal value the country does not have, which is exactly what
+# vanilla's byzantium.txt wraps every one of its entries in has_societal_value to avoid.
+#
+# The drift now lives in auto_modifiers/cc_byz_taxis.txt, which takes potential_trigger and
+# gates on the value existing. These three types are already counted there, by
+# cc_byz_taxis_funded and cc_byz_dynatoi_funded in cc_byz_values.txt, so nothing was lost in
+# the move; leaving the inline lines in place would have double-counted them.
+
+# Three additional Byzantine bureaus.
 #
 # Vanilla's eleven (byz.txt) already cover codified law, the eunuch service, court ceremony,
 # provincial governors, the tax on the powerful, the senate, the themes, central command,
@@ -96,7 +110,6 @@ cc_byz_genikon = {
 		scale = { value = scope:maintenance }
 
 		global_bureaucracy_maintenance_efficiency = 0.15
-		monthly_towards_cc_taxis = societal_value_minor_monthly_move
 
 		# The price of a treasury that actually works: it works to its own procedures.
 		# An emperor cannot simply take money out of a fisc that keeps proper books.
@@ -117,7 +130,6 @@ cc_byz_genikon = {
 
 		# An unfunded treasury does not simply do less. It gets sold.
 		global_estate_satisfaction_decay = 0.02
-		monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
 	}
 }
 
@@ -181,7 +193,6 @@ cc_byz_epi_ton_deeseon = {
 		scale = { value = scope:maintenance }
 
 		global_crown_estate_power = 0.1
-		monthly_towards_cc_taxis = societal_value_monthly_move
 
 		# An appeals office that has heard cases for fifty years decides them by its own
 		# accumulated precedent. Subjects get consistency; the emperor gets less say.
@@ -252,7 +263,6 @@ cc_byz_oikeioi = {
 		scale = { value = scope:maintenance }
 
 		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction
-		monthly_towards_cc_dynatoi = societal_value_monthly_move
 
 		# Favour granted long enough stops being favour and becomes expectation. The
 		# households holding commands for three reigns now consider them theirs.

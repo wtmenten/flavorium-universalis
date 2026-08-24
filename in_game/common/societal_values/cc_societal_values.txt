@@ -1,0 +1,87 @@
+﻿# Order vs Magnates
+#
+# Who actually administers the realm: the crown's salaried offices, or the families who hold
+# the land and supply the soldiers. It is the oldest quarrel in any state large enough to need
+# clerks, and every European monarchy in this period is somewhere on it.
+#
+# Order    (left)  = the fisc, the chancery, the appointed official.
+# Magnates (right) = land, levies, and the men whose grandfathers held them.
+#
+#
+# LIFTED FROM THE RHOMANIA SUBMOD. This began as cc_taxis_vs_cc_dynatoi, which is the same
+# quarrel with Byzantine names on it. That version stays, gated on BYZ, because Taxis and
+# Dynatoi are not merely flavour: they are specific fourteenth-century parties with specific
+# stakes, and the Byzantine content is written to them by name. This one is the general case
+# for everybody else, and the two are mutually exclusive by construction (see the allow block).
+#
+#
+# REQUIRES ALL THREE FILES OR IT IS SILENTLY INERT:
+#   in_game/common/societal_values/cc_societal_values.txt          (this file)
+#   main_menu/common/modifier_type_definitions/cc_societal_values.txt
+#   main_menu/common/static_modifiers/cc_societal_values.txt
+#
+# POLE NAMES DERIVE FROM THIS KEY, split on _vs_, so the poles here are cc_order and
+# cc_magnates. Both sides are prefixed for the reason the Byzantine one records: a key of
+# cc_order_vs_magnates would yield the poles "cc_order" and "magnates", and every derived
+# asset and modifier type would then be named against a mismatched pair. The engine derives
+# three names per pole: monthly_towards_<pole>, <pole>_progress_cabinet_efficiency, and the
+# loc key <pole>_focus.
+#
+#
+# ART. Six placeholder files copied from vanilla centralization_vs_decentralization, which is
+# the closest vanilla pairing in both meaning and silhouette. A missing icon renders blank
+# without logging, so these are checked by eye:
+#   main_menu/gfx/interface/icons/modifier_types/monthly_towards_cc_{order,magnates}.dds
+#   main_menu/gfx/interface/icons/societal_values/cc_order_vs_cc_magnates_{left,right}.dds
+#   main_menu/gfx/interface/illustrations/societal_values/cc_order_vs_cc_magnates_{left,right}.dds
+
+cc_order_vs_cc_magnates = {
+	content_priority = 900
+
+	# GATED ON BEING ABLE TO RUN BUREAUCRACIES AT ALL.
+	#
+	# The axis is fed almost entirely by the bureaucracy system: funded offices push Order,
+	# starved ones push Magnates, and the two crown-power feeders read estate power that the
+	# offices themselves move. A country with no bureaucracy slots has nothing pushing either
+	# way, and an inert slider on the societal values panel is worse than no slider.
+	#
+	# max_bureaucracy_slots is a country-scope value, used that way by vanilla in
+	# generic_actions/bureaucracy_actions.txt:8 and auto_modifiers/country.txt:1493.
+	#
+	# BYZ AND ROM ARE EXCLUDED because they get cc_taxis_vs_cc_dynatoi instead, which is the
+	# same axis with the specific parties named. has_or_had_tag rather than tag, so an empire
+	# that has formed ROM or been BYZ does not acquire a second copy of its own quarrel.
+	allow = {
+		max_bureaucracy_slots >= 1
+		NOT = { has_or_had_tag = BYZ }
+		NOT = { has_or_had_tag = ROM }
+	}
+
+	left_modifier = { #Order
+		global_bureaucracy_maintenance_efficiency = 0.25
+		global_bureaucracy_entrenchment_speed_modifier = 0.2
+		global_crown_estate_power = 0.25
+		country_cabinet_efficiency = 0.15
+		global_estate_max_tax = 0.15
+
+		monthly_towards_centralization = societal_value_monthly_move
+
+		global_levy_size_modifier = -0.15
+		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+	}
+
+	right_modifier = { #Magnates
+		global_manpower_modifier = 0.2
+		global_levy_size_modifier = 0.2
+		nobles_estate_target_satisfaction = medium_permanent_target_satisfaction
+		subject_loyalty = 15
+
+		monthly_towards_decentralization = societal_value_monthly_move
+
+		global_bureaucracy_maintenance_efficiency = -0.25
+		global_crown_estate_power = -0.25
+		global_estate_max_tax = -0.15
+	}
+
+	opinion_importance_multiplier = 0.5
+}

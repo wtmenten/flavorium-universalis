@@ -1,0 +1,1143 @@
+﻿# VANILLA OVERRIDE of the ten generic bureaucracies and China's four, from
+# game/in_game/common/bureaucracies/generic.txt and china.txt.
+#
+# THIS IS THE MOD'S SECOND AUTHORISED VANILLA OVERRIDE, and the larger one. The first is the
+# Rhomania submod's zzz_cc_byz_vanilla_overrides.txt, covering the ten Byzantine bureaucracies.
+# Between them, every bureaucracy vanilla ships is now under our control, which is deliberate:
+# the bureau system is only coherent if every bureau plays by the same rules, and half a system
+# would be worse than none.
+#
+# PATCH RISK, STATED PLAINLY. Any EU5 update touching generic.txt or china.txt diverges from
+# this file silently and nothing will tell you. Re-check on every game update by diffing
+# against those two files and re-applying the four edits listed below. That is the price of
+# this feature and it was accepted knowingly.
+#
+#
+# THE REPLACE: PREFIX IS LOAD-BEARING. A bare `key = { ... }` for a key vanilla already defines
+# does NOT win on load order. The engine refuses it and keeps vanilla, logging
+#   [gamedatabase.h:408]: Duplicated key <name> will not be created from file: ...
+# while the file looks entirely correct. INJECT: would merge at the entry's top level but
+# cannot reach inside an existing positive_modifier to alter its scale, which is why this file
+# uses REPLACE:.
+#
+#
+# ENTRENCHMENT: ENGINE ON THE BOONS, EXTRA SOFTENING ON THE MALUSES
+#
+# The engine ALREADY multiplies both the positive and the negative modifier of every
+# bureaucracy by entrenchment. See game_concept_bureaucracy_desc, "increasing the power of both
+# positive and negative modifiers", and the "Entrenchment +N%" line under a bureaucracy
+# tooltip. Doing it again on the boon side would square it, so the boon side is left alone.
+#
+# The MALUS side keeps one deliberate extra factor. The engine's linear scaling still has a
+# brand new unfunded office doing real harm, and it should not: nobody has had time to build
+# anything out of it yet. With the extra factor the penalty is quadratic below full
+# entrenchment and identical to vanilla at 100%:
+#
+#     entrenchment      20%     50%     80%    100%
+#     engine only      0.20    0.50    0.80    1.00
+#     with ours        0.04    0.25    0.64    1.00
+#
+#
+# WHAT CHANGED, AND NOTHING ELSE. Vanilla text is otherwise untouched, so this re-syncs by
+# diffing and re-applying these four per entry:
+#
+#   1. on_maintenance_changed firing cc_bureau.60 on a cut to <= 0.25. Vanilla leaves this hook
+#      undeclared on all fourteen. THE HOOK IS DELIBERATELY UNGUARDED HERE: fourteen entries
+#      carry it, so an emperor economising across the board would fire the same dialogue
+#      fourteen times in an afternoon. The cooldown lives on cc_bureau.60's own trigger, where
+#      one guard covers every call site and cannot be missed on a fifteenth copy. This is the
+#      same arrangement the Byzantine file uses and for the same reason.
+#   2. maintenance_price_modifier: APPENDED a steward discount, conditional on a per-type
+#      variable. See the comment at each site for why it cannot be done any other way.
+#   3. positive_modifier body: a small crown power cost, since a funded office runs
+#      increasingly to its own standards. The positive SCALE is untouched.
+#   4. negative_modifier: APPENDED an entrenchment factor to the scale, plus a little noble
+#      power, universal to all fourteen.
+#
+# ONE ARITHMETIC MERGE was needed, because vanilla already sets the same key in that block and
+# a repeated key inside one modifier block does not stack:
+#   audit_bureau  positive  global_crown_estate_power  0.1 - 0.02 = 0.08
+#
+#
+# THE AXIS DRIFT IS NOT HERE, and that is the significant difference from the first draft of
+# this system. It used to sit inside each definition, one line per side. A definition carries a
+# single positive_modifier block and can therefore express drift for exactly one axis, which
+# broke as soon as two existed: a Byzantine emperor holding a generic bureaucracy would have
+# been pushed on an axis he does not have, and monthly_towards_cc_order on a country without
+# cc_order_vs_cc_magnates is the error vanilla's own byzantium.txt wraps every entry in
+# has_societal_value to avoid. Drift lives in auto_modifiers/cc_bureau_axis.txt, which takes
+# potential_trigger, with a mirror set in the submod for the Byzantine axis.
+
+REPLACE:board_of_revenue_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_board_of_revenue_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		government_size = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		tax_income_efficiency = 0.1
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		estate_enrichment = 0.1
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:privy_council_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_privy_council_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		government_size = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		parliament_base_support = 0.2
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		pop_join_rebel_threshold = 0.1
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:audit_bureau_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_audit_bureau_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		revoke_privilege_cost_modifier = -0.25
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_crown_estate_power = 0.08
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:colonial_office_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_colonial_office_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		burghers_estate
+		crown_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		colonial_range_modifier = 0.25
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		colonial_migration_size_modifier = 0.2
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_migration_attraction = -0.2
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:admiralty_board_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_admiralty_board_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		monthly_navy_tradition = 0.1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		naval_morale_modifier = 0.2
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		navy_maintenance_efficiency = -0.2
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:foreign_ministry_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_foreign_ministry_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		max_diplomats = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		diplomatic_capacity = 1
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		diplomatic_reputation = diplomatic_reputation_severe_penalty
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:trade_commission_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_trade_commission_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		trade_range_modifier = 0.2
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		global_merchant_power = 0.2
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		burghers_estate_target_satisfaction = -0.2
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:war_council_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_war_council_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		nobles_estate
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		army_tradition_from_battle = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		military_tactics = 0.1
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		land_morale_modifier = -0.1
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:ordnance_board_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_ordnance_board_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		artillery_bonus_vs_fort = 1
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		army_artillery_power = 0.1
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		army_artillery_maintenance_cost_modifier = 0.2
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:commissariat_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_commissariat_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_embraced_institution = institution:confessionalism
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		peasants_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		supply_depot_capacity = 500
+	}
+
+	#positive
+	positive_modifier = {
+		scale = { value = scope:maintenance }
+		army_logistics_distance_modifier = 0.25
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		army_movement_speed = -0.1
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:central_secretariat_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_central_secretariat_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_or_had_tag = CHI
+	}
+
+	estates_that_like = {
+		crown_estate
+		burghers_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		government_size = 1
+	}
+
+	#positive - zhongshu_sheng advance raises scale by 50%
+	positive_modifier = {
+		scale = {
+			value = scope:maintenance
+			if = {
+				limit = { root ?= { has_advance = zhongshu_sheng } }
+				multiply = 1.5
+			}
+		}
+		monthly_legitimacy = 0.2
+		monthly_celestial_authority = 0.02
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative - administrative chaos from an underfunded secretariat raises the cost of political decisions
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		stability_cost_efficiency = -0.1
+		monthly_celestial_authority = -0.04
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:imperial_censorate_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_imperial_censorate_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_or_had_tag = CHI
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		stability_cost_efficiency = 0.05
+	}
+
+	#positive - the_censorate advance raises scale by 50%
+	positive_modifier = {
+		scale = {
+			value = scope:maintenance
+			if = {
+				limit = { root ?= { has_advance = the_censorate } }
+				multiply = 1.5
+			}
+		}
+		tax_income_efficiency = 0.08
+		monthly_celestial_authority = 0.02
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative - without active inspectors, estates exploit the oversight vacuum and accumulate unchecked power
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_estate_power = 0.2
+		monthly_celestial_authority = -0.04
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:six_boards_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_six_boards_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_or_had_tag = CHI
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		nobles_estate
+	}
+
+	on_deactivate = {
+		if = {
+			limit = {
+				has_law = six_ministries_overseer_law
+			}
+			custom_tooltip = six_boards_deactivate_disables_oversight_law_tt
+		}
+	}
+
+	#neutral
+	neutral_modifier = {
+		government_size = 2
+	}
+
+	#positive - three_departments_system reform raises scale by 50%; chi_grand_secretariat adds 20%; chi_direct_report adds 10%
+	positive_modifier = {
+		scale = {
+			value = scope:maintenance
+			if = {
+				limit = { root ?= { has_reform = government_reform:three_departments_system } }
+				multiply = 1.5
+			}
+			if = {
+				limit = { root ?= { has_policy = chi_grand_secretariat } }
+				multiply = 1.2
+			}
+			if = {
+				limit = { root ?= { has_policy = chi_direct_report } }
+				multiply = 1.1
+			}
+		}
+		global_manpower_modifier = 0.1
+		monthly_celestial_authority = 0.02
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative - six entrenched ministries without funding become fiefdoms of powerful officials
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		global_estate_power = 0.25
+		monthly_celestial_authority = -0.03
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}
+
+REPLACE:grand_secretariat_bureaucracy = {
+	on_maintenance_changed = {
+		if = {
+			limit = {
+				scope:new_maintenance < scope:old_maintenance
+				scope:new_maintenance <= 0.25
+			}
+			trigger_event_non_silently = cc_bureau.60
+		}
+	}
+	implementation_price = price:implement_bureaucracy_price
+	maintenance_price = price:maintain_bureaucracy_price
+	removal_price = price:remove_bureaucracy_price
+	maintenance_price_modifier = {
+		value = country_economical_base
+		multiply = 0.004
+
+		# STEWARD DISCOUNT. cc_assign_bureau_steward puts a cabinet member in charge of one named
+		# bureau, and this is the only place a per-SLOT cost reduction can live:
+		# maintenance_price_modifier is evaluated in COUNTRY scope (bureaucracies/readme.txt) and
+		# therefore cannot ask which bureau it is pricing. Each definition naming its own variable
+		# is what makes it per-slot rather than global.
+		if = {
+			limit = { has_variable = cc_steward_grand_secretariat_bureaucracy }
+			multiply = cc_bureau_steward_discount
+		}
+	}
+
+	potential = {
+		has_or_had_tag = CHI
+	}
+
+	estates_that_like = {
+		crown_estate
+	}
+	estates_that_dislike = {
+		burghers_estate
+	}
+
+	#neutral
+	neutral_modifier = {
+		monthly_legitimacy = 0.1
+	}
+
+	#positive - reform_the_grand_secretariat advance raises scale by 50%
+	positive_modifier = {
+		scale = {
+			value = scope:maintenance
+			if = {
+				limit = { root ?= { has_advance = reform_the_grand_secretariat } }
+				multiply = 1.5
+			}
+		}
+		monthly_prestige = 0.3
+		monthly_celestial_authority = 0.02
+
+		# A funded office runs increasingly to its own standards rather than the crown's.
+		global_crown_estate_power = -0.02
+	}
+
+	#negative - a Secretariat that loses influence undermines the very legitimacy it was meant to sustain
+	negative_modifier = {
+		scale = {
+			value = 1
+			subtract = scope:maintenance
+
+			multiply = {
+				value = scope:entrenchment
+				divide = 100
+				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
+			}
+		}
+		monthly_legitimacy = -0.2
+		monthly_celestial_authority = -0.04
+
+		# Any starved office becomes somebody's private asset, whatever it was founded for.
+		# Small per bureau: this applies to all of them and stacks.
+		global_nobles_estate_power = 0.03
+	}
+}

@@ -38,10 +38,18 @@
 #
 #   1. negative_modifier scale: APPENDED a multiply by (entrenchment/100). Appended rather
 #      than replaced so vanilla's own scale logic survives intact.
-#   2. negative_modifier body: Dynatoi drift plus a little noble power, universal to all
-#      eleven, since a starved office of any kind ends up serving somebody local.
-#   3. positive_modifier body: own-pole Taxis/Dynatoi drift and a small crown power cost.
-#      The positive SCALE is untouched.
+#   2. negative_modifier body: a little noble power, universal to all eleven, since a starved
+#      office of any kind ends up serving somebody local.
+#   3. positive_modifier body: a small crown power cost. The positive SCALE is untouched.
+#
+#      THE AXIS DRIFT USED TO LIVE IN 2 AND 3 AND NO LONGER DOES. It was one line per
+#      bureaucracy per side, twenty-one lines in all. A definition carries a single
+#      positive_modifier block and can therefore express drift for exactly one axis, which
+#      stopped being enough when the main mod lifted a generalised Order/Magnates version of
+#      this quarrel for everybody else: a Byzantine emperor holding a generic bureaucracy would
+#      have been pushed on an axis he does not have. Drift now lives in
+#      auto_modifiers/cc_byz_taxis.txt, which takes potential_trigger and can gate on
+#      has_societal_value so the two axes never both apply.
 #   4. on_maintenance_changed firing cc_byz_bureaucracy.60 on a cut to <= 0.25. NOTE that
 #      sixty_books_of_the_basilika_bureaucracy ALREADY has this hook in vanilla, where it
 #      records maintenance into a variable; ours is merged into that block rather than
@@ -86,6 +94,15 @@ REPLACE:nomos_empsychos_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_nomos_empsychos_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -118,12 +135,7 @@ REPLACE:nomos_empsychos_bureaucracy = {
 	#positive
 	positive_modifier = {
 		scale = { value = scope:maintenance }
-		
 		global_crown_estate_power = 0.13
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 	}
 
 	#negative
@@ -131,18 +143,14 @@ REPLACE:nomos_empsychos_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
 				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
 			}
 		}
-		global_estate_satisfaction_decay = 0.025		
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		global_estate_satisfaction_decay = 0.025
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -166,6 +174,15 @@ REPLACE:honorary_titles_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_honorary_titles_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	estates_that_like = {
@@ -196,10 +213,6 @@ REPLACE:honorary_titles_bureaucracy = {
 	positive_modifier = {
 		scale = { value = scope:maintenance }
 		global_estate_target_satisfaction = small_permanent_target_satisfaction
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -208,7 +221,7 @@ REPLACE:honorary_titles_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -216,10 +229,6 @@ REPLACE:honorary_titles_bureaucracy = {
 			}
 		}
 		global_crown_estate_power = -0.3
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -243,6 +252,15 @@ REPLACE:court_eunuchs_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_court_eunuchs_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	estates_that_like = {
@@ -274,10 +292,6 @@ REPLACE:court_eunuchs_bureaucracy = {
 		scale = { value = scope:maintenance }
 		country_child_education = 0.1
 		global_monthly_literacy = 0.01
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -286,7 +300,7 @@ REPLACE:court_eunuchs_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -294,10 +308,6 @@ REPLACE:court_eunuchs_bureaucracy = {
 			}
 		}
 		stability_decay = 0.0025
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -321,6 +331,15 @@ REPLACE:ritualistic_court_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_sixty_books_of_the_basilika_bureaucracy }
+			multiply = 0.75
+		}
 	}
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -353,10 +372,6 @@ REPLACE:ritualistic_court_bureaucracy = {
 		diplomatic_reputation = 1
 		annexation_speed_modifier = 0.10
 		cultural_influence_modifier = 0.15
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -365,7 +380,7 @@ REPLACE:ritualistic_court_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -373,10 +388,6 @@ REPLACE:ritualistic_court_bureaucracy = {
 			}
 		}
 		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -388,6 +399,15 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_romanitas_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	estates_that_like = {
@@ -420,7 +440,7 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 			name = sixty_books_basilika_maintenance
 			value = scope:new_maintenance
 		}
-	
+
 		if = {
 			limit = {
 				has_dlc = "d008_fate_of_the_phoenix"
@@ -443,10 +463,10 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 
 	#positive
 	positive_modifier = {
-		scale = { 
-			value = scope:maintenance 
+		scale = {
+			value = scope:maintenance
 			if = {
-				limit = { 
+				limit = {
 					has_or_had_tag = BYZ
 					has_variable = reformed_imperial_code_flag
 				}
@@ -457,10 +477,6 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 			}
 		}
 		global_estate_power = -0.5
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -469,7 +485,7 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -477,10 +493,6 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 			}
 		}
 		pop_join_rebel_threshold = 0.05
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -504,6 +516,15 @@ REPLACE:romanitas_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_imperial_senate_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -565,7 +586,7 @@ REPLACE:romanitas_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -573,10 +594,6 @@ REPLACE:romanitas_bureaucracy = {
 			}
 		}
 		diplomatic_reputation = -1
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -600,6 +617,15 @@ REPLACE:imperial_senate_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_kephalai_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -629,10 +655,6 @@ REPLACE:imperial_senate_bureaucracy = {
 	positive_modifier = {
 		scale = { value = scope:maintenance }
 		parliament_base_support = 0.075
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -641,7 +663,7 @@ REPLACE:imperial_senate_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -650,10 +672,6 @@ REPLACE:imperial_senate_bureaucracy = {
 		}
 		monthly_legitimacy = -0.2
 		monthly_republican_tradition = -0.2
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -677,6 +695,16 @@ REPLACE:kephalai_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. This submod
+		# declares no dependency on the main mod, so the multiplier is written out rather than
+		# referencing cc_bureau_steward_discount; the two must be kept equal by hand. Without the
+		# main mod nothing ever sets these variables and the test is simply always false, which is
+		# the correct standalone behaviour rather than an error.
+		if = {
+			limit = { has_variable = cc_steward_kephalai_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -721,10 +749,6 @@ REPLACE:kephalai_bureaucracy = {
 	positive_modifier = {
 		scale = { value = scope:maintenance }
 		num_local_governors = 1
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -733,7 +757,7 @@ REPLACE:kephalai_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -742,10 +766,6 @@ REPLACE:kephalai_bureaucracy = {
 		}
 		estate_enrichment = 0.3
 		global_non_rural_monthly_prosperity = -0.003
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }
@@ -769,6 +789,15 @@ REPLACE:magister_militum_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_themata_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -824,7 +853,6 @@ REPLACE:magister_militum_bureaucracy = {
 		# magnates. Briefly changed to Dynatoi during the playtest pass on the reasoning that
 		# the aristocracy supplies its officers, which is true of the officers and false of
 		# the institution. Reverted against vanilla's data.
-		monthly_towards_cc_taxis = societal_value_minor_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -833,7 +861,7 @@ REPLACE:magister_militum_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -842,10 +870,6 @@ REPLACE:magister_militum_bureaucracy = {
 		}
 		monthly_legitimacy = -0.2
 		global_nobles_estate_power = 0.53
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 	}
 }
 
@@ -868,6 +892,15 @@ REPLACE:themata_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. The two must
+		# name the same type or this silently does nothing while the tooltip still promises it.
+		# See in_game/common/scripted_effects/cc_bureau_steward.txt in the main mod; these ten are
+		# vanilla types, so it can name them whether or not this submod is loaded.
+		if = {
+			limit = { has_variable = cc_steward_allelengyon_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -907,10 +940,6 @@ REPLACE:themata_bureaucracy = {
 	positive_modifier = {
 		scale = { value = scope:maintenance }
 		global_defensive = 0.2
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -919,7 +948,7 @@ REPLACE:themata_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -928,10 +957,6 @@ REPLACE:themata_bureaucracy = {
 		}
 		levy_recovery_modifier = -0.2
 		global_nobles_estate_power = 0.53
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 	}
 }
 
@@ -954,6 +979,16 @@ REPLACE:allelengyon_bureaucracy = {
 	maintenance_price_modifier = {
 		value = country_economical_base
 		multiply = 0.003
+
+		# STEWARD DISCOUNT, read from the variable the MAIN MOD's cabinet duty sets. This submod
+		# declares no dependency on the main mod, so the multiplier is written out rather than
+		# referencing cc_bureau_steward_discount; the two must be kept equal by hand. Without the
+		# main mod nothing ever sets these variables and the test is simply always false, which is
+		# the correct standalone behaviour rather than an error.
+		if = {
+			limit = { has_variable = cc_steward_allelengyon_bureaucracy }
+			multiply = 0.75
+		}
 	}
 
 	potential = {
@@ -996,10 +1031,6 @@ REPLACE:allelengyon_bureaucracy = {
 	positive_modifier = {
 		scale = { value = scope:maintenance }
 		global_monthly_prosperity = 0.001
-	
-		# A funded office shapes the state's character, and runs increasingly to its own
-		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -1008,7 +1039,7 @@ REPLACE:allelengyon_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-		
+
 			multiply = {
 				value = scope:entrenchment
 				divide = 100
@@ -1016,10 +1047,6 @@ REPLACE:allelengyon_bureaucracy = {
 			}
 		}
 		global_monthly_development = -0.0025
-	
-		# Any starved office becomes somebody's private asset, whatever it was for.
-		# Small per bureau: this applies to all eleven and stacks.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
 		global_nobles_estate_power = 0.03
 	}
 }

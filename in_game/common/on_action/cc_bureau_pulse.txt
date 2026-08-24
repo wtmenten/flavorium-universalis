@@ -1,0 +1,70 @@
+﻿# Bureau thread chain points.
+#
+# on_bureaucracy_added and on_bureaucracy_removed are hardcoded hooks vanilla leaves with EMPTY
+# events = {} blocks (_hardcoded.txt:3176-3190), so there is nothing of vanilla's to preserve
+# on those two. scope:bureaucracy_type is provided on both.
+#
+# DECLARED HERE AND ONLY HERE. Every vanilla hook this thread uses is named in this file once.
+# Note that a sub-list declaration MERGES across files (an `on_actions = {}` or `events = {}`
+# block adds to what is already registered) while a direct `effect = {}` REPLACES; that is why
+# the mod can carry seven separate yearly_country_pulse declarations without any of them
+# clobbering the others, and why none of them may ever be rewritten as an effect block.
+#
+#
+# THE THREAD DOES NOT FIRE FOR BYZANTIUM, and that is deliberate rather than an oversight.
+# Rhomania ships a richer Byzantine bureau thread of its own, written to the Taxis/Dynatoi
+# parties by name. Gating this one on cc_order_vs_cc_magnates keeps the two from both firing at
+# a Byzantine player, since a country can only hold one of the two axes.
+
+on_bureaucracy_added = {
+	on_actions = { cc_on_bureaucracy_added }
+}
+
+on_bureaucracy_removed = {
+	on_actions = { cc_on_bureaucracy_removed }
+}
+
+yearly_country_pulse = {
+	on_actions = { cc_on_yearly_bureau }
+}
+
+
+cc_on_bureaucracy_added = {
+	trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		exists = scope:bureaucracy_type
+	}
+	events = {
+		cc_bureau.1
+	}
+}
+
+cc_on_bureaucracy_removed = {
+	trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		exists = scope:bureaucracy_type
+	}
+	events = {
+		cc_bureau.10
+	}
+}
+
+# The slow-burn conditions rather than the transactions: offices nobody is paying for, offices
+# that have dug in, offices the crown has stopped choosing the holders of. None of these are
+# caused by something the player did this year, which is why they hang off the pulse.
+#
+# The do-nothing weight dominates on purpose. This is one thread among many on the same pulse
+# and the combined rate is what the player experiences, not this table alone.
+cc_on_yearly_bureau = {
+	trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = { count > 0 }
+	}
+	random_events = {
+		100 = 0
+		10 = cc_bureau.20
+		10 = cc_bureau.30
+		10 = cc_bureau.40
+		10 = cc_bureau.50
+	}
+}

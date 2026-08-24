@@ -317,3 +317,81 @@ cc_byz_faith_share_country = {
 	value = "religion_percentage_in_country(religion:orthodox)"
 	add = "religion_percentage_in_country(religion:hellenism_religion)"
 }
+
+
+#############################################
+# Bureau counts by pole, for the Taxis/Dynatoi feeders
+#############################################
+#
+# The mirror of the main mod's cc_bureau_values.txt, applied to the Byzantine ten. Same rule,
+# which is vanilla's own estates_that_like / estates_that_dislike:
+#
+#   dislikes the nobles  ->  governs AROUND the magnates     Taxis
+#   likes the nobles     ->  governs THROUGH them            Dynatoi
+#   mentions neither     ->  unassigned, and stays that way
+#
+# Applying it to byz.txt:
+#   TAXIS       nomos_empsychos, court_eunuchs, ritualistic_court, sixty_books_of_the_basilika,
+#               kephalai, magister_militum, allelengyon, cc_byz_genikon, cc_byz_epi_ton_deeseon
+#   DYNATOI     honorary_titles, imperial_senate, themata, cc_byz_oikeioi
+#   NEITHER     romanitas
+#
+# romanitas is unassigned on purpose and has been through two passes now. Vanilla lists neither
+# a like nor a dislike of the nobles for it, so the rule returns nothing: it is about imperial
+# identity, not about who governs.
+#
+# ritualistic_court dislikes BURGHERS rather than nobles, so strictly the rule leaves it
+# unassigned too. It is kept on Taxis because the ceremonial court is the palace's own
+# instrument and the submod's content has read it that way since it was written.
+
+# ---- Funded Taxis-aligned bureaus ----
+cc_byz_taxis_funded = {
+	every_current_bureaucracy = {
+		limit = {
+			bureaucracy_maintenance >= 0.5
+			OR = {
+				bureaucracy_type = bureaucracy_type:nomos_empsychos_bureaucracy
+				bureaucracy_type = bureaucracy_type:court_eunuchs_bureaucracy
+				bureaucracy_type = bureaucracy_type:ritualistic_court_bureaucracy
+				bureaucracy_type = bureaucracy_type:sixty_books_of_the_basilika_bureaucracy
+				bureaucracy_type = bureaucracy_type:kephalai_bureaucracy
+				bureaucracy_type = bureaucracy_type:magister_militum_bureaucracy
+				bureaucracy_type = bureaucracy_type:allelengyon_bureaucracy
+				bureaucracy_type = bureaucracy_type:cc_byz_genikon
+				bureaucracy_type = bureaucracy_type:cc_byz_epi_ton_deeseon
+			}
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Funded Dynatoi-aligned bureaus ----
+cc_byz_dynatoi_funded = {
+	every_current_bureaucracy = {
+		limit = {
+			bureaucracy_maintenance >= 0.5
+			OR = {
+				bureaucracy_type = bureaucracy_type:honorary_titles_bureaucracy
+				bureaucracy_type = bureaucracy_type:imperial_senate_bureaucracy
+				bureaucracy_type = bureaucracy_type:themata_bureaucracy
+				bureaucracy_type = bureaucracy_type:cc_byz_oikeioi
+			}
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Starved bureaus of any kind ----
+cc_byz_bureau_starved = {
+	every_current_bureaucracy = {
+		limit = { bureaucracy_maintenance < 0.5 }
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+

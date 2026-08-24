@@ -1,0 +1,132 @@
+﻿# Estate privileges that reach into the bureaucracy system.
+#
+# WHY THESE EXIST. Bureaus shipped isolated: implemented, funded on a slider, and touched by
+# nothing else. The estates in particular had no relationship with them at all, despite every
+# bureaucracy in the game declaring estates_that_like and estates_that_dislike and therefore
+# already having an opinion. These four give the estates a way to act on that opinion.
+#
+# ONE PER ESTATE THAT HAS A STAKE, and each takes a different side of the same question:
+#
+#   nobles     the offices staffed from the great houses            pushes Magnates
+#   burghers   the offices staffed by examination                   pushes Order
+#   clergy     the offices keeping the records                      pushes Order, cheaply
+#   peasants   relief from the fees the offices charge              costs the crown
+#
+# THE DRIFT IS ON THE PRIVILEGE, NOT ON AN EVENT, which is what makes these a standing choice
+# rather than a one-off. A privilege is granted and revoked at will, so the player can steer the
+# axis by deciding whose offices these are, continuously, for as long as they hold it.
+#
+# monthly_towards_cc_order / cc_magnates are registered in
+# main_menu/common/modifier_type_definitions/cc_societal_values.txt. Both are gated behind
+# cc_order_vs_cc_magnates existing at all, via the allow block: a country without the axis
+# cannot take the privilege, which keeps the modifier off countries that have no value for it.
+# Byzantium is excluded from that axis by construction and has its own equivalents.
+
+
+# ---- NOBLES: the offices are ours by right ----
+#
+# The oldest arrangement in Europe and the one every crown eventually regrets. Posts go to the
+# families, the families pay for them, and the crown discovers it has sold the machinery it
+# governs with.
+ep_noble_offices_by_right = {
+	estate = nobles_estate
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:nobles_estate)" >= 0.30
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		global_nobles_estate_power = 0.25
+		nobles_estate_target_satisfaction = small_privilege_target_satisfaction
+
+		# The offices cost the crown less because the families are paying for them, and answer
+		# to the crown less for exactly the same reason.
+		maintain_bureaucracy_price_cost_modifier = -0.15
+		global_bureaucracy_maintenance_efficiency = -0.1
+		global_crown_estate_power = -0.1
+
+		monthly_towards_cc_magnates = societal_value_minor_monthly_move
+	}
+}
+
+
+# ---- BURGHERS: the offices are filled by examination ----
+#
+# The answer that actually built the modern state, and it is slow, unglamorous and resented by
+# everyone with a name.
+ep_burgher_examined_service = {
+	estate = burghers_estate
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:burghers_estate)" >= 0.30
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		global_burghers_estate_power = 0.25
+		burghers_estate_target_satisfaction = small_privilege_target_satisfaction
+
+		global_bureaucracy_maintenance_efficiency = 0.15
+		country_cabinet_efficiency = 0.05
+		nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+
+		monthly_towards_cc_order = societal_value_minor_monthly_move
+	}
+}
+
+
+# ---- CLERGY: the records are kept in the cloister ----
+#
+# Before there were archives there were monasteries, and for several centuries they were the
+# same thing. Cheap, effective, and the price is that the church knows what the crown owns.
+ep_clergy_keepers_of_record = {
+	estate = clergy_estate
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:clergy_estate)" >= 0.25
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		global_clergy_estate_power = 0.2
+		clergy_estate_target_satisfaction = small_privilege_target_satisfaction
+
+		maintain_bureaucracy_price_cost_modifier = -0.1
+		global_monthly_literacy = 0.02
+		global_crown_estate_power = -0.05
+
+		monthly_towards_cc_order = societal_value_tiny_monthly_move
+	}
+}
+
+
+# ---- PEASANTS: relief from the fees ----
+#
+# The one privilege here that is not about who staffs the offices but about who pays them. An
+# unfunded bureau charges for its services; this is the crown agreeing to stop that, and paying
+# for the decision out of its own revenue.
+ep_peasant_relief_from_fees = {
+	estate = peasants_estate
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:peasants_estate)" >= 0.25
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		global_peasants_estate_power = 0.2
+		peasants_estate_target_satisfaction = small_privilege_target_satisfaction
+
+		# The fees stop, so the offices cost the treasury what they actually cost.
+		maintain_bureaucracy_price_cost_modifier = 0.15
+		global_bureaucracy_maintenance_efficiency = 0.05
+		stability_decay = -0.002
+
+		monthly_towards_cc_order = societal_value_tiny_monthly_move
+	}
+}

@@ -1,0 +1,145 @@
+﻿## Cabinet Duty: Steward of a Bureau
+#
+# A minister is put in charge of ONE named bureaucracy. That office then costs less to run and
+# works better, and no other office is affected.
+#
+# WHY THIS EXISTS. Bureaus were an isolated system: implemented, funded on a slider, and
+# otherwise untouched by anything else in the game. Nothing in the cabinet, the estates or the
+# reforms reached them. This is the first of the connections back, and it is the one that makes
+# the funding slider a decision rather than a dial, because the minister makes exactly one slot
+# affordable and the player has to pick which.
+#
+#
+# TWO PAYLOADS, AND THEY REACH THE BUREAU BY DIFFERENT ROUTES.
+#
+# 1. THE IMPACT BONUS is free and works on every bureaucracy in the game, ours and vanilla's
+#    alike. The engine derives a <name>_impact_modifier type for every bureaucracy and scales
+#    that bureau's own modifiers by it; all 34 are registered by vanilla already. Granting one
+#    needs no override of anything.
+#
+# 2. THE COST DISCOUNT could not be done that way. maintenance_price_modifier is a per-
+#    bureaucracy script value evaluated in COUNTRY scope (bureaucracies/readme.txt), so it
+#    cannot ask which bureau it is pricing; the only way to make a discount per-slot is for
+#    each definition to name its own variable. That is why every bureaucracy is overridden in
+#    zzz_cc_vanilla_bureau_overrides.txt and in the submod's equivalent, and it is the reason
+#    this feature costs a vanilla override at all.
+#
+# The variable is cc_steward_<bureaucracy_type>, set here and read there. The two must agree
+# exactly or the discount silently does nothing while the tooltip still promises it.
+#
+#
+# ONE STEWARD AT A TIME. allow_multiple = no, and on_activate clears any previous assignment,
+# so a minister moved from one bureau to another does not leave the old one discounted forever.
+# That clear is the single most important line in this file: without it the variable set is
+# write-only and the discount accumulates across every bureau the player ever stewarded.
+
+cc_duty_bureau_steward = {
+	ability = adm
+	allow_multiple = no
+
+	potential = {
+		root = {
+			any_current_bureaucracy = { count > 0 }
+		}
+	}
+
+	allow = {
+		root = {
+			# A bureau nobody is paying for does not need a steward, it needs money.
+			any_current_bureaucracy = {
+				bureaucracy_maintenance > 0
+				count > 0
+			}
+		}
+	}
+
+	# looking_for_a = bureaucracy is real and this is vanilla's own idiom for it, from
+	# generic_actions/bureaucracy_actions.txt:117. The interaction_source_list is what fills the
+	# picker; without it the list is empty and the action cannot be taken.
+	select_trigger = {
+		looking_for_a = bureaucracy
+		target_flag = target_bureaucracy
+		interaction_source_list = {
+			scope:actor = {
+				every_current_bureaucracy = {
+					limit = { bureaucracy_maintenance > 0 }
+					add_to_list = source
+				}
+			}
+		}
+		name = "cc_duty_bureau_steward_select"
+		none_available_msg_key = "no_bureaucracies_available"
+		column = { data = name }
+	}
+
+	# A small realm-wide competence bonus on top of the per-bureau work. Deliberately tiny: the
+	# interesting part of this duty is the slot it targets, not what it does globally.
+	country_modifier = {
+		country_cabinet_efficiency = 0.03
+	}
+
+	on_activate = {
+		scope:actor = {
+			# CLEAR FIRST, ALWAYS. See the note above: without this the per-type variables are
+			# write-only and every bureau the player has ever stewarded stays discounted.
+			cc_clear_bureau_steward_effect = yes
+
+			if = {
+				limit = { exists = scope:target_bureaucracy }
+				cc_set_bureau_steward_effect = yes
+			}
+
+			if = {
+				limit = { NOT = { exists = root.cabinet_member } }
+				set_variable = { name = cc_duty_bureau_steward_invalid  value = yes }
+			}
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = {
+			cc_clear_bureau_steward_effect = yes
+			remove_variable = cc_duty_bureau_steward_invalid
+		}
+	}
+
+	is_finished = {
+		OR = {
+			scope:actor = { has_variable = cc_duty_bureau_steward_invalid }
+			NOT = { exists = scope:target_bureaucracy }
+			# The bureau was dissolved, or defunded to nothing, while he was running it.
+			scope:actor = {
+				NOT = {
+					any_current_bureaucracy = {
+						bureaucracy_maintenance > 0
+						count > 0
+					}
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = {
+					scope:actor = {
+						any_current_bureaucracy = {
+							bureaucracy_maintenance > 0
+							count > 0
+						}
+					}
+				}
+				value = 6
+			}
+		}
+		# Worth more the more of the budget the bureaus are eating.
+		add = {
+			if = {
+				limit = { scope:actor = { cc_bureau_funded_any >= 3 } }
+				value = 4
+			}
+		}
+	}
+}

@@ -1,0 +1,37 @@
+﻿# Drift modifier types for the cc_order_vs_cc_magnates societal value.
+#
+# NAMING IS NOT FREE. The engine splits the value's key on "_vs_" and derives three names per
+# pole, all of which must exist or the value half-works silently:
+#
+#   value key   cc_order_vs_cc_magnates
+#   poles       cc_order                    cc_magnates
+#   this file   monthly_towards_cc_order    monthly_towards_cc_magnates
+#   statics     cc_order_progress_cabinet_efficiency   (see ../static_modifiers/)
+#   loc         cc_order_focus              cc_magnates_focus
+#
+# The pole name comes from the KEY, not from the left_modifier/right_modifier comments. Both
+# poles are prefixed so the derived names stay symmetric; the Rhomania submod records what
+# happens otherwise, which is one pole resolving and the other throwing
+# "Modifier type definition monthly_towards_X must exist in DB".
+#
+# min = 0 matches vanilla's shape for every societal drift type. It means these can only push
+# TOWARD a pole, never away, so content that wants to push the other way grants the opposite
+# modifier rather than a negative value of this one.
+
+monthly_towards_cc_order = {
+	color = neutral
+	game_data = {
+		category = country
+		min = 0
+		is_societal_value_change = yes
+	}
+}
+
+monthly_towards_cc_magnates = {
+	color = neutral
+	game_data = {
+		category = country
+		min = 0
+		is_societal_value_change = yes
+	}
+}

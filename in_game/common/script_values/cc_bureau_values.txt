@@ -1,0 +1,123 @@
+﻿# Bureau counts, by funding and by which side of the Order/Magnates quarrel a bureau sits on.
+#
+# WHAT THESE FEED. auto_modifiers/cc_bureau_axis.txt turns them into societal drift, and the
+# steward action reads the funded count. They exist as script values rather than as inline
+# iterators because auto_modifiers take `scales_with = { value = <script value> }` and cannot
+# iterate for themselves.
+#
+#
+# THE POLE ASSIGNMENT IS VANILLA'S OWN, not ours. Every bureaucracy declares
+# estates_that_like / estates_that_dislike, and that is already a statement about whose
+# institution it is:
+#
+#   dislikes the nobles  ->  it governs AROUND the magnates          Order
+#   likes the nobles     ->  it governs THROUGH them                 Magnates
+#   mentions neither     ->  unassigned, and it stays unassigned
+#
+# Following vanilla's data rather than our own taste matters here. The Rhomania submod records
+# what happens when you override it: magister_militum was "corrected" to the Magnate pole on
+# the reasoning that the aristocracy supplies its officers, which is true of the officers and
+# false of the institution, and vanilla's own estates_that_dislike = nobles said so.
+#
+# Applying the rule to what ships:
+#   ORDER     board_of_revenue, audit_bureau, colonial_office, admiralty_board,
+#             trade_commission, ordnance_board, central_secretariat, imperial_censorate,
+#             six_boards, cc_royal_trading_bureau, cc_scholarly_concordat
+#   MAGNATES  war_council, cc_shadow_court_bureau
+#   NEITHER   privy_council, foreign_ministry, commissariat, grand_secretariat
+#
+# The Byzantine ten are deliberately absent. They are classified the same way in the submod's
+# own values file, against the same rule, and a country cannot hold both axes.
+#
+#
+# LISTED EXPLICITLY RATHER THAN DERIVED. There is no trigger for "does this bureaucracy
+# dislike the nobles", so the classification has to be written out. That makes this file the
+# thing to update when a bureaucracy is added, and the comment above is the rule to apply.
+
+# ---- Funded bureaus on the Order side ----
+# FUNDED means maintenance above half. A bureau at a quarter pay is not making the crown's
+# argument for it; it is making the opposite one, which is what the starved count below is for.
+cc_bureau_order_funded = {
+	every_current_bureaucracy = {
+		limit = {
+			bureaucracy_maintenance >= 0.5
+			OR = {
+				bureaucracy_type = bureaucracy_type:board_of_revenue_bureaucracy
+				bureaucracy_type = bureaucracy_type:audit_bureau_bureaucracy
+				bureaucracy_type = bureaucracy_type:colonial_office_bureaucracy
+				bureaucracy_type = bureaucracy_type:admiralty_board_bureaucracy
+				bureaucracy_type = bureaucracy_type:trade_commission_bureaucracy
+				bureaucracy_type = bureaucracy_type:ordnance_board_bureaucracy
+				bureaucracy_type = bureaucracy_type:central_secretariat_bureaucracy
+				bureaucracy_type = bureaucracy_type:imperial_censorate_bureaucracy
+				bureaucracy_type = bureaucracy_type:six_boards_bureaucracy
+				bureaucracy_type = bureaucracy_type:cc_royal_trading_bureau
+				bureaucracy_type = bureaucracy_type:cc_scholarly_concordat
+			}
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Funded bureaus on the Magnate side ----
+cc_bureau_magnate_funded = {
+	every_current_bureaucracy = {
+		limit = {
+			bureaucracy_maintenance >= 0.5
+			OR = {
+				bureaucracy_type = bureaucracy_type:war_council_bureaucracy
+				bureaucracy_type = bureaucracy_type:cc_shadow_court_bureau
+			}
+		}
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Starved bureaus, of any kind ----
+#
+# A starved office of any description ends up serving somebody local, which is the one thing
+# the whole system agrees on regardless of what the office was for. Counted separately from
+# the pole lists above precisely because it does not care about the pole.
+cc_bureau_starved = {
+	every_current_bureaucracy = {
+		limit = { bureaucracy_maintenance < 0.5 }
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Every bureau that is funded at all, pole or no pole ----
+# Read by the steward action's availability and by the Order feeder, on the principle that an
+# administration is an argument for administration whatever its individual offices are for.
+cc_bureau_funded_any = {
+	every_current_bureaucracy = {
+		limit = { bureaucracy_maintenance > 0 }
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# ---- Total, funded or not ----
+cc_bureau_count = {
+	every_current_bureaucracy = {
+		root = { add = 1 }
+	}
+	min = 0
+	max = 12
+}
+
+# How much a steward saves on his own bureau's upkeep.
+#
+# A MULTIPLIER, NOT A SUBTRACTION, because maintenance_price_modifier multiplies the price.
+# 0.75 is a quarter off one slot: enough that stewarding the most expensive bureau is a real
+# saving, small enough that it does not make a bureau free and turn the funding slider back
+# into a formality.
+cc_bureau_steward_discount = {
+	value = 0.75
+}

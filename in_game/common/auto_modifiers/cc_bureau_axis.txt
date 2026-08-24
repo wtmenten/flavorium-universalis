@@ -1,0 +1,158 @@
+﻿# Feeders for cc_order_vs_cc_magnates.
+#
+# WHY THE DRIFT LIVES HERE AND NOT IN THE BUREAUCRACY DEFINITIONS.
+#
+# The Rhomania submod put its axis drift inside each bureaucracy's positive_modifier and
+# negative_modifier, which works when exactly one axis exists and breaks the moment two do. A
+# bureaucracy definition carries ONE positive_modifier block, so it can carry drift for one
+# axis; a Byzantine emperor holding a generic bureaucracy would then be pushed on an axis he
+# does not have, and monthly_towards_cc_order on a country without cc_order_vs_cc_magnates is
+# the error vanilla's own byzantium.txt guards against by wrapping every entry in
+# has_societal_value.
+#
+# auto_modifiers take potential_trigger, so each axis gets its own parallel set and the two
+# never both apply. That is the whole reason the drift moved out of the definitions during the
+# lift, and it is why the submod's overrides file is now shorter than it was.
+#
+# Every entry gates on has_societal_value first, exactly as vanilla's byzantium.txt does.
+#
+#
+# THE RATES ARE CALIBRATED AGAINST A KNOWN MISTAKE. The submod shipped its Order-equivalent
+# feeder at min_scaling (0.01) scaled by bureaus/3, so four funded bureaus earned 0.013 a month
+# against 0.05 from either Magnate condition: four to one against the player for playing the
+# side the bureaucracy system is about. Playtesting duly reported the axis as pushing the wrong
+# way. These start where that ended up after the fix.
+
+#############################################
+# Toward Order: the crown's offices
+#############################################
+
+# Funded offices of the crown's own kind. The strongest single feeder, because it is the one
+# the player is actually steering.
+cc_bureau_order_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = {
+			bureaucracy_maintenance >= 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_bureau_order_funded
+		divide = 3
+	}
+
+	monthly_towards_cc_order = societal_value_minor_monthly_move
+}
+
+# Any administration at all, of any character, argues for administration. Weaker and broader
+# than the entry above, and it is what keeps a realm running only unaligned bureaus from
+# sitting perfectly still.
+cc_bureau_order_any_administration = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = {
+			bureaucracy_maintenance > 0
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_bureau_funded_any
+		divide = 4
+	}
+
+	monthly_towards_cc_order = societal_value_tiny_monthly_move
+}
+
+# A crown that can appoint and dismiss does not need to bargain.
+#
+# THE THRESHOLD IS 0.5 AND THE MAGNATE TWIN'S IS 0.25, deliberately asymmetric. Running
+# bureaus costs crown estate power by design, so a symmetric pair would have the act of
+# building the administration trip the Magnate feeder. That is the exact bug playtesting found
+# in the Byzantine version, where a 0.35 floor made four funded bureaus enough to do it.
+cc_bureau_strong_crown = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:crown_estate)" >= 0.5
+	}
+
+	monthly_towards_cc_order = societal_value_minor_monthly_move
+}
+
+# A state that runs on paper. Literate clerks are the fisc's real infrastructure, and this is
+# the one feeder that has nothing to do with bureaus.
+cc_bureau_literate_state = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		average_country_literacy > 20
+	}
+
+	monthly_towards_cc_order = societal_value_tiny_monthly_move
+}
+
+
+#############################################
+# Toward the Magnates: the men who hold the land
+#############################################
+
+# Offices that are the aristocracy's own institution, funded and working.
+cc_bureau_magnate_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = {
+			bureaucracy_maintenance >= 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_bureau_magnate_funded
+		divide = 2
+	}
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}
+
+# A starved office of any kind ends up serving somebody local. This is the mechanism the whole
+# system turns on: the player does not choose between Order and Magnates by decree, they choose
+# it by deciding what to pay for.
+cc_bureau_starved_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = {
+			bureaucracy_maintenance < 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_bureau_starved
+		divide = 3
+	}
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}
+
+# Genuine crown weakness, not the ordinary overhead of running an administration. See the
+# asymmetry note on cc_bureau_strong_crown above.
+cc_bureau_weak_crown = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:crown_estate)" < 0.25
+	}
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}
+
+# A powerful and contented nobility entrenches itself without anyone deciding that it should.
+cc_bureau_ascendant_nobles = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		"estate_power(estate_type:nobles_estate)" >= 0.4
+		estate_satisfaction:nobles_estate >= 0.6
+	}
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}

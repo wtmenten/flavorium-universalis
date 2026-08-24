@@ -1,0 +1,84 @@
+﻿# Government reforms that settle the bureau question at the level of the constitution.
+#
+# The estate privileges decide WHOSE the offices are and can be revoked next year. These decide
+# what an office IS, and a reform is not something a crown reverses casually. That is the whole
+# difference between the two layers and the reason both exist.
+#
+# THEY ARE MUTUALLY EXCLUSIVE IN PRACTICE without needing an explicit exclusion: they sit in the
+# same reform slot era and pull the axis opposite ways, so taking one and then the other simply
+# undoes the first. Nothing enforces a choice because nothing needs to.
+#
+# AGE. age_4_reformation, not age_4_absolutism, which does not exist: the five valid keys are
+# age_2_renaissance, age_3_discovery, age_4_reformation, age_5_absolutism and age_6_revolutions.
+# The reformation age is also the right one on the merits, since vanilla gates all ten generic
+# bureaucracies on having embraced confessionalism.
+#
+# BOTH GATE ON THE AXIS. A country without cc_order_vs_cc_magnates cannot take either, which
+# keeps monthly_towards_cc_order off countries that have no value to receive it. Byzantium is
+# excluded from that axis by construction.
+
+# ---- The venal offices ----
+#
+# Offices are property: bought, sold and inherited, and the crown takes a fee on every transfer.
+# France ran this way for two centuries and it worked, in the narrow sense that it raised money
+# reliably. What it could not do was produce an administration that answered to anybody.
+cc_venal_offices_reform = {
+	age = age_4_reformation
+
+	potential = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		# Selling the offices raises money now and costs the crown the machinery later.
+		tax_income_efficiency = 0.1
+		maintain_bureaucracy_price_cost_modifier = -0.25
+		global_nobles_estate_power = 0.1
+
+		global_bureaucracy_maintenance_efficiency = -0.15
+		global_crown_estate_power = -0.1
+
+		monthly_towards_cc_magnates = societal_value_minor_monthly_move
+	}
+
+	years = 3
+}
+
+# ---- The salaried establishment ----
+#
+# Posts are salaried, appointed and held at pleasure. Expensive, and it is the arrangement every
+# state that lasted eventually arrived at, usually after trying the other one first.
+cc_salaried_establishment_reform = {
+	age = age_4_reformation
+
+	potential = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	allow = {
+		has_societal_value = societal_value_type:cc_order_vs_cc_magnates
+		any_current_bureaucracy = { count > 0 }
+	}
+
+	country_modifier = {
+		global_bureaucracy_maintenance_efficiency = 0.2
+		global_bureaucracy_entrenchment_speed_modifier = 0.15
+		country_cabinet_efficiency = 0.1
+		global_crown_estate_power = 0.1
+
+		# Paying for it is the point and the cost.
+		maintain_bureaucracy_price_cost_modifier = 0.2
+		nobles_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+
+		monthly_towards_cc_order = societal_value_minor_monthly_move
+	}
+
+	years = 3
+}

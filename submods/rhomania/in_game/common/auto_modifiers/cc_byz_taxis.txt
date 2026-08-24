@@ -114,3 +114,83 @@ cc_byz_literate_administration = {
 
 	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 }
+
+
+#############################################
+# The bureaus themselves
+#############################################
+#
+# LIFTED OUT OF THE BUREAUCRACY DEFINITIONS. Until the Order/Magnates axis was generalised into
+# the main mod, this drift sat inside each of the eleven overridden bureaucracies, one line per
+# side. That works while exactly one axis exists and fails the moment two do: a definition
+# carries a single positive_modifier block, so it can express drift for one axis only, and a
+# Byzantine emperor holding a generic bureaucracy would have been pushed on an axis he does not
+# have. monthly_towards_cc_order on a country without cc_order_vs_cc_magnates is precisely the
+# error vanilla's byzantium.txt wraps every one of its own entries in has_societal_value to
+# avoid.
+#
+# auto_modifiers take potential_trigger, so both axes can have a parallel set and neither ever
+# applies to the wrong country. These mirror the main mod's cc_bureau_axis.txt entry for entry.
+#
+# THE POLE COUNTS ARE IN cc_byz_values.txt and follow vanilla's own estates_that_like /
+# estates_that_dislike rather than our taste. That distinction is load-bearing: magister_militum
+# was once "corrected" onto the Dynatoi pole here on the reasoning that the aristocracy supplies
+# its officers, which is true of the officers and false of the institution, and vanilla's
+# estates_that_dislike = nobles had said so all along.
+
+# Funded offices of the fisc's own kind.
+cc_byz_taxis_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			bureaucracy_maintenance >= 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_byz_taxis_funded
+		divide = 3
+	}
+
+	monthly_towards_cc_taxis = societal_value_minor_monthly_move
+}
+
+# Funded offices that are the magnates' own institution.
+cc_byz_dynatoi_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			bureaucracy_maintenance >= 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_byz_dynatoi_funded
+		divide = 2
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+
+# A starved office of any kind ends up serving somebody local, whatever it was founded for.
+# This is the mechanism the thread turns on: the emperor does not choose a pole by decree, he
+# chooses it by deciding what to pay for.
+cc_byz_starved_offices = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		any_current_bureaucracy = {
+			bureaucracy_maintenance < 0.5
+			count > 0
+		}
+	}
+
+	scales_with = {
+		value = cc_byz_bureau_starved
+		divide = 3
+	}
+
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+

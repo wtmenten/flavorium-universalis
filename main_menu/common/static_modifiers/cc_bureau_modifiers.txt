@@ -1,0 +1,148 @@
+﻿# Country modifiers granted by the bureau thread (in_game/events/cc_bureau.txt).
+#
+# Applied with add_country_modifier = { modifier = X  years = N  mode = add_and_extend }, so a
+# repeat grant refreshes the duration instead of stacking the magnitude. That matters here: the
+# thread can offer the same route twice a century and the second grant must not double it.
+#
+#
+# THESE CARRY THE THREAD'S SOCIETAL DRIFT rather than the option blocks doing it inline.
+#
+# The events push the Order/Magnates axis by granting one of these, not by calling
+# change_societal_value, and there are two reasons. The drift belongs to the lasting state the
+# decision created, so the player reads it in the same tooltip as its cause. And the durations
+# were already chosen to match the fiction, so nothing has to be re-tuned separately.
+#
+# Rates against the instant scale: societal_value_move_to_left is -10 in one step, while
+# minor_monthly_move is 0.05 a month, or 0.6 a year. A 25-year grant is therefore worth about 15
+# points, half again as much as a jump, spread over long enough that the player can change
+# course and undo it. That difference is the whole reason for preferring drift here.
+#
+# All keys are vanilla modifier names except monthly_towards_cc_order / cc_magnates, which are
+# registered in main_menu/common/modifier_type_definitions/cc_societal_values.txt.
+
+# .1a, .10a. Clerks who owe the post to the office rather than to a family.
+cc_bureau_career_clerks = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = 0.1
+	country_cabinet_efficiency = 0.05
+
+	monthly_towards_cc_order = societal_value_tiny_monthly_move
+}
+
+# .1 after block, hidden. Fires once venality is entrenched: posts are inherited and sold as a
+# matter of course, without anyone having decreed it. The crown still collects and no longer
+# decides who serves.
+cc_bureau_offices_are_property = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = -0.15
+	global_bureaucracy_maintenance_efficiency = -0.15
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}
+
+# .20a, .40a, .60c, .61a. The arrears cleared. The only route in the thread that reduces
+# venality, which is why it costs five years of a small realm's income.
+cc_bureau_paid_in_full = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = 0.15
+	country_cabinet_efficiency = 0.08
+	tax_income_efficiency = 0.05
+
+	monthly_towards_cc_order = societal_value_minor_monthly_move
+}
+
+# .20b, .60a. The office found its own income and the fees are becoming the custom. Not
+# catastrophic on its own; the damage is that it schedules the follow-up.
+cc_bureau_fees_became_custom = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = -0.10
+	global_crown_estate_power = -0.08
+	peasants_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+
+	monthly_towards_cc_magnates = societal_value_tiny_monthly_move
+}
+
+# .20c, .60b. Retrenchment done properly: fewer posts, still salaried, still the crown's.
+cc_bureau_retrenched = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = 0.2
+	tax_income_efficiency = 0.03
+
+	monthly_towards_cc_order = societal_value_tiny_monthly_move
+}
+
+# .21b, .40c, .61b. Sixty years of an office belonging to somebody else, with the crown a
+# rentier of its own administration. The tax line is real: farming an office does pay.
+#
+# NOT PERMANENT, and the Byzantine version of this modifier is why. It shipped there with
+# years = -1 and mode = add at three separate grant sites, which is the STACKING mode with no
+# removal path anywhere, so a long campaign could hold three copies forever. Playtesting called
+# it "too harsh a punishment" and it was also simply a bug.
+cc_bureau_office_farmed_out = {
+	game_data = {
+		category = country
+	}
+	tax_income_efficiency = 0.05
+	global_bureaucracy_maintenance_efficiency = -0.20
+	global_crown_estate_power = -0.15
+	nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+
+	monthly_towards_cc_magnates = societal_value_minor_monthly_move
+}
+
+# .30a. The crown told the great houses that the appointment stands, in public.
+cc_bureau_crown_backed_clerks = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = 0.1
+	country_cabinet_efficiency = 0.05
+
+	monthly_towards_cc_order = societal_value_minor_monthly_move
+}
+
+# .50a. PERMANENT, and the only permanent grant in the thread. An office that has written down
+# how it does things has stopped depending on the people currently doing them, which is the
+# whole definition of an institution and is not a thing that lapses.
+cc_bureau_standing_procedure = {
+	game_data = {
+		category = country
+	}
+	global_bureaucracy_maintenance_efficiency = 0.1
+	global_bureaucracy_entrenchment_speed_modifier = 0.15
+	country_cabinet_efficiency = 0.05
+}
+
+# .50b. The head of a bureau sits in the council. The office gains a voice and the crown gains
+# a rival it can at least see.
+cc_bureau_head_in_council = {
+	game_data = {
+		category = country
+	}
+	country_cabinet_efficiency = 0.1
+	global_crown_estate_power = -0.05
+	burghers_estate_target_satisfaction = small_permanent_target_satisfaction
+}
+
+# .50c. Officers rotated before any of them takes root. Safe, and it costs the competence the
+# office spent thirty years accumulating.
+cc_bureau_rotated_officers = {
+	game_data = {
+		category = country
+	}
+	global_crown_estate_power = 0.1
+	global_bureaucracy_entrenchment_speed_modifier = -0.2
+
+	monthly_towards_cc_order = societal_value_tiny_monthly_move
+}
