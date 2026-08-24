@@ -1,0 +1,251 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — CABINET EXPERIENCE EVENTS
+#
+# cc_xp.1    Service record readout, opened from the cc_xp_inspect_service_record
+#            character interaction. Displays only; changes nothing.
+# cc_xp.10   Ladder advancement notification. The advancement itself has already
+#            happened in cc_xp_ladder_advance; this only reports it.
+# cc_xp.11   Court examination sitting. Queued months earlier by the interaction;
+#            this is where the experience is actually awarded.
+# cc_xp.30   Return from the chancery      (administrative)
+# cc_xp.31   Return from the embassy circuit (diplomatic)
+# cc_xp.32   Return from the staff college   (military)
+#
+# cc_xp.20-28 are the generated ladder branch events (cc_xp_branch_events.txt).
+#
+# THE RETURN EVENTS all follow one shape: find the character carrying this posting's
+# away flag, clear it, award the experience, report. They identify the minister by flag
+# rather than by a scope saved at dispatch, because a scope is not something to rely on
+# surviving a year of queued game time. Clearing the flag as part of selection means two
+# ministers sent on the same posting resolve to different people.
+#
+# Grand tours, rivalries and training that goes wrong arrive with phase 5.
+###############################################################################
+
+# Requires scope:cc_xp_subject, set by the interaction.
+cc_xp.1 = {
+	type = country_event
+	title = cc_xp.1.title
+	desc = cc_xp.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	option = {
+		name = cc_xp.1.a
+	}
+}
+
+
+###############################################################################
+# LADDER ADVANCEMENT NOTIFICATION
+#
+# Fired once per year by cc_xp_yearly_advance when at least one of the player's own
+# ministers moved up a rung. The swap has already been applied; nothing here changes
+# state, so the player closing this event cannot lose the advancement.
+#
+# Names one minister rather than listing all of them: more than one advancing in the
+# same year is rare (the four-year cooldown sees to that), and a single named person
+# reads better than a list. The rest are visible on their cards.
+###############################################################################
+
+cc_xp.10 = {
+	type = country_event
+	title = cc_xp.10.title
+	desc = cc_xp.10.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_variable = cc_xp_advanced_recently
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_variable = cc_xp_advanced_recently
+			}
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.10.a
+	}
+}
+
+
+###############################################################################
+# THE COURT EXAMINATION SITS
+#
+# Queued by cc_xp_court_examination months earlier. The interaction only commissioned
+# it and charged for it; the examination itself, and every consequence of it, happens
+# here. The presider is found by the cc_xp_examining flag rather than a saved scope.
+###############################################################################
+
+cc_xp.11 = {
+	type = country_event
+	title = cc_xp.11.title
+	desc = cc_xp.11.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_examining }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_examining }
+			remove_variable = cc_xp_examining
+			save_scope_as = cc_xp_examiner
+		}
+
+		# Everyone sat it, so everyone learned something from it.
+		every_character = {
+			limit = {
+				cc_xp_is_examinable = yes
+				NOT = { this = scope:cc_xp_examiner }
+			}
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_exam_participant }
+			cc_xp_recompute = yes
+		}
+
+		# One of them did conspicuously well. Not the presider, and not necessarily the
+		# most senior: that is the entire point of examining people.
+		random_character = {
+			limit = {
+				cc_xp_is_examinable = yes
+				NOT = { this = scope:cc_xp_examiner }
+			}
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_exam_winner }
+			cc_xp_recompute = yes
+			save_scope_as = cc_xp_subject
+		}
+
+		# Presiding over it is a visible mark of the crown's confidence.
+		add_prestige = prestige_weak_bonus
+
+		# Advancement decided by examination rather than by birth. The burghers approve
+		# for exactly the reason the nobility does not.
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_penalty
+		}
+	}
+
+	option = {
+		name = cc_xp.11.a
+	}
+}
+
+
+###############################################################################
+# RETURN FROM A POSTING
+###############################################################################
+
+# The chancery.
+cc_xp.30 = {
+	type = country_event
+	title = cc_xp.30.title
+	desc = cc_xp.30.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_away_adm }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_away_adm }
+			remove_variable = cc_xp_away_adm
+			cc_xp_gain_adm = { AMOUNT = cc_xp_training_gain }
+			cc_xp_recompute = yes
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.30.a
+	}
+}
+
+# The embassy circuit.
+cc_xp.31 = {
+	type = country_event
+	title = cc_xp.31.title
+	desc = cc_xp.31.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_away_dip }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_away_dip }
+			remove_variable = cc_xp_away_dip
+			cc_xp_gain_dip = { AMOUNT = cc_xp_training_gain }
+			cc_xp_recompute = yes
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.31.a
+	}
+}
+
+# The staff college.
+cc_xp.32 = {
+	type = country_event
+	title = cc_xp.32.title
+	desc = cc_xp.32.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_away_mil }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_away_mil }
+			remove_variable = cc_xp_away_mil
+			cc_xp_gain_mil = { AMOUNT = cc_xp_training_gain }
+			cc_xp_recompute = yes
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.32.a
+	}
+}

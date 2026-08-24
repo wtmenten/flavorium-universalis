@@ -142,6 +142,232 @@ add_gold_to_estate = {
 
 ---
 
+## Durations are literals, never script values
+
+`days` / `months` / `years` in an event delay or a variable duration are parsed as raw
+tokens. A script value in either place does not work, and the two fail *differently*:
+
+```
+# ERRORS, visibly: "not found ]" pointing at the trigger_event line
+trigger_event_silently = { id = my.1  months = my_delay_value }
+
+# FAILS SILENTLY: the variable gets no duration, or an instant one
+set_variable = { name = my_flag  value = yes  years = my_duration_value }
+```
+
+The second is the dangerous one: a timed flag that quietly never expires (or expires at
+once) produces a gameplay bug with nothing in the log. Vanilla uses literals in both
+places without exception.
+
+Use literals, and keep the numbers documented wherever the tuning values live:
+
+```
+trigger_event_silently = {
+    id = my.1
+    months = { 5 7 }        # a RANGE is supported, and reads better than a fixed delay
+}                           # see in_game/events/character/ibn_battuta_events.txt:174
+```
+
+`AMOUNT`-style script values passed to scripted effects are unaffected; this is only
+about duration fields.
+
+---
+
+## Prices
+
+### Every `common/prices/` entry needs a matching `_cost_modifier` modifier type
+
+Otherwise the log reports on load:
+
+```
+[price_database.cpp:117]: Missing modifier type for price. <price_id>_cost_modifier
+```
+
+Register `<price_id>_cost_modifier` in `main_menu/common/modifier_type_definitions/`
+(vanilla does this for `head_of_cabinet_promotion` in `00_modifier_types.txt`; this mod
+does it in `cc_subject_prices.txt` and `cc_xp_prices.txt`):
+
+```
+my_price_cost_modifier = {
+    color = bad
+    percent = yes
+    game_data = { category = country }
+}
+```
+
+Registering it is also what makes the cost scriptable: anything can then apply
+`my_price_cost_modifier` as an ordinary country modifier to make the action cheaper.
+
+---
+
+## Character interactions
+
+### An interaction's `effect` is evaluated for the tooltip BEFORE a target is chosen
+
+This one bites in two different ways, and both look like unrelated bugs.
+
+**Unpicked targets do not resolve.** Guard every reference to a second `target_flag`:
+
+```
+effect = {
+    if = {
+        limit = { exists = scope:target }
+        scope:target = { ... }
+    }
+}
+```
+
+**Variable WRITES do not commit in that pass, but READS still evaluate.** So an effect
+that initialises variables and then reads them back errors every time the panel opens:
+
+```
+scope:recipient = {
+    my_init = yes          # set_variable calls appear to run...
+    my_recompute = yes     # ...but this reads them and gets "Event target link 'var'
+}                          #    returned an unset scope"
+```
+
+Fix by guarding the read side on a variable the write side creates, so the body no-ops
+when the writes did not stick:
+
+```
+my_recompute = {
+    my_init = yes
+    if = {
+        limit = { has_variable = my_total }
+        my_recompute_body = yes
+    }
+}
+```
+
+The same applies to any write-then-read inside one effect, including
+`set_variable = { name = counter value = 0 }` followed by `var:counter` in a loop.
+
+### A second `select_trigger` target must be guarded with `exists` in the effect
+
+The panel evaluates an interaction's `effect` block to build its tooltip **before any target
+has been chosen**. The primary target (`recipient`) resolves fine, but any additional
+`target_flag` does not, and opening the panel spams:
+
+```
+Undefined event target 'target'
+Event target link 'scope' returned an unset scope
+```
+
+Wrap every reference to the second target, exactly as vanilla does
+(`ennoble.txt:68`, `assume_fort_command.txt:74`):
+
+```
+effect = {
+    if = {
+        limit = { exists = scope:target }
+        scope:target = { ... }
+    }
+}
+```
+
+This applies to reading variables off it too: `scope:recipient.var:x` inside that block
+needs the same guard, because an unpicked character has no variables.
+
+### Calling a character interaction from a GUI button
+
+Pattern from `government_lateralview.gui:4216`. `parameter_name` must match the
+interaction's `target_flag`; supplying it answers that `select_trigger` so the button
+acts directly with no picker step.
+
+```
+card_header_action_button_01 = {
+    size = { 24 24 }
+    actor = "[Player]"
+    parameter = {
+        parameter_name = "recipient"              # matches target_flag = recipient
+        parameter_value = "[Character.MakeScope]" # the current datacontext object
+    }
+    left_click_and_hold_action = { action_name = "my_interaction" }
+    icon = { parentanchor = center  size = { 80% 80% }  texture = "..." }
+}
+```
+
+- `parameter_value` must be a getter chain that **yields an object**. `[X.Self]` is NOT
+  valid standalone and logs `No function for call ''` plus `FetchData failed for ''`.
+  `.Self` is only ever a function *argument* in vanilla (`ShowCharacter(Character.Self)`).
+  To pass the current datacontext object, use `[X.MakeScope]` — that is what vanilla does
+  for `Country`, `God`, `Location`, `Market`, `Omen`, `Siege` and `TownRights`.
+- `left_click_and_hold_action` is the **only** action field vanilla uses on these
+  (53 usages, no other variant). It is click-and-hold, not click.
+- Do **not** add a `tooltipwidget`: `action_button_common_template` already attaches
+  vanilla's action tooltip, which shows cost, cooldown, and why the button is disabled.
+- `visible` / `enabled` come from `UIAction` automatically.
+
+### A template must declare its properties directly, not wrap them in a `widget`
+
+`using = <template>` **merges the template's contents into the widget it is used on**. So
+this is wrong:
+
+```
+template my_row {
+    widget = {                    # <-- extra layer
+        size = { -1 76 }
+        hbox = { ... }
+    }
+}
+...
+widget = { using = my_row }       # becomes widget { widget { ... } }
+```
+
+The outer widget gets no size, collapses to zero, and the result is unmistakable: **every
+row draws on top of every other row**, and nothing inside them receives mouse input.
+Write templates the way vanilla does (`portrait_standard_head_framed`,
+`layoutpolicy_expanding`), with the properties at top level:
+
+```
+template my_row {
+    layoutpolicy_horizontal = expanding
+    size = { -1 76 }
+    hbox = { ... }
+}
+```
+
+### A fixed-width row inside an expanding container kills clicks
+
+A row given `size = { 510 74 }` inside a `scrollwidget` narrower than 510 still *renders*,
+but the overflow falls outside the parent's clip region and stops receiving mouse input —
+so portraits and buttons look fine and do nothing. Use
+`layoutpolicy_horizontal = expanding` on rows rather than a fixed width.
+
+### Portrait click-to-open needs an explicit `onclick`
+
+`portrait_torso_button_template` carries `on_action = "[ShowCharacter(Character.Self)]"`
+inside its `portrait_click` block, but that fires through the `action_tooltip` path. For a
+portrait in a custom panel, state it directly:
+
+```
+portrait_standard_head_framed_button = {
+    size = { 46 50 }
+    onclick = "[ShowCharacter(Character.Self)]"
+}
+```
+
+### Interactions need more localization keys than `<name>` and `<name>_desc`
+
+Missing ones are reported by name in the log (`..._desc_specific` is the usual first
+complaint). The full set, per `promote_to_head_of_cabinet` in the vanilla loc:
+
+| key | purpose |
+|---|---|
+| `<name>` | button label |
+| `<name>_desc` | generic description, no target resolved |
+| `<name>_desc_specific` | description **with the chosen target**, the one that errors if absent |
+| `<name>_act` | confirm verb, conventionally `"$<name>$"` |
+| `<name>_past` | message headline after it resolves (needed when `message = yes`) |
+| `<name>_act_past` | message body after it resolves |
+
+Interaction loc uses `[SCOPE.sCharacter('recipient').GetName]` and
+`[SCOPE.sCountry('actor').GetName]` — **not** the bare saved-scope form that event loc uses.
+Both forms exist and they are not interchangeable.
+
+---
+
 ## Localization
 
 - **No `scope:` prefix inside `[...]` loc tags.** Script-side scope references use `scope:ward`, but localization interpolation drops the prefix: write `[ward.GetName]`, never `[scope:ward.GetName]`. The `scope:` prefix is invalid in `.yml` and will display as a literal string or error in-game.

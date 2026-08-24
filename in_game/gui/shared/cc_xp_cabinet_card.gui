@@ -1,0 +1,131 @@
+######################################################################
+# Flavorium Universalis — cabinet card seniority badge
+#
+# Adds a small "lvl N" badge to each minister's card in the government view's cabinet
+# tab, so seniority is visible where you actually assign duties rather than only in the
+# court ledger panel.
+#
+# WHAT THIS IS. A redefinition of vanilla's `template cabinet_card_header_content`
+# (game/in_game/gui/shared/cabinet_cards.gui:27). It is NOT a vanilla file override:
+# the file name is our own and the engine takes the last-loaded definition of a template,
+# which is the same sanctioned trick the graphical-ui-fixes submod uses for
+# cabinet_action_name. No vanilla file is shadowed.
+#
+# WHY THE TEMPLATE AND NOT `type cabinet_card`. The type is ~150 lines and the template
+# is ~70, so this is half as much vanilla layout to keep in sync. It also degrades
+# better against other UI mods: vanilla's card, and Glorp's replacement card, BOTH call
+# `using = cabinet_card_header_content`, so our version drops into whichever card wins.
+#
+# RE-SYNC ON EVERY EU5 UPDATE. Everything below except the block marked FLAVORIUM is a
+# verbatim copy of vanilla as of 1.2/1.3. Diff against cabinet_cards.gui after a patch.
+#
+# KNOWN CONFLICT. Glorp UI (workshop 3601047146) redefines this same template in
+# glorpUI_cabinet_cards.gui. Load order decides which one wins; whoever loses simply
+# does not get their changes. Nothing breaks either way, but with Glorp loaded after
+# this mod the badge will not appear, and the court ledger panel remains the place to
+# read seniority.
+######################################################################
+
+template cabinet_card_header_content {
+	hbox = {
+		using = layoutpolicy_expanding
+		spacing = 5
+		margin_left = 10
+		margin_right = 10
+
+		widget = {
+			size = { 50 -1 }
+			allow_outside = yes
+			datacontext = "[Cabinet.GetAction]"
+			cabinet_action_power = {
+				visible = "[Cabinet.IsActive]"
+				parentanchor = left|vcenter
+				blockoverride cabinet_action_power_bg_size {
+					size = { 24 24 }
+				}
+				blockoverride cabinet_action_power_icon_size {
+					size = { 95% 95%}
+				}
+			}
+		}
+
+		vbox = {
+			text_single = {
+				visible = "[Cabinet.IsActive]"
+				text = "[Cabinet.GetNameWithNoTooltip]"
+				default_format = "#yellow_titles"
+				align = left
+			}
+
+			tooltipwidget = {
+				using = action_progress_tooltip
+			}
+
+			text_single = {
+				visible = "[Not(Cabinet.IsActive)]"
+				text = "NO_CABINET_ACTION"
+				using = Font_Size_Medium
+				using = Font_Type_Flavor
+				align = nobaseline
+			}
+		}
+
+		expand = {}
+
+		####################################################################
+		# FLAVORIUM: seniority badge
+		#
+		# Hidden entirely when the seat is empty or the minister has no experience
+		# record yet, so untracked courts and games with the rule off look exactly
+		# like vanilla. Reads the same cc_level the court ledger reads.
+		####################################################################
+		widget = {
+			visible = "[And(Cabinet.IsCharacterSet, Cabinet.GetCharacter.MakeScope.GetVariable('cc_level').IsSet)]"
+			size = { 40 24 }
+			datacontext = "[Cabinet.GetCharacter]"
+			tooltip = "CC_XP_CARD_LEVEL_TT"
+
+			background = {
+				using = bg_dark_paper_card
+			}
+
+			hbox = {
+				parentanchor = center
+				spacing = 3
+				text_single = {
+					fontsize = 9
+					default_format = "#weak"
+					text = "CC_XP_CARD_LVL"
+				}
+				text_single = {
+					fontsize = 13
+					raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_level').GetValue)]"
+				}
+			}
+		}
+		####################################################################
+		# END FLAVORIUM
+		####################################################################
+
+		hbox = {
+			datacontext = "[Cabinet]"
+			tooltipwidget = {
+				using = effective_skill_tooltip
+			}
+			widget = {
+				visible = "[Cabinet.IsActive]"
+				size = {70 25}
+				text_single = {
+					text = "[Cabinet.GetEffectiveSkill|2%+=]"
+					align = right|nobaseline
+					widgetanchor = right|vcenter
+					parentanchor = right|vcenter
+					margin = {5 2}
+				}
+			}
+
+			cabinet_efficiency_icon = {}
+		}
+
+	}
+}

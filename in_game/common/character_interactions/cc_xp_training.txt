@@ -1,0 +1,261 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: training
+#
+# Three interactions, one per track. Deliberately three rather than one interaction
+# with a track picker: the engine's select_trigger can offer characters cleanly but a
+# "pick one of three abstract categories" step reads badly, and three named actions
+# ("send to the chancery", "send on embassy", "send to the staff college") carry their
+# own flavour for free.
+#
+# TRAINING IS A SECONDMENT, NOT A PURCHASE. The interaction only dispatches: it charges
+# the cost, marks the minister as away, and queues the return event. The experience is
+# granted months later when they come back (cc_xp.30/.31/.32), which is both more
+# plausible and the hook phase 5 needs for a posting to go badly.
+#
+# The minister is identified on return by a per-track away flag rather than a saved
+# scope, because a scope saved now is not something to rely on surviving a year of
+# queued game time. Each return event removes the flag from whoever it picks, so two
+# ministers sent to the same posting resolve to different people.
+#
+# Eligible targets are seated ministers and sponsored proteges, so the training budget
+# is also how you bring a groomed outsider up to standard before a seat opens.
+###############################################################################
+
+
+###############################################################################
+# ADMINISTRATIVE — the chancery
+###############################################################################
+
+cc_xp_train_adm = {
+	message = yes
+	on_own_nation = yes
+	sound = PROMOTE_TO_HEAD_OF_CABINET
+
+	price = price:cc_xp_training
+
+	ai_tick = monthly
+	ai_tick_frequency = 24
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_character = { cc_xp_can_be_trained = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_trainee"
+		column = { data = name }
+
+		visible = {
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_be_trained = yes
+		}
+	}
+
+	effect = {
+		scope:recipient = {
+			set_variable = {
+				name = cc_xp_away_adm
+				value = yes
+				months = 36
+			}
+			cc_xp_mark_trained = yes
+		}
+
+		scope:actor = {
+			trigger_event_silently = {
+				id = cc_xp.30
+				months = { 5 7 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			# The AI trains a minister who has already shown aptitude, and only when it
+			# can afford to.
+			if = {
+				limit = { scope:recipient = { cc_xp_tier_at_least = { TRACK = adm  TIER = 1 } } }
+				add = 20
+			}
+			if = {
+				limit = { scope:actor = { gold < 500 } }
+				subtract = 100
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# DIPLOMATIC — the embassy circuit
+###############################################################################
+
+cc_xp_train_dip = {
+	message = yes
+	on_own_nation = yes
+	sound = PROMOTE_TO_HEAD_OF_CABINET
+
+	price = price:cc_xp_training
+
+	ai_tick = monthly
+	ai_tick_frequency = 24
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_character = { cc_xp_can_be_trained = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_trainee"
+		column = { data = name }
+
+		visible = {
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_be_trained = yes
+		}
+	}
+
+	effect = {
+		scope:recipient = {
+			set_variable = {
+				name = cc_xp_away_dip
+				value = yes
+				months = 36
+			}
+			cc_xp_mark_trained = yes
+		}
+
+		scope:actor = {
+			trigger_event_silently = {
+				id = cc_xp.31
+				months = { 10 14 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = { scope:recipient = { cc_xp_tier_at_least = { TRACK = dip  TIER = 1 } } }
+				add = 20
+			}
+			if = {
+				limit = { scope:actor = { gold < 500 } }
+				subtract = 100
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# MILITARY — the staff college
+###############################################################################
+
+cc_xp_train_mil = {
+	message = yes
+	on_own_nation = yes
+	sound = PROMOTE_TO_HEAD_OF_CABINET
+
+	price = price:cc_xp_training
+
+	ai_tick = monthly
+	ai_tick_frequency = 24
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_character = { cc_xp_can_be_trained = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_trainee"
+		column = { data = name }
+
+		visible = {
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_be_trained = yes
+		}
+	}
+
+	effect = {
+		scope:recipient = {
+			set_variable = {
+				name = cc_xp_away_mil
+				value = yes
+				months = 36
+			}
+			cc_xp_mark_trained = yes
+		}
+
+		scope:actor = {
+			trigger_event_silently = {
+				id = cc_xp.32
+				months = { 8 10 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			if = {
+				limit = { scope:recipient = { cc_xp_tier_at_least = { TRACK = mil  TIER = 1 } } }
+				add = 20
+			}
+			if = {
+				limit = { scope:actor = { gold < 500 } }
+				subtract = 100
+			}
+		}
+	}
+}

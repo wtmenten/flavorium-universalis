@@ -1,0 +1,552 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: core effects
+#
+# The substrate the advancement system is built on. Ministers accumulate experience
+# in three tracks; total experience gives a level (seniority, 1-10) and each track's
+# own experience gives a tier (specialisation, 0-3). Tiers are what gate trait
+# advancement; level drives the scaling service modifier and generic gates.
+#
+# All balance numbers live in script_values/cc_xp_values.txt.
+#
+# CHARACTER-SCOPE VARIABLES OWNED BY THIS SYSTEM
+#   cc_xp_adm / cc_xp_dip / cc_xp_mil   raw experience per track, never decays
+#   cc_xp_total                          sum of the three, stored rather than derived
+#                                        so triggers and GUI can read it directly
+#   cc_level                             1-10, from cc_xp_total
+#   cc_xp_floor / cc_xp_next             XP bounds of the current level, for the GUI bar
+#   cc_tier_adm / cc_tier_dip / cc_tier_mil  0-3, each from its own track
+#   cc_track                             dominant track: 0 none, 1 adm, 2 dip, 3 mil
+#   cc_tf_*                              task-family counters, created lazily
+#   cc_xp_level_prev                     scratch: the level at the start of the current
+#                                        recompute, so the service modifier is only
+#                                        touched when the level actually moved
+#   cc_xp_seeded                         set once, when the character was first seeded
+#                                        from an existing ladder trait
+#   cc_xp_advance_cd / cc_xp_advanced_recently
+#                                        ladder pacing and notification, stamped by
+#                                        cc_xp_stamp_advance in cc_xp_ladders.txt
+#
+# COUNTRY-SCOPE VARIABLES OWNED BY THIS SYSTEM
+#   cc_xp_slot_1 .. cc_xp_slot_10        character refs for panels that cannot reach
+#                                        GovernmentView.GetCabinets
+#   cc_xp_slot_count                     how many of those slots are filled
+#
+# Experience is deliberately never removed. A minister dismissed and later recalled
+# returns with everything they learned, and a dead minister's record stays readable
+# by the legacy and institutional-memory events that will hang off this later.
+###############################################################################
+
+
+###############################################################################
+# INITIALISATION
+###############################################################################
+
+# Create every experience variable this system reads, at zero. Called in CHARACTER
+# scope. Idempotent and cheap: safe to call on every award and every pulse, which is
+# what keeps every other effect here free of existence guards.
+cc_xp_init = {
+	if = {
+		limit = { NOT = { has_variable = cc_xp_adm } }
+		set_variable = { name = cc_xp_adm value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_xp_dip } }
+		set_variable = { name = cc_xp_dip value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_xp_mil } }
+		set_variable = { name = cc_xp_mil value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_xp_total } }
+		set_variable = { name = cc_xp_total value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_level } }
+		set_variable = { name = cc_level value = 1 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_xp_floor } }
+		set_variable = { name = cc_xp_floor value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_xp_next } }
+		set_variable = { name = cc_xp_next value = cc_xp_level_2_at }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tier_adm } }
+		set_variable = { name = cc_tier_adm value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tier_dip } }
+		set_variable = { name = cc_tier_dip value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tier_mil } }
+		set_variable = { name = cc_tier_mil value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_track } }
+		set_variable = { name = cc_track value = 0 }
+	}
+
+	# One-time seeding from whatever ladder trait this minister already holds. Runs once
+	# per character, on the first tick that brings them into the system, which is also
+	# the first tick after an existing save is loaded. See cc_xp_ladder_backfill.
+	# has_variable = cc_xp_adm confirms the writes above actually committed. Without it,
+	# a tooltip-preview pass would enter the backfill and read variables that are not there.
+	if = {
+		limit = {
+			NOT = { has_variable = cc_xp_seeded }
+			has_variable = cc_xp_adm
+		}
+		set_variable = { name = cc_xp_seeded value = yes }
+		cc_xp_ladder_backfill = yes
+	}
+}
+
+
+###############################################################################
+# AWARDING EXPERIENCE
+#
+# Three near-identical effects rather than one parameterised by track name, because
+# building a variable name out of a parameter ($TRACK$ spliced into cc_xp_$TRACK$)
+# is textual substitution the engine gives no error for when it goes wrong.
+#
+# Each takes AMOUNT, which may be a literal or a script value:
+#   cc_xp_gain_adm = { AMOUNT = cc_xp_duty_tick }
+#   cc_xp_gain_mil = { AMOUNT = 40 }
+#
+# These do NOT recompute level and tier. Recomputation happens once per pulse in
+# cc_xp_recompute, so a character receiving several awards in one tick pays for the
+# if-chain once rather than once per award.
+###############################################################################
+
+cc_xp_gain_adm = {
+	cc_xp_init = yes
+	change_variable = { name = cc_xp_adm   add = $AMOUNT$ }
+	change_variable = { name = cc_xp_total add = $AMOUNT$ }
+}
+
+cc_xp_gain_dip = {
+	cc_xp_init = yes
+	change_variable = { name = cc_xp_dip   add = $AMOUNT$ }
+	change_variable = { name = cc_xp_total add = $AMOUNT$ }
+}
+
+cc_xp_gain_mil = {
+	cc_xp_init = yes
+	change_variable = { name = cc_xp_mil   add = $AMOUNT$ }
+	change_variable = { name = cc_xp_total add = $AMOUNT$ }
+}
+
+# Award to whichever track the minister is already strongest in, for sources that are
+# about the person rather than the work (tenure, and later the mentor bond). A minister
+# with no record yet banks it as administrative, the default apprenticeship.
+cc_xp_gain_dominant = {
+	cc_xp_init = yes
+	# Via the scripted trigger rather than a bare var: read, because that one carries the
+	# trigger_if guard and so cannot error on an uninitialised character.
+	if = {
+		limit = { cc_xp_track_is = { TRACK = 2 } }
+		cc_xp_gain_dip = { AMOUNT = $AMOUNT$ }
+	}
+	else_if = {
+		limit = { cc_xp_track_is = { TRACK = 3 } }
+		cc_xp_gain_mil = { AMOUNT = $AMOUNT$ }
+	}
+	else = {
+		cc_xp_gain_adm = { AMOUNT = $AMOUNT$ }
+	}
+}
+
+
+###############################################################################
+# RECOMPUTATION
+#
+# Called in CHARACTER scope once per pulse for every tracked minister. Derives level,
+# level bounds, the three tiers and the dominant track from the raw experience, then
+# reapplies the scaling service modifier.
+#
+# The level chain is descending so the first matching branch is the answer. Both the
+# level and its bounds are set in the same branch: keeping them in one chain means the
+# GUI progress bar can never disagree with the level badge beside it.
+###############################################################################
+
+# Guarded wrapper. A character interaction's `effect` block is evaluated to build its
+# tooltip BEFORE a target is chosen, and in that pass variable WRITES do not commit while
+# READS still evaluate. So cc_xp_init appears to run, cc_xp_total is still unset, and every
+# var: read below errors with "Event target link 'var' returned an unset scope".
+#
+# One existence check fixes it for every caller: if the writes did not stick, there is
+# nothing to recompute and the body is skipped. It also makes the effect safe to call on
+# a character that was never initialised at all.
+cc_xp_recompute = {
+	cc_xp_init = yes
+
+	if = {
+		limit = { has_variable = cc_xp_total }
+		cc_xp_recompute_body = yes
+	}
+}
+
+cc_xp_recompute_body = {
+	# Remember the level we came in at, so the modifier below is only touched in the
+	# month a minister genuinely changes level rather than every month of their career.
+	# This is also the hook a level-up notification will hang off in a later phase.
+	set_variable = { name = cc_xp_level_prev value = var:cc_level }
+
+	# --- Level and the bounds of the current level ---
+	if = {
+		limit = { var:cc_xp_total >= cc_xp_level_10_at }
+		set_variable = { name = cc_level    value = 10 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_10_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_10_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_9_at }
+		set_variable = { name = cc_level    value = 9 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_9_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_10_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_8_at }
+		set_variable = { name = cc_level    value = 8 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_8_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_9_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_7_at }
+		set_variable = { name = cc_level    value = 7 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_7_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_8_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_6_at }
+		set_variable = { name = cc_level    value = 6 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_6_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_7_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_5_at }
+		set_variable = { name = cc_level    value = 5 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_5_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_6_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_4_at }
+		set_variable = { name = cc_level    value = 4 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_4_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_5_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_3_at }
+		set_variable = { name = cc_level    value = 3 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_3_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_4_at }
+	}
+	else_if = {
+		limit = { var:cc_xp_total >= cc_xp_level_2_at }
+		set_variable = { name = cc_level    value = 2 }
+		set_variable = { name = cc_xp_floor value = cc_xp_level_2_at }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_3_at }
+	}
+	else = {
+		set_variable = { name = cc_level    value = 1 }
+		set_variable = { name = cc_xp_floor value = 0 }
+		set_variable = { name = cc_xp_next  value = cc_xp_level_2_at }
+	}
+
+	# --- Per-track tiers ---
+	cc_xp_recompute_tier_adm = yes
+	cc_xp_recompute_tier_dip = yes
+	cc_xp_recompute_tier_mil = yes
+
+	# --- Dominant track ---
+	# Ties resolve toward the earlier track, which only matters at zero experience;
+	# a minister who has done nothing yet is explicitly trackless rather than a
+	# nominal administrator, so the panel can say so.
+	if = {
+		limit = { var:cc_xp_total = 0 }
+		set_variable = { name = cc_track value = 0 }
+	}
+	else_if = {
+		limit = {
+			var:cc_xp_adm >= var:cc_xp_dip
+			var:cc_xp_adm >= var:cc_xp_mil
+		}
+		set_variable = { name = cc_track value = 1 }
+	}
+	else_if = {
+		limit = { var:cc_xp_dip >= var:cc_xp_mil }
+		set_variable = { name = cc_track value = 2 }
+	}
+	else = {
+		set_variable = { name = cc_track value = 3 }
+	}
+
+	# --- Scaling service modifier ---
+	# One static modifier sized by level rather than ten near-identical ones. Level 1
+	# would size to zero, so it is removed instead: an empty modifier line on a fresh
+	# minister's card reads as a bug.
+	#
+	# Only touched when the level actually moved. Reapplying a permanent modifier every
+	# month for every minister of every tracked court is the one genuinely costly thing
+	# this effect could do, and it would buy nothing.
+	if = {
+		limit = { NOT = { var:cc_level = var:cc_xp_level_prev } }
+
+		if = {
+			limit = { var:cc_level >= 2 }
+			add_character_modifier = {
+				modifier = cc_xp_service_record
+				years = -1
+				mode = replace
+				size = cc_xp_level_bonus_size
+			}
+		}
+		else_if = {
+			limit = { has_character_modifier = cc_xp_service_record }
+			remove_character_modifier = cc_xp_service_record
+		}
+	}
+}
+
+cc_xp_recompute_tier_adm = {
+	if = {
+		limit = { var:cc_xp_adm >= cc_xp_tier_3_at }
+		set_variable = { name = cc_tier_adm value = 3 }
+	}
+	else_if = {
+		limit = { var:cc_xp_adm >= cc_xp_tier_2_at }
+		set_variable = { name = cc_tier_adm value = 2 }
+	}
+	else_if = {
+		limit = { var:cc_xp_adm >= cc_xp_tier_1_at }
+		set_variable = { name = cc_tier_adm value = 1 }
+	}
+	else = {
+		set_variable = { name = cc_tier_adm value = 0 }
+	}
+}
+
+cc_xp_recompute_tier_dip = {
+	if = {
+		limit = { var:cc_xp_dip >= cc_xp_tier_3_at }
+		set_variable = { name = cc_tier_dip value = 3 }
+	}
+	else_if = {
+		limit = { var:cc_xp_dip >= cc_xp_tier_2_at }
+		set_variable = { name = cc_tier_dip value = 2 }
+	}
+	else_if = {
+		limit = { var:cc_xp_dip >= cc_xp_tier_1_at }
+		set_variable = { name = cc_tier_dip value = 1 }
+	}
+	else = {
+		set_variable = { name = cc_tier_dip value = 0 }
+	}
+}
+
+cc_xp_recompute_tier_mil = {
+	if = {
+		limit = { var:cc_xp_mil >= cc_xp_tier_3_at }
+		set_variable = { name = cc_tier_mil value = 3 }
+	}
+	else_if = {
+		limit = { var:cc_xp_mil >= cc_xp_tier_2_at }
+		set_variable = { name = cc_tier_mil value = 2 }
+	}
+	else_if = {
+		limit = { var:cc_xp_mil >= cc_xp_tier_1_at }
+		set_variable = { name = cc_tier_mil value = 1 }
+	}
+	else = {
+		set_variable = { name = cc_tier_mil value = 0 }
+	}
+}
+
+
+###############################################################################
+# TASK-FAMILY COUNTERS
+#
+# Cheap tallies of what kind of work a minister has actually done, used only as gates
+# on the handful of traits that want a specific career rather than a track and a tier
+# (a colonial hand, a war-council veteran, a reformer). Created lazily, so a minister
+# who never sees a colony never carries a colonial counter.
+#
+# Called in CHARACTER scope: cc_xp_task_family = { FAMILY = colonial }
+# Valid families: war, reform, colonial, faith, trade.
+###############################################################################
+
+cc_xp_task_family = {
+	if = {
+		limit = { NOT = { has_variable = cc_tf_$FAMILY$ } }
+		set_variable = { name = cc_tf_$FAMILY$ value = 1 }
+	}
+	else = {
+		change_variable = { name = cc_tf_$FAMILY$ add = 1 }
+	}
+}
+
+
+###############################################################################
+# TRAINING BOOKKEEPING (phase 3)
+###############################################################################
+
+# Stamped on a character after any paid training. Character scope.
+cc_xp_mark_trained = {
+	set_variable = { name = cc_xp_train_cd  value = yes  years = 5 }
+}
+
+
+###############################################################################
+# CABINET SLOT SYNC
+#
+# Publishes the seated cabinet into numbered country variables. GUI script can only
+# reach a country's ministers through GovernmentView.GetCabinets, which exists solely
+# while the government lateral view is open; any other panel has to read character
+# references out of variables instead (the pattern vanilla uses for pretenders in
+# panels/disaster/byzantine_succession_crisis.gui).
+#
+# Ten slots. Cabinet capacity is modifier-driven rather than fixed, so this is a
+# ceiling with headroom rather than a known size; slots past the count are stale and
+# consumers must gate on cc_xp_slot_count.
+#
+# Called in COUNTRY scope from the monthly pulse and from the cabinet on-actions, so a
+# hire or dismissal shows up immediately rather than waiting for the next tick.
+###############################################################################
+
+cc_xp_sync_slots = {
+	# Saved explicitly rather than relying on `root`. Both current callers happen to run
+	# with the country as root, but this effect writes country variables from inside a
+	# character iteration, and a future caller reaching it from character scope would
+	# otherwise write the slots onto the minister instead of the court.
+	save_scope_as = cc_xp_court
+
+	# Clear every slot before refilling. Without this, a cabinet that SHRINKS leaves the
+	# tail slots pointing at whoever used to be there, and the panel renders ghost rows
+	# for ministers who are no longer seated. Refilling alone is not enough because the
+	# fill only ever writes slots 1..count.
+	if = { limit = { has_variable = cc_xp_slot_1 }   remove_variable = cc_xp_slot_1 }
+	if = { limit = { has_variable = cc_xp_slot_2 }   remove_variable = cc_xp_slot_2 }
+	if = { limit = { has_variable = cc_xp_slot_3 }   remove_variable = cc_xp_slot_3 }
+	if = { limit = { has_variable = cc_xp_slot_4 }   remove_variable = cc_xp_slot_4 }
+	if = { limit = { has_variable = cc_xp_slot_5 }   remove_variable = cc_xp_slot_5 }
+	if = { limit = { has_variable = cc_xp_slot_6 }   remove_variable = cc_xp_slot_6 }
+	if = { limit = { has_variable = cc_xp_slot_7 }   remove_variable = cc_xp_slot_7 }
+	if = { limit = { has_variable = cc_xp_slot_8 }   remove_variable = cc_xp_slot_8 }
+	if = { limit = { has_variable = cc_xp_slot_9 }   remove_variable = cc_xp_slot_9 }
+	if = { limit = { has_variable = cc_xp_slot_10 }  remove_variable = cc_xp_slot_10 }
+
+	set_variable = { name = cc_xp_slot_count value = 0 }
+
+	# The counter is written immediately above. If that write did not commit
+	# (a tooltip-preview pass over an interaction effect), there is nothing to sync
+	# and reading it below would error. See cc_xp_recompute for the same guard.
+	if = {
+		limit = { has_variable = cc_xp_slot_count }
+		every_cabinet_character = {
+			limit = { in_cabinet = yes }
+			save_scope_as = cc_xp_synced
+			scope:cc_xp_court = {
+				change_variable = { name = cc_xp_slot_count add = 1 }
+
+				if = {
+					limit = { var:cc_xp_slot_count = 1 }
+					set_variable = { name = cc_xp_slot_1 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 2 }
+					set_variable = { name = cc_xp_slot_2 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 3 }
+					set_variable = { name = cc_xp_slot_3 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 4 }
+					set_variable = { name = cc_xp_slot_4 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 5 }
+					set_variable = { name = cc_xp_slot_5 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 6 }
+					set_variable = { name = cc_xp_slot_6 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 7 }
+					set_variable = { name = cc_xp_slot_7 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 8 }
+					set_variable = { name = cc_xp_slot_8 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 9 }
+					set_variable = { name = cc_xp_slot_9 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_slot_count = 10 }
+					set_variable = { name = cc_xp_slot_10 value = scope:cc_xp_synced }
+				}
+			}
+		}
+	}
+
+	cc_xp_sync_proteges = yes
+}
+
+
+###############################################################################
+# PROTEGE SLOT SYNC
+#
+# The same trick for the three protege slots. Proteges are not in the cabinet, so no
+# datamodel reaches them from ANY panel, not even the government view: these variables
+# are the only way the court ledger can show who is being groomed.
+###############################################################################
+
+cc_xp_sync_proteges = {
+	save_scope_as = cc_xp_court
+
+	# Same reason as the cabinet slots above, and it bites harder here: releasing the
+	# middle protege of three would otherwise leave slot 3 still pointing at someone the
+	# crown has stopped sponsoring.
+	if = { limit = { has_variable = cc_xp_protege_1 }  remove_variable = cc_xp_protege_1 }
+	if = { limit = { has_variable = cc_xp_protege_2 }  remove_variable = cc_xp_protege_2 }
+	if = { limit = { has_variable = cc_xp_protege_3 }  remove_variable = cc_xp_protege_3 }
+
+	set_variable = { name = cc_xp_protege_shown value = 0 }
+
+	# The counter is written immediately above. If that write did not commit
+	# (a tooltip-preview pass over an interaction effect), there is nothing to sync
+	# and reading it below would error. See cc_xp_recompute for the same guard.
+	if = {
+		limit = { has_variable = cc_xp_protege_shown }
+		every_character = {
+			limit = {
+				has_variable = cc_protege
+				is_alive = yes
+			}
+			save_scope_as = cc_xp_synced
+			scope:cc_xp_court = {
+				change_variable = { name = cc_xp_protege_shown add = 1 }
+
+				if = {
+					limit = { var:cc_xp_protege_shown = 1 }
+					set_variable = { name = cc_xp_protege_1 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_protege_shown = 2 }
+					set_variable = { name = cc_xp_protege_2 value = scope:cc_xp_synced }
+				}
+				else_if = {
+					limit = { var:cc_xp_protege_shown = 3 }
+					set_variable = { name = cc_xp_protege_3 value = scope:cc_xp_synced }
+				}
+			}
+		}
+	}
+}

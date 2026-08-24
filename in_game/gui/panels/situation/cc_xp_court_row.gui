@@ -1,0 +1,277 @@
+﻿######################################################################
+# Flavorium Universalis — Court Ledger: one person's row
+#
+# Split out from cc_cabinet_court.gui so the row layout and the panel chrome can be
+# edited independently. Both files are loaded; the panel just says `using = cc_xp_court_row`.
+#
+# Expects a Character datacontext. Used for both ministers and proteges; the release
+# button is the only part that distinguishes them, and it gates itself on cc_protege.
+#
+# NOTE ON parameter_value: it must be a getter chain that YIELDS an object. [X.Self]
+# is not valid standalone (vanilla only ever uses .Self as a function argument, as in
+# ShowCharacter(Character.Self)) and produces "No function for call ''" in the log.
+# To pass the current datacontext object, vanilla uses [X.MakeScope].
+#
+# THE ACTION BUTTONS use vanilla's character-interaction button pattern
+# (game/in_game/gui/government_lateralview.gui:4216): an `actor`, a `parameter` named
+# after the interaction's target_flag, and `left_click_and_hold_action` naming the
+# interaction. Supplying `recipient` here means the interaction's select_trigger is
+# already answered, so the button acts on THIS row's character with no picker step.
+#
+# It is click-and-HOLD, not click. That is vanilla's convention for actions that spend
+# something, and left_click_and_hold_action is the only action field vanilla uses on
+# these buttons (53 usages, no other variant).
+#
+# No tooltipwidget is supplied on the buttons: action_button_common_template already
+# attaches vanilla's action tooltip, which shows the cost, the cooldown, and the reason
+# the button is disabled. Writing our own would be strictly worse.
+######################################################################
+
+# NOTE: this template declares its properties DIRECTLY, with no wrapping widget.
+# `using = <template>` merges the template's contents into the widget it is used on,
+# so an extra `widget = { }` in here produced a zero-sized outer widget around every
+# row: in a vbox they all collapsed to the same position (overlapping cards) and their
+# children got no input region (nothing clickable). Vanilla templates are written the
+# same way -- see portrait_standard_head_framed and layoutpolicy_expanding.
+template cc_xp_court_row {
+	layoutpolicy_horizontal = expanding
+	size = { -1 76 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	hbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 6 4 }
+		spacing = 6
+
+		# Opens the character panel. portrait_torso_button_template already carries
+		# this in its `portrait_click` block, but that fires through the action_tooltip
+		# path; a plain onclick is what actually makes the portrait respond here.
+		portrait_standard_head_framed_button = {
+			size = { 46 50 }
+			onclick = "[ShowCharacter(Character.Self)]"
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			spacing = 1
+
+			# ---- Line 1: name, status, seniority level ----
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				minimumsize = { -1 18 }
+				spacing = 5
+
+				text_single = {
+					fontsize = 14
+					maximumsize = { 190 -1 }
+					text = "[Character.GetShortNameWithNoTooltip]"
+				}
+
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					visible = "[Or(Or3(Character.MakeScope.GetVariable('cc_xp_away_adm').IsSet, Character.MakeScope.GetVariable('cc_xp_away_dip').IsSet, Character.MakeScope.GetVariable('cc_xp_away_mil').IsSet), Character.MakeScope.GetVariable('cc_xp_examining').IsSet)]"
+					text = "CC_XP_STATUS_AWAY"
+					tooltip = "CC_XP_STATUS_AWAY_TT"
+				}
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					visible = "[Character.MakeScope.GetVariable('cc_xp_mentor_track').IsSet]"
+					text = "CC_XP_STATUS_MENTORED"
+					tooltip = "CC_XP_STATUS_MENTORED_TT"
+				}
+
+				expand = {}
+
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					text = "CC_XP_LEVEL_LABEL"
+				}
+				text_single = {
+					fontsize = 15
+					raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_level').GetValue)]"
+				}
+			}
+
+			# ---- Line 2: progress toward the next level ----
+			#
+			# min/max read straight off cc_xp_floor and cc_xp_next, which is why
+			# cc_xp_recompute stores them. At level 10 the two are equal, which would
+			# be a degenerate bar, so that case shows a label instead.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				minimumsize = { -1 12 }
+				spacing = 5
+
+				widget = {
+					layoutpolicy_horizontal = expanding
+					size = { -1 9 }
+					visible = "[GreaterThan_CFixedPoint('(CFixedPoint)10', Character.MakeScope.GetVariable('cc_level').GetValue)]"
+
+					progressbar = {
+						size = { 100% 100% }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_blue_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_floor').GetValue)]"
+						max = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_next').GetValue)]"
+						value = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_total').GetValue)]"
+						tooltip = "CC_XP_SENIORITY_TT"
+					}
+				}
+
+				text_single = {
+					fontsize = 9
+					default_format = "#weak"
+					visible = "[GreaterThan_CFixedPoint('(CFixedPoint)10', Character.MakeScope.GetVariable('cc_level').GetValue)]"
+					raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_xp_total').GetValue)]/[FixedPointToInt(Character.MakeScope.GetVariable('cc_xp_next').GetValue)]"
+				}
+
+				text_single = {
+					layoutpolicy_horizontal = expanding
+					fontsize = 10
+					default_format = "#weak"
+					visible = "[Not(GreaterThan_CFixedPoint('(CFixedPoint)10', Character.MakeScope.GetVariable('cc_level').GetValue))]"
+					text = "CC_XP_LEVEL_MAX"
+				}
+			}
+
+			# ---- Line 3: the three tracks, then the actions ----
+			#
+			# Each bar runs 0 to 1200, which is cc_xp_tier_3_at from
+			# script_values/cc_xp_values.txt. GUI script cannot read a script value,
+			# so retuning the tier ladder needs the same edit in these three places.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				minimumsize = { -1 26 }
+				spacing = 8
+
+				hbox = {
+					spacing = 2
+					tooltip = "CC_XP_TRACK_ADM_TT"
+					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_ADM" }
+					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_adm').GetValue)]" }
+					progressbar = {
+						size = { 46 7 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 1200
+						value = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_adm').GetValue)]"
+					}
+				}
+
+				hbox = {
+					spacing = 2
+					tooltip = "CC_XP_TRACK_DIP_TT"
+					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_DIP" }
+					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_dip').GetValue)]" }
+					progressbar = {
+						size = { 46 7 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 1200
+						value = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_dip').GetValue)]"
+					}
+				}
+
+				hbox = {
+					spacing = 2
+					tooltip = "CC_XP_TRACK_MIL_TT"
+					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_MIL" }
+					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_mil').GetValue)]" }
+					progressbar = {
+						size = { 46 7 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 1200
+						value = "[FixedPointToFloat(Character.MakeScope.GetVariable('cc_xp_mil').GetValue)]"
+					}
+				}
+
+				expand = {}
+
+				# ---- Actions on this person ----
+
+				card_header_action_button_01 = {
+					size = { 24 24 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_train_adm" }
+					icon = {
+						parentanchor = center
+						size = { 80% 80% }
+						texture = "gfx/interface/icons/abilities/adm.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 24 24 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_train_dip" }
+					icon = {
+						parentanchor = center
+						size = { 80% 80% }
+						texture = "gfx/interface/icons/abilities/dip.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 24 24 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_train_mil" }
+					icon = {
+						parentanchor = center
+						size = { 80% 80% }
+						texture = "gfx/interface/icons/abilities/mil.dds"
+					}
+				}
+
+				# Proteges only: withdraw the crown's interest and free the slot.
+				card_header_action_button_01 = {
+					size = { 24 24 }
+					visible = "[Character.MakeScope.GetVariable('cc_protege').IsSet]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_release_protege" }
+					icon = {
+						parentanchor = center
+						size = { 75% 75% }
+						texture = "gfx/interface/buttons/flats/remove.dds"
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,63 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: service record
+#
+# Reads out everything the experience system tracks about one minister. In phase 1
+# this is the only window into the system, so it doubles as the verification tool:
+# if the numbers here move the way cc_xp_values.txt says they should, the substrate
+# is working. It stays in the shipped mod once the cabinet card lands in phase 4,
+# because the card has room for a bar and a badge but not for the full breakdown.
+#
+# AI never calls this (ai_tick = never); it displays information and changes nothing.
+###############################################################################
+
+cc_xp_inspect_service_record = {
+	message = no
+	on_own_nation = yes
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_cabinet_character = {
+				in_cabinet = yes
+				cc_xp_is_tracked = yes
+			}
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_minister"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			in_cabinet = yes
+		}
+
+		# A minister seated this very tick has not been through a pulse yet and carries
+		# no variables. Showing them greyed out is honest; reading their record would
+		# be the "Variable not of the 'value' scope type" error in error.log.
+		enabled = {
+			cc_xp_is_tracked = yes
+		}
+	}
+
+	effect = {
+		scope:recipient = { save_scope_as = cc_xp_subject }
+		scope:actor = { trigger_event_silently = { id = cc_xp.1 } }
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

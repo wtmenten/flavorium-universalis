@@ -1,0 +1,241 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: proteges and mentorship
+#
+# A protege is a character outside the cabinet whom the crown has taken an interest in.
+# They accumulate experience slowly (cc_xp_protege_tick), can be sent to be trained like
+# any minister, and can be mentored by a senior one. The point is to have a successor
+# ready before a seat opens, rather than appointing whoever is standing nearby.
+#
+# Capacity is three, counted live by cc_xp_has_protege_room rather than kept in a running
+# total, so a protege who dies or gets appointed does not silently burn a slot forever.
+# The cap exists for the same reason the cabinet has one: attention is finite.
+###############################################################################
+
+
+###############################################################################
+# SPONSOR A PROTEGE
+#
+# Elevating an outsider costs coin, political capital (charged as government_power by
+# the price) and noble goodwill (charged in the effect). The nobility does not care for
+# the crown taking an interest in people it has not vouched for.
+###############################################################################
+
+cc_xp_sponsor_protege = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_sponsor_protege
+
+	# The AI does not groom successors. It appoints from whoever is available, which is
+	# what it did before this system existed, and the protege slots are a player tool.
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_xp_has_protege_room = yes
+			any_character = { cc_xp_can_be_sponsored = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_protege"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			is_adult = yes
+			NOT = { in_cabinet = yes }
+			NOT = { has_variable = cc_protege }
+		}
+
+		enabled = {
+			cc_xp_can_be_sponsored = yes
+		}
+	}
+
+	effect = {
+		scope:recipient = {
+			set_variable = { name = cc_protege value = yes }
+			cc_xp_init = yes
+			cc_xp_recompute = yes
+		}
+
+		scope:actor = {
+			add_estate_satisfaction = {
+				type = estate_type:nobles_estate
+				value = estate_satisfaction_weak_penalty
+			}
+			cc_xp_sync_slots = yes
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+
+###############################################################################
+# RELEASE A PROTEGE
+#
+# Frees a slot. Their experience is not touched: if they are picked up again later, or
+# appointed outright, everything they learned is still on their record.
+###############################################################################
+
+cc_xp_release_protege = {
+	message = yes
+	on_own_nation = yes
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_character = { has_variable = cc_protege }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_released_protege"
+		column = { data = name }
+
+		visible = {
+			has_variable = cc_protege
+		}
+
+		enabled = {
+			has_variable = cc_protege
+		}
+	}
+
+	effect = {
+		scope:recipient = {
+			remove_variable = cc_protege
+		}
+
+		scope:actor = {
+			cc_xp_sync_slots = yes
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+
+###############################################################################
+# ASSIGN A MENTOR
+#
+# Puts a senior minister's experience at a junior's disposal for a decade. The student
+# gains experience yearly in the MENTOR's dominant track, which is the whole point: this
+# is how a career is steered, not merely accelerated.
+#
+# The mentor's track is copied onto the student at assignment rather than looked up each
+# year. That keeps the yearly pulse free of any need to dereference a character stored
+# in a variable, and it means a mentorship survives its mentor: what they taught does
+# not stop being true when they die.
+###############################################################################
+
+cc_xp_assign_mentor = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_mentorship
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_cabinet_character = { cc_xp_can_mentor = yes }
+			any_character = { cc_xp_can_be_mentored = yes }
+		}
+	}
+
+	# First the teacher, then the pupil.
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_mentor"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_mentor = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = target
+		name = "cc_xp_choose_student"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			is_adult = yes
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+		}
+
+		enabled = {
+			cc_xp_can_be_mentored = yes
+		}
+	}
+
+	# The panel evaluates this block to build the tooltip BEFORE either target has been
+	# picked, so every reference to the second target has to be guarded with
+	# `exists = scope:target`. Vanilla does the same in every multi-select interaction:
+	# see ennoble.txt:68 and assume_fort_command.txt:74. Without the guard the log fills
+	# with "Undefined event target 'target'" every time the panel is opened.
+	#
+	# scope:recipient.var:cc_track is guarded by the same check, since a mentor who has
+	# not been picked yet has no variables to read either.
+	effect = {
+		if = {
+			limit = {
+				exists = scope:target
+				exists = scope:recipient
+			}
+			scope:target = {
+				set_variable = {
+					name = cc_xp_mentor_track
+					value = scope:recipient.var:cc_track
+					years = 10
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

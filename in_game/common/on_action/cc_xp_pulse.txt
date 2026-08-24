@@ -1,0 +1,406 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: pulses and hooks
+#
+# Everything that feeds experience into the system. Four sources, per the design:
+#   duty service     monthly, to whichever track the minister's cabinet action belongs
+#   passive tenure   yearly, to the minister's dominant track
+#   milestones       on winning a war, changing a policy, contracting a royal marriage
+#   paid training    not here; it arrives with the character interactions in phase 3
+#
+# Every hook that touches a vanilla on_action chains through the on_actions sub-list
+# rather than declaring effect = {}, because on_policy_changed and on_winning_war both
+# carry vanilla logic that a direct effect block would clobber.
+#
+# All of this is gated on cc_xp_country_is_tracked, which is where the performance
+# control for the whole system lives: see scripted_triggers/cc_xp_triggers.txt.
+###############################################################################
+
+
+###############################################################################
+# ROOT PULSE CHAINING
+#
+# Declared here rather than in cc_cabinet_pulse.txt because that file already holds
+# one of each pulse type. Root pulse declarations merge across files (the mod has six
+# files declaring yearly_country_pulse today); it is on_game_start's effect = {} block
+# that does not, which is why that one stays alone in cc_game_start.txt.
+###############################################################################
+
+monthly_country_pulse = {
+	on_actions = {
+		cc_xp_monthly_service
+	}
+}
+
+yearly_country_pulse = {
+	on_actions = {
+		cc_xp_yearly_tenure
+		cc_xp_yearly_protege
+		cc_xp_yearly_mentorship
+		cc_xp_yearly_advance
+	}
+}
+
+
+###############################################################################
+# MONTHLY — DUTY SERVICE
+#
+# One pass over the seated cabinet: initialise anyone new, credit the current duty's
+# track, then recompute. Recomputation is arithmetic over variables and cheap; the one
+# expensive part, reapplying the service modifier, is guarded inside cc_xp_recompute
+# so it only fires in the month a minister actually changes level.
+#
+# The slot sync runs for human courts only. It exists to feed panels that cannot reach
+# GovernmentView.GetCabinets, and no panel ever renders an AI court's cabinet.
+###############################################################################
+
+cc_xp_monthly_service = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { in_cabinet = yes }
+	}
+
+	effect = {
+		every_cabinet_character = {
+			limit = { in_cabinet = yes }
+
+			cc_xp_init = yes
+
+			if = {
+				limit = { has_cabinet_action = yes }
+				cc_xp_duty_track_award = yes
+			}
+
+			cc_xp_recompute = yes
+		}
+
+		if = {
+			limit = { is_ai = no }
+			cc_xp_sync_slots = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — PASSIVE TENURE
+#
+# The trickle that guarantees a minister left alone still slowly becomes someone,
+# credited to their dominant track so it deepens a career rather than blurring it.
+# Small enough (5 a year against a 2700 ladder) that it is never a strategy.
+###############################################################################
+
+cc_xp_yearly_tenure = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { in_cabinet = yes }
+	}
+
+	effect = {
+		every_cabinet_character = {
+			limit = { in_cabinet = yes }
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_tenure_tick }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — PROTEGES (phase 3)
+#
+# A sponsored outsider learns slowly on their own: less than a seated minister earns
+# from tenure alone, because watching a court is not the same as running part of one.
+# What makes grooming worthwhile is paying for it, through training and mentorship.
+###############################################################################
+
+cc_xp_yearly_protege = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_character = { has_variable = cc_protege }
+	}
+
+	effect = {
+		every_character = {
+			limit = {
+				has_variable = cc_protege
+				is_alive = yes
+			}
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_protege_tick }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — MENTORSHIP (phase 3)
+#
+# The student gains in the track their mentor was strongest in, which is what makes a
+# mentorship a way of STEERING a career rather than merely speeding one up.
+#
+# cc_xp_mentor_track is a timed variable set by cc_xp_assign_mentor, so a mentorship
+# expires on its own and needs no teardown. It holds the track as a number rather than
+# a reference to the mentor, which is why nothing here has to cope with the mentor
+# having died in the meantime.
+###############################################################################
+
+cc_xp_yearly_mentorship = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_character = { has_variable = cc_xp_mentor_track }
+	}
+
+	effect = {
+		every_character = {
+			limit = {
+				has_variable = cc_xp_mentor_track
+				is_alive = yes
+			}
+
+			if = {
+				limit = { var:cc_xp_mentor_track = 1 }
+				cc_xp_gain_adm = { AMOUNT = cc_xp_mentor_tick }
+			}
+			else_if = {
+				limit = { var:cc_xp_mentor_track = 2 }
+				cc_xp_gain_dip = { AMOUNT = cc_xp_mentor_tick }
+			}
+			else_if = {
+				limit = { var:cc_xp_mentor_track = 3 }
+				cc_xp_gain_mil = { AMOUNT = cc_xp_mentor_tick }
+			}
+
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — LADDER ADVANCEMENT
+#
+# The replacement for the five hand-written chains (cc_prog.1-40). One pass over the
+# seated cabinet; anyone who holds a ladder trait and has earned the tier for the next
+# rung moves up one step, then goes on cooldown.
+#
+# Ministers of untracked courts carry no experience at all, so cc_xp_tier_at_least
+# never passes for them and they simply keep whatever trait they were granted. That is
+# the intended behaviour for minor AI: no progression, but no broken state either.
+#
+# The player is told about their own court's advancements; AI courts advance silently.
+###############################################################################
+
+# Iterates every_character rather than every_cabinet_character so that sponsored
+# proteges climb their ladders too. A protege who has been trained and mentored for a
+# decade should arrive in the cabinet already good at something, which is the entire
+# reason to groom one.
+cc_xp_yearly_advance = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_character = {
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			cc_xp_can_advance = yes
+		}
+	}
+
+	effect = {
+		# cc_xp_ladder_advance reads scope:cc_xp_court to decide whether this court is
+		# played by a human (ask) or an AI (roll). It cannot use `employer`, because a
+		# sponsored protege is not employed by anyone and that link comes back null.
+		save_scope_as = cc_xp_court
+
+		every_character = {
+			limit = {
+				is_alive = yes
+				OR = {
+					in_cabinet = yes
+					has_variable = cc_protege
+				}
+				cc_xp_can_advance = yes
+			}
+			cc_xp_ladder_advance = yes
+		}
+
+		if = {
+			limit = {
+				is_ai = no
+				any_character = { has_variable = cc_xp_advanced_recently }
+			}
+			trigger_event_silently = { id = cc_xp.10 }
+		}
+	}
+}
+
+
+###############################################################################
+# CABINET LIFECYCLE
+#
+# root = country, scope:target = the character concerned.
+#
+# Experience is never cleared. A minister who leaves office keeps their record, so
+# recalling them later returns a known quantity rather than a blank slate, and the
+# legacy events already in the mod can still read what a dead minister accomplished.
+###############################################################################
+
+on_cabinet_assigned = {
+	on_actions = {
+		cc_xp_on_assigned
+	}
+}
+
+on_cabinet_removed = {
+	on_actions = {
+		cc_xp_on_removed
+	}
+}
+
+# on_cabinet_death is declared in cc_legacy_pulse.txt, which already hooks it for the
+# minister-legacy events. cc_xp_on_death is listed there alongside cc_on_cabinet_death
+# rather than redeclared here, the same way cc_xp_milestone_war is listed in
+# cc_war_on_actions.txt: one declaration per hardcoded on_action, all its consumers visible
+# in one place.
+
+# A new minister is initialised the moment they are seated rather than waiting for the
+# next monthly tick, so anything that inspects them in between reads real values.
+cc_xp_on_assigned = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+	}
+
+	effect = {
+		scope:target ?= {
+			cc_xp_init = yes
+			cc_xp_recompute = yes
+		}
+
+		if = {
+			limit = { is_ai = no }
+			cc_xp_sync_slots = yes
+		}
+	}
+}
+
+# Resync only. The departing minister keeps everything.
+cc_xp_on_removed = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		is_ai = no
+	}
+
+	effect = {
+		cc_xp_sync_slots = yes
+	}
+}
+
+cc_xp_on_death = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		is_ai = no
+	}
+
+	effect = {
+		cc_xp_sync_slots = yes
+	}
+}
+
+
+###############################################################################
+# MILESTONES
+#
+# Campaign events that credit the whole seated cabinet rather than one minister. A war
+# won or a law carried is a court's achievement, and spreading it keeps the milestone
+# from silently deciding which single minister the player was supposed to favour.
+#
+# Milestones also bump a task-family counter, the cheap tally that later gates the few
+# traits which want a specific career rather than a track and a tier.
+#
+# on_winning_war is chained from cc_war_on_actions.txt, where the mod's other war hooks
+# already live, so all of them stay listed in one place.
+###############################################################################
+
+on_policy_changed = {
+	on_actions = {
+		cc_xp_milestone_policy
+	}
+}
+
+on_royal_marriage = {
+	on_actions = {
+		cc_xp_milestone_marriage
+	}
+}
+
+# root = country. A law or policy carried through is administrative work.
+cc_xp_milestone_policy = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { in_cabinet = yes }
+	}
+
+	effect = {
+		every_cabinet_character = {
+			limit = { in_cabinet = yes }
+			cc_xp_gain_adm = { AMOUNT = cc_xp_milestone_law }
+			cc_xp_task_family = { FAMILY = reform }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+# root, scope:actor = the sending court, scope:recipient = the receiving court.
+# Both cabinets did the negotiating, so both are credited.
+cc_xp_milestone_marriage = {
+	effect = {
+		scope:actor ?= {
+			if = {
+				limit = {
+					cc_xp_country_is_tracked = yes
+					any_cabinet_character = { in_cabinet = yes }
+				}
+				every_cabinet_character = {
+					limit = { in_cabinet = yes }
+					cc_xp_gain_dip = { AMOUNT = cc_xp_milestone_treaty }
+					cc_xp_recompute = yes
+				}
+			}
+		}
+
+		scope:recipient ?= {
+			if = {
+				limit = {
+					cc_xp_country_is_tracked = yes
+					any_cabinet_character = { in_cabinet = yes }
+				}
+				every_cabinet_character = {
+					limit = { in_cabinet = yes }
+					cc_xp_gain_dip = { AMOUNT = cc_xp_milestone_treaty }
+					cc_xp_recompute = yes
+				}
+			}
+		}
+	}
+}
+
+# root = country, scope:winner = country, scope:loser = country, scope:war = war.
+# Listed in cc_war_on_actions.txt alongside the mod's other on_winning_war hooks.
+cc_xp_milestone_war = {
+	effect = {
+		scope:winner ?= {
+			if = {
+				limit = {
+					cc_xp_country_is_tracked = yes
+					any_cabinet_character = { in_cabinet = yes }
+				}
+				every_cabinet_character = {
+					limit = { in_cabinet = yes }
+					cc_xp_gain_mil = { AMOUNT = cc_xp_milestone_war }
+					cc_xp_task_family = { FAMILY = war }
+					cc_xp_recompute = yes
+				}
+			}
+		}
+	}
+}

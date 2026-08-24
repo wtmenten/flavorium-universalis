@@ -1,0 +1,505 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_ladders.py
+#
+# One event per ladder branch point. Fired by cc_xp_ladder_advance when a HUMAN
+# court's minister has earned a rung that offers a choice of destination.
+#
+# The advancement has NOT happened yet when this opens: each option performs its
+# own trait swap. There is deliberately no dismiss option, because closing the
+# event without choosing would strand the minister on the old rung with the
+# cooldown unspent, and the event would simply fire again next year.
+#
+# Each event identifies its minister by the trait they are LEAVING as well as the
+# cc_xp_branch_pending flag, so two ministers branching in the same year cannot
+# resolve into each other.
+#
+#   cc_xp.20   [adm] fiscal: loyal_steward -> prosperity_planner | treasury_enforcer
+#   cc_xp.21   [adm] learning: progressive_rationalist -> enlightenment_herald | humanist_philosopher
+#   cc_xp.22   [adm] law: efficiency_administrator -> estate_guardian | regional_magnate
+#   cc_xp.23   [adm] integration: seasoned_integrator -> master_integrator | iron_integrator
+#   cc_xp.24   [dip] envoy: tentative_envoy -> tactful_envoy | diplomatic_attache
+#   cc_xp.25   [dip] trade: merchant_syndic -> mercantilist_official | free_market_advocate
+#   cc_xp.26   [mil] command: tactical_advisor -> offensive_strategist | defensive_commander
+#   cc_xp.27   [mil] command: offensive_strategist -> supreme_commander | continental_marshal
+#   cc_xp.28   [mil] command: defensive_commander -> supreme_commander | continental_marshal
+###############################################################################
+
+
+# The Treasury: loyal_steward -> prosperity_planner or treasury_enforcer
+cc_xp.20 = {
+	type = country_event
+	title = cc_xp.20.title
+	desc = cc_xp.20.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = loyal_steward
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = loyal_steward
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.20.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:loyal_steward
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:prosperity_planner
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.20.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:loyal_steward
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:treasury_enforcer
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Scholar's Path: progressive_rationalist -> enlightenment_herald or humanist_philosopher
+cc_xp.21 = {
+	type = country_event
+	title = cc_xp.21.title
+	desc = cc_xp.21.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = progressive_rationalist
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = progressive_rationalist
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.21.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:progressive_rationalist
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:enlightenment_herald
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.21.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:progressive_rationalist
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:humanist_philosopher
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Jurist: efficiency_administrator -> estate_guardian or regional_magnate
+cc_xp.22 = {
+	type = country_event
+	title = cc_xp.22.title
+	desc = cc_xp.22.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = efficiency_administrator
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = efficiency_administrator
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.22.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:efficiency_administrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:estate_guardian
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.22.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:efficiency_administrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:regional_magnate
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Integrator: seasoned_integrator -> master_integrator or iron_integrator
+cc_xp.23 = {
+	type = country_event
+	title = cc_xp.23.title
+	desc = cc_xp.23.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = seasoned_integrator
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = seasoned_integrator
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.23.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:seasoned_integrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:master_integrator
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.23.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:seasoned_integrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:iron_integrator
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Diplomat's Ascent: tentative_envoy -> tactful_envoy or diplomatic_attache
+cc_xp.24 = {
+	type = country_event
+	title = cc_xp.24.title
+	desc = cc_xp.24.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = tentative_envoy
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = tentative_envoy
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.24.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:tentative_envoy
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:tactful_envoy
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.24.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:tentative_envoy
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:diplomatic_attache
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Merchant's Road: merchant_syndic -> mercantilist_official or free_market_advocate
+cc_xp.25 = {
+	type = country_event
+	title = cc_xp.25.title
+	desc = cc_xp.25.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = merchant_syndic
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = merchant_syndic
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.25.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:merchant_syndic
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:mercantilist_official
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.25.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:merchant_syndic
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:free_market_advocate
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Military Hardening: tactical_advisor -> offensive_strategist or defensive_commander
+cc_xp.26 = {
+	type = country_event
+	title = cc_xp.26.title
+	desc = cc_xp.26.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = tactical_advisor
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = tactical_advisor
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.26.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:tactical_advisor
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:offensive_strategist
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.26.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:tactical_advisor
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:defensive_commander
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Military Hardening: offensive_strategist -> supreme_commander or continental_marshal
+cc_xp.27 = {
+	type = country_event
+	title = cc_xp.27.title
+	desc = cc_xp.27.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = offensive_strategist
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = offensive_strategist
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.27.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:offensive_strategist
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:supreme_commander
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.27.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:offensive_strategist
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:continental_marshal
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}
+
+
+# The Military Hardening: defensive_commander -> supreme_commander or continental_marshal
+cc_xp.28 = {
+	type = country_event
+	title = cc_xp.28.title
+	desc = cc_xp.28.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_trait = defensive_commander
+			has_variable = cc_xp_branch_pending
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_trait = defensive_commander
+				has_variable = cc_xp_branch_pending
+			}
+			remove_variable = cc_xp_branch_pending
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	option = {
+		name = cc_xp.28.a
+		scope:cc_xp_subject = {
+			remove_trait = trait:defensive_commander
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:supreme_commander
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.28.b
+		scope:cc_xp_subject = {
+			remove_trait = trait:defensive_commander
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:continental_marshal
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+}

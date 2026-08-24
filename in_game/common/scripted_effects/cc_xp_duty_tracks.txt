@@ -1,0 +1,120 @@
+﻿###############################################################################
+# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_duty_tracks.py
+#
+# Maps each cabinet action to the experience track its service credits, because
+# the engine gives no script trigger for a duty's ability type. Regenerate after
+# any EU5 update: a patch that adds or retunes a cabinet action changes this.
+#
+#   vanilla: 73 actions from 72 files
+#   main mod: 6 actions from 7 files
+#   excluded as idle: cc_duty_free_hands
+#   total: 79 actions (39 adm, 18 dip, 22 mil)
+#
+# Called in CHARACTER scope from cc_xp_monthly_service (cc_xp_pulse.txt) for a
+# minister currently holding a duty. Awards nothing when the duty is unrecognised,
+# which is the correct behaviour for an action added by a mod we do not know about.
+###############################################################################
+
+cc_xp_duty_track_award = {
+	if = {
+		limit = {
+			OR = {
+				cabinet_action = cabinet_action:aid_constantinople
+				cabinet_action = cabinet_action:aptekarsky
+				cabinet_action = cabinet_action:bironovshchina
+				cabinet_action = cabinet_action:bolster_bureaucratic_efficiency
+				cabinet_action = cabinet_action:cc_duty_colonial_posting
+				cabinet_action = cabinet_action:cc_duty_domestic_reform
+				cabinet_action = cabinet_action:cc_duty_religious_oversight
+				cabinet_action = cabinet_action:cc_duty_scholarly_inquiry
+				cabinet_action = cabinet_action:develop_province
+				cabinet_action = cabinet_action:encourage_migration
+				cabinet_action = cabinet_action:form_new_culture
+				cabinet_action = cabinet_action:frustrate_annexation
+				cabinet_action = cabinet_action:gaituguiliu_policy
+				cabinet_action = cabinet_action:gather_acllas
+				cabinet_action = cabinet_action:increase_bureaucratic_entrenchment
+				cabinet_action = cabinet_action:increase_control_area
+				cabinet_action = cabinet_action:increase_control_province
+				cabinet_action = cabinet_action:ispolneniya_zakonov
+				cabinet_action = cabinet_action:kazenny
+				cabinet_action = cabinet_action:kbo_pop_promote_action
+				cabinet_action = cabinet_action:kbo_sharia_courts
+				cabinet_action = cabinet_action:merge_culture_group
+				cabinet_action = cabinet_action:noblesse_oblige_cabinet_action
+				cabinet_action = cabinet_action:oma_zanzibar_integration
+				cabinet_action = cabinet_action:peasant_labor_rights_action
+				cabinet_action = cabinet_action:pop_promote_action
+				cabinet_action = cabinet_action:promote_religious_reformation
+				cabinet_action = cabinet_action:reduce_inflation
+				cabinet_action = cabinet_action:reduced_paperwork
+				cabinet_action = cabinet_action:reform_taxation_system
+				cabinet_action = cabinet_action:send_people_to_colonial_charter
+				cabinet_action = cabinet_action:send_people_to_the_colonies
+				cabinet_action = cabinet_action:send_secret_royal_inspectors
+				cabinet_action = cabinet_action:settle_the_frontier
+				cabinet_action = cabinet_action:stroganov_influences
+				cabinet_action = cabinet_action:study_institutions
+				cabinet_action = cabinet_action:support_patriarchate
+				cabinet_action = cabinet_action:swe_slash_and_burn_new_farms
+				cabinet_action = cabinet_action:taluqdar_tax_collection
+			}
+		}
+		cc_xp_gain_adm = { AMOUNT = cc_xp_duty_tick }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				cabinet_action = cabinet_action:alleviate_concerns
+				cabinet_action = cabinet_action:appease_estate
+				cabinet_action = cabinet_action:assimilate_area
+				cabinet_action = cabinet_action:bolshogo_dvortsa
+				cabinet_action = cabinet_action:cab_diplomatic_corps
+				cabinet_action = cabinet_action:cc_duty_diplomatic_mission
+				cabinet_action = cabinet_action:change_societal_values
+				cabinet_action = cabinet_action:counter_espionage_action
+				cabinet_action = cabinet_action:diplomatic_endeavors
+				cabinet_action = cabinet_action:maintain_trunk_road_cabinet_action
+				cabinet_action = cabinet_action:oma_bolster_omani_navy
+				cabinet_action = cabinet_action:posolsky
+				cabinet_action = cabinet_action:promote_culture
+				cabinet_action = cabinet_action:recovery_effort
+				cabinet_action = cabinet_action:reduce_war_exhaustion
+				cabinet_action = cabinet_action:sow_disloyalty
+				cabinet_action = cabinet_action:spread_philhellenism
+				cabinet_action = cabinet_action:tyranny_of_the_capital_action
+			}
+		}
+		cc_xp_gain_dip = { AMOUNT = cc_xp_duty_tick }
+	}
+	else_if = {
+		limit = {
+			OR = {
+				cabinet_action = cabinet_action:byz_extensive_conscription
+				cabinet_action = cabinet_action:cab_naval_focus
+				cabinet_action = cabinet_action:cc_duty_war_council
+				cabinet_action = cabinet_action:encourage_latin_militarism
+				cabinet_action = cabinet_action:expel_people
+				cabinet_action = cabinet_action:integrate_area
+				cabinet_action = cabinet_action:integrate_province
+				cabinet_action = cabinet_action:lat_reintegrate_province
+				cabinet_action = cabinet_action:lit_promote_catholicism
+				cabinet_action = cabinet_action:militarize_country
+				cabinet_action = cabinet_action:mlo_restore_kingdom_lombardy
+				cabinet_action = cabinet_action:office_of_new_converts
+				cabinet_action = cabinet_action:pacify_population
+				cabinet_action = cabinet_action:promote_religion
+				cabinet_action = cabinet_action:pru_deal_with_robber_barons
+				cabinet_action = cabinet_action:razryadny
+				cabinet_action = cabinet_action:rebel_crackdown
+				cabinet_action = cabinet_action:settle_tribesmen
+				cabinet_action = cabinet_action:soldiers_as_workforce
+				cabinet_action = cabinet_action:stabilize_country
+				cabinet_action = cabinet_action:streltsy
+				cabinet_action = cabinet_action:strengthen_government
+			}
+		}
+		cc_xp_gain_mil = { AMOUNT = cc_xp_duty_tick }
+	}
+}

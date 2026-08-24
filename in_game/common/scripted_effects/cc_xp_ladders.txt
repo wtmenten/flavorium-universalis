@@ -1,0 +1,834 @@
+﻿###############################################################################
+# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_ladders.py
+#
+# Cabinet advancement ladders. Each ladder is one career; a rung's index is the
+# track tier required to reach it. Replaces the five hand-written chains that
+# used to live in cc_progression_events.txt as cc_prog.1-40.
+#
+#   15 ladders, 55 rungs, 9 branch points
+#   [adm] reform: fumbling_reformist -> law_reformer -> progressive_reformist -> master_reformer
+#   [adm] fiscal: clumsy_accountant -> loyal_steward -> prosperity_planner|treasury_enforcer -> development_patron
+#   [adm] learning: learned_courtier -> learned_counselor -> progressive_rationalist -> enlightenment_herald|humanist_philosopher
+#   [adm] urbanism: urban_planner -> master_urbanist -> grand_architect
+#   [adm] law: legal_scholar -> efficiency_administrator -> estate_guardian|regional_magnate
+#   [adm] integration: fumbling_integrator -> able_integrator -> seasoned_integrator -> master_integrator|iron_integrator
+#   [dip] envoy: tentative_envoy -> tactful_envoy|diplomatic_attache -> master_statesman -> grand_chancellor
+#   [dip] colonial: frontier_administrator -> new_world_pioneer -> colonial_planner -> returned_colonial_governor
+#   [dip] trade: merchant_syndic -> mercantilist_official|free_market_advocate -> maritime_champion -> merchant_prince
+#   [dip] exploration: timid_landlubber -> capable_explorer -> restless_pioneer -> admiral_counselor
+#   [dip] intrigue: provocateur -> espionage_director -> shadow_counselor
+#   [mil] command: green_adjutant -> tactical_advisor -> offensive_strategist|defensive_commander -> supreme_commander|continental_marshal
+#   [mil] drill: infantry_drillmaster -> elite_trainer -> iron_disciplinarian -> mass_levy_commander
+#   [mil] siege: military_engineer -> siege_engineer -> commissariat_officer
+#   [mil] cavalry: scout_captain -> master_of_horse -> cavalry_marshal
+#
+# Called in CHARACTER scope from cc_xp_yearly_advance (cc_xp_pulse.txt). Advances
+# at most one rung per call: the if/else_if chain stops at the first match, and the
+# cooldown stamped at the end keeps a minister who has banked several tiers from
+# sprinting up the whole ladder in consecutive years.
+#
+# Branch rungs put the choice to the player through one event per branch point
+# (cc_xp_branch_events.txt). AI courts still roll for it, so the pulse never stalls
+# waiting on a decision nobody is there to make.
+###############################################################################
+
+cc_xp_ladder_advance = {
+
+	# ---- reform (adm): The Reformer's Path ----
+	if = {
+		limit = {
+			has_trait = fumbling_reformist
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:fumbling_reformist
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:law_reformer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = law_reformer
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		remove_trait = trait:law_reformer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:progressive_reformist
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = progressive_reformist
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+		}
+		remove_trait = trait:progressive_reformist
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:master_reformer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- fiscal (adm): The Treasury ----
+	else_if = {
+		limit = {
+			has_trait = clumsy_accountant
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:clumsy_accountant
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:loyal_steward
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = loyal_steward
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.20 } }
+		}
+		else = {
+			remove_trait = trait:loyal_steward
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:prosperity_planner }
+				1 = { add_trait = trait:treasury_enforcer }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+	else_if = {
+		limit = {
+			has_trait = prosperity_planner
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+		}
+		remove_trait = trait:prosperity_planner
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:development_patron
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = treasury_enforcer
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+		}
+		remove_trait = trait:treasury_enforcer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:development_patron
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- learning (adm): The Scholar's Path ----
+	else_if = {
+		limit = {
+			has_trait = learned_courtier
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:learned_courtier
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:learned_counselor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = learned_counselor
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		remove_trait = trait:learned_counselor
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:progressive_rationalist
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = progressive_rationalist
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.21 } }
+		}
+		else = {
+			remove_trait = trait:progressive_rationalist
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:enlightenment_herald }
+				1 = { add_trait = trait:humanist_philosopher }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	# ---- urbanism (adm): The Builder ----
+	else_if = {
+		limit = {
+			has_trait = urban_planner
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:urban_planner
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:master_urbanist
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = master_urbanist
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		remove_trait = trait:master_urbanist
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:grand_architect
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- law (adm): The Jurist ----
+	else_if = {
+		limit = {
+			has_trait = legal_scholar
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:legal_scholar
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:efficiency_administrator
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = efficiency_administrator
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.22 } }
+		}
+		else = {
+			remove_trait = trait:efficiency_administrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:estate_guardian }
+				1 = { add_trait = trait:regional_magnate }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	# ---- integration (adm): The Integrator ----
+	else_if = {
+		limit = {
+			has_trait = fumbling_integrator
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+		}
+		remove_trait = trait:fumbling_integrator
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:able_integrator
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = able_integrator
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+		}
+		remove_trait = trait:able_integrator
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:seasoned_integrator
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = seasoned_integrator
+			cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.23 } }
+		}
+		else = {
+			remove_trait = trait:seasoned_integrator
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:master_integrator }
+				1 = { add_trait = trait:iron_integrator }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	# ---- envoy (dip): The Diplomat's Ascent ----
+	else_if = {
+		limit = {
+			has_trait = tentative_envoy
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.24 } }
+		}
+		else = {
+			remove_trait = trait:tentative_envoy
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:tactful_envoy }
+				1 = { add_trait = trait:diplomatic_attache }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+	else_if = {
+		limit = {
+			has_trait = tactful_envoy
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:tactful_envoy
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:master_statesman
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = diplomatic_attache
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:diplomatic_attache
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:master_statesman
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = master_statesman
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+		}
+		remove_trait = trait:master_statesman
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:grand_chancellor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- colonial (dip): The Colonial Hand ----
+	else_if = {
+		limit = {
+			has_trait = frontier_administrator
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+		}
+		remove_trait = trait:frontier_administrator
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:new_world_pioneer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = new_world_pioneer
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:new_world_pioneer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:colonial_planner
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = colonial_planner
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+		}
+		remove_trait = trait:colonial_planner
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:returned_colonial_governor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- trade (dip): The Merchant's Road ----
+	else_if = {
+		limit = {
+			has_trait = merchant_syndic
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.25 } }
+		}
+		else = {
+			remove_trait = trait:merchant_syndic
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:mercantilist_official }
+				1 = { add_trait = trait:free_market_advocate }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+	else_if = {
+		limit = {
+			has_trait = mercantilist_official
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:mercantilist_official
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:maritime_champion
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = free_market_advocate
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:free_market_advocate
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:maritime_champion
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = maritime_champion
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+		}
+		remove_trait = trait:maritime_champion
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:merchant_prince
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- exploration (dip): The Navigator ----
+	else_if = {
+		limit = {
+			has_trait = timid_landlubber
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+		}
+		remove_trait = trait:timid_landlubber
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:capable_explorer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = capable_explorer
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:capable_explorer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:restless_pioneer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = restless_pioneer
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+		}
+		remove_trait = trait:restless_pioneer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:admiral_counselor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- intrigue (dip): The Shadow ----
+	else_if = {
+		limit = {
+			has_trait = provocateur
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+		}
+		remove_trait = trait:provocateur
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:espionage_director
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = espionage_director
+			cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+		}
+		remove_trait = trait:espionage_director
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:shadow_counselor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- command (mil): The Military Hardening ----
+	else_if = {
+		limit = {
+			has_trait = green_adjutant
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+		}
+		remove_trait = trait:green_adjutant
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:tactical_advisor
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = tactical_advisor
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.26 } }
+		}
+		else = {
+			remove_trait = trait:tactical_advisor
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:offensive_strategist }
+				1 = { add_trait = trait:defensive_commander }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+	else_if = {
+		limit = {
+			has_trait = offensive_strategist
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 3 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.27 } }
+		}
+		else = {
+			remove_trait = trait:offensive_strategist
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:supreme_commander }
+				1 = { add_trait = trait:continental_marshal }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+	else_if = {
+		limit = {
+			has_trait = defensive_commander
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 3 }
+		}
+		# Branch. A human court is asked; an AI court decides for itself.
+		if = {
+			limit = { scope:cc_xp_court ?= { is_ai = no } }
+			set_variable = { name = cc_xp_branch_pending  value = yes  months = 2 }
+			scope:cc_xp_court ?= { trigger_event_silently = { id = cc_xp.28 } }
+		}
+		else = {
+			remove_trait = trait:defensive_commander
+			set_variable = { name = cc_granting_trait  value = yes }
+			random_list = {
+				1 = { add_trait = trait:supreme_commander }
+				1 = { add_trait = trait:continental_marshal }
+			}
+			remove_variable = cc_granting_trait
+			cc_xp_stamp_advance = yes
+		}
+	}
+
+	# ---- drill (mil): The Drillmaster ----
+	else_if = {
+		limit = {
+			has_trait = infantry_drillmaster
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+		}
+		remove_trait = trait:infantry_drillmaster
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:elite_trainer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = elite_trainer
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+		}
+		remove_trait = trait:elite_trainer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:iron_disciplinarian
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = iron_disciplinarian
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 3 }
+		}
+		remove_trait = trait:iron_disciplinarian
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:mass_levy_commander
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- siege (mil): The Engineer ----
+	else_if = {
+		limit = {
+			has_trait = military_engineer
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+		}
+		remove_trait = trait:military_engineer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:siege_engineer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = siege_engineer
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+		}
+		remove_trait = trait:siege_engineer
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:commissariat_officer
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+
+	# ---- cavalry (mil): The Horse ----
+	else_if = {
+		limit = {
+			has_trait = scout_captain
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+		}
+		remove_trait = trait:scout_captain
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:master_of_horse
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+	else_if = {
+		limit = {
+			has_trait = master_of_horse
+			cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+		}
+		remove_trait = trait:master_of_horse
+		set_variable = { name = cc_granting_trait  value = yes }
+		add_trait = trait:cavalry_marshal
+		remove_variable = cc_granting_trait
+		cc_xp_stamp_advance = yes
+	}
+}
+
+###############################################################################
+# Bookkeeping applied after any successful advancement. Split out so the chain
+# above stays readable and so there is one place to add a notification later.
+###############################################################################
+
+cc_xp_stamp_advance = {
+	set_variable = { name = cc_xp_advance_cd  value = yes  years = 4 }
+	set_variable = { name = cc_xp_advanced_recently  value = yes  months = 2 }
+}
+
+###############################################################################
+# ONE-TIME SEEDING
+#
+# Called from cc_xp_init the first time a character enters the system. A minister
+# who already holds a rung-N ladder trait is credited with enough experience in
+# that track to sit at tier N, so they carry on from where their career actually
+# is instead of restarting at zero.
+#
+# This is what carries an existing save across the phase 2 change. The old chains
+# tracked progress in cc_prog_* counters that nothing reads any more; a minister
+# who finished one is recognised here by the TRAIT they ended up with, which is
+# the part that survived. Without it, a minister who spent twelve years becoming
+# a progressive_reformist would need decades more to advance again.
+#
+# It also does the right thing for a fresh grant: a trait event that hands out a
+# rung-2 trait directly leaves that minister correctly placed on the ladder.
+#
+# Floors rather than overwrites, so a minister who has genuinely earned more keeps it.
+###############################################################################
+
+cc_xp_ladder_backfill = {
+
+	# adm rung 1
+	if = {
+		limit = {
+			OR = {
+				has_trait = able_integrator
+				has_trait = efficiency_administrator
+				has_trait = law_reformer
+				has_trait = learned_counselor
+				has_trait = loyal_steward
+				has_trait = master_urbanist
+			}
+			var:cc_xp_adm < cc_xp_tier_1_at
+		}
+		set_variable = { name = cc_xp_adm  value = cc_xp_tier_1_at }
+	}
+
+	# adm rung 2
+	if = {
+		limit = {
+			OR = {
+				has_trait = estate_guardian
+				has_trait = grand_architect
+				has_trait = progressive_rationalist
+				has_trait = progressive_reformist
+				has_trait = prosperity_planner
+				has_trait = regional_magnate
+				has_trait = seasoned_integrator
+				has_trait = treasury_enforcer
+			}
+			var:cc_xp_adm < cc_xp_tier_2_at
+		}
+		set_variable = { name = cc_xp_adm  value = cc_xp_tier_2_at }
+	}
+
+	# adm rung 3
+	if = {
+		limit = {
+			OR = {
+				has_trait = development_patron
+				has_trait = enlightenment_herald
+				has_trait = humanist_philosopher
+				has_trait = iron_integrator
+				has_trait = master_integrator
+				has_trait = master_reformer
+			}
+			var:cc_xp_adm < cc_xp_tier_3_at
+		}
+		set_variable = { name = cc_xp_adm  value = cc_xp_tier_3_at }
+	}
+
+	# dip rung 1
+	if = {
+		limit = {
+			OR = {
+				has_trait = capable_explorer
+				has_trait = diplomatic_attache
+				has_trait = espionage_director
+				has_trait = free_market_advocate
+				has_trait = mercantilist_official
+				has_trait = new_world_pioneer
+				has_trait = tactful_envoy
+			}
+			var:cc_xp_dip < cc_xp_tier_1_at
+		}
+		set_variable = { name = cc_xp_dip  value = cc_xp_tier_1_at }
+	}
+
+	# dip rung 2
+	if = {
+		limit = {
+			OR = {
+				has_trait = colonial_planner
+				has_trait = maritime_champion
+				has_trait = master_statesman
+				has_trait = restless_pioneer
+				has_trait = shadow_counselor
+			}
+			var:cc_xp_dip < cc_xp_tier_2_at
+		}
+		set_variable = { name = cc_xp_dip  value = cc_xp_tier_2_at }
+	}
+
+	# dip rung 3
+	if = {
+		limit = {
+			OR = {
+				has_trait = admiral_counselor
+				has_trait = grand_chancellor
+				has_trait = merchant_prince
+				has_trait = returned_colonial_governor
+			}
+			var:cc_xp_dip < cc_xp_tier_3_at
+		}
+		set_variable = { name = cc_xp_dip  value = cc_xp_tier_3_at }
+	}
+
+	# mil rung 1
+	if = {
+		limit = {
+			OR = {
+				has_trait = elite_trainer
+				has_trait = master_of_horse
+				has_trait = siege_engineer
+				has_trait = tactical_advisor
+			}
+			var:cc_xp_mil < cc_xp_tier_1_at
+		}
+		set_variable = { name = cc_xp_mil  value = cc_xp_tier_1_at }
+	}
+
+	# mil rung 2
+	if = {
+		limit = {
+			OR = {
+				has_trait = cavalry_marshal
+				has_trait = commissariat_officer
+				has_trait = defensive_commander
+				has_trait = iron_disciplinarian
+				has_trait = offensive_strategist
+			}
+			var:cc_xp_mil < cc_xp_tier_2_at
+		}
+		set_variable = { name = cc_xp_mil  value = cc_xp_tier_2_at }
+	}
+
+	# mil rung 3
+	if = {
+		limit = {
+			OR = {
+				has_trait = continental_marshal
+				has_trait = mass_levy_commander
+				has_trait = supreme_commander
+			}
+			var:cc_xp_mil < cc_xp_tier_3_at
+		}
+		set_variable = { name = cc_xp_mil  value = cc_xp_tier_3_at }
+	}
+
+	cc_xp_resum = yes
+}
+
+###############################################################################
+# Recompute the stored total from the three tracks. Needed after any effect that
+# writes a track variable directly instead of going through cc_xp_gain_*.
+###############################################################################
+
+cc_xp_resum = {
+	set_variable    = { name = cc_xp_total  value = var:cc_xp_adm }
+	change_variable = { name = cc_xp_total  add   = var:cc_xp_dip }
+	change_variable = { name = cc_xp_total  add   = var:cc_xp_mil }
+}

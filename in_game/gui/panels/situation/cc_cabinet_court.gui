@@ -1,0 +1,148 @@
+﻿######################################################################
+# Flavorium Universalis — The Court Ledger
+#
+# Situation panel for the cabinet experience system. Shows every seated minister and
+# every sponsored protege with their seniority level, progress toward the next level,
+# and their tier in each of the three tracks, plus buttons to act on each of them.
+#
+# The row layout lives in cc_xp_court_row.gui, which defines the `cc_xp_court_row`
+# template used below. Panel chrome here, per-person layout there.
+#
+# WHY FIXED SLOTS RATHER THAN A DATAMODEL. There is no cabinet datamodel reachable from
+# a situation panel: GovernmentView.GetCabinets exists only while the government lateral
+# view is open, and Player.GetGovernment exposes estates, parliament, ruler and laws but
+# no cabinet list. Sponsored proteges are worse still, being in no list anywhere. So the
+# script side publishes numbered character references onto the viewing country
+# (cc_xp_sync_slots / cc_xp_sync_proteges in scripted_effects/cc_xp_effects.txt) and this
+# panel reads them back with GetVariable(...).GetCharacter, exactly as vanilla does for
+# pretenders in panels/disaster/byzantine_succession_crisis.gui.
+#
+# The consequence is that the slot count is FIXED AND DUPLICATED between script and GUI:
+# ten cabinet slots and three protege slots. If cc_xp_effects.txt ever publishes more,
+# they must be added here too or they simply will not show.
+#
+# Everything is read through Player.MakeScope, so a court only ever sees its own people.
+# Touches no vanilla file.
+######################################################################
+
+
+######################################################################
+# THE PANEL
+######################################################################
+
+situation_panel = {
+
+	##################################### MAIN IMAGE #####################################
+	# Flat gradient only, as with the subject ledger. No custom illustration required.
+	blockoverride "situation_panel_image" {
+		background = {
+			using = color_dark_blue_texture
+			spriteType = stretched
+		}
+		background = {
+			using = color_dark_blue_texture
+			alpha = 1
+			margin_top = -140
+			modify_texture = {
+				using = bg_fade_vertical_up_mask_texture
+				blend_mode = alphamultiply
+				alpha = 1
+			}
+		}
+	}
+
+	blockoverride "situation_subheader_content" {}
+
+	##################################### MAIN CONTENT #####################################
+
+	blockoverride "situation_panel_main_content" {
+
+		# Header card
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			size = { 510 40 }
+			using = bg_card_header_01_government
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				margin = { 10 0 }
+				icon = {
+					size = { 24 24 }
+					texture = "gfx/interface/icons/character_roles/cabinet.dds"
+					texture_density = 2
+				}
+				text_single = {
+					fontsize = 16
+					text = "CC_XP_COURT_HEADER"
+				}
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_XP_COURT_HEADER" }
+							blockoverride "tooltip_content" {
+								text_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_XP_COURT_DESC" }
+							}
+						}
+					}
+				}
+			}
+		}
+
+		# The panel's OWN scrollarea already wraps situation_panel_main_content
+		# (game/in_game/gui/panels/situation/common.gui:230-258), so there is deliberately
+		# no scrollarea here. Nesting one swallowed all mouse input: the rows rendered but
+		# nothing in them was clickable. Vanilla panels that DO nest a scrollarea declare
+		# autoresizeviewport plus an explicit viewportwidget with scissor = yes
+		# (guelphs_and_ghibellines.gui:1245); not nesting at all is simpler and safer.
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 4
+
+			# ---------------- THE CABINET ----------------
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_XP_SECTION_CABINET"
+			}
+
+			# Ten fixed slots. See the file header for why these are not a datamodel.
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_1').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_1').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_2').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_2').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_3').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_3').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_4').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_4').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_5').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_5').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_6').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_6').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_7').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_7').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_8').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_8').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_9').IsSet]"   datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_9').GetCharacter]"   using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_slot_10').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_slot_10').GetCharacter]"  using = cc_xp_court_row }
+
+			# ---------------- PROTEGES ----------------
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 12
+				default_format = "#weak"
+				margin_top = 8
+				text = "CC_XP_SECTION_PROTEGES"
+			}
+
+			# Shown only when there are none, so the section never looks broken.
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 11
+				default_format = "#weak"
+				visible = "[Not(Player.MakeScope.GetVariable('cc_xp_protege_1').IsSet)]"
+				text = "CC_XP_NO_PROTEGES"
+			}
+
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_protege_1').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_protege_1').GetCharacter]"  using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_protege_2').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_protege_2').GetCharacter]"  using = cc_xp_court_row }
+			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_protege_3').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_protege_3').GetCharacter]"  using = cc_xp_court_row }
+		}
+	}
+}

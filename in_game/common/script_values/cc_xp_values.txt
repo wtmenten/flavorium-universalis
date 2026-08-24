@@ -1,0 +1,140 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: tuning values
+#
+# The whole balance surface of the experience system lives here. Everything else
+# (cc_xp_effects.txt, cc_xp_pulse.txt, the generated duty lookup) reads these and
+# holds no magic numbers of its own.
+#
+# NOTE: EU5 caches script values. After editing this file, run `reload script_values`
+# in the console or restart, or the old numbers keep being used.
+#
+# Sections:
+#   1. Level thresholds       — total XP required for each of the ten levels
+#   2. Track tier thresholds  — per-track XP required for each of the four tiers
+#   3. Award magnitudes       — what each XP source is worth
+#   4. Derived helpers        — values computed from the above
+###############################################################################
+
+
+###############################################################################
+# 1. LEVEL THRESHOLDS
+#
+# Level is seniority: derived from TOTAL experience across all three tracks, and
+# it drives the scaling service modifier plus any gate that cares about how long
+# a minister has been consequential rather than what they are good at.
+#
+# Steps rise by 50 each level (100, 150, 200, ... 500), so early levels arrive fast
+# enough to be felt and level 10 stays a deliberate long-campaign investment.
+# A minister on continuous duty for 25 years earns roughly 600 from service and
+# 125 from tenure, so reaching the top of the ladder requires milestones and paid
+# training as well, not merely surviving.
+###############################################################################
+
+cc_xp_level_2_at  = { value = 100 }
+cc_xp_level_3_at  = { value = 250 }
+cc_xp_level_4_at  = { value = 450 }
+cc_xp_level_5_at  = { value = 700 }
+cc_xp_level_6_at  = { value = 1000 }
+cc_xp_level_7_at  = { value = 1350 }
+cc_xp_level_8_at  = { value = 1750 }
+cc_xp_level_9_at  = { value = 2200 }
+cc_xp_level_10_at = { value = 2700 }
+
+
+###############################################################################
+# 2. TRACK TIER THRESHOLDS
+#
+# Tier is specialisation: derived per track from that track's own XP, and it is what
+# gates trait advancement. A minister with 1200 administrative XP may reach tier 3
+# on the administrative ladder no matter how little diplomacy they have ever done.
+#
+# Tier 0 is the entry band (the malus and kiss-curse traits), 1 competent,
+# 2 specialist, 3 master.
+###############################################################################
+
+cc_xp_tier_1_at = { value = 150 }
+cc_xp_tier_2_at = { value = 500 }
+cc_xp_tier_3_at = { value = 1200 }
+
+
+###############################################################################
+# 3. AWARD MAGNITUDES
+###############################################################################
+
+# Monthly, to a minister holding a cabinet duty, credited to that duty's track
+# (see the generated cc_xp_duty_tracks.txt). 24 per year of continuous service.
+cc_xp_duty_tick = { value = 2 }
+
+# Yearly, to every seated minister regardless of what they are doing. Deliberately
+# slow: tenure alone reaches level 4 in a very long career and never clears tier 2,
+# so parking a minister is never a substitute for employing one.
+cc_xp_tenure_tick = { value = 5 }
+
+# Country milestones, credited to the ministers whose track the milestone belongs to.
+cc_xp_milestone_war     = { value = 40 }
+cc_xp_milestone_law     = { value = 25 }
+cc_xp_milestone_treaty  = { value = 20 }
+
+
+###############################################################################
+# 3b. ADVANCEMENT PACING
+###############################################################################
+
+# Experience bought outright by a training interaction. Worth about five years of
+# continuous duty service, so paying for it is a genuine shortcut without making the
+# duty roster pointless. Costs are in common/prices/cc_xp_prices.txt.
+cc_xp_training_gain = { value = 120 }
+
+# Years before the same minister can be sent to be trained again. Long enough that
+# training is a decision about who, not a tap to be held down.
+cc_xp_training_cooldown_years = { value = 5 }
+
+# POSTING LENGTHS ARE NOT HERE, AND CANNOT BE.
+#
+# The engine parses event delays and variable durations as raw tokens, not as values: a
+# script value in `trigger_event_silently = { months = X }` is a parse error, and in
+# `set_variable = { months = X }` it is worse, because it fails silently. Vanilla never
+# uses anything but literals in either place.
+#
+# So the durations live as literals in the interactions themselves, written as random
+# ranges the way vanilla does it (ibn_battuta_events.txt:174):
+#
+#   chancery      months = { 5 7 }    common/character_interactions/cc_xp_training.txt
+#   embassy       months = { 10 14 }  (longest: it is the one that involves travelling)
+#   staff college months = { 8 10 }
+#   examination   months = { 5 7 }    common/character_interactions/cc_xp_examination.txt
+#   away flag     months = 36         backstop, so a minister who dies abroad is not
+#                                     marked absent forever
+
+# Yearly experience a sponsored protege earns while being groomed out of office. Below
+# the seated tenure trickle: watching is not the same as doing.
+cc_xp_protege_tick = { value = 3 }
+
+# Yearly experience a mentored character receives, credited to their mentor's track,
+# for as long as the mentorship lasts.
+cc_xp_mentor_tick = { value = 25 }
+cc_xp_mentor_years = { value = 10 }
+
+# What a court examination awards the best performer, and everyone else.
+cc_xp_exam_winner = { value = 60 }
+cc_xp_exam_participant = { value = 15 }
+
+# Years a minister must wait between rungs of a ladder, regardless of banked tiers.
+# Without this a long-serving minister who crosses two tier thresholds at once would
+# climb two rungs in consecutive years and the middle trait would never be seen.
+# It also keeps a career legible: roughly one visible step every few years.
+cc_xp_advance_cooldown_years = { value = 4 }
+
+
+###############################################################################
+# 4. DERIVED HELPERS
+###############################################################################
+
+# Multiplier passed to `size` on the cc_xp_service_record character modifier, so one
+# static modifier scales across all ten levels instead of ten near-identical ones.
+# Level 1 yields zero, so a freshly seated minister gets no unearned bonus.
+cc_xp_level_bonus_size = {
+	value = var:cc_level
+	add = -1
+	min = 0
+}

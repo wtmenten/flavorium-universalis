@@ -1,0 +1,128 @@
+﻿l_english:
+ # ============================================================
+ # Cabinet Experience — service record interaction
+ #
+ # Saved scopes are referenced WITHOUT the scope: prefix, matching
+ # [cc_engage_subject.GetName] in cc_subject_bonds_l_english.yml. Writing
+ # [scope:cc_xp_subject.GetName] here parses but resolves to nothing in game.
+ # ============================================================
+ # NOTE ON KEYS. A character interaction needs more than <name> and <name>_desc:
+ #   <name>_desc_specific  the description once a target IS selected, and the one the
+ #                         engine complains about by name if it is missing
+ #   <name>_act            the verb shown on the confirm button, conventionally "$<name>$"
+ #   <name>_past           the message headline after it resolves (needs message = yes)
+ #   <name>_act_past       the message body after it resolves
+ # Interaction loc uses [SCOPE.sCharacter('recipient')], NOT the bare saved-scope form
+ # that event loc uses. See promote_to_head_of_cabinet in the vanilla localisation.
+ cc_xp_inspect_service_record: "Read the Service Record"
+ cc_xp_inspect_service_record_desc: "Have the clerks bring up everything the crown's files hold on one of your ministers: what they have done, what they have become good at, and how far they still have to go."
+ cc_xp_inspect_service_record_desc_specific: "The clerks will bring up the file on [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_inspect_service_record_act: "$cc_xp_inspect_service_record$"
+ cc_xp_inspect_service_record_past: "Service Record Read"
+ cc_xp_inspect_service_record_act_past: "The crown has reviewed the record of [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_choose_minister: "Whose record?"
+
+ # ============================================================
+ # Cabinet Experience — service record readout (cc_xp.1)
+ # ============================================================
+ cc_xp.1.title: "The Service Record"
+ cc_xp.1.desc: "The clerks keep a file on [cc_xp_subject.GetName], as they keep one on every officer of the crown. It is drier reading than the court gossip, and rather more reliable.\n\n#Y SENIORITY#!\nLevel [cc_xp_subject.MakeScope.GetVariable('cc_level').GetValue|0] of 10, on [cc_xp_subject.MakeScope.GetVariable('cc_xp_total').GetValue|0] experience. The next level comes at [cc_xp_subject.MakeScope.GetVariable('cc_xp_next').GetValue|0].\n\n#Y SPECIALISATION#!\nAdministration: [cc_xp_subject.MakeScope.GetVariable('cc_xp_adm').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_adm').GetValue|0] of 3\nDiplomacy: [cc_xp_subject.MakeScope.GetVariable('cc_xp_dip').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_dip').GetValue|0] of 3\nWarfare: [cc_xp_subject.MakeScope.GetVariable('cc_xp_mil').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_mil').GetValue|0] of 3\n\nSeniority is what a minister has lived through. Specialisation is what they have actually learned to do, and it is specialisation that decides which traits are within their reach."
+ cc_xp.1.a: "Close the file."
+
+ # ============================================================
+ # Cabinet Experience — ladder advancement (cc_xp.10)
+ # ============================================================
+ cc_xp.10.title: "A Minister Comes Into Their Own"
+ cc_xp.10.desc: "There is no ceremony for this and no announcement, but everyone at court can tell. [cc_xp_subject.GetName] has stopped being someone who holds an office and started being someone the office is built around. The work that used to take them a season now takes a fortnight, and the clerks have quietly stopped checking it.\n\nExperience has carried [cc_xp_subject.GetName] to the next step of their career. Their new standing is on their record, and on their card in the cabinet."
+ cc_xp.10.a: "Competence should be its own reward. It rarely is."
+
+ # ============================================================
+ # Cabinet Experience — court examination (cc_xp.11)
+ # ============================================================
+ cc_xp.11.title: "The Court Sits an Examination"
+ cc_xp.11.desc: "[cc_xp_examiner.GetName] presided, which was the safe choice and also the correct one. The questions were set in advance and sealed, the answers read out, and a good deal of quiet reputational damage was done over the course of a single afternoon.\n\nThe result nobody predicted was [cc_xp_subject.GetName], who answered the hardest of it without notes and then apologised for taking so long. Everyone who sat the examination learned something from it. [cc_xp_subject.GetName] learned rather more.\n\nThe burghers are delighted that advancement can be earned in a room with a locked door. The nobility is less delighted, for the same reason."
+ cc_xp.11.a: "Note the name. We will want it again."
+
+ # ============================================================
+ # Cabinet Experience — training interactions
+ # ============================================================
+ cc_xp_train_adm: "Send to the Chancery"
+ cc_xp_train_adm_desc: "Second them to the senior clerks for half a year: statute, precedent, revenue, and the particular patience required to read a ledger someone else has cooked. They will be away while it lasts, and the experience arrives with them when they return."
+ cc_xp_train_adm_desc_specific: "[SCOPE.sCharacter('recipient').GetName] leaves for the chancery, and returns in six months with administrative experience."
+ cc_xp_train_adm_act: "$cc_xp_train_adm$"
+ cc_xp_train_adm_past: "Departed for the Chancery"
+ cc_xp_train_adm_act_past: "[SCOPE.sCharacter('recipient').GetName] has gone to the chancery and will not be available for six months."
+ cc_xp_train_dip: "Send on the Embassy Circuit"
+ cc_xp_train_dip_desc: "A year on the road: every court that matters, carrying letters of no importance so they can watch how the important ones are delivered. The longest of the three postings, because it is the one that involves actually going somewhere."
+ cc_xp_train_dip_desc_specific: "[SCOPE.sCharacter('recipient').GetName] departs on the embassy circuit, and returns in a year with diplomatic experience."
+ cc_xp_train_dip_act: "$cc_xp_train_dip$"
+ cc_xp_train_dip_past: "Departed on the Embassy Circuit"
+ cc_xp_train_dip_act_past: "[SCOPE.sCharacter('recipient').GetName] has set out on the embassy circuit and will be abroad for a year."
+ cc_xp_train_mil: "Send to the Staff College"
+ cc_xp_train_mil_desc: "Three quarters of a year of maps, supply tables, and the company of officers who have actually lost a battle and will say so. They are no use to you at court until the course ends."
+ cc_xp_train_mil_desc_specific: "[SCOPE.sCharacter('recipient').GetName] reports to the staff college, and returns in nine months with military experience."
+ cc_xp_train_mil_act: "$cc_xp_train_mil$"
+ cc_xp_train_mil_past: "Departed for the Staff College"
+ cc_xp_train_mil_act_past: "[SCOPE.sCharacter('recipient').GetName] has reported to the staff college and will be there nine months."
+ cc_xp_choose_trainee: "Who is to be sent?"
+
+ # ============================================================
+ # Cabinet Experience — proteges and mentorship
+ # ============================================================
+ cc_xp_sponsor_protege: "Take On a Protege"
+ cc_xp_sponsor_protege_desc: "Take an interest in someone outside the cabinet: pay for their keep, open the right doors, and have a successor ready before you need one. Proteges gain experience slowly on their own, but can be trained and mentored like any minister. Three at a time. The nobility does not care for the crown noticing people it has not vouched for."
+ cc_xp_sponsor_protege_desc_specific: "[SCOPE.sCharacter('recipient').GetName] becomes a protege of the crown, and will be groomed for office. The nobility will notice."
+ cc_xp_sponsor_protege_act: "$cc_xp_sponsor_protege$"
+ cc_xp_sponsor_protege_past: "A Protege Taken On"
+ cc_xp_sponsor_protege_act_past: "[SCOPE.sCharacter('recipient').GetName] is now under the crown's patronage."
+ cc_xp_choose_protege: "Who has caught your eye?"
+ cc_xp_release_protege: "Release a Protege"
+ cc_xp_release_protege_desc: "Withdraw the crown's interest and free the place for someone else. Nothing they have learned is taken away from them; if you appoint them later, or take them up again, it is all still on the record."
+ cc_xp_release_protege_desc_specific: "The crown withdraws its interest in [SCOPE.sCharacter('recipient').GetName]. Nothing they have learned is taken from them."
+ cc_xp_release_protege_act: "$cc_xp_release_protege$"
+ cc_xp_release_protege_past: "Patronage Ended"
+ cc_xp_release_protege_act_past: "[SCOPE.sCharacter('recipient').GetName] is no longer a protege of the crown."
+ cc_xp_choose_released_protege: "Whose patronage ends?"
+ cc_xp_assign_mentor: "Assign a Mentor"
+ cc_xp_assign_mentor_desc: "Put a senior minister's time at a junior's disposal for a decade. The student gains experience each year in whatever their mentor is strongest at, so this steers a career rather than merely hurrying it. What was taught outlasts the teacher."
+ cc_xp_assign_mentor_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will take [SCOPE.sCharacter('target').GetName] in hand for the next decade, and teach them what they know best."
+ cc_xp_assign_mentor_act: "$cc_xp_assign_mentor$"
+ cc_xp_assign_mentor_past: "A Mentorship Begins"
+ cc_xp_assign_mentor_act_past: "[SCOPE.sCharacter('target').GetName] has been placed under the instruction of [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_choose_mentor: "Who teaches?"
+ cc_xp_choose_student: "Who learns?"
+
+ # ============================================================
+ # Cabinet Experience — court examination
+ # ============================================================
+ cc_xp_court_examination: "Hold a Court Examination"
+ cc_xp_court_examination_desc: "Commission a formal examination of the whole court: sealed questions, answers read aloud, and reputations settled in an afternoon. It takes half a year to arrange. Everyone who sits it gains experience, and one of them will do conspicuously better than expected. Expensive, and not to be repeated within a decade."
+ cc_xp_court_examination_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will spend the next six months arranging a formal examination of the whole court, and will preside over it."
+ cc_xp_court_examination_act: "$cc_xp_court_examination$"
+ cc_xp_court_examination_past: "An Examination Commissioned"
+ cc_xp_court_examination_act_past: "[SCOPE.sCharacter('recipient').GetName] has begun setting the questions. The court will sit in half a year."
+ cc_xp_choose_examiner: "Who presides?"
+
+ # ============================================================
+ # Cabinet Experience — modifiers
+ # ============================================================
+ STATIC_MODIFIER_NAME_cc_xp_service_record: "Experienced Minister"
+ STATIC_MODIFIER_DESC_cc_xp_service_record: "Years in office have taught this minister where the levers are and which clerks actually answer their letters. The effect grows with every level of seniority."
+
+ # ============================================================
+ # Cabinet Experience — returns from a posting (cc_xp.30-32)
+ #
+ # Line breaks inside a value must be the two-character escape backslash-n.
+ # A real newline in the .yml truncates the value at that point.
+ # ============================================================
+ cc_xp.30.title: "Back from the Chancery"
+ cc_xp.30.desc: "[cc_xp_subject.GetName] has come back from six months among the senior clerks looking faintly haunted, which is the correct reaction to having read the realm's accounts in full.\n\nThey have brought back a list. Several items on it are things nobody has questioned in thirty years, and at least two of them will be awkward. This is what competence looks like early on: it makes more work before it makes less."
+ cc_xp.30.a: "Read the list."
+
+ cc_xp.31.title: "Back from the Circuit"
+ cc_xp.31.desc: "A year of other people's courts has changed [cc_xp_subject.GetName]. They left carrying letters of no importance, and spent the time watching how the important ones were delivered, who was in the room when they were, and who was pointedly not.\n\nThey have opinions now about ambassadors we have trusted for a decade. Some of those opinions are uncomfortable. All of them are specific."
+ cc_xp.31.a: "Specificity is worth more than tact."
+
+ cc_xp.32.title: "Back from the Staff College"
+ cc_xp.32.desc: "[cc_xp_subject.GetName] has returned from nine months of maps, supply tables, and the company of officers who have lost battles and are willing to say so out loud.\n\nThey talk about roads now, and depots, and how far a man can march before he stops being a soldier and becomes a problem. It is markedly less stirring than the way they talked before they went, and markedly more useful."
+ cc_xp.32.a: "Glory is downstream of supply."

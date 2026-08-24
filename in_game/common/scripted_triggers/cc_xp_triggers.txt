@@ -1,0 +1,242 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: gates
+#
+# Every read of an experience variable outside cc_xp_effects.txt should go through
+# one of these, because they carry the guard.
+#
+# The guard is trigger_if / trigger_else, NOT a sibling has_variable. Every trigger in a
+# block is evaluated, so `has_variable = X` next to `var:X >= N` does not stop the var
+# read happening against an unset variable, and the log fills with "Failed to fetch
+# variable for 'X' due to not being set". This is documented in
+# docs/scripting-gotchas.md under "has_variable does NOT guard a sibling var: read",
+# and these triggers were written the wrong way first.
+###############################################################################
+
+
+###############################################################################
+# COUNTRY GATES
+###############################################################################
+
+# Is the experience system switched on at all?
+cc_xp_enabled = {
+	has_game_rule = cc_cabinet_xp_on
+}
+
+# Does this country simulate cabinet experience?
+#
+# The pulse iterates every seated minister of every tracked country, so the size gate
+# is the performance control for the whole system. Players always qualify. AI courts
+# qualify only when they are consequential enough that a player might meet, inherit or
+# poach their ministers: great powers, plus anything grown past the development
+# threshold, which catches regional powers that have not yet made the great-power list.
+#
+# Untracked AI countries carry no experience variables at all. Should one later become
+# significant, or should the player tag-switch into it, the pulse initialises its
+# cabinet on the next tick and they begin from zero. That is a deliberate trade: a
+# self-consistent world for every court that matters, at no cost for the several
+# hundred minors that do not.
+cc_xp_country_is_tracked = {
+	cc_xp_enabled = yes
+	OR = {
+		is_ai = no
+		is_great_power = yes
+		total_development >= 100
+	}
+}
+
+
+###############################################################################
+# CHARACTER GATES
+###############################################################################
+
+# Has this character been brought into the experience system yet?
+cc_xp_is_tracked = {
+	has_variable = cc_xp_total
+}
+
+# Seniority gate. cc_xp_level_at_least = { LEVEL = 6 }
+cc_xp_level_at_least = {
+	trigger_if = {
+		limit = { has_variable = cc_level }
+		var:cc_level >= $LEVEL$
+	}
+	trigger_else = { always = no }
+}
+
+# Specialisation gate, the one that gates trait advancement.
+# cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+# TRACK is adm, dip or mil. TIER is 0-3.
+cc_xp_tier_at_least = {
+	trigger_if = {
+		limit = { has_variable = cc_tier_$TRACK$ }
+		var:cc_tier_$TRACK$ >= $TIER$
+	}
+	trigger_else = { always = no }
+}
+
+# Raw experience gate, for the rare case that wants a precise amount rather than a tier.
+# cc_xp_track_at_least = { TRACK = mil  AMOUNT = 800 }
+cc_xp_track_at_least = {
+	trigger_if = {
+		limit = { has_variable = cc_xp_$TRACK$ }
+		var:cc_xp_$TRACK$ >= $AMOUNT$
+	}
+	trigger_else = { always = no }
+}
+
+# Career-shape gate for traits that want a specific kind of service rather than a track.
+# cc_xp_task_family_at_least = { FAMILY = colonial  COUNT = 5 }
+# FAMILY is war, reform, colonial, faith or trade.
+cc_xp_task_family_at_least = {
+	trigger_if = {
+		limit = { has_variable = cc_tf_$FAMILY$ }
+		var:cc_tf_$FAMILY$ >= $COUNT$
+	}
+	trigger_else = { always = no }
+}
+
+# Is this minister's dominant track the given one?
+# cc_xp_track_is = { TRACK = 2 }   0 none, 1 adm, 2 dip, 3 mil
+cc_xp_track_is = {
+	trigger_if = {
+		limit = { has_variable = cc_track }
+		var:cc_track = $TRACK$
+	}
+	trigger_else = { always = no }
+}
+
+
+###############################################################################
+# TRAINING, PROTEGE AND MENTORSHIP GATES (phase 3)
+###############################################################################
+
+# Is this character away on a posting right now? Character scope.
+#
+# Training is a secondment: the minister physically leaves for months. While they are
+# gone they cannot be sent somewhere else, asked to preside over an examination, or
+# handed a pupil. The flags are timed as a backstop so a minister who never returns
+# (died abroad) is not marked absent forever.
+cc_xp_is_away = {
+	OR = {
+		has_variable = cc_xp_away_adm
+		has_variable = cc_xp_away_dip
+		has_variable = cc_xp_away_mil
+		has_variable = cc_xp_examining
+	}
+}
+
+# Can this character be sent to be trained? Seated ministers and sponsored proteges
+# both qualify, so the training budget also brings a groomed outsider up to standard.
+# Character scope.
+cc_xp_can_be_trained = {
+	is_alive = yes
+	OR = {
+		in_cabinet = yes
+		has_variable = cc_protege
+	}
+	cc_xp_is_tracked = yes
+	NOT = { has_variable = cc_xp_train_cd }
+	NOT = { cc_xp_is_away = yes }
+}
+
+# Character scope. Anyone at court not already spoken for.
+cc_xp_can_be_sponsored = {
+	is_alive = yes
+	is_adult = yes
+	NOT = { in_cabinet = yes }
+	NOT = { has_variable = cc_protege }
+	NOT = { is_ruler = yes }
+}
+
+# Country scope. Three is the cap.
+#
+# Counted live rather than kept in a running total: a protege who dies or is appointed
+# to the cabinet would otherwise leave the counter permanently overstated, and the
+# player would lose slots with no way to get them back.
+#
+# The cap is a literal rather than a script value: `count` is parsed by the engine and is
+# not the place to find out whether script values are accepted there.
+cc_xp_has_protege_room = {
+	NOT = {
+		any_character = {
+			count = 3
+			has_variable = cc_protege
+		}
+	}
+}
+
+# Character scope. A mentor needs standing of their own and a track worth passing on.
+cc_xp_can_mentor = {
+	in_cabinet = yes
+	is_alive = yes
+	cc_xp_level_at_least = { LEVEL = 5 }
+	NOT = { cc_xp_track_is = { TRACK = 0 } }
+	NOT = { cc_xp_is_away = yes }
+}
+
+# Character scope. Who may preside over a court examination: someone senior enough that
+# the court will accept their judgement.
+cc_xp_can_preside = {
+	in_cabinet = yes
+	is_alive = yes
+	cc_xp_level_at_least = { LEVEL = 3 }
+	NOT = { cc_xp_is_away = yes }
+}
+
+# Character scope. Who sits the examination: the seated cabinet and the proteges.
+cc_xp_is_examinable = {
+	is_alive = yes
+	is_adult = yes
+	OR = {
+		in_cabinet = yes
+		has_variable = cc_protege
+	}
+	cc_xp_is_tracked = yes
+}
+
+# Character scope. One mentorship at a time, and you cannot teach yourself.
+cc_xp_can_be_mentored = {
+	is_alive = yes
+	is_adult = yes
+	OR = {
+		in_cabinet = yes
+		has_variable = cc_protege
+	}
+	cc_xp_is_tracked = yes
+	NOT = { has_variable = cc_xp_mentor_track }
+	NOT = { cc_xp_level_at_least = { LEVEL = 5 } }
+	NOT = { cc_xp_is_away = yes }
+}
+
+
+###############################################################################
+# DISPATCHER GATES
+#
+# The trait dispatcher used to hand out any trait to any minister on a weighted roll,
+# including what are now ladder capstones: a green adjutant could simply be handed
+# supreme_commander. These gates make the random grants respect earned experience.
+#
+# Both PASS for a minister the system does not track. Minor AI courts and games with
+# the cabinet experience rule switched off therefore behave exactly as they did before,
+# which is why the gate lives here rather than in each trait's allow block: a failing
+# allow makes a trait permanently unassignable, and that failure mode is silent.
+###############################################################################
+
+# cc_xp_dispatch_ready = { TRACK = adm  TIER = 1 }
+cc_xp_dispatch_ready = {
+	OR = {
+		NOT = { cc_xp_is_tracked = yes }
+		cc_xp_tier_at_least = { TRACK = $TRACK$  TIER = $TIER$ }
+	}
+}
+
+# For events that span tracks, where demanding a specific one would be arbitrary.
+# cc_xp_dispatch_ready_any = { TIER = 1 }
+cc_xp_dispatch_ready_any = {
+	OR = {
+		NOT = { cc_xp_is_tracked = yes }
+		cc_xp_tier_at_least = { TRACK = adm  TIER = $TIER$ }
+		cc_xp_tier_at_least = { TRACK = dip  TIER = $TIER$ }
+		cc_xp_tier_at_least = { TRACK = mil  TIER = $TIER$ }
+	}
+}

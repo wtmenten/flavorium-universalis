@@ -1,0 +1,47 @@
+﻿# Flavorium Universalis — The Court Ledger
+#
+# A quiet, passive situation whose only job is to host the court panel
+# (in_game/gui/panels/situation/cc_cabinet_court.gui). It carries no map colour, no
+# legend, no announcement event and no situation variables of its own.
+#
+# It exists because the cabinet experience system has data that no vanilla panel can
+# show. GovernmentView.GetCabinets only exists while the government view is open, and
+# sponsored proteges are not in the cabinet at all, so NO datamodel anywhere reaches
+# them. The panel instead reads the numbered character references that cc_xp_sync_slots
+# publishes onto the viewing country (cc_xp_slot_1..10 and cc_xp_protege_1..3), which is
+# the same trick vanilla uses for pretenders in panels/disaster/byzantine_succession_crisis.gui.
+#
+# Player-scoped throughout: the panel reads Player.MakeScope, so no court ever sees
+# another's ministers, and cc_xp_sync_slots only runs for human countries anyway.
+#
+# Modelled directly on cc_subject_bonds.txt, which is the mod's other informational panel.
+
+cc_cabinet_court = {
+	# High spawn chance so the ledger appears promptly once a court has anyone to show.
+	monthly_spawn_chance = monthly_spawn_chance_ultimate_high
+
+	can_start = {
+		has_game_rule = cc_cabinet_xp_on
+		any_country = {
+			cc_xp_country_is_tracked = yes
+			any_cabinet_character = { cc_xp_is_tracked = yes }
+		}
+	}
+
+	# Permanent once spawned. Deliberately never ends: this is an informational ledger,
+	# not a crisis, and tying its life to "does any court still have a tracked minister"
+	# would make it spawn and despawn as cabinets turn over. The visible block below
+	# already hides it from every court with nothing to show, so a resident situation
+	# with no viewers costs nothing.
+	can_end = {
+		always = no
+	}
+
+	# Only courts that actually track experience see the header icon and the panel.
+	visible = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { cc_xp_is_tracked = yes }
+	}
+
+	# Deliberately omitted: on_start announcement, map_color, legend_key, tooltip.
+}

@@ -1,0 +1,91 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: the court examination
+#
+# A set piece rather than a routine tool: an expensive, decade-cooldown event that
+# credits the whole court at once and singles one person out.
+#
+# Modelled as a character interaction (you choose who presides) because the engine has
+# no country-level equivalent that would let you pick the examiner, and who presides
+# over an examination is exactly the sort of decision worth making.
+#
+# The prize does NOT go to the presider or to the most senior minister. It goes to one
+# participant at random, which is the point of examining people: occasionally the
+# results are not the ones the court expected.
+###############################################################################
+
+cc_xp_court_examination = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_examination
+
+	cooldown = {
+		type = cc_xp_court_examination
+		years = 10
+	}
+
+	# The AI does not hold examinations. It would pay a large sum for an outcome it has
+	# no way to exploit, and the interaction exists to give the player a set piece.
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			# Needs a presider and at least one other person to examine.
+			any_cabinet_character = { cc_xp_can_preside = yes }
+			any_character = {
+				count = 2
+				cc_xp_is_examinable = yes
+			}
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_examiner"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_preside = yes
+		}
+	}
+
+	# This only COMMISSIONS the examination. Questions have to be set and sealed and
+	# everyone has to be in the same place on the same day, so the sitting itself is
+	# months away and happens in cc_xp.11, which is where every consequence lives.
+	#
+	# The presider carries cc_xp_examining until then, which both identifies them to the
+	# delayed event and marks them as occupied: someone organising an examination is not
+	# also available to be sent abroad.
+	effect = {
+		scope:recipient = {
+			set_variable = {
+				name = cc_xp_examining
+				value = yes
+				months = 36
+			}
+		}
+
+		scope:actor = {
+			trigger_event_silently = {
+				id = cc_xp.11
+				months = { 5 7 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
