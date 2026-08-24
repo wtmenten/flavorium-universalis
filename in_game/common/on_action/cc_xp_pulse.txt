@@ -38,6 +38,7 @@ yearly_country_pulse = {
 		cc_xp_yearly_mentorship
 		cc_xp_yearly_advance
 		cc_xp_yearly_flavour
+		cc_xp_yearly_patronage
 	}
 }
 
@@ -455,3 +456,37 @@ cc_xp_milestone_war = {
 		}
 	}
 }
+
+
+###############################################################################
+# YEARLY — PATRONAGE (phase 7)
+#
+# What a sponsoring minister gets back. The payoff sits on the MINISTER's own timed
+# flag rather than on the artist, so nothing here has to dereference the character
+# reference stored on the artist: that reference exists purely so the panel can print
+# the patron's name, which GUI script can do safely and script cannot.
+#
+# Prestige scales with nothing and is deliberately small. The point of patronage is the
+# minister's diplomatic growth and the court's reputation, not an income stream.
+###############################################################################
+
+cc_xp_yearly_patronage = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { has_variable = cc_xp_is_patron }
+	}
+
+	effect = {
+		add_prestige = prestige_weak_bonus
+
+		every_cabinet_character = {
+			limit = {
+				has_variable = cc_xp_is_patron
+				is_alive = yes
+			}
+			cc_xp_gain_dip = { AMOUNT = cc_xp_patron_tick }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
