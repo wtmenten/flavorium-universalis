@@ -200,10 +200,19 @@ cc_xp_can_be_mentored = {
 	is_alive = yes
 	is_adult = yes
 	OR = {
-		in_cabinet = yes
-		has_variable = cc_protege
+		# Already inside the system: a seated minister or a sponsored protege.
+		AND = {
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			cc_xp_is_tracked = yes
+		}
+		# Or a courtier of the crown estate, who need not be tracked yet. The mentorship
+		# effect initialises them, which is the cheapest way into the system for the
+		# large pool of people standing around the court that nothing else looks at.
+		has_estate = estate_type:crown_estate
 	}
-	cc_xp_is_tracked = yes
 	NOT = { has_variable = cc_xp_mentor_track }
 	NOT = { cc_xp_level_at_least = { LEVEL = 5 } }
 	NOT = { cc_xp_is_away = yes }
@@ -281,6 +290,20 @@ cc_xp_can_enrol = {
 	}
 	cc_xp_is_tracked = yes
 	NOT = { has_variable = cc_xp_school }
+}
+
+
+###############################################################################
+# SOIREE GATES (phase 7)
+###############################################################################
+
+# Character scope. Who can carry an evening: enough standing to be worth attending,
+# and actually in the country.
+cc_xp_can_host = {
+	in_cabinet = yes
+	is_alive = yes
+	cc_xp_level_at_least = { LEVEL = 2 }
+	NOT = { cc_xp_is_away = yes }
 }
 
 

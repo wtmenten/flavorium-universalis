@@ -1,0 +1,410 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — COURT SOIREES
+#
+# cc_xp.50   The evening itself. Whom it is for, and how much more you will spend.
+# cc_xp.51   Hidden dispatcher: rolls for what happened at the party.
+# cc_xp.52   A match of minds        (two guests find each other)
+# cc_xp.53   An indiscretion         (a scandal, and who pays for it)
+# cc_xp.54   A talent discovered     (a crown-estate courtier worth watching)
+# cc_xp.55   A delegation corners you (an estate asks for something, mid-canape)
+#
+# The host carries cc_xp_hosting from the interaction until cc_xp.50 clears it.
+# cc_xp_soiree_quality is set by the chosen option and read by the dispatcher, then
+# expires on its own.
+###############################################################################
+
+
+###############################################################################
+# THE EVENING
+###############################################################################
+
+cc_xp.50 = {
+	type = country_event
+	title = cc_xp.50.title
+	desc = cc_xp.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = { has_variable = cc_xp_hosting }
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_variable = cc_xp_hosting }
+			remove_variable = cc_xp_hosting
+			save_scope_as = cc_xp_host
+		}
+	}
+
+	# A night for the nobility. The most expensive and the most socially valuable.
+	option = {
+		name = cc_xp.50.a
+		add_gold = cc_xp_soiree_lavish_cost
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		set_variable = { name = cc_xp_soiree_quality  value = 3  months = 2 }
+		scope:cc_xp_host ?= {
+			cc_xp_gain_dip = { AMOUNT = cc_xp_soiree_host_gain }
+			cc_xp_recompute = yes
+		}
+		trigger_event_silently = { id = cc_xp.51  days = 3 }
+	}
+
+	# Merchants, scholars and clergy. Cheaper, and it buys a different kind of goodwill.
+	option = {
+		name = cc_xp.50.b
+		add_gold = cc_xp_soiree_modest_cost
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_weak_bonus
+		}
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_penalty
+		}
+		set_variable = { name = cc_xp_soiree_quality  value = 2  months = 2 }
+		scope:cc_xp_host ?= {
+			cc_xp_gain_dip = { AMOUNT = cc_xp_soiree_host_gain }
+			cc_xp_recompute = yes
+		}
+		trigger_event_silently = { id = cc_xp.51  days = 3 }
+	}
+
+	# An intimate working supper. No further outlay, and the guests are chosen for use.
+	option = {
+		name = cc_xp.50.c
+		set_variable = { name = cc_xp_soiree_quality  value = 1  months = 2 }
+		scope:cc_xp_host ?= {
+			cc_xp_gain_adm = { AMOUNT = cc_xp_soiree_supper_gain }
+			cc_xp_recompute = yes
+		}
+		trigger_event_silently = { id = cc_xp.51  days = 3 }
+	}
+}
+
+
+###############################################################################
+# WHAT HAPPENED AT THE PARTY
+#
+# Hidden dispatcher. A lavish evening is likelier to produce something memorable and
+# likelier to produce a scandal; a working supper mostly just produces work.
+###############################################################################
+
+cc_xp.51 = {
+	type = country_event
+	hidden = yes
+	title = cc_xp.51.title
+	desc = cc_xp.51.desc
+
+	immediate = {
+		random_list = {
+			35 = { }
+
+			# A match of minds. Needs two people who could plausibly have met.
+			20 = {
+				modifier = { factor = 0
+					NOT = {
+						any_character = {
+							count = 2
+							cc_xp_is_tracked = yes
+							is_alive = yes
+						}
+					}
+				}
+				trigger_event_silently = { id = cc_xp.52 }
+			}
+
+			# An indiscretion. Far likelier when the wine was good.
+			15 = {
+				modifier = { factor = 2
+					trigger_if = {
+						limit = { has_variable = cc_xp_soiree_quality }
+						var:cc_xp_soiree_quality = 3
+					}
+					trigger_else = { always = no }
+				}
+				modifier = { factor = 0.3
+					trigger_if = {
+						limit = { has_variable = cc_xp_soiree_quality }
+						var:cc_xp_soiree_quality = 1
+					}
+					trigger_else = { always = no }
+				}
+				trigger_event_silently = { id = cc_xp.53 }
+			}
+
+			# A talent spotted among the crown's own courtiers.
+			20 = {
+				modifier = { factor = 0
+					NOT = {
+						any_character = {
+							has_estate = estate_type:crown_estate
+							is_alive = yes
+							is_adult = yes
+						}
+					}
+				}
+				trigger_event_silently = { id = cc_xp.54 }
+			}
+
+			# An estate delegation takes its chance.
+			15 = {
+				trigger_event_silently = { id = cc_xp.55 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# A MATCH OF MINDS
+###############################################################################
+
+cc_xp.52 = {
+	type = country_event
+	title = cc_xp.52.title
+	desc = cc_xp.52.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			count = 2
+			cc_xp_is_tracked = yes
+			is_alive = yes
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				cc_xp_is_tracked = yes
+				is_alive = yes
+			}
+			save_scope_as = cc_xp_subject
+		}
+		random_character = {
+			limit = {
+				cc_xp_is_tracked = yes
+				is_alive = yes
+				NOT = { this = scope:cc_xp_subject }
+			}
+			save_scope_as = cc_xp_other
+		}
+	}
+
+	option = {
+		name = cc_xp.52.a
+		scope:cc_xp_subject ?= {
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_soiree_match_gain }
+			cc_xp_recompute = yes
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = replace }
+		}
+		scope:cc_xp_other ?= {
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_soiree_match_gain }
+			cc_xp_recompute = yes
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = replace }
+		}
+	}
+}
+
+
+###############################################################################
+# AN INDISCRETION
+###############################################################################
+
+cc_xp.53 = {
+	type = country_event
+	title = cc_xp.53.title
+	desc = cc_xp.53.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			cc_xp_is_tracked = yes
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				cc_xp_is_tracked = yes
+			}
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# Pay for the silence.
+	option = {
+		name = cc_xp.53.a
+		add_gold = cc_xp_soiree_hush_cost
+	}
+
+	# Let it be talked about. Cheaper, and the nobility enjoys the story rather more
+	# than the minister does.
+	option = {
+		name = cc_xp.53.b
+		add_prestige = prestige_weak_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_weak_penalty
+		}
+		scope:cc_xp_subject ?= {
+			add_character_modifier = { modifier = cc_minister_slighted  years = 5  mode = replace }
+		}
+	}
+}
+
+
+###############################################################################
+# A TALENT DISCOVERED
+#
+# The crown estate is full of people nobody has looked at properly. This is how one of
+# them gets noticed, and the cheapest route into the protege system.
+###############################################################################
+
+cc_xp.54 = {
+	type = country_event
+	title = cc_xp.54.title
+	desc = cc_xp.54.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = {
+			has_estate = estate_type:crown_estate
+			is_alive = yes
+			is_adult = yes
+			NOT = { in_cabinet = yes }
+			NOT = { has_variable = cc_protege }
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_estate = estate_type:crown_estate
+				is_alive = yes
+				is_adult = yes
+				NOT = { in_cabinet = yes }
+				NOT = { has_variable = cc_protege }
+			}
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# Take them up, if there is room. Free: the introduction has already happened.
+	option = {
+		name = cc_xp.54.a
+		trigger = { cc_xp_has_protege_room = yes }
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_protege value = yes }
+			cc_xp_init = yes
+		}
+		cc_xp_sync_slots = yes
+	}
+
+	option = {
+		name = cc_xp.54.b
+	}
+}
+
+
+###############################################################################
+# A DELEGATION CORNERS YOU
+#
+# Which estate is picked in the immediate block and stored as a number, then the options
+# branch on it with LITERAL estate types. random_active_estate yields an estate_type
+# rather than an estate, and add_estate_satisfaction has no vanilla precedent for taking
+# a scoped type, so the dynamic form is avoided entirely.
+###############################################################################
+
+cc_xp.55 = {
+	type = country_event
+	title = cc_xp.55.title
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	desc = {
+		triggered_desc = {
+			trigger = { var:cc_xp_petition_estate = 1 }
+			desc = cc_xp.55.desc.nobles
+		}
+		triggered_desc = {
+			trigger = { var:cc_xp_petition_estate = 2 }
+			desc = cc_xp.55.desc.burghers
+		}
+		triggered_desc = {
+			desc = cc_xp.55.desc.clergy
+		}
+	}
+
+	immediate = {
+		random_list = {
+			1 = { set_variable = { name = cc_xp_petition_estate  value = 1  months = 2 } }
+			1 = { set_variable = { name = cc_xp_petition_estate  value = 2  months = 2 } }
+			1 = { set_variable = { name = cc_xp_petition_estate  value = 3  months = 2 } }
+		}
+	}
+
+	# Hear them out and pay for the goodwill.
+	option = {
+		name = cc_xp.55.a
+		add_gold = cc_xp_soiree_petition_cost
+		if = {
+			limit = { var:cc_xp_petition_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate    value = estate_satisfaction_mild_bonus }
+		}
+		else_if = {
+			limit = { var:cc_xp_petition_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate    value = estate_satisfaction_mild_bonus }
+		}
+	}
+
+	# Smile, and move on to the next room.
+	option = {
+		name = cc_xp.55.b
+		if = {
+			limit = { var:cc_xp_petition_estate = 1 }
+			add_estate_satisfaction = { type = estate_type:nobles_estate    value = estate_satisfaction_weak_penalty }
+		}
+		else_if = {
+			limit = { var:cc_xp_petition_estate = 2 }
+			add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+		}
+		else = {
+			add_estate_satisfaction = { type = estate_type:clergy_estate    value = estate_satisfaction_weak_penalty }
+		}
+	}
+}

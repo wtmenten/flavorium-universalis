@@ -1,0 +1,78 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: court soirees
+#
+# The court's social calendar, and the system's main point of contact with the estates.
+#
+# The interaction only COMMISSIONS the evening and charges for the hire of the hall. The
+# party itself is cc_xp.50, a month later, where the real decisions are: whom the evening
+# is for, and how much more you are willing to spend on the night. Every one of those
+# choices is an optional additional cost with a different estate on the other end.
+#
+# After the evening resolves, cc_xp.51 rolls for an add-on: something that happened at
+# the party. Its weights are set by how lavish the evening was, so spending more buys a
+# better class of incident as well as a better class of guest.
+#
+# The host is identified by the cc_xp_hosting flag rather than a saved scope, for the
+# same reason the training postings are: a scope saved now is not something to rely on
+# surviving a month of queued game time.
+###############################################################################
+
+cc_xp_host_soiree = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_soiree
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_cabinet_character = { cc_xp_can_host = yes }
+			NOT = { has_variable = cc_xp_soiree_cd }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_host"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_host = yes
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:recipient }
+
+			scope:recipient = {
+				set_variable = { name = cc_xp_hosting  value = yes  months = 6 }
+			}
+
+			scope:actor = {
+				set_variable = { name = cc_xp_soiree_cd  value = yes  years = 5 }
+				trigger_event_silently = {
+					id = cc_xp.50
+					months = { 1 2 }
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

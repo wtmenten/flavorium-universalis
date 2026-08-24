@@ -226,6 +226,10 @@ cc_xp_assign_mentor = {
 				exists = scope:recipient
 			}
 			scope:target = {
+				# The student may be a crown-estate courtier who has never been in the
+				# system. Initialising here is what lets a mentorship reach outside the
+				# cabinet at all; it is idempotent, and guarded internally.
+				cc_xp_init = yes
 				set_variable = {
 					name = cc_xp_mentor_track
 					value = scope:recipient.var:cc_track
