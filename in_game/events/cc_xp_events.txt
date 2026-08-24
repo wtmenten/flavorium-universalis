@@ -9,6 +9,9 @@
 #            happened in cc_xp_ladder_advance; this only reports it.
 # cc_xp.11   Court examination sitting. Queued months earlier by the interaction;
 #            this is where the experience is actually awarded.
+# cc_xp.40   Weariness at the top: a very senior minister is worn down.
+# cc_xp.41   Institutional memory: a great minister dies and someone inherits.
+# cc_xp.42   Rivalry of equals: two accomplished specialists of the same track.
 # cc_xp.30   Return from the chancery      (administrative)
 # cc_xp.31   Return from the embassy circuit (diplomatic)
 # cc_xp.32   Return from the staff college   (military)
@@ -21,7 +24,8 @@
 # surviving a year of queued game time. Clearing the flag as part of selection means two
 # ministers sent on the same posting resolve to different people.
 #
-# Grand tours, rivalries and training that goes wrong arrive with phase 5.
+# Each posting can go well, ordinarily, or badly; the branch is in the immediate block
+# and the desc picks its text from the outcome flag afterwards.
 ###############################################################################
 
 # Requires scope:cc_xp_subject, set by the interaction.
@@ -164,11 +168,24 @@ cc_xp.11 = {
 cc_xp.30 = {
 	type = country_event
 	title = cc_xp.30.title
-	desc = cc_xp.30.desc
 	outcome = positive
 
 	illustration_tags = {
 		10 = interior
+	}
+
+	desc = {
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+			desc = cc_xp.30.desc.good
+		}
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+			desc = cc_xp.30.desc.poor
+		}
+		triggered_desc = {
+			desc = cc_xp.30.desc
+		}
 	}
 
 	trigger = {
@@ -179,9 +196,29 @@ cc_xp.30 = {
 		random_character = {
 			limit = { has_variable = cc_xp_away_adm }
 			remove_variable = cc_xp_away_adm
-			cc_xp_gain_adm = { AMOUNT = cc_xp_training_gain }
-			cc_xp_recompute = yes
 			save_scope_as = cc_xp_subject
+
+			# How the posting went. An already accomplished minister gets more out of it
+			# and flounders less often, so training compounds rather than leveling the
+			# court out. The outcome flags are timed and exist only for the desc above,
+			# which renders after this block has run.
+			random_list = {
+				20 = {
+					modifier = { factor = 1.5  cc_xp_tier_at_least = { TRACK = adm  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_good  value = yes  months = 2 }
+					cc_xp_gain_adm = { AMOUNT = cc_xp_training_gain_good }
+				}
+				60 = {
+					cc_xp_gain_adm = { AMOUNT = cc_xp_training_gain }
+				}
+				20 = {
+					modifier = { factor = 0.5  cc_xp_tier_at_least = { TRACK = adm  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_poor  value = yes  months = 2 }
+					cc_xp_gain_adm = { AMOUNT = cc_xp_training_gain_poor }
+				}
+			}
+
+			cc_xp_recompute = yes
 		}
 	}
 
@@ -194,11 +231,24 @@ cc_xp.30 = {
 cc_xp.31 = {
 	type = country_event
 	title = cc_xp.31.title
-	desc = cc_xp.31.desc
 	outcome = positive
 
 	illustration_tags = {
 		10 = interior
+	}
+
+	desc = {
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+			desc = cc_xp.31.desc.good
+		}
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+			desc = cc_xp.31.desc.poor
+		}
+		triggered_desc = {
+			desc = cc_xp.31.desc
+		}
 	}
 
 	trigger = {
@@ -209,9 +259,29 @@ cc_xp.31 = {
 		random_character = {
 			limit = { has_variable = cc_xp_away_dip }
 			remove_variable = cc_xp_away_dip
-			cc_xp_gain_dip = { AMOUNT = cc_xp_training_gain }
-			cc_xp_recompute = yes
 			save_scope_as = cc_xp_subject
+
+			# How the posting went. An already accomplished minister gets more out of it
+			# and flounders less often, so training compounds rather than leveling the
+			# court out. The outcome flags are timed and exist only for the desc above,
+			# which renders after this block has run.
+			random_list = {
+				20 = {
+					modifier = { factor = 1.5  cc_xp_tier_at_least = { TRACK = dip  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_good  value = yes  months = 2 }
+					cc_xp_gain_dip = { AMOUNT = cc_xp_training_gain_good }
+				}
+				60 = {
+					cc_xp_gain_dip = { AMOUNT = cc_xp_training_gain }
+				}
+				20 = {
+					modifier = { factor = 0.5  cc_xp_tier_at_least = { TRACK = dip  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_poor  value = yes  months = 2 }
+					cc_xp_gain_dip = { AMOUNT = cc_xp_training_gain_poor }
+				}
+			}
+
+			cc_xp_recompute = yes
 		}
 	}
 
@@ -224,11 +294,24 @@ cc_xp.31 = {
 cc_xp.32 = {
 	type = country_event
 	title = cc_xp.32.title
-	desc = cc_xp.32.desc
 	outcome = positive
 
 	illustration_tags = {
 		10 = interior
+	}
+
+	desc = {
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+			desc = cc_xp.32.desc.good
+		}
+		triggered_desc = {
+			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+			desc = cc_xp.32.desc.poor
+		}
+		triggered_desc = {
+			desc = cc_xp.32.desc
+		}
 	}
 
 	trigger = {
@@ -239,13 +322,261 @@ cc_xp.32 = {
 		random_character = {
 			limit = { has_variable = cc_xp_away_mil }
 			remove_variable = cc_xp_away_mil
-			cc_xp_gain_mil = { AMOUNT = cc_xp_training_gain }
+			save_scope_as = cc_xp_subject
+
+			# How the posting went. An already accomplished minister gets more out of it
+			# and flounders less often, so training compounds rather than leveling the
+			# court out. The outcome flags are timed and exist only for the desc above,
+			# which renders after this block has run.
+			random_list = {
+				20 = {
+					modifier = { factor = 1.5  cc_xp_tier_at_least = { TRACK = mil  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_good  value = yes  months = 2 }
+					cc_xp_gain_mil = { AMOUNT = cc_xp_training_gain_good }
+				}
+				60 = {
+					cc_xp_gain_mil = { AMOUNT = cc_xp_training_gain }
+				}
+				20 = {
+					modifier = { factor = 0.5  cc_xp_tier_at_least = { TRACK = mil  TIER = 2 } }
+					set_variable = { name = cc_xp_outcome_poor  value = yes  months = 2 }
+					cc_xp_gain_mil = { AMOUNT = cc_xp_training_gain_poor }
+				}
+			}
+
+			cc_xp_recompute = yes
+		}
+	}
+
+	option = {
+		name = cc_xp.32.a
+	}
+}
+
+
+###############################################################################
+# WEARINESS AT THE TOP
+#
+# The counterweight to a system that otherwise only ever rewards keeping a good
+# minister in post forever. Someone at the very top of their career, still working,
+# eventually runs down. The crown chooses whether to spend the productivity now or
+# preserve the person.
+#
+# Fired from cc_xp_yearly_weariness. Gated through the scripted triggers rather than
+# raw var: reads, because an event's top-level trigger is evaluated before immediate.
+###############################################################################
+
+cc_xp.40 = {
+	type = country_event
+	title = cc_xp.40.title
+	desc = cc_xp.40.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			cc_xp_level_at_least = { LEVEL = 7 }
+			years_of_service_in_cabinet >= 20
+			NOT = { cc_xp_is_away = yes }
+			NOT = { has_character_modifier = cc_xp_weary }
+			NOT = { has_variable = cc_xp_weary_cd }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				cc_xp_level_at_least = { LEVEL = 7 }
+				years_of_service_in_cabinet >= 20
+				NOT = { cc_xp_is_away = yes }
+				NOT = { has_character_modifier = cc_xp_weary }
+				NOT = { has_variable = cc_xp_weary_cd }
+			}
+			set_variable = { name = cc_xp_weary_cd  value = yes  years = 8 }
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# Send them away to rest. Costs a year of their service and nothing else.
+	#
+	# Uses its own cc_xp_on_leave flag rather than borrowing a posting flag: the posting
+	# flags are claimed by the return events, which would award training experience for
+	# what is supposed to be a year of doing nothing. This one simply expires.
+	option = {
+		name = cc_xp.40.a
+		scope:cc_xp_subject = {
+			set_variable = { name = cc_xp_on_leave  value = yes  months = 12 }
+		}
+	}
+
+	# Keep them at the desk. They stay, and they are worse at it from here on.
+	option = {
+		name = cc_xp.40.b
+		scope:cc_xp_subject = {
+			add_character_modifier = {
+				modifier = cc_xp_weary
+				years = -1
+				mode = replace
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# INSTITUTIONAL MEMORY
+#
+# What a long career leaves behind. When a genuinely accomplished minister dies, the
+# people they worked alongside keep some of it: the filing system they built, the
+# contacts they introduced, the way they did things.
+#
+# Chained from on_cabinet_death via cc_xp_on_death_legacy. root = country,
+# scope:target = the dying minister.
+###############################################################################
+
+cc_xp.41 = {
+	type = country_event
+	title = cc_xp.41.title
+	desc = cc_xp.41.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		# Someone must be left to inherit it.
+		any_character = {
+			is_alive = yes
+			OR = {
+				in_cabinet = yes
+				has_variable = cc_protege
+			}
+			cc_xp_is_tracked = yes
+			NOT = { cc_xp_level_at_least = { LEVEL = 7 } }
+		}
+	}
+
+	immediate = {
+		random_character = {
+			limit = {
+				is_alive = yes
+				OR = {
+					in_cabinet = yes
+					has_variable = cc_protege
+				}
+				cc_xp_is_tracked = yes
+				NOT = { cc_xp_level_at_least = { LEVEL = 7 } }
+			}
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_legacy_transfer }
 			cc_xp_recompute = yes
 			save_scope_as = cc_xp_subject
 		}
 	}
 
 	option = {
-		name = cc_xp.32.a
+		name = cc_xp.41.a
+	}
+}
+
+
+###############################################################################
+# RIVALRY OF EQUALS
+#
+# Two accomplished ministers of the same speciality, who between them can only hold one
+# reputation. Distinct from the mod's existing court_tension rivalry, which is about
+# opposed ideologies: this one is about two people being good at the same thing.
+#
+# Fired from cc_xp_yearly_rivalry.
+###############################################################################
+
+cc_xp.42 = {
+	type = country_event
+	title = cc_xp.42.title
+	desc = cc_xp.42.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_cabinet_character = {
+			in_cabinet = yes
+			cc_xp_level_at_least = { LEVEL = 5 }
+			NOT = { has_character_modifier = cc_xp_professional_rival }
+			NOT = { has_variable = cc_xp_rivalry_cd }
+		}
+		any_cabinet_character = {
+			count = 2
+			in_cabinet = yes
+			cc_xp_level_at_least = { LEVEL = 5 }
+		}
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				cc_xp_level_at_least = { LEVEL = 5 }
+				NOT = { has_variable = cc_xp_rivalry_cd }
+			}
+			set_variable = { name = cc_xp_rivalry_cd  value = yes  years = 10 }
+			save_scope_as = cc_xp_subject
+		}
+
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				cc_xp_level_at_least = { LEVEL = 5 }
+				NOT = { this = scope:cc_xp_subject }
+			}
+			set_variable = { name = cc_xp_rivalry_cd  value = yes  years = 10 }
+			save_scope_as = cc_xp_rival
+		}
+	}
+
+	# Back one of them. The favoured one flourishes; the other takes it badly.
+	option = {
+		name = cc_xp.42.a
+		scope:cc_xp_subject = {
+			add_character_modifier = { modifier = cc_minister_favoured  years = 10  mode = replace }
+		}
+		scope:cc_xp_rival ?= {
+			add_character_modifier = { modifier = cc_minister_slighted  years = 10  mode = replace }
+			set_variable = { name = cc_minister_resentful  value = yes  years = 10 }
+		}
+	}
+
+	# Let them fight it out. Both are diminished while it lasts.
+	option = {
+		name = cc_xp.42.b
+		scope:cc_xp_subject = {
+			add_character_modifier = { modifier = cc_xp_professional_rival  years = 10  mode = replace }
+		}
+		scope:cc_xp_rival ?= {
+			add_character_modifier = { modifier = cc_xp_professional_rival  years = 10  mode = replace }
+		}
+	}
+
+	# Set them to the same problem from opposite ends. Costs prestige to arbitrate.
+	option = {
+		name = cc_xp.42.c
+		add_prestige = prestige_weak_penalty
+		scope:cc_xp_subject = {
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = replace }
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_exam_participant }
+			cc_xp_recompute = yes
+		}
+		scope:cc_xp_rival ?= {
+			add_character_modifier = { modifier = cc_minister_reconciled  years = 10  mode = replace }
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_exam_participant }
+			cc_xp_recompute = yes
+		}
 	}
 }

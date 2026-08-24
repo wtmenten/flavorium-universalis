@@ -37,6 +37,7 @@ yearly_country_pulse = {
 		cc_xp_yearly_protege
 		cc_xp_yearly_mentorship
 		cc_xp_yearly_advance
+		cc_xp_yearly_flavour
 	}
 }
 
@@ -303,6 +304,56 @@ cc_xp_on_death = {
 
 	effect = {
 		cc_xp_sync_slots = yes
+	}
+}
+
+
+###############################################################################
+# INSTITUTIONAL MEMORY (phase 5)
+#
+# Also chained from on_cabinet_death, listed alongside cc_xp_on_death in
+# cc_legacy_pulse.txt. Separate from the slot resync above because it has a much
+# narrower trigger and fires a visible event.
+#
+# root = country, scope:target = the dying minister.
+###############################################################################
+
+cc_xp_on_death_legacy = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		scope:target ?= { cc_xp_level_at_least = { LEVEL = 7 } }
+	}
+
+	effect = {
+		scope:target ?= { save_scope_as = cc_xp_departed }
+		trigger_event_silently = { id = cc_xp.41 }
+	}
+}
+
+
+###############################################################################
+# YEARLY FLAVOUR (phase 5)
+#
+# One roll a year across the court-life events, so a busy court does not receive all
+# of them at once. Each event carries its own cooldown variable as well, because
+# chance_of_no_event only controls the cadence, not repetition on the same person.
+###############################################################################
+
+cc_xp_yearly_flavour = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		is_ai = no
+	}
+
+	random_events = {
+		3 = cc_xp.40    # Weariness at the top
+		3 = cc_xp.42    # Rivalry of equals
+
+		chance_to_happen = 35
+
+		chance_of_no_event = {
+			value = 40
+		}
 	}
 }
 
