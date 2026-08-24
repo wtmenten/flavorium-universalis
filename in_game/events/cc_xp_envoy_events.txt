@@ -1,0 +1,175 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — THE RESIDENT ENVOY
+#
+# Events that fire while a minister is seconded to a subject's court. All of them read
+# the SUBJECT's own cc_bond_envoy variables, never a country stored on a character.
+#
+# cc_xp.60   The envoy's dispatch. A report, and a decision about how to use it.
+# cc_xp.61   The envoy oversteps. Back them or recall them; the subject is watching.
+# cc_xp.62   The envoy brokers a favour. The subject asks for something concrete.
+#
+# Every bond change here is gated on the subject bond game rule, so a game with the
+# ledger switched off still gets the secondment and the experience, just not the
+# relationship bookkeeping.
+###############################################################################
+
+
+###############################################################################
+# THE ENVOY'S DISPATCH
+###############################################################################
+
+cc_xp.60 = {
+	type = country_event
+	title = cc_xp.60.title
+	desc = cc_xp.60.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			has_variable = cc_bond_envoy
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				has_variable = cc_bond_envoy
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = cc_xp_subject_court
+		}
+	}
+
+	# Act on what they tell us. Costs nothing but the subject notices being read.
+	option = {
+		name = cc_xp.60.a
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable   = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# File it. The envoy learns more by staying quiet.
+	option = {
+		name = cc_xp.60.b
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable   = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+
+###############################################################################
+# THE ENVOY OVERSTEPS
+###############################################################################
+
+cc_xp.61 = {
+	type = country_event
+	title = cc_xp.61.title
+	desc = cc_xp.61.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			has_variable = cc_bond_envoy
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				has_variable = cc_bond_envoy
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = cc_xp_subject_court
+		}
+	}
+
+	# Back them. The crown's man is the crown's man.
+	option = {
+		name = cc_xp.61.a
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_per  add = -1 }
+			clamp_variable   = { name = cc_bond_per  max = 5  min = -5 }
+			change_variable = { name = cc_bond_pol  add = 1 }
+			clamp_variable   = { name = cc_bond_pol  max = 5  min = -5 }
+		}
+	}
+
+	# Apologise, publicly and at length.
+	option = {
+		name = cc_xp.61.b
+		add_prestige = prestige_weak_penalty
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable   = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+}
+
+
+###############################################################################
+# THE ENVOY BROKERS A FAVOUR
+###############################################################################
+
+cc_xp.62 = {
+	type = country_event
+	title = cc_xp.62.title
+	desc = cc_xp.62.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_subject = {
+			has_variable = cc_bond_envoy
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	immediate = {
+		random_subject = {
+			limit = {
+				has_variable = cc_bond_envoy
+				has_variable = cc_bond_initialized
+			}
+			save_scope_as = cc_xp_subject_court
+		}
+	}
+
+	# Grant it. Money now, goodwill for a long time.
+	option = {
+		name = cc_xp.62.a
+		add_gold = cc_xp_envoy_favour_cost
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_eco  add = 1 }
+			clamp_variable   = { name = cc_bond_eco  max = 5  min = -5 }
+			change_variable = { name = cc_bond_per  add = 1 }
+			clamp_variable   = { name = cc_bond_per  max = 5  min = -5 }
+		}
+	}
+
+	# Have the envoy explain, kindly, why not.
+	option = {
+		name = cc_xp.62.b
+		scope:cc_xp_subject_court ?= {
+			change_variable = { name = cc_bond_eco  add = -1 }
+			clamp_variable   = { name = cc_bond_eco  max = 5  min = -5 }
+		}
+	}
+}

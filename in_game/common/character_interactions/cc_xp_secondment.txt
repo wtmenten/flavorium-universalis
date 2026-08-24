@@ -1,0 +1,170 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: secondment to a subject court
+#
+# The link between the cabinet experience system and the Subject Relations Ledger. A
+# minister is posted to a subject's court as a resident: they are gone from your cabinet
+# for years, they grow while they are there, and the relationship they build moves that
+# subject's bond dimensions every year.
+#
+# WHERE THE STATE LIVES. On the SUBJECT, not on the minister:
+#   cc_bond_envoy         timed flag, the yearly pulse iterates on it
+#   cc_bond_envoy_track   the minister's discipline, copied at secondment
+#   cc_bond_envoy_char    character ref, so the ledger panel can print a name
+#
+# The minister carries only cc_xp_seconded, a timed flag that keeps them out of the
+# cabinet's other business. That arrangement means the yearly pulse can iterate subjects
+# and read everything it needs from the subject itself, and never has to dereference a
+# country stored on a character. It is the same shape as patronage and mentorship.
+#
+# Which dimension improves is decided by the minister's own track, which is why an
+# administrator, a diplomat and a soldier are three genuinely different postings.
+###############################################################################
+
+cc_xp_second_to_subject = {
+	message = yes
+	on_own_nation = yes
+
+	price = price:cc_xp_secondment
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_cabinet_character = { cc_xp_can_be_seconded = yes }
+			any_subject = { cc_xp_can_receive_envoy = yes }
+		}
+	}
+
+	# The minister first, then the court they are sent to.
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_envoy"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_xp_can_be_seconded = yes
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		source = actor
+		target_flag = target
+		name = "cc_xp_choose_subject_court"
+		column = { data = name }
+
+		visible = {
+			is_subject_of = scope:actor
+		}
+
+		enabled = {
+			cc_xp_can_receive_envoy = yes
+		}
+	}
+
+	effect = {
+		if = {
+			limit = {
+				exists = scope:recipient
+				exists = scope:target
+			}
+
+			scope:recipient = {
+				set_variable = { name = cc_xp_seconded  value = yes  years = 8 }
+			}
+
+			scope:target = {
+				set_variable = { name = cc_bond_envoy        value = yes  years = 8 }
+				set_variable = { name = cc_bond_envoy_track  value = scope:recipient.var:cc_track  years = 8 }
+				set_variable = { name = cc_bond_envoy_char   value = scope:recipient  years = 8 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+
+###############################################################################
+# RECALL THE ENVOY
+#
+# Ends the posting early. The minister comes home; the subject keeps whatever the
+# relationship built, because bonds are a record of what happened, not a rented modifier.
+###############################################################################
+
+cc_xp_recall_envoy = {
+	message = yes
+	on_own_nation = yes
+
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			any_cabinet_character = { has_variable = cc_xp_seconded }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_recalled"
+		column = { data = name }
+
+		visible = {
+			has_variable = cc_xp_seconded
+		}
+
+		enabled = {
+			has_variable = cc_xp_seconded
+		}
+	}
+
+	effect = {
+		if = {
+			limit = { exists = scope:recipient }
+
+			scope:recipient = {
+				remove_variable = cc_xp_seconded
+			}
+
+			# Clear the posting on whichever subject was holding it. Matched by the
+			# character reference the subject carries, so recalling one envoy never
+			# disturbs another.
+			scope:actor = {
+				every_subject = {
+					limit = { has_variable = cc_bond_envoy }
+					if = {
+						limit = { var:cc_bond_envoy_char = scope:recipient }
+						remove_variable = cc_bond_envoy
+						remove_variable = cc_bond_envoy_track
+						remove_variable = cc_bond_envoy_char
+					}
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

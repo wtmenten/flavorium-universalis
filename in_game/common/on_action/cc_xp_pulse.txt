@@ -40,6 +40,8 @@ yearly_country_pulse = {
 		cc_xp_yearly_flavour
 		cc_xp_yearly_patronage
 		cc_xp_yearly_schools
+		cc_xp_yearly_envoys
+		cc_xp_yearly_envoy_events
 	}
 }
 
@@ -532,6 +534,101 @@ cc_xp_yearly_schools = {
 			}
 
 			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — RESIDENT ENVOYS (phase 7)
+#
+# Two halves that never have to talk to each other:
+#
+#   The SUBJECT side iterates subjects carrying cc_bond_envoy and moves one bond
+#   dimension, chosen by the discipline copied onto the subject at secondment. An
+#   administrator deepens the political relationship, a diplomat the personal one, a
+#   soldier the military one, so who you send is genuinely a different posting.
+#
+#   The MINISTER side iterates cabinet characters carrying cc_xp_seconded and awards
+#   experience. Neither half dereferences the other.
+#
+# The bond half is gated on the subject bond game rule; the experience half is not, so
+# a game with the ledger switched off still gets a working secondment.
+###############################################################################
+
+cc_xp_yearly_envoys = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { has_variable = cc_xp_seconded }
+	}
+
+	effect = {
+		if = {
+			limit = { has_game_rule = cc_subject_bonds_on }
+			every_subject = {
+				limit = {
+					has_variable = cc_bond_envoy
+					has_variable = cc_bond_initialized
+				}
+
+				if = {
+					limit = { var:cc_bond_envoy_track = 1 }
+					change_variable = { name = cc_bond_pol  add = 1 }
+					clamp_variable   = { name = cc_bond_pol  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { var:cc_bond_envoy_track = 2 }
+					change_variable = { name = cc_bond_per  add = 1 }
+					clamp_variable   = { name = cc_bond_per  max = 5  min = -5 }
+				}
+				else_if = {
+					limit = { var:cc_bond_envoy_track = 3 }
+					change_variable = { name = cc_bond_mil  add = 1 }
+					clamp_variable   = { name = cc_bond_mil  max = 5  min = -5 }
+				}
+			}
+		}
+
+		every_cabinet_character = {
+			limit = {
+				has_variable = cc_xp_seconded
+				is_alive = yes
+			}
+			cc_xp_gain_dip = { AMOUNT = cc_xp_envoy_tick }
+			cc_xp_recompute = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY — ENVOY EVENTS (phase 7)
+#
+# Separate from the pulse above so the bond drift is reliable while the events stay
+# occasional. Player courts only: these are decisions, and an AI would just be picking
+# a random option.
+###############################################################################
+
+cc_xp_yearly_envoy_events = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+		is_ai = no
+		has_game_rule = cc_subject_bonds_on
+		any_subject = {
+			has_variable = cc_bond_envoy
+			has_variable = cc_bond_initialized
+		}
+	}
+
+	random_events = {
+		3 = cc_xp.60    # The envoy's dispatch
+		2 = cc_xp.61    # The envoy oversteps
+		2 = cc_xp.62    # The envoy brokers a favour
+
+		chance_to_happen = 45
+
+		chance_of_no_event = {
+			value = 35
 		}
 	}
 }

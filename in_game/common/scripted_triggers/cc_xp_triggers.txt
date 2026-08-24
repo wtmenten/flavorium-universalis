@@ -123,6 +123,7 @@ cc_xp_is_away = {
 		has_variable = cc_xp_away_mil
 		has_variable = cc_xp_examining
 		has_variable = cc_xp_on_leave
+		has_variable = cc_xp_seconded
 	}
 }
 
@@ -304,6 +305,29 @@ cc_xp_can_host = {
 	is_alive = yes
 	cc_xp_level_at_least = { LEVEL = 2 }
 	NOT = { cc_xp_is_away = yes }
+}
+
+
+###############################################################################
+# SECONDMENT GATES (phase 7)
+###############################################################################
+
+# Character scope. Who can be posted abroad: someone with a discipline to practise and
+# nothing else claiming them.
+cc_xp_can_be_seconded = {
+	in_cabinet = yes
+	is_alive = yes
+	cc_xp_is_tracked = yes
+	NOT = { cc_xp_track_is = { TRACK = 0 } }
+	NOT = { cc_xp_is_away = yes }
+	NOT = { has_variable = cc_xp_seconded }
+}
+
+# Country scope, evaluated on a SUBJECT. One resident at a time, and only at a court the
+# bond ledger is actually tracking, since the relationship is the point of the posting.
+cc_xp_can_receive_envoy = {
+	has_variable = cc_bond_initialized
+	NOT = { has_variable = cc_bond_envoy }
 }
 
 
