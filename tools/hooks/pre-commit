@@ -1,0 +1,36 @@
+#!/bin/sh
+# Pre-commit hook: fix UTF-8 BOM on all mod script and localization files.
+# EU5 silently ignores files without BOM, so we fix before every commit.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Record exactly what this commit was meant to contain, BEFORE fix_bom.py runs.
+# Only these files may be re-staged afterwards.
+STAGED_BEFORE="$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(txt|yml)$')"
+
+python "$REPO_ROOT/tools/fix_bom.py"
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "fix_bom.py failed (exit $STATUS). Commit aborted."
+    exit 1
+fi
+
+# Re-stage only files that were ALREADY part of this commit and that fix_bom.py has
+# just modified.
+#
+# The previous version of this hook ran `git diff --name-only` and re-staged every
+# modified .txt/.yml in the repository. fix_bom.py rewrites files across the whole mod,
+# so that swept unrelated dirty files into whatever commit happened to be running. With
+# more than one person (or agent) working in the tree at once it silently committed
+# other people's in-flight work, sometimes only half of a feature.
+echo "$STAGED_BEFORE" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -f "$REPO_ROOT/$f" ] || continue
+    # Unstaged changes to a file that is already staged means fix_bom.py touched it.
+    if ! git diff --quiet -- "$f"; then
+        git add "$f"
+    fi
+done
+
+exit 0

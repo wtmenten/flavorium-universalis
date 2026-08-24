@@ -401,6 +401,14 @@ python tools/fix_bom.py --check  # report only, exit 1 if any missing
 
 Run automatically by the git pre-commit hook. All `.txt` and `.yml` files need UTF-8 BOM or the game silently ignores them.
 
+The hook itself lives at `tools/hooks/pre-commit` (git does not version `.git/hooks/`). Install it after cloning:
+
+```bash
+cp tools/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+It re-stages **only files already staged for the current commit** that `fix_bom.py` modified. That restriction matters: `fix_bom.py` rewrites files across the whole mod, so a hook that re-stages everything dirty will sweep unrelated work into whatever commit happens to be running. If two people are working in the tree at once, that silently commits half of someone else's feature.
+
 ### `tools/setup_junctions.py` — Submod junction setup (run once after cloning)
 
 EU5 only loads mods from the top-level `mod/` folder. This script creates Windows directory junctions there so the game can find each submod while its files stay under `submods/` in the repo.
