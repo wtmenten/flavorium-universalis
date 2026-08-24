@@ -158,7 +158,7 @@ template cc_xp_court_row {
 					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_ADM" }
 					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_adm').GetValue)]" }
 					progressbar = {
-						size = { 46 7 }
+						size = { 40 7 }
 						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
 						progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
 						texture_density = 2
@@ -176,7 +176,7 @@ template cc_xp_court_row {
 					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_DIP" }
 					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_dip').GetValue)]" }
 					progressbar = {
-						size = { 46 7 }
+						size = { 40 7 }
 						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
 						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
 						texture_density = 2
@@ -194,7 +194,7 @@ template cc_xp_court_row {
 					text_single = { fontsize = 9   default_format = "#weak"  text = "CC_XP_COL_MIL" }
 					text_single = { fontsize = 11  raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_tier_mil').GetValue)]" }
 					progressbar = {
-						size = { 46 7 }
+						size = { 40 7 }
 						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
 						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
 						texture_density = 2
@@ -209,9 +209,26 @@ template cc_xp_court_row {
 				expand = {}
 
 				# ---- Actions on this person ----
+				#
+				# Read the Service Record first: it is the only one always available, and it
+				# is what the rest of the row is a summary of.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_inspect_service_record" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					}
+				}
 
 				card_header_action_button_01 = {
-					size = { 24 24 }
+					size = { 22 22 }
 					actor = "[Player]"
 					parameter = {
 						parameter_name = "recipient"
@@ -226,7 +243,7 @@ template cc_xp_court_row {
 				}
 
 				card_header_action_button_01 = {
-					size = { 24 24 }
+					size = { 22 22 }
 					actor = "[Player]"
 					parameter = {
 						parameter_name = "recipient"
@@ -241,7 +258,7 @@ template cc_xp_court_row {
 				}
 
 				card_header_action_button_01 = {
-					size = { 24 24 }
+					size = { 22 22 }
 					actor = "[Player]"
 					parameter = {
 						parameter_name = "recipient"
@@ -255,9 +272,26 @@ template cc_xp_court_row {
 					}
 				}
 
+				# Only while this minister is actually posted to a subject court.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Character.MakeScope.GetVariable('cc_xp_seconded').IsSet]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_recall_envoy" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/diplomatic_relations.dds"
+					}
+				}
+
 				# Proteges only: withdraw the crown's interest and free the slot.
 				card_header_action_button_01 = {
-					size = { 24 24 }
+					size = { 22 22 }
 					visible = "[Character.MakeScope.GetVariable('cc_protege').IsSet]"
 					actor = "[Player]"
 					parameter = {

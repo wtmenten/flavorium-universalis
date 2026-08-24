@@ -103,6 +103,92 @@ situation_panel = {
 			spacing = 4
 
 			# ---------------- THE CABINET ----------------
+			# ---- Court-level actions ----
+			#
+			# Everything here picks all of its own targets, so no parameter is supplied and
+			# each opens its own selector. These five have no natural home on a single
+			# minister's row: they are decisions about the court, not about one person.
+			#
+			# Two rows of three rather than one of six, because six buttons across 490px
+			# would leave no room for readable labels.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 4
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_host_soiree" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_SOIREE"
+					}
+				}
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_court_examination" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_EXAM"
+					}
+				}
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_sponsor_protege" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_PROTEGE"
+					}
+				}
+				expand = {}
+			}
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 4
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_MENTOR"
+					}
+				}
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_second_to_subject" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_SECOND"
+					}
+				}
+				card_header_action_button_01 = {
+					size = { 150 26 }
+					actor = "[Player]"
+					left_click_and_hold_action = { action_name = "cc_xp_recall_envoy" }
+					text_single = {
+						parentanchor = center
+						align = center
+						fontsize = 10
+						text = "CC_XP_BTN_RECALL"
+					}
+				}
+				expand = {}
+			}
+
 			text_single = {
 				layoutpolicy_horizontal = expanding
 				fontsize = 12
@@ -341,7 +427,7 @@ situation_panel = {
 								icon = {
 									parentanchor = center
 									size = { 78% 78% }
-									texture = "gfx/interface/icons/flat_icons/culture.dds"
+									texture = "gfx/interface/icons/flat_icons/art_works.dds"
 								}
 							}
 
@@ -432,7 +518,31 @@ situation_panel = {
 			}
 
 			# ---------------- SLOT 1 ----------------
-			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter]"  using = cc_xp_school_row }
+			widget = {
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter]"
+				using = cc_xp_school_row
+				blockoverride "school_track" {
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)1')]"
+						text = "CC_XP_COL_ADM"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)2')]"
+						text = "CC_XP_COL_DIP"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)3')]"
+						text = "CC_XP_COL_MIL"
+					}
+				}
+			}
 			widget = {
 				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)1'))]"
 				using = cc_xp_school_slot
@@ -447,7 +557,31 @@ situation_panel = {
 			}
 
 			# ---------------- SLOT 2 ----------------
-			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter]"  using = cc_xp_school_row }
+			widget = {
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter]"
+				using = cc_xp_school_row
+				blockoverride "school_track" {
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)1')]"
+						text = "CC_XP_COL_ADM"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)2')]"
+						text = "CC_XP_COL_DIP"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)3')]"
+						text = "CC_XP_COL_MIL"
+					}
+				}
+			}
 			widget = {
 				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)2'))]"
 				using = cc_xp_school_slot
@@ -462,7 +596,31 @@ situation_panel = {
 			}
 
 			# ---------------- SLOT 3 ----------------
-			widget = { visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"  datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter]"  using = cc_xp_school_row }
+			widget = {
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter]"
+				using = cc_xp_school_row
+				blockoverride "school_track" {
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)1')]"
+						text = "CC_XP_COL_ADM"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)2')]"
+						text = "CC_XP_COL_DIP"
+					}
+					text_single = {
+						fontsize = 11
+						align = left|nobaseline
+						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)3')]"
+						text = "CC_XP_COL_MIL"
+					}
+				}
+			}
 			widget = {
 				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)3'))]"
 				using = cc_xp_school_slot

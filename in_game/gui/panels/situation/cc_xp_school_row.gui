@@ -5,9 +5,16 @@
 # cc_xp_school_N_founder variable holds. The founder may well be dead by the time this
 # renders; that is the point of an institution, and the row says so.
 #
-# Properties are declared at top level, not wrapped in a widget. `using = <template>`
-# merges a template's contents into the widget it is used on, so an extra layer here
-# would collapse to zero size and take its children's mouse input with it.
+# THE DISCIPLINE COMES FROM THE COUNTRY, NOT THE FOUNDER. Each caller supplies it through
+# the "school_track" block, reading its own cc_xp_school_N_track. That variable is the
+# authoritative record of what a school teaches: it is written once at founding and does
+# not depend on the founder's character surviving. Reading the founder's own
+# cc_xp_school_track would work today but ties a permanent institution to the lifetime of
+# one character object.
+#
+# Properties are declared at top level, not wrapped in a widget: `using = <template>`
+# merges a template's contents into the widget it is used on, and an extra layer here
+# collapses to zero size and takes its children's mouse input with it.
 # See docs/scripting-gotchas.md.
 ######################################################################
 
@@ -37,48 +44,42 @@ template cc_xp_school_row {
 				text_single = {
 					fontsize = 12
 					default_format = "#weak"
+					align = left|nobaseline
 					text = "CC_XP_SCHOOL_FOUNDED_BY"
 				}
 				text_single = {
 					fontsize = 13
+					align = left|nobaseline
 					text = "[Character.GetShortNameWithNoTooltip]"
 				}
 				expand = {}
 			}
 
-			# The discipline the school teaches, from the founder's own track.
 			hbox = {
+				layoutpolicy_horizontal = expanding
 				spacing = 4
+
 				text_single = {
 					fontsize = 10
 					default_format = "#weak"
-					visible = "[Character.MakeScope.GetVariable('cc_xp_school_track').IsSet]"
+					align = left|nobaseline
 					text = "CC_XP_SCHOOL_TEACHES"
 				}
-				text_single = {
-					fontsize = 11
-					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)1')]"
-					text = "CC_XP_COL_ADM"
-				}
-				text_single = {
-					fontsize = 11
-					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)2')]"
-					text = "CC_XP_COL_DIP"
-				}
-				text_single = {
-					fontsize = 11
-					visible = "[EqualTo_CFixedPoint(Character.MakeScope.GetVariable('cc_xp_school_track').GetValue, '(CFixedPoint)3')]"
-					text = "CC_XP_COL_MIL"
-				}
+
+				# Filled by the caller with its own slot's country variable.
+				block "school_track" {}
 
 				# An institution outlives the person who founded it. Worth saying plainly.
 				text_single = {
 					fontsize = 10
 					default_format = "#weak"
+					align = left|nobaseline
 					visible = "[Not(Character.IsAlive)]"
 					text = "CC_XP_SCHOOL_FOUNDER_DEAD"
 					tooltip = "CC_XP_SCHOOL_FOUNDER_DEAD_TT"
 				}
+
+				expand = {}
 			}
 		}
 	}
