@@ -1,0 +1,60 @@
+######################################################################
+# Flavorium Universalis — Court Ledger: an unfilled school slot
+#
+# Drawn for every institution the realm does not yet have, whether it is available to
+# found or still locked behind research. Showing all three from the first hour makes the
+# ladder of unlocks legible instead of having slots appear later with no explanation.
+#
+# The caller supplies both strings through blockoverrides:
+#   slot_state        "available to found" / "not yet unlocked"
+#   slot_requirement  what unlocks this particular slot
+#
+# Properties are declared at top level, not wrapped in a widget: `using = <template>`
+# merges a template's contents into the widget it is used on, and an extra layer here
+# collapses to zero size and takes its children's mouse input with it.
+# See docs/scripting-gotchas.md.
+######################################################################
+
+template cc_xp_school_slot {
+	layoutpolicy_horizontal = expanding
+	size = { -1 46 }
+	background = { using = color_black_texture  alpha = 0.18 }
+
+	hbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 8 3 }
+		spacing = 8
+
+		# A plain frame where a founder's portrait would be.
+		widget = {
+			size = { 34 38 }
+			background = { using = color_whiteish_texture  alpha = 0.06 }
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 0
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 12
+				default_format = "#weak"
+				align = left|nobaseline
+				block "slot_state" {
+					text = "CC_XP_SLOT_OPEN"
+				}
+			}
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 10
+				default_format = "#weak"
+				align = left|nobaseline
+				block "slot_requirement" {
+					text = "CC_XP_SLOT_REQ_1"
+				}
+			}
+		}
+	}
+}
