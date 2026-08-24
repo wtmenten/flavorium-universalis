@@ -1,0 +1,45 @@
+﻿# The gate every event in the Levantine confrontation shares.
+#
+# WHY THIS EXISTS. Playtesting found two things about this thread at once: "byz_mam events fire
+# frequently but arent impactful", and "byz_mam events are firing while at war with mam". The
+# second is the more serious. Not one of the nine events in cc_byz_mamluk.txt checked whether
+# the confrontation had already stopped being cold, so an emperor with an army outside Aleppo
+# was still being asked whether to send envoys and buy border emirs. The thread narrates a cold
+# war and was narrating it over an open one.
+#
+# THE THREE CONDITIONS, and each was independently missing:
+#
+# 1. Cairo still exists. Every event reads or writes situation variables on a confrontation
+#    with two named parties. The situation's own can_end covers this, but can_end is evaluated
+#    on the situation's schedule and a delayed event fired years earlier can land after MAM has
+#    been annexed and before the situation has noticed.
+#
+# 2. Not at war with Cairo. Wartime is not this thread's subject. The events that DO belong in
+#    a war are the Pentarchy War's own (.11 to .13), which gate on cc_byz_mem_pentarchy_war
+#    instead and are excluded from this trigger's callers for that reason.
+#
+# 3. Not inside the shared cooldown. cc_byz_mamluk_cd is a TIMED variable set for six years by
+#    each event that fires from the situation's monthly roll. Six years against an 8% annual
+#    rate means the cooldown almost never binds by itself; what it stops is the case the
+#    monthly roll makes possible and playtesting will eventually hit, which is two frontier
+#    events in consecutive months.
+#
+# Written as a scripted trigger rather than copied into nine trigger blocks because that is
+# nine chances to omit one, and an omitted guard here reads as a working event.
+
+cc_byz_mamluk_thread_open_trigger = {
+	has_societal_value = societal_value_type:latinization_vs_hellenization
+	country_exists = c:MAM
+	NOT = { is_at_war_with = c:MAM }
+	NOT = { has_variable = cc_byz_mamluk_cd }
+}
+
+
+# The same, without the cooldown. For events that are the scheduled continuation of a chain the
+# player already started (.3, .10, .11, .13): those are not the situation choosing to speak, so
+# holding them behind a rate limiter would silently break the chain rather than pace it.
+cc_byz_mamluk_chain_open_trigger = {
+	has_societal_value = societal_value_type:latinization_vs_hellenization
+	country_exists = c:MAM
+	NOT = { is_at_war_with = c:MAM }
+}

@@ -1,0 +1,61 @@
+﻿# The submod's shared event rate limiter.
+#
+# WHY THIS EXISTS. Six condition pulses hang off yearly_country_pulse, each with its own
+# random_events table and its own do-nothing weight:
+#
+#   bureaucracy 28.6%   debt 23.1%   exarchate 25.4%
+#   west regions 23.1%  strain 25.4%  union 13.0%
+#
+# Each of those is a defensible rate for one thread. Together they gave a 79.6% chance of at
+# least one Rhomania event PER YEAR, roughly 1.4 events a year, every year, for four hundred
+# years. Nobody chose that number; it is what six independently reasonable tables multiply out
+# to, and it is the arithmetic behind the playtest note that the events "fire frequently but
+# arent impactful". Frequency was doing the damage on its own: an event that arrives every
+# nine months is furniture whatever is written in it.
+#
+#
+# WHY A SHARED COOLDOWN RATHER THAN SIX RETUNED TABLES.
+#
+# Retuning is what a spreadsheet suggests and it is the worse answer. Getting the combined rate
+# to 40% by adjusting weights means solving six tables against each other, and every future
+# thread added to the pulse silently breaks the solution: a seventh table at a perfectly
+# sensible 20% pushes the total back up and nothing announces it. The rate limiter holds
+# regardless of how many threads exist, which is the property actually wanted.
+#
+# It also degrades the right way. Under a weight retune, a campaign where only one thread is
+# live gets a rare trickle from that thread. Under the limiter, that thread keeps its own rate
+# and simply never contends, so a player in a quiet period is not punished for the threads that
+# happen not to have started.
+#
+#
+# EIGHTEEN MONTHS, so the floor is about 0.67 events a year. Against the existing ~80% roll
+# rate that lands near 0.6 a year in practice, or one event every twenty months: often enough
+# that the empire has weather, rare enough that each one is read.
+#
+# TIMED, so it expires by itself. Nothing has to clear it and it cannot leak, the same property
+# that made cc_byz_bureau_cut_cd and the main mod's cc_bond_aor_cd safe.
+#
+#
+# WHAT IS DELIBERATELY NOT BEHIND IT. Three pulses stay exempt, and each is exempt for the same
+# reason: it is not a mood piece, it is a mechanism with a deadline.
+#
+#   cc_byz_on_yearly_west_deadline   the situation must resolve before the Age of Revolutions
+#   cc_byz_on_yearly_west_rising     the civil war trigger
+#   cc_byz_on_yearly_papal_guard     stops PAP being annexed pre-1360 and deleting the schism
+#   cc_byz_on_yearly_exarch_prompt   offers a prefecture seat the player has earned
+#
+# Delaying any of those by eighteen months to make room for a bureau anecdote would be trading
+# a mechanism for a mood piece. They are also all narrow enough that they almost never fire.
+#
+# The Levantine confrontation is likewise exempt: it hangs off the SITUATION's on_monthly, not
+# the country pulse, and carries its own six-year cooldown in cc_byz_mamluk_triggers.txt.
+
+# Called from the immediate block of every event reachable from the six rate-limited pulses.
+#
+# months = 18, NOT years = 1.5. Vanilla always passes an integer to these duration parameters
+# (hre.txt:527 months = 6, fall_of_delhi.txt:249 months = 3), and there is no vanilla example
+# of a fractional year anywhere. Not worth finding out what the parser does with 1.5 when the
+# months form is right there and unambiguous.
+cc_byz_pulse_stamp_effect = {
+	set_variable = { name = cc_byz_pulse_cd  value = yes  months = 18 }
+}

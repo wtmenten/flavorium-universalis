@@ -43,7 +43,17 @@ cc_byz_open_union_contacts = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		scope:actor = {
 			has_or_had_tag = BYZ
-			religion = religion:orthodox
+			# ORTHODOX ONLY, and the two actions that lacked this are the reason it is now
+			# stated on all four. An emperor who has taken up the old rites has nothing to
+			# discuss with Rome about the procession of the Holy Spirit. Promulgation and
+			# repudiation were unguarded, so a Hellenic emperor could still promulgate a union
+			# of churches he no longer belonged to.
+			#
+			# MOTHBALLED, NOT CLEARED. cc_byz_union_stage and cc_byz_anti_unionist survive the
+			# conversion untouched, so an empire that returns to Orthodoxy picks the arc up
+			# exactly where it left off. Apostasy in this period was usually reversible and
+			# the state is cheap to keep.
+			cc_byz_faith_orthodox_trigger = yes
 			has_societal_value = societal_value_type:latinization_vs_hellenization
 			# GUARDING A VARIABLE READ. has_variable in the same block does NOT stop a
 			# sibling var: from being evaluated: every trigger in a block is evaluated, so
@@ -101,7 +111,7 @@ cc_byz_summon_union_council = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		scope:actor = {
 			has_or_had_tag = BYZ
-			religion = religion:orthodox
+			cc_byz_faith_orthodox_trigger = yes
 			# See cc_byz_open_union_contacts for why this is trigger_if rather than a
 			# has_variable guard beside the read.
 			trigger_if = {
@@ -156,6 +166,7 @@ cc_byz_promulgate_union = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		scope:actor = {
 			has_or_had_tag = BYZ
+			cc_byz_faith_orthodox_trigger = yes
 			trigger_if = {
 				limit = { has_variable = cc_byz_union_stage }
 				var:cc_byz_union_stage = 2
@@ -199,6 +210,7 @@ cc_byz_repudiate_union = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		scope:actor = {
 			has_or_had_tag = BYZ
+			cc_byz_faith_orthodox_trigger = yes
 			trigger_if = {
 				limit = { has_variable = cc_byz_union_stage }
 				OR = {

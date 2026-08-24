@@ -42,6 +42,10 @@ cc_byz_on_yearly_strain_events = {
 			var:cc_byz_strain >= 5
 		}
 		trigger_else = { always = no }
+		# Shared rate limiter across all six condition pulses. See
+		# scripted_effects/cc_byz_pulse.txt for why this is one cooldown and not six
+		# retuned weight tables.
+		NOT = { has_variable = cc_byz_pulse_cd }
 	}
 	random_events = {
 		100 = 0

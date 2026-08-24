@@ -123,7 +123,7 @@ REPLACE:nomos_empsychos_bureaucracy = {
 	
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 	}
 
 	#negative
@@ -199,7 +199,7 @@ REPLACE:honorary_titles_bureaucracy = {
 	
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
-		monthly_towards_cc_dynatoi = societal_value_min_scaling_monthly_move
+		monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -356,7 +356,7 @@ REPLACE:ritualistic_court_bureaucracy = {
 	
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -460,7 +460,7 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 	
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
-		monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+		monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 		global_crown_estate_power = -0.02
 	}
 
@@ -546,9 +546,17 @@ REPLACE:romanitas_bureaucracy = {
 		scale = { value = scope:maintenance }
 		global_integration_speed_modifier = 0.25
 		monthly_legitimacy = 0.1
-	
+
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
+		#
+		# NO DRIFT LINE HERE, DELIBERATELY, and it is the only entry in the file without one.
+		# Vanilla lists neither like nor dislike of the nobles for this bureau, so the pole
+		# rule in the header returns nothing: romanitas is about imperial identity, not about
+		# who governs. It therefore reads neutral when funded and Dynatoi when starved, like
+		# any other neglected office. Briefly given a Taxis line during the playtest pass on
+		# the mistaken reading that the shared comment above implied a missing line; the
+		# comment is shared boilerplate and the omission was the point.
 		global_crown_estate_power = -0.02
 	}
 
@@ -804,9 +812,18 @@ REPLACE:magister_militum_bureaucracy = {
 		train_general_ability = 25
 		train_admiral_ability = 25
 		military_tactics = 0.2
-	
+
 		# A funded office shapes the state's character, and runs increasingly to its own
 		# standards rather than the emperor's.
+		#
+		# TAXIS, and the +0.53 nobles power in the negative_modifier below is not evidence
+		# against it. That figure is vanilla's own 0.5 plus our universal 0.03, and it sits on
+		# the NEGATIVE side, which applies when the office is STARVED. Vanilla also gives this
+		# bureau estates_that_dislike = nobles. Both say the same thing: a funded supreme
+		# command suppresses private military power, and a starved one hands it to the
+		# magnates. Briefly changed to Dynatoi during the playtest pass on the reasoning that
+		# the aristocracy supplies its officers, which is true of the officers and false of
+		# the institution. Reverted against vanilla's data.
 		monthly_towards_cc_taxis = societal_value_minor_monthly_move
 		global_crown_estate_power = -0.02
 	}

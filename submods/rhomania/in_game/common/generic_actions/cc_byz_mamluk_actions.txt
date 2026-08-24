@@ -1,0 +1,312 @@
+﻿# The Levantine Confrontation: what the emperor can DO about it.
+#
+# WHY THESE EXIST. The situation shipped with no actions of any kind, so everything that
+# happened in it happened to the player: two events off the situation's monthly roll and a
+# chain of scheduled follow-ups. Playtesting reported the thread as frequent and unimpactful,
+# and part of that is simply that there was no way to act on it between events. A cold war the
+# player can only wait through is not a cold war, it is a countdown.
+#
+# type = situation, so they appear in the situation panel itself
+# (in_game/gui/panels/situation/cc_byz_mamluk_confrontation.gui). The select_trigger is what
+# binds scope:recipient to the situation and is required, not decoration. Shape from
+# black_death.txt:17; the same conversion was applied to the ten western actions.
+#
+# NO player_automated_category ON ANY OF THESE. Zero of vanilla's 91 type = situation actions
+# carry one; it belongs to the owncountry, religious and parliament families.
+#
+#
+# ALL FOUR ARE COLD-WAR INSTRUMENTS and all four refuse to appear during a war with Cairo, for
+# the same reason the event thread now does: envoys and subsidies are not what an emperor is
+# doing while his army is in Syria. cc_byz_mamluk_thread_open_trigger carries that test plus
+# the exists check, so it cannot be omitted from one of the four by accident.
+#
+# EACH CARRIES ITS OWN COOLDOWN MODIFIER rather than sharing one, so an emperor can send an
+# envoy and subsidise a faction in the same decade but not two envoys. Same principle as the
+# western actions.
+#
+# The counters they move live on the SITUATION, so every write goes through
+# situation:cc_byz_mamluk_confrontation with ?= and a has_variable guard.
+
+
+# SEND AN EMBASSY TO CAIRO. The ordinary business of a frontier that is not currently on fire.
+cc_byz_mam_send_embassy = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 24
+	automation_tick = never
+	automation_tick_frequency = 24
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_mamluk_confrontation = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_mamluk_confrontation
+		scope:actor = {
+			has_or_had_tag = BYZ
+			cc_byz_mamluk_chain_open_trigger = yes
+			NOT = { has_country_modifier = cc_byz_mam_embassy_sent }
+		}
+	}
+
+	allow = {
+		scope:actor = { gold >= 150 }
+	}
+
+	effect = {
+		scope:actor = {
+			change_gold_effect = { scale = -2 }
+			add_country_modifier = {
+				modifier = cc_byz_mam_embassy_sent
+				years = 12
+				mode = add
+			}
+			change_variable = { name = cc_byz_levant_pressure  add = -1 }
+			clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
+
+			if = {
+				limit = { exists = c:MAM }
+				add_opinion = {
+					target = c:MAM
+					modifier = cc_byz_opinion_levantine_terms
+				}
+			}
+		}
+
+		situation:cc_byz_mamluk_confrontation ?= {
+			if = {
+				limit = { has_variable = cc_byz_levant_progress }
+				change_variable = { name = cc_byz_levant_progress  add = 5 }
+				clamp_variable = { name = cc_byz_levant_progress  min = 0  max = 100 }
+			}
+		}
+	}
+
+	ai_will_do = { add = 25 }
+}
+
+
+# SUBSIDISE A FACTION IN CAIRO. Cheaper than a war and harder to admit to.
+cc_byz_mam_subsidise_faction = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = never
+	automation_tick_frequency = 36
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_mamluk_confrontation = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_mamluk_confrontation
+		scope:actor = {
+			has_or_had_tag = BYZ
+			cc_byz_mamluk_chain_open_trigger = yes
+			NOT = { has_country_modifier = cc_byz_mam_faction_bought }
+			# A court that cannot find the money cannot buy an emir either.
+			ruler ?= { dip >= 55 }
+		}
+	}
+
+	allow = {
+		scope:actor = { gold >= 400 }
+	}
+
+	effect = {
+		scope:actor = {
+			change_gold_effect = { scale = -4 }
+			add_country_modifier = {
+				modifier = cc_byz_mam_faction_bought
+				years = 20
+				mode = add
+			}
+			add_country_modifier = {
+				modifier = cc_byz_cairo_divided
+				years = 20
+				mode = add_and_extend
+			}
+		}
+
+		situation:cc_byz_mamluk_confrontation ?= {
+			if = {
+				limit = { has_variable = cc_byz_mamluk_progress }
+				change_variable = { name = cc_byz_mamluk_progress  add = -12 }
+				clamp_variable = { name = cc_byz_mamluk_progress  min = 0  max = 100 }
+			}
+		}
+	}
+
+	ai_will_do = { add = 15 }
+}
+
+
+# NEGOTIATE CUSTODY OF THE HOLY PLACES. The condominium, reached by choosing it rather than by
+# being offered it in an event. This is the action that makes the diplomatic ending genuinely
+# playable instead of merely reachable.
+cc_byz_mam_negotiate_custody = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = never
+	automation_tick_frequency = 36
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_mamluk_confrontation = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_mamluk_confrontation
+		scope:actor = {
+			has_or_had_tag = BYZ
+			cc_byz_mamluk_chain_open_trigger = yes
+			NOT = { has_variable = cc_byz_mem_condominium }
+			# Cairo does not sit down with an empire that has been pressing the frontier.
+			# Reading the score rather than a flag, so the requirement is something the player
+			# can work toward through every other choice in the thread.
+			trigger_if = {
+				limit = { has_variable = cc_byz_levant_pressure }
+				var:cc_byz_levant_pressure <= 0
+			}
+			trigger_else = { always = no }
+		}
+	}
+
+	allow = {
+		scope:actor = { gold >= 250 }
+	}
+
+	effect = {
+		scope:actor = {
+			change_gold_effect = { scale = -3 }
+			set_variable = { name = cc_byz_mem_condominium  value = yes }
+			add_country_modifier = {
+				modifier = cc_byz_levantine_terms
+				years = 40
+				mode = add_and_extend
+			}
+			add_prestige = prestige_mild_bonus
+
+			if = {
+				limit = { exists = c:MAM }
+				add_opinion = {
+					target = c:MAM
+					modifier = cc_byz_opinion_levantine_terms
+				}
+			}
+		}
+
+		situation:cc_byz_mamluk_confrontation ?= {
+			if = {
+				limit = { has_variable = cc_byz_levant_progress }
+				change_variable = { name = cc_byz_levant_progress  add = 20 }
+				clamp_variable = { name = cc_byz_levant_progress  min = 0  max = 100 }
+			}
+		}
+	}
+
+	ai_will_do = { add = 30 }
+}
+
+
+# PRESS THE PATRIARCHAL CLAIM. The escalating option, and the one that forecloses the other
+# three: pressure goes up, Cairo's position improves, and the condominium gets further away.
+cc_byz_mam_press_claim = {
+	type = situation
+
+	ai_tick = monthly
+	ai_tick_frequency = 36
+	automation_tick = never
+	automation_tick_frequency = 36
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_mamluk_confrontation = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		is_situation_active = situation:cc_byz_mamluk_confrontation
+		scope:actor = {
+			has_or_had_tag = BYZ
+			cc_byz_mamluk_chain_open_trigger = yes
+			NOT = { has_country_modifier = cc_byz_mam_claim_pressed }
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			ruler ?= { dip >= 45 }
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			add_country_modifier = {
+				modifier = cc_byz_mam_claim_pressed
+				years = 15
+				mode = add
+			}
+			change_variable = { name = cc_byz_levant_pressure  add = 1 }
+			clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
+			add_prestige = prestige_mild_bonus
+
+			# Pressing a claim on the eastern sees is the emperor acting as head of the church,
+			# which is the Rhomaios reading of the office rather than the Latin one.
+			change_societal_value = {
+				type = latinization_vs_hellenization
+				value = societal_value_minor_move_to_right
+			}
+		}
+
+		situation:cc_byz_mamluk_confrontation ?= {
+			if = {
+				limit = { has_variable = cc_byz_levant_progress }
+				change_variable = { name = cc_byz_levant_progress  add = 8 }
+				clamp_variable = { name = cc_byz_levant_progress  min = 0  max = 100 }
+			}
+			# Cairo hears about it, and a sultan who is being pressed has an easier time
+			# explaining to his emirs why they are paying for an army.
+			if = {
+				limit = { has_variable = cc_byz_mamluk_progress }
+				change_variable = { name = cc_byz_mamluk_progress  add = 5 }
+				clamp_variable = { name = cc_byz_mamluk_progress  min = 0  max = 100 }
+			}
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}

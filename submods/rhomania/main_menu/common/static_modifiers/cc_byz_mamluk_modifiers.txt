@@ -18,3 +18,106 @@ cc_byz_pentarchy_restored = {
 	clergy_estate_target_satisfaction = 0.1
 	diplomatic_reputation = 1
 }
+
+
+# ---- The frontier and Cairo's weather: what the choices actually leave behind ----
+#
+# WHY THESE EXIST, AND WHY THE HEADER ABOVE NEEDED CORRECTING.
+#
+# This file used to say that everything besides the pentarchy was expressed through the
+# progress counters and the pressure score, and that adding country modifiers on top would be
+# paying twice. That reasoning had a hole in it: the counters live on the SITUATION, and the
+# situation had no panel, so the counters were invisible. Every option on .4 and .5 paid out
+# into a number the player could not see. Playtesting duly reported the events as "not
+# impactful", which they were not, and would still not have been once the panel existed,
+# because a progress bar is not a reason to prefer one option over another.
+#
+# The counters remain the situation's spine. These are what the player gets in the meantime.
+# Modest and time-limited by design: the confrontation runs for centuries and these fire twice
+# a generation, so anything large here would compound into the dominant source of everything.
+
+# .4a. The border emirs bought. They hold the line for as long as the money lasts, which is
+# what buying a frontier gets you and why it has to be bought again.
+cc_byz_emirs_retained = {
+	game_data = {
+		category = country
+	}
+	global_manpower_modifier = 0.05
+	levy_recovery_modifier = 0.10
+}
+
+# .4b. Garrisons in the border towns, paid and walled. Expensive, and it holds without anyone
+# having to be bribed again next year.
+cc_byz_syrian_garrisons = {
+	game_data = {
+		category = country
+	}
+	fort_maintenance_efficiency = 0.12
+	global_levy_size_modifier = 0.05
+}
+
+# .4c. The frontier left to the men who live on it. They defend it better than the empire did
+# and they answer to their own people while doing it.
+cc_byz_frontier_left_alone = {
+	game_data = {
+		category = country
+	}
+	global_manpower_modifier = 0.08
+	global_bureaucracy_maintenance_efficiency = -0.08
+}
+
+# .5a. The advantage pressed while Cairo quarrels with itself. Prestige and the reputation that
+# comes of being seen to move first.
+cc_byz_cairo_pressed = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = 0.05
+	global_trade_center_power = 0.06
+}
+
+# .5b. A subsidy to the losing faction, quietly. Nobody knows it was the empire, which is the
+# point and also the reason it buys no prestige.
+cc_byz_cairo_divided = {
+	game_data = {
+		category = country
+	}
+	global_merchant_power = 0.06
+	selling_efficiency = 0.04
+}
+
+# .5c. Terms taken while the man in Cairo needed a quiet border. The caravans run, and both
+# sides know what the arrangement is worth.
+cc_byz_levantine_terms = {
+	game_data = {
+		category = country
+	}
+	global_trade_center_power = 0.08
+	tax_income_efficiency = 0.04
+}
+
+
+# ---- Action cooldowns ----
+#
+# One per action rather than one shared, so an emperor can send an embassy and subsidise a
+# faction in the same decade but not two embassies. Same principle as the western actions.
+# Empty bodies: these carry no effect and exist only to be tested by the actions' potential
+# blocks, which is the pattern cc_byz_west_census_taken and its siblings already use.
+
+cc_byz_mam_embassy_sent = {
+	game_data = {
+		category = country
+	}
+}
+
+cc_byz_mam_faction_bought = {
+	game_data = {
+		category = country
+	}
+}
+
+cc_byz_mam_claim_pressed = {
+	game_data = {
+		category = country
+	}
+}

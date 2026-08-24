@@ -444,6 +444,8 @@ cc_byz_debt.4 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_debt_scores_effect = yes
 	}
 
@@ -648,6 +650,8 @@ cc_byz_debt.10 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_debt_scores_effect = yes
 	}
 
@@ -870,8 +874,25 @@ cc_byz_debt.20 = {
 	}
 	outcome = neutral
 
+	# A COUNTRY IN NO FINANCIAL DIFFICULTY DOES NOT SELL NEXT YEAR'S TAXES.
+	#
+	# This shipped with no financial condition at all, and playtesting caught it: "why does
+	# cc_byz_debt.20 fire when i have no loans?". The right answer is that it should not.
+	# Anticipating revenue is what a treasury does when it needs money before the money exists.
+	#
+	# Its three siblings on the same pulse all had a gate of this kind already (.3 and .30 test
+	# num_loans, .4 tests num_loans plus creditor grip); .20 was the one that did not, because
+	# selling revenue forward is not itself a loan and so did not get caught by the same check.
+	#
+	# Three qualifying pressures rather than loans alone, since a realm can badly need cash
+	# without having borrowed yet, and the war branch already has its own written description.
 	trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		OR = {
+			num_loans > 0
+			gold < 200
+			at_war = yes
+		}
 		NOT = { has_country_modifier = cc_byz_revenue_farmed }
 		NOT = { has_variable = cc_byz_mem_farm_hereditary }
 	}
@@ -882,6 +903,8 @@ cc_byz_debt.20 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_debt_scores_effect = yes
 	}
 
@@ -1235,6 +1258,8 @@ cc_byz_debt.30 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_debt_scores_effect = yes
 		random_loan = {
 			limit = { exists = owner }

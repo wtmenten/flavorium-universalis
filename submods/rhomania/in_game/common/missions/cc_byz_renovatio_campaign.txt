@@ -397,9 +397,14 @@ cc_byz_renovatio_campaign = {
 	# objective is the daughter churches: hold the seat of a SECOND autocephalous patriarchate.
 	# The nine seats at 1337 are Constantinople (ours), Tarnovo, Tbilisi, Nicosia, Sis, Antioch,
 	# Alexandria, Mosul and Kollam; Tarnovo and Nicosia are the ones an early empire can reach.
+	# Orthodox half of the pair with cc_byz_task_temples above. An autocephalous patriarchate
+	# is an Orthodox institution and vanilla's IO type says so; there is no Hellenic reading of
+	# it, which is why the sibling asks for sanctuaries instead.
 	cc_byz_task_autocephalous = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_autocephalous.dds"
 		requires = { cc_byz_task_hippodrome }
+		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		bypass = { cc_byz_faith_hellenic_trigger = yes }
 		enabled = {
 			any_international_organizations_member_of = {
 				international_organization_type = international_organization_type:autocephalous_patriarchate
@@ -426,9 +431,15 @@ cc_byz_renovatio_campaign = {
 	# Foreign relations through religion, which nothing else in the tree covered. Three Orthodox
 	# powers at real warmth, which for a Byzantium that has been fighting Serbia and Bulgaria is
 	# a genuine change of policy rather than a formality.
+	# EXCLUSIVE PAIR WITH cc_byz_task_old_rites BELOW. This one is genuinely about Orthodoxy as
+	# an institution rather than about the empire's faith in general, so it is not converted to
+	# the faith layer: it is hidden for a Hellenic emperor and bypassed so the branch still
+	# flows. Same visible/bypass idiom as the sultans_friend / pentarchy_war fork.
 	cc_byz_task_orthodox_concord = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_orthodox_concord.dds"
 		requires = { cc_byz_task_athonite }
+		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		bypass = { cc_byz_faith_hellenic_trigger = yes }
 		enabled = {
 			any_country = {
 				count >= 3
@@ -446,9 +457,125 @@ cc_byz_renovatio_campaign = {
 	}
 
 	# PILLAR CAPSTONE.
+	# ---- THE OLD RITES: the Hellenic branch of the faith pillar ----
+	#
+	# WHY THESE EXIST. Fate of the Phoenix ships a complete, supported route out of Orthodoxy
+	# (hellenism_religion_movement spawns at Hellenic holy sites held by Christian owners, and
+	# the empire holds Delphi, Olympia, the Parthenon, Eleusis, Dodona and Delos). The submod
+	# assumed Orthodoxy everywhere, so converting made six tasks impossible and took the faith
+	# pillar's capstone down with them.
+	#
+	# THE EXCLUSIVE-PAIR IDIOM IS THE TREE'S OWN, copied from the sultans_friend / pentarchy_war
+	# fork: visible hides the branch that does not apply, bypass lets it be skipped so the
+	# requires-chain still flows through it. That combination is also what makes a MID-CAMPAIGN
+	# conversion safe. An emperor who converts with the Orthodox faith pillar half finished has
+	# the remainder bypassed and the Hellenic siblings appear in their place, and the tree
+	# reflows rather than stranding him.
+	#
+	# The tree has no explicit positions, laying out from `requires` alone, so siblings added
+	# here cannot collide with anything.
+
+	# THE ON-RAMP, AND IT IS NOT A CONVERSION. Visible to an Orthodox emperor, because that is
+	# the only kind of emperor who can reopen the Academy. It makes the question askable; the
+	# answering is vanilla's movement, which this deliberately neither duplicates nor bypasses.
+	cc_byz_task_academy = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_academy.dds"
+		requires = { cc_byz_task_hippodrome }
+		enabled = {
+			average_country_literacy > 25
+			custom_tooltip = {
+				text = cc_byz_academy_tt
+				OR = {
+					owns_or_non_sovereign_subject_owns = location:athens
+					owns_or_non_sovereign_subject_owns = location:constantinople
+				}
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_prestige = prestige_mild_bonus
+			trigger_event_non_silently = { id = cc_byz_hellenic.1 }
+		}
+	}
+
+	# Pairs with cc_byz_task_orthodox_concord.
+	cc_byz_task_old_rites = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_old_rites.dds"
+		requires = { cc_byz_task_athonite }
+		visible = { cc_byz_faith_hellenic_trigger = yes }
+		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_old_rites_tt
+				trigger_if = {
+					limit = { has_variable = cc_byz_hellenic_stage }
+					var:cc_byz_hellenic_stage >= 2
+				}
+				trigger_else = { always = no }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 25
+			add_prestige = prestige_mild_bonus
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+		}
+	}
+
+	# Pairs with cc_byz_task_autocephalous. The sanctuaries are real vanilla holy sites with
+	# real locations: Delphi at salona, Olympia at pontikokastro, the Telesterion at megara.
+	cc_byz_task_temples = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_temples.dds"
+		requires = { cc_byz_task_hippodrome }
+		visible = { cc_byz_faith_hellenic_trigger = yes }
+		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_temples_tt
+				owns_or_non_sovereign_subject_owns = location:salona
+				owns_or_non_sovereign_subject_owns = location:megara
+				owns_or_non_sovereign_subject_owns = location:pontikokastro
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 30
+			add_prestige = prestige_mild_bonus
+		}
+	}
+
+	# Pairs with cc_byz_task_ecumenical_throne. Same mechanical bar, because the question
+	# (does the emperor's religious authority actually reach) is the same one.
+	cc_byz_task_pontifex = {
+		icon = "gfx/interface/icons/missions/cc_byz_task_pontifex.dds"
+		requires = { cc_byz_task_icons  cc_byz_task_temples }
+		visible = { cc_byz_faith_hellenic_trigger = yes }
+		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		enabled = {
+			religious_influence >= 75
+			custom_tooltip = {
+				text = cc_byz_pontifex_tt
+				trigger_if = {
+					limit = { has_variable = cc_byz_hellenic_stage }
+					var:cc_byz_hellenic_stage >= 4
+				}
+				trigger_else = { always = no }
+			}
+		}
+		duration = 0
+		on_persistent_completion = {
+			add_religious_influence = 50
+			add_country_modifier = { modifier = cc_byz_perm_pontifex  years = -1  mode = add }
+			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_move_to_right }
+		}
+	}
+
+	# Orthodox half of the pair with cc_byz_task_pontifex above.
 	cc_byz_task_ecumenical_throne = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_ecumenical_throne.dds"
 		requires = { cc_byz_task_icons  cc_byz_task_autocephalous }
+		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		bypass = { cc_byz_faith_hellenic_trigger = yes }
 		enabled = {
 			religious_influence >= 75
 			estate_satisfaction:clergy_estate >= 0.6
@@ -683,9 +810,12 @@ cc_byz_renovatio_campaign = {
 		requires = { cc_byz_task_duchy_dissolved }
 		enabled = {
 			own_entire_province = province_definition:attica_province
-			custom_tooltip = {
-				text = cc_byz_athens_orthodox_tt
-				location:athens = { "religion_percentage(religion:orthodox)" >= 0.6 }
+			# THE EMPEROR'S FAITH, NOT SPECIFICALLY ORTHODOXY. Written as a bare Orthodox
+			# share, this became impossible the moment an emperor took up the old rites, and
+			# Athens is the one city in the empire where that reads as a restoration rather
+			# than an apostasy. See scripted_triggers/cc_byz_faith_triggers.txt.
+			location:athens = {
+				cc_byz_faith_location_share_trigger = { share = 0.6 }
 			}
 		}
 		bypass = { NOT = { own_entire_province = province_definition:attica_province } }
@@ -836,9 +966,14 @@ cc_byz_renovatio_campaign = {
 
 	# SPUR. Reads the union arc's state rather than setting it, so a player who never opened a
 	# legation simply never sees this complete. Nothing depends on it.
+	# Bypassed under the old rites. The Latin branch itself survives conversion, since an
+	# emperor still needs the western powers; it is the union of CHURCHES that stops meaning
+	# anything, and the four union actions gate on Orthodoxy for the same reason.
 	cc_byz_task_union_received = {
 		icon = "gfx/interface/icons/missions/cc_byz_task_union_received.dds"
 		requires = { cc_byz_task_latin_bride }
+		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
+		bypass = { cc_byz_faith_hellenic_trigger = yes }
 		enabled = {
 			custom_tooltip = {
 				text = cc_byz_union_signed_tt
@@ -1001,10 +1136,10 @@ cc_byz_renovatio_campaign = {
 		# The existence of a vanilla loc key says nothing about whether its tokens resolve from
 		# our call site.
 		enabled = {
-			custom_tooltip = {
-				text = cc_byz_anatolia_orthodox_tt
-				"religion_percentage_in_country(religion:orthodox)" >= 0.7
-			}
+			# Counts both imperial faiths, for the reason given on greek_again above. The
+			# custom_tooltip wrapper is now inside the scripted trigger, which is where the
+			# TARGET_RELIGION note above still applies.
+			cc_byz_faith_country_share_trigger = { share = 0.7 }
 		}
 		duration = 0
 		on_persistent_completion = {
@@ -1108,10 +1243,10 @@ cc_byz_renovatio_campaign = {
 		enabled = {
 			custom_tooltip = {
 				text = cc_byz_jerusalem_orthodox_tt
-				location:jerusalem = {
-					owner ?= root
-					"religion_percentage(religion:orthodox)" >= 0.5
-				}
+				location:jerusalem = { owner ?= root }
+			}
+			location:jerusalem = {
+				cc_byz_faith_location_share_trigger = { share = 0.5 }
 			}
 		}
 		bypass = { NOT = { owns = location:jerusalem } }

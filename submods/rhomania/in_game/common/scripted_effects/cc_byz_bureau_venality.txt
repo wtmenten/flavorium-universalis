@@ -1,0 +1,104 @@
+﻿# Farming out an office, and buying it back.
+#
+# WHY THIS IS AN EFFECT RATHER THAN THREE INLINE add_country_modifier BLOCKS.
+#
+# cc_byz_office_farmed_out is granted at three separate sites (.21b, .40c, .61b) and every one
+# of them has to do the same three things: apply the modifier, record how dug-in the office was
+# when it was sold, and count the sale. Playtesting found the first version of this doing only
+# the first, with `years = -1  mode = add` at all three sites, which is the STACKING mode. A
+# long campaign could therefore hold three permanent copies:
+#
+#     -0.60 bureaucracy maintenance efficiency, -0.45 crown power, forever, with no exit
+#
+# Two things were wrong there and they are separate. The stacking was a bug. The permanence was
+# a design decision, and playtesting says it was the wrong one: selling an office should be a
+# bad decision the empire lives with for a long time, not one it can never be rid of.
+#
+#
+# SIXTY YEARS, and add_and_extend rather than add. Sixty is long enough to outlast the emperor
+# who sold the office and most of his successor, which is the fiction, while still ending
+# inside a campaign. add_and_extend means a second sale REFRESHES the clock instead of doubling
+# the penalty, so an empire that keeps selling offices stays permanently encumbered without the
+# magnitude ever running away.
+#
+#
+# WHAT IS RECORDED, AND WHY IT HAS TO BE RECORDED AT GRANT TIME.
+#
+#   cc_byz_farmed_entrenchment   the bureau's entrenchment (0..100) when it was sold
+#   cc_byz_farmed_count          how many offices have been farmed out over the campaign
+#
+# The buy-back price scales with entrenchment, and the office being bought back may not exist
+# any more: bureaucracies can be removed, and .21/.61 fire years after the decision that
+# scheduled them. Reading `entrenchment` off a live bureaucracy scope at redemption time would
+# work in the common case and error in exactly the case the player is most likely to hit. The
+# number is therefore captured once, when it is certainly available, and read from a variable
+# afterwards.
+#
+# scope:cc_byz_farmed_bureau is OPTIONAL. .40 has a real bureaucracy saved (scope:cc_byz_fief_
+# bureau); .21 and .61 come off threads that never scoped one. When it is absent the fallback
+# is 50, a middling office, rather than 0: an office nobody has entrenched is not what these
+# events are describing, and a fallback of 0 would make the untargeted sites the cheap ones.
+
+
+# Grant the modifier and record what is needed to price its redemption.
+# Callers may set scope:cc_byz_farmed_bureau to a bureaucracy scope first.
+cc_byz_farm_out_office_effect = {
+	add_country_modifier = {
+		modifier = cc_byz_office_farmed_out
+		years = 60
+		mode = add_and_extend
+	}
+
+	if = {
+		limit = { exists = scope:cc_byz_farmed_bureau }
+		scope:cc_byz_farmed_bureau = {
+			save_temporary_scope_value_as = {
+				name = cc_byz_farmed_ent_sample
+				value = entrenchment
+			}
+		}
+		set_variable = {
+			name = cc_byz_farmed_entrenchment
+			value = scope:cc_byz_farmed_ent_sample
+		}
+	}
+	else = {
+		set_variable = { name = cc_byz_farmed_entrenchment  value = 50 }
+	}
+
+	if = {
+		limit = { NOT = { has_variable = cc_byz_farmed_count } }
+		set_variable = { name = cc_byz_farmed_count  value = 0 }
+	}
+	change_variable = { name = cc_byz_farmed_count  add = 1 }
+
+	# The redemption offer follows once the sale has stopped being news. Twelve years is long
+	# enough that the emperor who took the money is usually not the one buying it back, which
+	# is the point of offering it at all.
+	trigger_event_silently = { id = cc_byz_bureaucracy.62  years = 12 }
+}
+
+
+# Undo it. Called from cc_byz_bureaucracy.62's redemption option.
+cc_byz_redeem_office_effect = {
+	remove_country_modifier = cc_byz_office_farmed_out
+	remove_variable = cc_byz_farmed_entrenchment
+	change_variable = { name = cc_byz_farmed_count  add = -1 }
+	clamp_variable = { name = cc_byz_farmed_count  min = 0  max = 10 }
+
+	change_variable = { name = cc_byz_bureau_venality  add = -1 }
+	clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+
+	change_societal_value = {
+		type = cc_taxis_vs_cc_dynatoi
+		value = societal_value_move_to_left
+	}
+
+	# Buying an office back is the crown asserting that offices are not property. That is a
+	# process rather than a moment, so it also starts a drift rather than only moving the dial.
+	add_country_modifier = {
+		modifier = cc_byz_taxis_reforming
+		years = 20
+		mode = add_and_extend
+	}
+}

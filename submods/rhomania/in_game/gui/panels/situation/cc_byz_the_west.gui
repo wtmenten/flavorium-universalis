@@ -1,0 +1,419 @@
+﻿######################################################################
+# The West — situation panel
+#
+# Built alongside cc_byz_mamluk_confrontation.gui and for the same reason: a situation panel
+# comes from a .gui file named after the situation, not from the situation definition, and
+# Rhomania shipped neither. See that file's header for the full note.
+#
+#
+# THE TWO COUNTERS ARE DRAWN AS TWO SEPARATE BARS, AND THAT IS THE WHOLE POINT.
+#
+# cc_byz_imperial_grip and cc_byz_western_autonomy are INDEPENDENT, each 0..100. They are not
+# two ends of one slider. An empire can hold the west hard and have it want out hard at the
+# same time, and that combination is precisely the one the rising comes from: a grip the west
+# resents rather than a grip it has stopped needing.
+#
+# Drawing them as one opposed bar would say the opposite, and would say it more convincingly
+# than any tooltip could correct. So: two bars, stacked, each with its own scale, and a
+# separate tension line underneath for the state where both are high. The screenshot brief in
+# docs/assets/screenshots/Rhomania/README.md makes the same point about how to photograph it.
+#
+#
+# WHAT IT SHOWS
+#
+#   header    both counters as numbers, plus the unrest signal when it is lit
+#   card 1    the two counters as bars, and the tension reading
+#   card 2    the seated prefectures with their loyalty, from the player's subject list
+#   card 3    the consistory: vote arithmetic, emperor against the west
+#   card 4    the actions (situation_card_actions, filled by type = situation actions)
+#
+# Situation variables: cc_byz_imperial_grip, cc_byz_western_autonomy, cc_byz_west_ending
+# Country variables:   cc_byz_is_exarchate, cc_byz_exarch_loyalty (both on each SUBJECT)
+#
+# The prefecture list iterates Player.GetDiplomacy.GetSubjects and filters on the exarchate
+# flag, which is the same shape the main mod's subject ledger uses and is in-game verified.
+######################################################################
+
+situation_panel = {
+
+	##################################### TOP HEADER #####################################
+
+	blockoverride "situation_top_subheader_content" {
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			margin = { 8 0 }
+			spacing = 10
+
+			hbox = {
+				size = { 170 28 }
+				spacing = 5
+				text_single = {
+					fontsize = 13
+					default_format = "#weak"
+					text = "CC_BYZ_WEST_HDR_GRIP"
+				}
+				text_single = {
+					fontsize = 15
+					default_format = "#color_yellow"
+					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]"
+				}
+			}
+
+			expand = {}
+
+			# The unrest signal. Reads the SAME country modifier cc_byz_west_signal_effect
+			# applies, so the panel and the modifier list cannot disagree about whether trouble
+			# is brewing. HasModifier('x') is the datafunction form, per
+			# SituationView.GetPlayer.HasModifier('can_hire_privateers') in vanilla; there is no
+			# variable behind this signal to read with GetVariable.
+			text_single = {
+				fontsize = 14
+				default_format = "#color_red"
+				text = "CC_BYZ_WEST_HDR_RESTIVE"
+				visible = "[Player.HasModifier('cc_byz_west_restive')]"
+				tooltip = "CC_BYZ_WEST_HDR_RESTIVE_TT"
+			}
+
+			expand = {}
+
+			hbox = {
+				size = { 170 28 }
+				spacing = 5
+				# NOT #color_purple: that text format does not exist. Vanilla's .gui files use
+				# color_yellow, color_green and color_red, and no purple among them.
+				text_single = {
+					fontsize = 15
+					default_format = "#color_red"
+					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]"
+				}
+				text_single = {
+					fontsize = 13
+					default_format = "#weak"
+					text = "CC_BYZ_WEST_HDR_AUTONOMY"
+				}
+			}
+		}
+	}
+
+	##################################### MAIN IMAGE #####################################
+	blockoverride "situation_panel_image" {
+		background = {
+			using = color_dark_purple_texture
+			spriteType = stretched
+		}
+		background = {
+			using = color_dark_purple_texture
+			alpha = 1
+			margin_top = -140
+			modify_texture = {
+				using = bg_fade_vertical_up_mask_texture
+				blend_mode = alphamultiply
+				alpha = 1
+			}
+		}
+	}
+
+	blockoverride "situation_subheader_content" {}
+
+	##################################### MAIN CONTENT #####################################
+
+	blockoverride "situation_panel_main_content" {
+
+		# ---- Card: the two counters ----
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 8
+
+			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
+			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
+			# every number, threshold and mechanical consequence lives behind this icon. The
+			# panel copy shipped as a briefing paper, which is not what a situation panel is
+			# for. Same idiom as the main mod's subject ledger.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_BALANCE" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_BALANCE" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_WEST_CARD_BALANCE_INFO"
+								}
+							}
+						}
+					}
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_WEST_CARD_BALANCE_DESC"
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BYZ_WEST_BAR_GRIP" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]/100"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_yellow.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 100
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]"
+					tooltip = "CC_BYZ_WEST_BAR_GRIP_TT"
+				}
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BYZ_WEST_BAR_AUTONOMY" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]/100"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					# NOT progress_bar_purple.dds, which does not exist. The full set under
+					# main_menu/gfx/interface/progressbars is green, green_alt, grey_alt, red,
+					# red_alt, orange, yellange, yellow, brown_alt, goldish and whiteish. There
+					# is no purple and no blue outside loading_screen's own gfx root. orange
+					# reads as distinct from the yellow above it, which is all this needs.
+					progresstexture = "gfx/interface/progressbars/progress_bar_orange.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 100
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]"
+					tooltip = "CC_BYZ_WEST_BAR_AUTONOMY_TT"
+				}
+			}
+
+			# The dangerous cell of the two-by-two: held hard, and resenting it. Shown only when
+			# it is true, so the absence of this line is itself information.
+			text_single = {
+				fontsize = 13
+				default_format = "#color_red"
+				text = "CC_BYZ_WEST_TENSION_BOTH_HIGH"
+				tooltip = "CC_BYZ_WEST_TENSION_BOTH_HIGH_TT"
+				visible = "[And(GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue, '(CFixedPoint)59'), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]"
+			}
+			# The other legible cell: let go of, and gone.
+			text_single = {
+				fontsize = 13
+				default_format = "#weak"
+				text = "CC_BYZ_WEST_TENSION_DRIFTING"
+				tooltip = "CC_BYZ_WEST_TENSION_DRIFTING_TT"
+				visible = "[And(GreaterThan_CFixedPoint('(CFixedPoint)30', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]"
+			}
+		}
+
+		# ---- Card: the seated prefectures ----
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 6
+
+			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
+			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
+			# every number, threshold and mechanical consequence lives behind this icon. The
+			# panel copy shipped as a briefing paper, which is not what a situation panel is
+			# for. Same idiom as the main mod's subject ledger.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_PREFECTURES" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_PREFECTURES" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
+								}
+							}
+						}
+					}
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_WEST_CARD_PREFECTURES_DESC"
+			}
+
+			# Iterates the player's subjects and shows only the exarchates. ignoreinvisible so
+			# the ordinary subjects filtered out here do not leave gaps in the list.
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 3
+				datamodel = "[Player.GetDiplomacy.GetSubjects]"
+				ignoreinvisible = yes
+				item = {
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						minimumsize = { -1 30 }
+						spacing = 6
+						visible = "[Country.MakeScope.GetVariable('cc_byz_is_exarchate').IsSet]"
+
+						country_flag_small = {}
+						text_single = {
+							fontsize = 14
+							minimumsize = { 190 -1 }
+							maximumsize = { 190 -1 }
+							text = "[Country.GetName]"
+						}
+						expand = {}
+
+						text_single = {
+							fontsize = 12
+							default_format = "#weak"
+							text = "CC_BYZ_WEST_COL_LOYALTY"
+						}
+						# Loyalty, -5..5, coloured by sign. Three mutually exclusive widgets
+						# rather than one, since there is no conditional-colour form.
+						text_single = {
+							minimumsize = { 34 -1 }  align = center  fontsize = 15
+							default_format = "#color_green"
+							visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"
+							raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						}
+						text_single = {
+							minimumsize = { 34 -1 }  align = center  fontsize = 15
+							default_format = "#color_red"
+							visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+							raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						}
+						text_single = {
+							minimumsize = { 34 -1 }  align = center  fontsize = 15
+							default_format = "#weak"
+							visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"
+							raw_text = "0"
+						}
+					}
+				}
+			}
+		}
+
+		# ---- Card: the consistory ----
+		#
+		# THE VOTE ARITHMETIC IS THE DESIGN AND IT IS WORTH SHOWING PLAINLY.
+		#
+		#   Augustus       3 votes
+		#   Senior Exarch  2 votes
+		#   each exarch    1 vote
+		#
+		# With one prefecture seated the emperor cannot lose, 3 to 1. With four he is outvoted
+		# 5 to 3 by the body he built. The danger scales with the reconquest itself, with no
+		# risk score anywhere to tune, and a player who cannot see the count cannot see that
+		# coming.
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 6
+
+			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
+			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
+			# every number, threshold and mechanical consequence lives behind this icon. The
+			# panel copy shipped as a briefing paper, which is not what a situation panel is
+			# for. Same idiom as the main mod's subject ledger.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_CONSISTORY" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_CONSISTORY" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_WEST_CARD_CONSISTORY_INFO"
+								}
+							}
+						}
+					}
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_WEST_CARD_CONSISTORY_DESC"
+			}
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 8
+				text_single = { fontsize = 13  text = "CC_BYZ_WEST_VOTES_LEGEND" }
+				expand = {}
+				# GetMembersAmount, not GetNumberOfMembers. The latter is not a datafunction;
+				# InternationalOrganization exposes GetMembers, GetMembersAmount,
+				# GetMembersText, GetMembersInfo and IsCountryMember, and nothing else that
+				# counts.
+				text_single = {
+					fontsize = 13
+					default_format = "#weak"
+					raw_text = "[GetInternationalOrganization('cc_byz_prefectures').GetMembersAmount]"
+				}
+			}
+		}
+	}
+}

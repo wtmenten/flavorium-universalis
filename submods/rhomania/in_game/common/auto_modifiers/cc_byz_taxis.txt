@@ -33,10 +33,20 @@ cc_byz_pronoia_grants = {
 }
 
 # A weak crown estate means the magnates are setting the terms.
+#
+# THRESHOLD LOWERED FROM 0.35 TO 0.25, and this was the single largest thing wrong with the
+# axis. Every funded bureaucracy carries global_crown_estate_power = -0.02, so an emperor
+# running four bureaus is down 0.08 crown power for the act of running them. At a 0.35 floor,
+# building the administrative state was itself enough to trip this entry and pay the magnates
+# 0.05 a month, while cc_byz_staffed_bureaus below paid only 0.013 for the same four bureaus.
+# Four to one against the player for doing the thing the axis is about. Playtesting reported
+# the axis "pushing dynatoi when it should be pushing taxis" and this is most of why.
+#
+# 0.25 is genuine crown weakness rather than ordinary administrative overhead.
 cc_byz_weak_crown = {
 	potential_trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
-		"estate_power(estate_type:crown_estate)" < 0.35
+		"estate_power(estate_type:crown_estate)" < 0.25
 	}
 
 	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
@@ -58,6 +68,15 @@ cc_byz_ascendant_nobles = {
 #############################################
 
 # Every bureau actually staffed and funded is an argument for government by office.
+#
+# RAISED FROM min_scaling TO minor. This is the axis's single positive feeder and it was paying
+# 0.01 x (bureaus/3), so four funded bureaus earned 0.013 a month against 0.05 from either of
+# the two Dynatoi feeders above. The player's whole administrative programme was worth a
+# quarter of one magnate condition. At minor it pays 0.067 for the same four, which is one
+# Dynatoi feeder's worth, and the two Dynatoi conditions are things the player can avoid.
+#
+# The bureau slot cap keeps this bounded on its own: four slots is the practical ceiling, so
+# this cannot run away the way a per-location feeder would.
 cc_byz_staffed_bureaus = {
 	potential_trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
@@ -72,7 +91,7 @@ cc_byz_staffed_bureaus = {
 		divide = 3
 	}
 
-	monthly_towards_cc_taxis = societal_value_min_scaling_monthly_move
+	monthly_towards_cc_taxis = societal_value_minor_monthly_move
 }
 
 # A crown that can appoint and dismiss does not need to bargain.

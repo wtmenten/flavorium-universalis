@@ -1,0 +1,90 @@
+﻿# The Hellenic thread's modifiers.
+#
+# See events/cc_byz_hellenic.txt and common/on_action/cc_byz_hellenic.txt for why the thread
+# exists. Every key below is a vanilla modifier name; nothing here needs a
+# modifier_type_definitions entry.
+#
+# PERMANENT WHERE THE FICTION IS PERMANENT. A settlement of the empire's religion is not a
+# twenty-year policy, and four of these are granted with years = -1 on that basis. They are all
+# mutually exclusive in practice, since the arc's stage four picks exactly one.
+
+# .1a and .1b. The old learning given a home, WITHOUT a conversion. This is the on-ramp and it
+# is deliberately something an Orthodox emperor can hold indefinitely: several did.
+cc_byz_old_learning = {
+	game_data = {
+		category = country
+	}
+	# VERIFIED NAMES ONLY. global_institution_spread and average_country_literacy do not
+	# exist as modifiers: the first is not a modifier at all and the second is a TRIGGER
+	# (the mission tree uses it as one). The real families are global_institution_growth_modifier
+	# and global_monthly_literacy / global_*_max_literacy.
+	global_institution_growth_modifier = 0.1
+	country_cabinet_efficiency = 0.05
+	global_monthly_literacy = 0.02
+}
+
+# .1b only. The antiquarians allowed further than the clergy would like.
+cc_byz_antiquarian_licence = {
+	game_data = {
+		category = country
+	}
+	global_monthly_literacy = 0.03
+	global_burghers_max_literacy = 0.05
+	global_estate_satisfaction_decay = 0.01
+}
+
+# .10, on conversion. The world's opinion of an emperor who has left the faith, and it does not
+# decay quickly, because nobody forgets this.
+cc_byz_the_apostasy = {
+	game_data = {
+		category = country
+	}
+	diplomatic_reputation = -2
+	stability_decay = 0.003
+	global_estate_satisfaction_decay = -0.02
+}
+
+# .20a. Toleration in both directions, stated in law.
+cc_byz_edict_of_toleration = {
+	game_data = {
+		category = country
+	}
+	# global_unrest does not exist; local_unrest is the only unrest modifier and it is
+	# location-scoped, so a country modifier cannot carry it. Stability decay is the
+	# country-level lever for the same idea.
+	tolerance_heretic = 2
+	tolerance_heathen = 1
+	stability_decay = -0.002
+}
+
+# .21a. Imperial money in the sanctuaries. The expensive answer, and the one that makes the
+# restoration a fact on the ground rather than a decree.
+cc_byz_temples_restored = {
+	game_data = {
+		category = country
+	}
+	monthly_religious_influence = 0.15
+	monthly_prestige = 0.05
+	tolerance_own = 1
+}
+
+# .22a. Two altars in one empire, by arrangement rather than by accident.
+cc_byz_two_altars = {
+	game_data = {
+		category = country
+	}
+	tolerance_heretic = 3
+	stability_decay = -0.002
+	global_institution_growth_modifier = 0.1
+}
+
+# .22c. The emperor kept his rites and the empire kept its Church. Where most such restorations
+# actually ended, and it is not a failure state: it costs the revival and buys back the city.
+cc_byz_emperors_own_rite = {
+	game_data = {
+		category = country
+	}
+	monthly_legitimacy = -0.05
+	stability_decay = -0.002
+	tolerance_heretic = 1
+}

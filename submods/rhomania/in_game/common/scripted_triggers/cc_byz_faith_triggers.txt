@@ -1,0 +1,89 @@
+﻿# The imperial faith, whichever one it currently is.
+#
+# WHY THIS LAYER EXISTS. The submod was written on the assumption that the emperor is Orthodox,
+# and 341 places said so directly. That assumption is wrong in one specific and fully supported
+# case: Fate of the Phoenix ships hellenism_religion, a movement that spawns at Hellenic holy
+# sites held by Christian owners (movements/hellenism_religion_movement.txt), nine Hellenic
+# advances, ten religious aspects, six gods, an Olympiad action and an omen system. Vanilla's
+# own ROM formable explicitly permits `religion = religion:hellenism_religion`
+# (00_formable_countries.txt:1864), so the DLC anticipates a Hellenic Rome even if nothing in
+# it anticipates a Hellenic Rhomania.
+#
+# Converting broke us badly. Six mission tasks became uncompletable, and because the faith
+# pillar chains athonite -> icons -> ecumenical_throne, the capstone went with them. Worse, the
+# union arc had no religion gate anywhere, so a Hellenic emperor could still be negotiating
+# church union with the Pope.
+#
+#
+# THE RULE THIS FILE ENFORCES: nothing tests religion:orthodox bare again.
+#
+# Content asks one of three questions instead, and they are genuinely different questions:
+#
+#   cc_byz_faith_orthodox_trigger   the emperor is Orthodox. For content that is ABOUT
+#                                   Orthodoxy as an institution: the Patriarchate, the union
+#                                   with Rome, the autocephalous daughters, Athos.
+#
+#   cc_byz_faith_hellenic_trigger   the emperor keeps the old rites. For the mirror content.
+#
+#   cc_byz_faith_imperial_trigger   the emperor holds EITHER, which is to say he has a state
+#                                   religion this submod has content for. Use this for the
+#                                   many things that are about the empire's faith being
+#                                   dominant somewhere rather than about which faith it is.
+#                                   Most of the mission tree wants this one.
+#
+# The third is the important one and it is the one that was missing. "Anatolia is seven-tenths
+# the emperor's religion" is a coherent objective under either faith; it was written as
+# "Anatolia is seven-tenths Orthodox" and therefore silently became impossible.
+#
+#
+# has_or_had_tag = BYZ IS NOT INCLUDED in these. They are faith tests, and callers already
+# carry their own tag and DLC gates. Folding a tag test in here would make the names lie.
+
+
+cc_byz_faith_orthodox_trigger = {
+	religion = religion:orthodox
+}
+
+cc_byz_faith_hellenic_trigger = {
+	religion = religion:hellenism_religion
+}
+
+# Either of the two faiths the submod has content for.
+cc_byz_faith_imperial_trigger = {
+	OR = {
+		religion = religion:orthodox
+		religion = religion:hellenism_religion
+	}
+}
+
+
+# ---- Population tests, parameterised on the caller's threshold ----
+#
+# LOCATION SCOPE. Replaces bare "religion_percentage(religion:orthodox)" comparisons, which are
+# the form that broke on conversion. Both faiths counted, because a location that is four
+# fifths Hellenic under a Hellenic emperor has satisfied the same objective a location four
+# fifths Orthodox satisfies under an Orthodox one.
+#
+# ADDED RATHER THAN ALTERNATED, deliberately. A city midway through a conversion is genuinely
+# the emperor's in the way these objectives mean; requiring either faith to clear the bar
+# alone would make the transition period a hole the player falls into for a century.
+#
+# THE SUM IS A SCRIPT VALUE COMPARED DIRECTLY, not a compare_value block. The block form has
+# ZERO occurrences anywhere in vanilla's common/, and the repo already has a scar from assuming
+# a plausible-looking form works. `cc_byz_current_bureau_count >= 1` in
+# scripted_effects/cc_byz_bureau_funding.txt is the proven idiom for comparing a script value in
+# a trigger, so these follow it. Values are defined in script_values/cc_byz_values.txt.
+cc_byz_faith_location_share_trigger = {
+	custom_tooltip = {
+		text = cc_byz_faith_location_share_tt
+		cc_byz_faith_share_location >= $share$
+	}
+}
+
+# COUNTRY SCOPE. Same idea for religion_percentage_in_country.
+cc_byz_faith_country_share_trigger = {
+	custom_tooltip = {
+		text = cc_byz_faith_country_share_tt
+		cc_byz_faith_share_country >= $share$
+	}
+}

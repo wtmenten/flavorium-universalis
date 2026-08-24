@@ -1,0 +1,451 @@
+﻿######################################################################
+# The Levantine Confrontation — situation panel
+#
+# WHY THIS FILE EXISTS AT ALL. Playtesting: "the situation panel for the levantine
+# confrontation is empty, possibly broken?". It was empty and it was not broken. A situation
+# panel is not generated from the situation definition; every vanilla situation ships its own
+# .gui here, named after the situation, and panels/situation/readme.txt says so in as many
+# words. Rhomania shipped none, so both of its situations opened an empty frame. The main mod
+# gets this right three times over (cc_balance_of_power, cc_subject_bonds, cc_invasion_mexico)
+# and this is built against those rather than invented.
+#
+# THE EMPTY PANEL WAS ALSO WHY THE EVENTS FELT WEIGHTLESS. Every option on cc_byz_mamluk.4 and
+# .5 paid out into cc_byz_levant_progress and cc_byz_mamluk_progress, which live on the
+# situation. With no panel those were numbers nobody could see, so the events read as three
+# ways of saying the same nothing. The option payloads were reworked at the same time as this
+# (see cc_byz_mamluk_modifiers.txt), but the panel is the half that makes the counters legible.
+#
+#
+# WHAT IT SHOWS
+#
+#   header      the two progress counters as opposed bars, plus the phase
+#   card 1      Levantine pressure, -5..5, the empire's own posture
+#   card 2      the three eastern seats, held or not, since they are the war's object
+#   card 3      the actions (situation_card_actions, filled by type = situation actions)
+#
+# Situation variables read: cc_byz_levant_progress, cc_byz_mamluk_progress, cc_byz_mamluk_phase
+# Country variables read (on the viewing player): cc_byz_levant_pressure, cc_byz_mem_condominium,
+# cc_byz_mem_pentarchy_war, cc_byz_mem_patriarchs_backed, cc_byz_mem_patriarchs_sold
+#
+# The situation-variable idiom is
+#   SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('x').GetValue
+# and the country one is Player.MakeScope.GetVariable('x'). Both are taken from the main mod's
+# BoP panel, which is in-game verified.
+######################################################################
+
+situation_panel = {
+
+	##################################### TOP HEADER — THE TWO PROGRESSES #####################
+
+	blockoverride "situation_top_subheader_content" {
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			margin = { 8 0 }
+			spacing = 10
+
+			# The empire's position.
+			hbox = {
+				size = { 200 28 }
+				spacing = 5
+				text_single = {
+					fontsize = 13
+					default_format = "#weak"
+					text = "CC_BYZ_MAM_HDR_EMPIRE"
+				}
+				text_single = {
+					fontsize = 15
+					default_format = "#color_green"
+					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_levant_progress').GetValue)]"
+				}
+			}
+
+			expand = {}
+
+			# The phase. One line, because which of the two states the confrontation is in
+			# changes what every other number on this panel means.
+			text_single = {
+				fontsize = 14
+				text = "CC_BYZ_MAM_PHASE_COLD"
+				visible = "[Not(GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_mamluk_phase').GetValue, '(CFixedPoint)1'))]"
+				tooltip = "CC_BYZ_MAM_PHASE_COLD_TT"
+			}
+			text_single = {
+				fontsize = 14
+				default_format = "#color_red"
+				text = "CC_BYZ_MAM_PHASE_WAR"
+				visible = "[GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_mamluk_phase').GetValue, '(CFixedPoint)1')]"
+				tooltip = "CC_BYZ_MAM_PHASE_WAR_TT"
+			}
+
+			expand = {}
+
+			# Cairo's.
+			hbox = {
+				size = { 200 28 }
+				spacing = 5
+				text_single = {
+					fontsize = 15
+					default_format = "#color_red"
+					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_mamluk_progress').GetValue)]"
+				}
+				text_single = {
+					fontsize = 13
+					default_format = "#weak"
+					text = "CC_BYZ_MAM_HDR_CAIRO"
+				}
+			}
+		}
+	}
+
+	##################################### MAIN IMAGE #####################################
+	# Flat gradient. No custom illustration is shipped, and a missing texture renders as a
+	# visible error rather than as nothing, so this uses the same colour-texture approach the
+	# main mod's ledger panel does.
+	blockoverride "situation_panel_image" {
+		background = {
+			using = color_dark_brown_texture
+			spriteType = stretched
+		}
+		background = {
+			using = color_dark_brown_texture
+			alpha = 1
+			margin_top = -140
+			modify_texture = {
+				using = bg_fade_vertical_up_mask_texture
+				blend_mode = alphamultiply
+				alpha = 1
+			}
+		}
+	}
+
+	blockoverride "situation_subheader_content" {}
+
+	##################################### MAIN CONTENT #####################################
+
+	blockoverride "situation_panel_main_content" {
+
+		# ---- Card: the two progresses, as bars ----
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 8
+
+			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
+			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
+			# every number, threshold and mechanical consequence lives behind this icon. The
+			# panel copy shipped as a briefing paper, which is not what a situation panel is
+			# for. Same idiom as the main mod's subject ledger.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_MAM_CARD_STANDING" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_MAM_CARD_STANDING" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_MAM_CARD_STANDING_INFO"
+								}
+							}
+						}
+					}
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_MAM_CARD_STANDING_DESC"
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BYZ_MAM_BAR_EMPIRE" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_levant_progress').GetValue)]/100"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_blue_alt.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 100
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_levant_progress').GetValue)]"
+					tooltip = "CC_BYZ_MAM_BAR_EMPIRE_TT"
+				}
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 2
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					text_single = { fontsize = 14  text = "CC_BYZ_MAM_BAR_CAIRO" }
+					expand = {}
+					text_single = {
+						fontsize = 14
+						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_mamluk_progress').GetValue)]/100"
+					}
+				}
+				progressbar = {
+					layoutpolicy_horizontal = expanding
+					size = { 100% 12 }
+					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+					progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+					texture_density = 2
+					spriteType = Corneredstretched
+					spriteborder = { 12 0 }
+					min = 0
+					max = 100
+					value = "[FixedPointToFloat(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_mamluk_progress').GetValue)]"
+					tooltip = "CC_BYZ_MAM_BAR_CAIRO_TT"
+				}
+			}
+
+			# Whichever reaches 100 ends the confrontation, which is worth saying once on the
+			# panel rather than only in the situation's end-conditions tooltip.
+			text_single = {
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_MAM_BAR_FOOTER"
+			}
+		}
+
+		# ---- Card: the empire's posture ----
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 6
+
+			# This card's title row already carried the score, so the info icon is added to the
+			# existing hbox rather than wrapped in a new one. Same intent as the other cards:
+			# flavour in the body, every number behind the icon.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_MAM_CARD_PRESSURE" }
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_MAM_CARD_PRESSURE" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_MAM_CARD_PRESSURE_INFO"
+								}
+							}
+						}
+					}
+				}
+				expand = {}
+				text_single = {
+					fontsize = 16
+					default_format = "#color_red"
+					visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_byz_levant_pressure').GetValue, '(CFixedPoint)0')]"
+					raw_text = "+[FixedPointToInt(Player.MakeScope.GetVariable('cc_byz_levant_pressure').GetValue)]"
+				}
+				text_single = {
+					fontsize = 16
+					default_format = "#color_green"
+					visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Player.MakeScope.GetVariable('cc_byz_levant_pressure').GetValue)]"
+					raw_text = "[FixedPointToInt(Player.MakeScope.GetVariable('cc_byz_levant_pressure').GetValue)]"
+				}
+				text_single = {
+					fontsize = 16
+					default_format = "#weak"
+					visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_byz_levant_pressure').GetValue, '(CFixedPoint)0')]"
+					raw_text = "0"
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_MAM_CARD_PRESSURE_DESC"
+			}
+
+			# Standing arrangements, shown only once they exist. These are the states the
+			# thread's branches actually leave behind, and none of them was visible anywhere
+			# before this panel.
+			text_single = {
+				fontsize = 13
+				default_format = "#color_green"
+				visible = "[Player.MakeScope.GetVariable('cc_byz_mem_condominium').IsSet]"
+				text = "CC_BYZ_MAM_FLAG_CONDOMINIUM"
+				tooltip = "CC_BYZ_MAM_FLAG_CONDOMINIUM_TT"
+			}
+			text_single = {
+				fontsize = 13
+				default_format = "#color_green"
+				visible = "[Player.MakeScope.GetVariable('cc_byz_mem_patriarchs_backed').IsSet]"
+				text = "CC_BYZ_MAM_FLAG_PATRIARCHS_BACKED"
+				tooltip = "CC_BYZ_MAM_FLAG_PATRIARCHS_BACKED_TT"
+			}
+			text_single = {
+				fontsize = 13
+				default_format = "#color_red"
+				visible = "[Player.MakeScope.GetVariable('cc_byz_mem_patriarchs_sold').IsSet]"
+				text = "CC_BYZ_MAM_FLAG_PATRIARCHS_SOLD"
+				tooltip = "CC_BYZ_MAM_FLAG_PATRIARCHS_SOLD_TT"
+			}
+			text_single = {
+				fontsize = 13
+				default_format = "#color_red"
+				visible = "[Player.MakeScope.GetVariable('cc_byz_mem_pentarchy_war').IsSet]"
+				text = "CC_BYZ_MAM_FLAG_WAR_DECLARED"
+				tooltip = "CC_BYZ_MAM_FLAG_WAR_DECLARED_TT"
+			}
+		}
+
+		# ---- Card: the three eastern seats ----
+		#
+		# The object of the whole situation, and the thing that connects it to the union arc:
+		# these three plus Constantinople and Rome are what has_all_pentarchy tests, which is
+		# what vanilla's mend_schism requires. Ownership is read straight off the locations
+		# rather than from any variable of ours, so it cannot desync.
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			using = bg_dark_paper_card
+			using = bg_cabinet_card_frame
+			margin = { 10 8 }
+			spacing = 6
+
+			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
+			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
+			# every number, threshold and mechanical consequence lives behind this icon. The
+			# panel copy shipped as a briefing paper, which is not what a situation panel is
+			# for. Same idiom as the main mod's subject ledger.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 15  text = "CC_BYZ_MAM_CARD_SEATS" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_MAM_CARD_SEATS" }
+							blockoverride "tooltip_content" {
+								text_multi = {
+									autoresize = yes
+									multiline = yes
+									max_width = 340
+									text = "CC_BYZ_MAM_CARD_SEATS_INFO"
+								}
+							}
+						}
+					}
+				}
+			}
+			text_multi = {
+				autoresize = yes
+				multiline = yes
+				max_width = 480
+				fontsize = 12
+				default_format = "#weak"
+				text = "CC_BYZ_MAM_CARD_SEATS_DESC"
+			}
+
+			# OWNERSHIP IS READ FROM SITUATION VARIABLES, NOT FROM THE MAP.
+			#
+			# The obvious form here is GetLocation('jerusalem').GetOwner.IsSameCountry(Player),
+			# and neither of those functions exists: a grep of every vanilla .gui returns zero
+			# hits for GetLocation( and zero for IsSameCountry. GUI datafunctions are not
+			# script triggers and there is no owns-this-location form among them.
+			#
+			# cc_byz_mamluk_seat_sync_effect writes these three flags off the situation's
+			# on_monthly from a plain `owns = location:x` test, which is script and certainly
+			# works. A month of staleness after a conquest is not worth inventing a
+			# datafunction over.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 8
+
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 2
+					text_single = { parentanchor = hcenter  align = center  fontsize = 13  text = "CC_BYZ_MAM_SEAT_JERUSALEM" }
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_green"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_HELD"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#weak"
+						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem').IsSet)]"
+						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
+					}
+				}
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 2
+					text_single = { parentanchor = hcenter  align = center  fontsize = 13  text = "CC_BYZ_MAM_SEAT_ANTIOCH" }
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_green"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_HELD"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#weak"
+						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch').IsSet)]"
+						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
+					}
+				}
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 2
+					text_single = { parentanchor = hcenter  align = center  fontsize = 13  text = "CC_BYZ_MAM_SEAT_ALEXANDRIA" }
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_green"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_HELD"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#weak"
+						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria').IsSet)]"
+						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
+					}
+				}
+			}
+		}
+	}
+}

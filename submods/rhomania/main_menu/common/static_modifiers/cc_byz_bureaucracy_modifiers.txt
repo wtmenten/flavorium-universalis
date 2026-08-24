@@ -1,7 +1,33 @@
 ﻿# Country modifiers granted by the bureaucracy thread (in_game/events/cc_byz_bureaucracy.txt).
 # Applied with add_country_modifier = { modifier = X  years = N  mode = add_and_extend },
 # so a repeat grant refreshes the duration instead of stacking the magnitude.
-# All reuse vanilla modifier keys, so no modifier_type_definitions are needed here.
+#
+#
+# THESE CARRY THE THREAD'S SOCIETAL DRIFT, and that is a deliberate change from how it worked.
+#
+# Every option in the thread moved the Taxis axis with an instant change_societal_value jump and
+# nothing else. Playtesting: "bureau events should add temporary modifiers which push taxis;
+# generally taxis pushes should be temporary". An instant jump says the empire's character
+# changed on the day of the decision, which is the wrong shape for what these events describe.
+# Clearing the arrears does not make the state bureaucratic that afternoon; it makes the state
+# bureaucratic over the twenty-five years the clerks are paid on time.
+#
+# The drift went onto these EXISTING modifiers rather than into twenty new grant lines in the
+# option blocks, for four reasons. They already exist and are already granted at exactly the
+# sites that deserve them, so nothing can be missed. Their durations were already chosen to
+# match the fiction. A repeat grant refreshes rather than stacks, which a hand-written second
+# grant would have had to replicate. And the player reads the drift in the same tooltip as the
+# effect causing it instead of as an unexplained second modifier.
+#
+# The instant jumps stay. The jump is the decision landing; the drift is the decision working.
+#
+# Rates against the instant scale: societal_value_move_to_left is -10 in one step, while
+# minor_monthly_move is 0.05 a month, or 0.6 a year. A 25-year grant is therefore worth about
+# 15 points, half again as much as a jump, spread over long enough that the player can change
+# course and undo it. That difference is the entire reason for having both mechanisms.
+#
+# All reuse vanilla modifier keys except the two societal drift types, which are registered in
+# main_menu/common/modifier_type_definitions/cc_byz_societal_values.txt.
 
 # cc_byz_bureaucracy.1 option a. A bureau staffed by salaried clerks who owe their position
 # to the office rather than to a family. Slow, unglamorous, and it compounds.
@@ -11,6 +37,9 @@ cc_byz_staffed_by_career_clerks = {
 	}
 	global_bureaucracy_maintenance_efficiency = 0.1
 	country_cabinet_efficiency = 0.05
+
+	# Clerks who owe their post to the office are the argument for government by office.
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 }
 
 # cc_byz_bureaucracy.1 after block, hidden. Fires once venality is entrenched: posts are
@@ -23,6 +52,9 @@ cc_byz_offices_are_property = {
 	global_crown_estate_power = -0.15
 	global_bureaucracy_maintenance_efficiency = -0.15
 	nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+
+	# Offices that pass by inheritance are the magnates' position, whoever formally holds them.
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
 }
 
 # cc_byz_bureaucracy.20 option c. Retrenchment done properly: fewer posts, still salaried,
@@ -33,6 +65,10 @@ cc_byz_retrenched_bureaus = {
 	}
 	global_bureaucracy_maintenance_efficiency = 0.2
 	tax_income_efficiency = 0.03
+
+	# Fewer posts, still salaried, still the crown's. A smaller administration is still an
+	# administration, so this drifts Taxis at the slower rate rather than the faster one.
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 }
 
 # ---- The underfunded-bureau rework ----
@@ -51,6 +87,10 @@ cc_byz_bureaus_paid_in_full = {
 	global_bureaucracy_maintenance_efficiency = 0.15
 	country_cabinet_efficiency = 0.08
 	tax_income_efficiency = 0.05
+
+	# Twenty-five years of clerks paid on time. The strongest Taxis drift in the thread, and
+	# the most expensive thing in it to buy.
+	monthly_towards_cc_taxis = societal_value_minor_monthly_move
 }
 
 # .20b, .60a. The office found its own income and the fees are becoming the custom. Not
@@ -62,10 +102,22 @@ cc_byz_fees_became_custom = {
 	global_bureaucracy_maintenance_efficiency = -0.10
 	global_crown_estate_power = -0.08
 	peasants_estate_target_satisfaction = small_permanent_target_satisfaction_penalty
+
+	# An office living off its own fees answers to whoever pays them.
+	monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
 }
 
-# .21b, .40c, .61b. PERMANENT. The office belongs to somebody else now and the crown is a
-# rentier of its own administration. The tax line is real: farming an office does pay.
+# .21b, .40c, .61b, all through cc_byz_farm_out_office_effect. The office belongs to somebody
+# else now and the crown is a rentier of its own administration. The tax line is real: farming
+# an office does pay.
+#
+# SIXTY YEARS, NOT PERMANENT, AND NOT STACKING. It shipped as `years = -1  mode = add` at all
+# three grant sites, which is the stacking mode with no removal path anywhere, so a long
+# campaign could hold three copies of it forever: -0.60 maintenance efficiency and -0.45 crown
+# power with no way out. Playtesting called that "too harsh a punishment" and it was also a
+# straightforward bug. It is now granted once through the shared effect, at sixty years with
+# add_and_extend, and cc_byz_bureaucracy.62 offers an earlier buy-back priced off the realm's
+# tax base and the office's entrenchment at the time of sale.
 cc_byz_office_farmed_out = {
 	game_data = {
 		category = country
@@ -74,4 +126,8 @@ cc_byz_office_farmed_out = {
 	global_bureaucracy_maintenance_efficiency = -0.20
 	global_crown_estate_power = -0.15
 	nobles_estate_target_satisfaction = small_permanent_target_satisfaction
+
+	# Sixty years of an office being somebody's property. The strongest Dynatoi drift in the
+	# thread, which is the correct weight for the thread's worst decision.
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
 }

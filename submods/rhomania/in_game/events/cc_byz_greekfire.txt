@@ -71,6 +71,14 @@ cc_byz_fire.1 = {
 	}
 	outcome = neutral
 
+	# Directly fired from BYZ-scoped effects, so this was unguarded by luck rather than by
+	# design. A directly-fired event still evaluates its trigger (vanilla's d008_flavor_byz.2
+	# and .3 depend on exactly that), so the guard costs nothing and closes the class of bug
+	# that put cc_byz_mamluk.2 in front of a Byzantine player.
+	trigger = {
+		has_or_had_tag = BYZ
+	}
+
 	image = "gfx/interface/illustrations/event/backgrounds/special/greek_fire.dds"
 
 	immediate = {

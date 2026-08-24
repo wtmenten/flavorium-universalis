@@ -1,0 +1,694 @@
+﻿namespace = cc_byz_hellenic
+
+# The old rites.
+#
+# See common/on_action/cc_byz_hellenic.txt for why this thread exists and how it mirrors the
+# union arc. In short: Fate of the Phoenix ships a complete route out of Orthodoxy that the
+# submod had not noticed, and on conversion six mission tasks became impossible while the union
+# arc kept negotiating with Rome on behalf of a church the emperor had left.
+#
+#   .1   the Academy reopened. The on-ramp, available to an Orthodox emperor, and not itself
+#        a conversion: it is the empire deciding the old learning is not the enemy.
+#   .10  the rupture. From on_religion_changed, both directions.
+#   .20  the edict of toleration       stage 1
+#   .21  the temples reopened          stage 2
+#   .22  the reaction                  stage 3, and it can fail on its own
+#   .23  suppression or accommodation  stage 4
+#   .30  the ferment. From the pulse, while the reaction is running.
+#
+# Scores, initialised by cc_byz_init_hellenic_scores_effect:
+#   cc_byz_hellenic_stage      0..4  where the settlement has got to
+#   cc_byz_christian_reaction  0..5  how hard the Church is pushing back
+#
+# Memory variables:
+#   cc_byz_mem_academy_reopened   the old learning was given a home before any conversion
+#   cc_byz_mem_temples_rebuilt    imperial money went into the sanctuaries
+#   cc_byz_mem_church_suppressed  the Patriarchate was moved against
+#   cc_byz_mem_church_tolerated   the Church was left standing under the old rites
+#   cc_byz_mem_apostasy_reversed  an emperor returned the empire to Orthodoxy
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .1  The Academy reopened
+#
+# THE ON-RAMP, AND IT IS DELIBERATELY NOT A CONVERSION.
+#
+# Vanilla's hellenism_religion_movement is the road, and it is a good one: it spawns at Hellenic
+# holy sites held by Christian owners, weighted by the site's importance and the local
+# satisfaction, and the empire holds Delphi, Olympia, the Parthenon, Eleusis, Dodona and Delos.
+# Nothing here duplicates or bypasses that.
+#
+# What this does is make the road findable. An emperor who has restored the Academy is an
+# emperor in whose reign the question can be asked out loud, and the event says so without
+# pretending the decision has been taken.
+#############################################
+cc_byz_hellenic.1 = {
+	type = country_event
+	title = cc_byz_hellenic.1.title
+	desc = cc_byz_hellenic.1.desc
+	outcome = neutral
+
+	fire_only_once = yes
+
+	trigger = {
+		has_or_had_tag = BYZ
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+		set_variable = { name = cc_byz_mem_academy_reopened  value = yes }
+	}
+
+	# Philosophy as the empire's inheritance, carefully fenced off from theology. This is what
+	# most emperors who patronised the old learning actually thought they were doing.
+	option = {
+		name = cc_byz_hellenic.1.a
+		ai_chance = { base = 55 }
+
+		add_country_modifier = {
+			modifier = cc_byz_old_learning
+			years = -1
+			mode = add
+		}
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+	}
+
+	# Let the antiquarians go further than the clergy would like. Available to a ruler with the
+	# standing to absorb the complaint.
+	option = {
+		name = cc_byz_hellenic.1.b
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { adm >= 70 }
+		}
+
+		add_country_modifier = {
+			modifier = cc_byz_old_learning
+			years = -1
+			mode = add
+		}
+		add_country_modifier = {
+			modifier = cc_byz_antiquarian_licence
+			years = 40
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_right
+		}
+	}
+
+	# Close it again. The safest answer and not a foolish one.
+	option = {
+		name = cc_byz_hellenic.1.c
+		ai_chance = { base = 20 }
+
+		remove_variable = cc_byz_mem_academy_reopened
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_religious_influence = 15
+	}
+}
+
+
+#############################################
+# .10  The rupture
+#
+# From on_religion_changed, in BOTH directions, sorted out here from scope:old_religion rather
+# than by having two on_actions.
+#
+# THE UNION ARC IS MOTHBALLED, NOT CLEARED. cc_byz_union_stage and cc_byz_anti_unionist survive
+# untouched; the four union actions gate on cc_byz_faith_orthodox_trigger and simply stop
+# appearing. An empire that comes back to Orthodoxy resumes the arc exactly where it stopped,
+# which is the right model: apostasy in this period was usually reversible, and the state costs
+# two variables to keep.
+#############################################
+cc_byz_hellenic.10 = {
+	type = country_event
+	title = cc_byz_hellenic.10.title
+	desc = {
+		first_valid = {
+			# Coming back. Ordered first because it is the more specific case: this event
+			# fires on both transitions and only one of them is an apostasy.
+			triggered_desc = {
+				trigger = { scope:old_religion ?= religion:hellenism_religion }
+				desc = cc_byz_hellenic.10.desc_returned
+			}
+			# Going over, with the union already signed. The sharpest version: an emperor who
+			# spent a reign arguing the Church into Rome's arms has now left it entirely.
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_union_stage
+					var:cc_byz_union_stage >= 2
+				}
+				desc = cc_byz_hellenic.10.desc_after_union
+			}
+			desc = cc_byz_hellenic.10.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_or_had_tag = BYZ
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+
+		if = {
+			# ---- Going over ----
+			limit = { cc_byz_faith_hellenic_trigger = yes }
+
+			set_variable = { name = cc_byz_hellenic_stage  value = 1 }
+			# The Church starts angry and gets angrier. Starting at 2 rather than 0 because
+			# the conversion itself is the provocation; there is no honeymoon.
+			set_variable = { name = cc_byz_christian_reaction  value = 2 }
+			remove_variable = cc_byz_mem_apostasy_reversed
+		}
+		else = {
+			# ---- Coming back ----
+			set_variable = { name = cc_byz_hellenic_stage      value = 0 }
+			set_variable = { name = cc_byz_christian_reaction  value = 0 }
+			set_variable = { name = cc_byz_mem_apostasy_reversed  value = yes }
+			remove_variable = cc_byz_mem_church_suppressed
+			remove_variable = cc_byz_mem_church_tolerated
+		}
+	}
+
+	option = {
+		name = cc_byz_hellenic.10.a
+		ai_chance = { base = 100 }
+
+		# THE CLERGY'S REACTION IS NOT OFFERED AS A CHOICE. Whatever the emperor says at this
+		# moment, the men who run the churches have already decided what has happened.
+		hidden_effect = {
+			if = {
+				limit = { cc_byz_faith_hellenic_trigger = yes }
+				add_estate_satisfaction = {
+					type = estate_type:clergy_estate
+					value = estate_satisfaction_extreme_penalty
+				}
+				add_stability = stability_severe_penalty
+				add_country_modifier = {
+					modifier = cc_byz_the_apostasy
+					years = 40
+					mode = add_and_extend
+				}
+				# Every Orthodox court in the world hears within the season.
+				every_country = {
+					limit = {
+						cc_byz_faith_orthodox_trigger = yes
+						NOT = { this = root }
+					}
+					add_opinion = {
+						target = root
+						modifier = cc_byz_opinion_apostate
+					}
+				}
+			}
+			else = {
+				add_estate_satisfaction = {
+					type = estate_type:clergy_estate
+					value = estate_satisfaction_severe_bonus
+				}
+				add_religious_influence = 40
+				remove_country_modifier = cc_byz_the_apostasy
+			}
+		}
+
+		trigger_event_silently = { id = cc_byz_hellenic.20  years = 2 }
+	}
+}
+
+
+#############################################
+# .20  The edict of toleration                                          STAGE 1
+#
+# The first thing a convert emperor has to settle, and the thing every real one settled first:
+# not what he believes, but what the law now says about what everybody else believes.
+#############################################
+cc_byz_hellenic.20 = {
+	type = country_event
+	title = cc_byz_hellenic.20.title
+	desc = cc_byz_hellenic.20.desc
+	outcome = neutral
+
+	trigger = {
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+		trigger_if = {
+			limit = { has_variable = cc_byz_hellenic_stage }
+			var:cc_byz_hellenic_stage = 1
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+	}
+
+	# Toleration both ways. The historically literate answer and the one that holds longest.
+	option = {
+		name = cc_byz_hellenic.20.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 2 }
+		set_variable = { name = cc_byz_mem_church_tolerated  value = yes }
+		change_variable = { name = cc_byz_christian_reaction  add = -1 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_country_modifier = {
+			modifier = cc_byz_edict_of_toleration
+			years = -1
+			mode = add
+		}
+		add_stability = stability_mild_bonus
+		trigger_event_silently = { id = cc_byz_hellenic.21  years = 6 }
+	}
+
+	# The temples get the endowments the churches had. Not a persecution, and it will be
+	# described as one.
+	option = {
+		name = cc_byz_hellenic.20.b
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 2 }
+		change_variable = { name = cc_byz_christian_reaction  add = 1 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_gold = 300
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_severe_penalty
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.21  years = 6 }
+	}
+
+	# Move against the Patriarchate outright. Available to a ruler who can hold the city.
+	option = {
+		name = cc_byz_hellenic.20.c
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { mil >= 75 }
+		}
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 2 }
+		set_variable = { name = cc_byz_mem_church_suppressed  value = yes }
+		change_variable = { name = cc_byz_christian_reaction  add = 2 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_extreme_penalty
+		}
+		add_stability = stability_severe_penalty
+		add_religious_influence = 30
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_right
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.21  years = 6 }
+	}
+}
+
+
+#############################################
+# .21  The temples reopened                                             STAGE 2
+#
+# Vanilla holds the Hellenic sanctuaries as real holy sites with real importances: Delphi at
+# salona, Olympia at pontikokastro, the Telesterion at megara, the Parthenon, Dodona, Delos.
+# This is the money question about them.
+#############################################
+cc_byz_hellenic.21 = {
+	type = country_event
+	title = cc_byz_hellenic.21.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_church_suppressed }
+				desc = cc_byz_hellenic.21.desc_suppressed
+			}
+			desc = cc_byz_hellenic.21.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+		trigger_if = {
+			limit = { has_variable = cc_byz_hellenic_stage }
+			var:cc_byz_hellenic_stage = 2
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+	}
+
+	# Rebuild them properly, at imperial expense. Ruinous and it is the thing that makes the
+	# restoration real rather than declared.
+	option = {
+		name = cc_byz_hellenic.21.a
+		ai_chance = { base = 40 }
+
+		change_gold_effect = { scale = -6 }
+		set_variable = { name = cc_byz_hellenic_stage  value = 3 }
+		set_variable = { name = cc_byz_mem_temples_rebuilt  value = yes }
+		add_religious_influence = 50
+		add_country_modifier = {
+			modifier = cc_byz_temples_restored
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_right
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.22  years = 8 }
+	}
+
+	# Let the cities pay for their own. Cheaper, slower, and it makes the revival local rather
+	# than imperial, which cuts both ways.
+	option = {
+		name = cc_byz_hellenic.21.b
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 3 }
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_religious_influence = 20
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.22  years = 8 }
+	}
+
+	# The rites without the buildings. An emperor can decree a religion and decline to fund it,
+	# and several did.
+	option = {
+		name = cc_byz_hellenic.21.c
+		ai_chance = { base = 20 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 3 }
+		change_variable = { name = cc_byz_christian_reaction  add = 1 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_gold = 150
+		trigger_event_silently = { id = cc_byz_hellenic.22  years = 8 }
+	}
+}
+
+
+#############################################
+# .22  The reaction                                                     STAGE 3
+#
+# THE MIRROR OF THE UNION'S STAGE THREE, AND IT CAN FAIL THE SAME WAY. The union of 1439 was
+# signed by an emperor and rejected by the city within the month. A restoration of the old
+# rites has exactly the same problem from the other side: the settlement is the emperor's, the
+# city is not, and the city has been Christian for a thousand years.
+#############################################
+cc_byz_hellenic.22 = {
+	type = country_event
+	title = cc_byz_hellenic.22.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_christian_reaction
+					var:cc_byz_christian_reaction >= 4
+				}
+				desc = cc_byz_hellenic.22.desc_furious
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_temples_rebuilt }
+				desc = cc_byz_hellenic.22.desc_funded
+			}
+			desc = cc_byz_hellenic.22.desc
+		}
+	}
+	outcome = negative
+
+	trigger = {
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+		trigger_if = {
+			limit = { has_variable = cc_byz_hellenic_stage }
+			var:cc_byz_hellenic_stage = 3
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = angry
+		10 = interior
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+	}
+
+	# Accommodate. The Church keeps its property and its courts and stops being the state's.
+	# The settlement that actually lasted, wherever anything like this lasted.
+	option = {
+		name = cc_byz_hellenic.22.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 4 }
+		set_variable = { name = cc_byz_mem_church_tolerated  value = yes }
+		remove_variable = cc_byz_mem_church_suppressed
+		set_variable = { name = cc_byz_christian_reaction  value = 0 }
+		add_stability = stability_mild_bonus
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_country_modifier = {
+			modifier = cc_byz_two_altars
+			years = -1
+			mode = add
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.23  years = 10 }
+	}
+
+	# Break it. Expensive in every currency the empire has, and it settles the question.
+	option = {
+		name = cc_byz_hellenic.22.b
+		ai_chance = { base = 30 }
+		trigger = {
+			ruler ?= { mil >= 70 }
+		}
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 4 }
+		set_variable = { name = cc_byz_mem_church_suppressed  value = yes }
+		remove_variable = cc_byz_mem_church_tolerated
+		set_variable = { name = cc_byz_christian_reaction  value = 0 }
+		change_gold_effect = { scale = -4 }
+		add_stability = stability_severe_penalty
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_extreme_penalty
+		}
+		add_religious_influence = 60
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_large_move_to_right
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.23  years = 10 }
+	}
+
+	# Give way. The old rites remain the emperor's own and stop being the empire's, which is
+	# where most such restorations ended.
+	option = {
+		name = cc_byz_hellenic.22.c
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_hellenic_stage  value = 4 }
+		change_variable = { name = cc_byz_christian_reaction  add = -2 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_stability = stability_mild_bonus
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_severe_bonus
+		}
+		add_country_modifier = {
+			modifier = cc_byz_emperors_own_rite
+			years = -1
+			mode = add
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+		trigger_event_silently = { id = cc_byz_hellenic.23  years = 10 }
+	}
+}
+
+
+#############################################
+# .23  What was settled                                                 STAGE 4
+#
+# The closing note. Reads the state rather than asking for another decision, which is the point
+# of a fourth stage: the player finds out what the previous three added up to.
+#############################################
+cc_byz_hellenic.23 = {
+	type = country_event
+	title = cc_byz_hellenic.23.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_mem_church_suppressed }
+				desc = cc_byz_hellenic.23.desc_suppressed
+			}
+			triggered_desc = {
+				trigger = { has_country_modifier = cc_byz_emperors_own_rite }
+				desc = cc_byz_hellenic.23.desc_private
+			}
+			desc = cc_byz_hellenic.23.desc_tolerated
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+		trigger_if = {
+			limit = { has_variable = cc_byz_hellenic_stage }
+			var:cc_byz_hellenic_stage = 4
+		}
+		trigger_else = { always = no }
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_init_hellenic_scores_effect = yes
+	}
+
+	option = {
+		name = cc_byz_hellenic.23.a
+		ai_chance = { base = 100 }
+
+		add_prestige = prestige_severe_bonus
+	}
+}
+
+
+#############################################
+# .30  The ferment
+#
+# From the pulse, while the reaction is running hot. The mirror of cc_byz_union.22, and it
+# exists for the same reason: the emperor decided, and the city is still deciding.
+#############################################
+cc_byz_hellenic.30 = {
+	type = country_event
+	title = cc_byz_hellenic.30.title
+	desc = cc_byz_hellenic.30.desc
+	outcome = negative
+
+	trigger = {
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+	}
+
+	illustration_tags = {
+		10 = angry
+		10 = exterior
+	}
+
+	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
+		cc_byz_init_hellenic_scores_effect = yes
+	}
+
+	# Answer it with the guard. Quiets the street and confirms what the preachers are saying.
+	option = {
+		name = cc_byz_hellenic.30.a
+		ai_chance = { base = 35 }
+
+		add_stability = stability_mild_penalty
+		change_variable = { name = cc_byz_christian_reaction  add = 1 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_severe_penalty
+		}
+	}
+
+	# Buy the quarter that is shouting loudest. Works, and it teaches the other quarters what
+	# shouting is worth.
+	option = {
+		name = cc_byz_hellenic.30.b
+		ai_chance = { base = 40 }
+
+		change_gold_effect = { scale = -3 }
+		change_variable = { name = cc_byz_christian_reaction  add = -1 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+	}
+
+	# Let the Patriarch answer it. He can, and the price is that everyone sees he can.
+	option = {
+		name = cc_byz_hellenic.30.c
+		ai_chance = { base = 25 }
+		trigger = {
+			NOT = { has_variable = cc_byz_mem_church_suppressed }
+		}
+
+		change_variable = { name = cc_byz_christian_reaction  add = -2 }
+		clamp_variable = { name = cc_byz_christian_reaction  min = 0  max = 5 }
+		add_religious_influence = -25
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_minor_move_to_left
+		}
+	}
+}

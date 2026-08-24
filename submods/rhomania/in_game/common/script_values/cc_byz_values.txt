@@ -248,3 +248,72 @@ cc_byz_current_bureau_count = {
 	min = 0
 	max = 12
 }
+
+
+#############################################
+# Redeeming a farmed-out office
+#############################################
+#
+# WHAT SETS THE SCALE. country_tax_base is directly comparable to gold in this engine:
+# vanilla's ask_for_money transfers exactly country_tax_base and its enabled block tests
+# `gold >= country_tax_base`, so one unit of tax base is one large gift. Pricing the buy-back
+# between 1.5 and 3.5 times that makes it a serious outlay at any realm size without ever
+# becoming unpayable for a small one, which a flat number could not manage across a campaign
+# that runs from a rump state to an empire.
+#
+# THE ENTRENCHMENT TERM IS THE POINT. An office sold last week and an office three generations
+# of one family have been living off are the same modifier and should not be the same price.
+# cc_byz_farmed_entrenchment is captured at SALE time by cc_byz_farm_out_office_effect, not
+# read live, because the bureaucracy may not exist any more by the time the offer arrives.
+#
+#     entrenchment      0      25      50      75     100
+#     multiplier      1.5     2.0     2.5     3.0     3.5
+#
+# cc_byz_bureaucracy.62 backfills the variable in its immediate before this is evaluated, so
+# the read below is safe without a trigger_if.
+cc_byz_office_buyback_cost = {
+	value = country_tax_base
+	multiply = {
+		value = 1.5
+		add = {
+			value = var:cc_byz_farmed_entrenchment
+			divide = 50
+		}
+	}
+	add = 150
+
+	# Floors and ceilings, because tax base is not bounded and this is a gold cost. The floor
+	# stops a collapsed treasury buying an office back for pocket change; the ceiling stops a
+	# late-game empire being quoted a number no realm has ever held.
+	min = 250
+	max = 8000
+}
+
+
+#############################################
+# The imperial faith's share of a population
+#############################################
+#
+# Read by cc_byz_faith_location_share_trigger and cc_byz_faith_country_share_trigger. See
+# scripted_triggers/cc_byz_faith_triggers.txt for why the whole faith layer exists; briefly,
+# the submod hard-coded religion:orthodox in 341 places and Fate of the Phoenix ships a fully
+# supported route to hellenism_religion, which made six mission tasks impossible on conversion.
+#
+# BOTH FAITHS ADDED, NOT ALTERNATED. A city midway through a conversion is genuinely the
+# emperor's in the way these objectives mean it. Requiring either faith to clear the bar on its
+# own would turn the transition into a century-long hole in the mission tree, which is the
+# opposite of the point.
+#
+# No clamp. The two are disjoint shares of the same population, so the sum cannot exceed 1.
+
+# Location scope.
+cc_byz_faith_share_location = {
+	value = "religion_percentage(religion:orthodox)"
+	add = "religion_percentage(religion:hellenism_religion)"
+}
+
+# Country scope.
+cc_byz_faith_share_country = {
+	value = "religion_percentage_in_country(religion:orthodox)"
+	add = "religion_percentage_in_country(religion:hellenism_religion)"
+}

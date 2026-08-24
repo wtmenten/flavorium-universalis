@@ -511,4 +511,50 @@ Characters cannot be created within options of events they must be created befor
 - Dynamic culture-group comparison — `root.culture.culture_group` as a dot-chain accessor is parsed as an event target link and fails; use `only_overlord_or_kindred_culture = yes` on subject types instead
 - `illustration_tags = { 10 = combat }` — `combat` tag doesn't exist; use `military`
 
-- **Situation `can_end` block (1.3+)**: bare triggers are INVALID; must wrap each condition in `end_reason = { trigger = { ... } desc = "lockey" }`. Multiple `end_reason` entries are allowed.
+- ~~**Situation `can_end` block (1.3+)**: bare triggers are INVALID; must wrap each condition in `end_reason = { trigger = { ... } desc = "lockey" }`.~~ **This entry was wrong and has been retracted.** `end_reason` does not appear anywhere in the game files: zero hits across all of `in_game/`. `can_end` is a plain trigger, documented as `can_end = <trigger>` in `common/situations/readme.txt:10`, and vanilla writes it bare (`western_schism.txt:18` is a single scripted trigger call). Following the retracted advice would have broken every situation it touched.
+
+---
+
+## Situation panels and situation UI
+
+**A situation panel does not come from the situation definition.** Every vanilla situation ships its own `in_game/gui/panels/situation/<situation_name>.gui`, and `panels/situation/readme.txt` says so explicitly. Ship a situation without one and the panel opens **empty**: not broken, not an error in the log, just blank. This is the single easiest way to make a finished system look unfinished.
+
+Keys that vanilla sets on essentially every situation and that are easy to omit:
+
+| Key | Coverage in vanilla | What breaks without it |
+|---|---|---|
+| `hint_tag` | 22 of 22 | The "?" button in the situation tooltip is absent (`shared/situation_tooltips.gui:13` gates it on `Situation.HasHint`). Needs a matching entry in `common/scriptable_hints/`, plus loc for `<tag>` and `<tag>_hint_text`. |
+| `tooltip` | 21 of 22 | Hovering a map location coloured by the situation explains nothing. Root is the **location**, `scope:target` is the situation. |
+| `legend_key` | 79 entries across 22 | The situation's map colours appear in the legend as nothing. Repeatable; `color =` accepts `blue`, `red`, `green`, `yellow`, `yellow_dark`, `purple`, `rgb { }` and `define:`. |
+
+**Situation-panel actions are `type = situation`, not `type = owncountry`.** 155 of vanilla's generic actions use it; an `owncountry` action lands in the country action list instead and the situation panel's action card stays empty. The `select_trigger` is required, not decoration. It binds `scope:recipient` to the situation, which is the parameter the panel button passes (`shared/cards.gui`, `parameter_value = SituationView.GetActiveSituation.GetSituation`):
+
+```
+type = situation
+select_trigger = {
+    looking_for_a = situation
+    target_flag = recipient
+    name = "choose_situation"
+    column = { data = name }
+    visible = {
+        situation:my_situation = this
+        situation_is_active = yes
+    }
+}
+```
+
+**Do not put `player_automated_category` on a `type = situation` action.** Zero of vanilla's 91 situation actions carry one; it belongs to the `owncountry`, `religious` and `parliament` families.
+
+### GUI datafunctions are not script triggers
+
+The GUI layer has its own vocabulary and it is much smaller than script's. Verified by grepping every vanilla `.gui`:
+
+- **`GetLocation('key')` does not exist.** Neither does **`IsSameCountry`**. There is no way to ask the GUI whether the player owns a given location. Mirror the fact into a variable from script and read that instead.
+- **`GetNumberOfMembers` does not exist.** `InternationalOrganization` exposes `GetMembers`, `GetMembersAmount`, `GetMembersText`, `GetMembersInfo` and `IsCountryMember`.
+- **`HasModifier('name')` does exist** and is the way to test a country modifier from GUI. Country *variables* use `Player.MakeScope.GetVariable('x')`; situation variables use `SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('x')`.
+- Numeric comparison needs the fixed-point helpers: `GreaterThan_CFixedPoint(a, '(CFixedPoint)0')`, `EqualTo_CFixedPoint`, `FixedPointToInt`, `FixedPointToFloat`.
+
+### GUI assets that don't exist
+
+- **Progress bar textures.** The full set under `main_menu/gfx/interface/progressbars` is `green`, `green_alt`, `grey_alt`, `red`, `red_alt`, `orange`, `yellange`, `yellow`, `brown_alt`, `goldish`, `whiteish` and the rotated variants. There is **no purple and no blue** (`progress_bar_blue_alt.dds` exists only under `loading_screen/`'s own gfx root).
+- **Text format tags.** `#color_yellow`, `#color_green`, `#color_red` and `#weak` are defined. **`#color_purple` is not.**

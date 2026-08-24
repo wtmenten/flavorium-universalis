@@ -242,6 +242,8 @@ cc_byz_bureaucracy.20 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_bureau_scores_effect = yes
 	}
 
@@ -383,17 +385,16 @@ cc_byz_bureaucracy.21 = {
 	}
 
 	# Tax the fees instead of abolishing them. The treasury takes its share of an abuse it has
-	# stopped pretending to disapprove of. PERMANENT.
+	# stopped pretending to disapprove of.
+	#
+	# No bureaucracy scope here: this thread never scoped one, so the sale is priced off the
+	# fallback entrenchment. See cc_byz_farm_out_office_effect.
 	option = {
 		name = cc_byz_bureaucracy.21.b
 		ai_chance = { base = 45 }
 
 		add_gold = 350
-		add_country_modifier = {
-			modifier = cc_byz_office_farmed_out
-			years = -1
-			mode = add
-		}
+		cc_byz_farm_out_office_effect = yes
 		change_variable = { name = cc_byz_bureau_venality  add = 1 }
 		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
 		change_societal_value = {
@@ -446,6 +447,8 @@ cc_byz_bureaucracy.30 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_bureau_scores_effect = yes
 	}
 
@@ -567,6 +570,8 @@ cc_byz_bureaucracy.40 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_bureau_scores_effect = yes
 
 		random_current_bureaucracy = {
@@ -634,13 +639,15 @@ cc_byz_bureaucracy.40 = {
 		set_variable = { name = cc_byz_mem_fiefdom_formalised  value = yes }
 		change_variable = { name = cc_byz_bureau_venality  add = 2 }
 		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
-		# PERMANENT. Selling the office outright is the one decision in this thread that
-		# cannot be walked back: no later event unwinds a sale.
-		add_country_modifier = {
-			modifier = cc_byz_office_farmed_out
-			years = -1
-			mode = add
+		# The only one of the three sale sites with a real bureaucracy in scope, so this is the
+		# one whose buy-back price reflects the actual office rather than the fallback. .40
+		# fires precisely because the bureau is ENTRENCHED and unfunded, so the redemption
+		# quoted here will be at the expensive end, which is the correct reading of it.
+		if = {
+			limit = { exists = scope:cc_byz_fief_bureau }
+			scope:cc_byz_fief_bureau = { save_scope_as = cc_byz_farmed_bureau }
 		}
+		cc_byz_farm_out_office_effect = yes
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_mild_bonus
@@ -690,6 +697,8 @@ cc_byz_bureaucracy.50 = {
 	}
 
 	immediate = {
+		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
+		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_bureau_scores_effect = yes
 
 		random_current_bureaucracy = {
@@ -905,14 +914,138 @@ cc_byz_bureaucracy.61 = {
 
 		change_variable = { name = cc_byz_bureau_venality  add = 1 }
 		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
-		add_country_modifier = {
-			modifier = cc_byz_office_farmed_out
-			years = -1
-			mode = add
-		}
+		cc_byz_farm_out_office_effect = yes
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_move_to_right
 		}
+	}
+}
+
+
+#############################################
+# .62  The office redeemed
+#############################################
+#
+# Fires twelve years after any of the three sales, scheduled by cc_byz_farm_out_office_effect.
+#
+# WHY THIS EXISTS. Playtesting: "the office farmed out being until the end of the game is too
+# harsh a punishment", and it was worse than that. The modifier was granted at three sites with
+# `years = -1  mode = add`, which is the STACKING mode, so a long campaign could hold three
+# permanent copies and nothing anywhere removed it. It is now sixty years and add_and_extend,
+# and this event is the way out of it before then.
+#
+# THE PRICE IS THE CONTENT. cc_byz_office_buyback_cost runs from 1.5 to 3.5 times the realm's
+# tax base depending on how entrenched the office was WHEN IT WAS SOLD. An office sold in a bad
+# year and redeemed by the next emperor is merely expensive. One that three generations have
+# built a life around costs more than most emperors will ever have at once, which is the honest
+# answer to the question the thread is asking.
+#
+# The redemption option is deliberately NOT gated on a capable ruler. Buying property back is a
+# question of money, not of talent, and every other exit in this thread already tests a stat.
+cc_byz_bureaucracy.62 = {
+	type = country_event
+	title = cc_byz_bureaucracy.62.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_farmed_entrenchment >= 70 }
+				desc = cc_byz_bureaucracy.62.desc_dug_in
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_farmed_count >= 2 }
+				desc = cc_byz_bureaucracy.62.desc_several
+			}
+			desc = cc_byz_bureaucracy.62.desc
+		}
+	}
+	outcome = neutral
+
+	# COOLDOWN, BECAUSE THIS EVENT CAN BE SCHEDULED FROM FOUR PLACES.
+	#
+	# cc_byz_farm_out_office_effect schedules it on every sale, and there are three sale sites;
+	# option c below re-schedules it after twenty-five years. Nothing stops those overlapping,
+	# so an emperor who sold two offices twelve years apart would be asked about it twice in
+	# quick succession, with the second copy quoting a price computed from the same single
+	# variable as the first.
+	#
+	# Timed, so it expires on its own. Same pattern as cc_byz_bureau_cut_cd on .60 and the
+	# submod-wide floor in cc_byz_pulse.txt.
+	trigger = {
+		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		has_country_modifier = cc_byz_office_farmed_out
+		NOT = { has_variable = cc_byz_redeem_cd }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_init_bureau_scores_effect = yes
+		set_variable = { name = cc_byz_redeem_cd  value = yes  years = 20 }
+
+		# BACKFILL BEFORE THE DESC AND THE PRICE READ IT. Both the triggered_desc above and
+		# cc_byz_office_buyback_cost read these bare, and a bare var: read of an unset variable
+		# errors. Any office sold after this change has them set at sale time; a save from
+		# before it does not, and that save is exactly the one that will fire this first.
+		if = {
+			limit = { NOT = { has_variable = cc_byz_farmed_entrenchment } }
+			set_variable = { name = cc_byz_farmed_entrenchment  value = 50 }
+		}
+		if = {
+			limit = { NOT = { has_variable = cc_byz_farmed_count } }
+			set_variable = { name = cc_byz_farmed_count  value = 1 }
+		}
+	}
+
+	# Buy it back. The price is what the family thinks the office is worth, which is more than
+	# the crown ever thought it was worth.
+	option = {
+		name = cc_byz_bureaucracy.62.a
+		ai_chance = { base = 25 }
+		trigger = {
+			gold >= cc_byz_office_buyback_cost
+		}
+
+		add_gold = {
+			value = cc_byz_office_buyback_cost
+			multiply = -1
+		}
+		cc_byz_redeem_office_effect = yes
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_severe_penalty
+		}
+	}
+
+	# Take it back without paying for it. Available to a ruler who can survive the quarrel.
+	option = {
+		name = cc_byz_bureaucracy.62.b
+		ai_chance = { base = 20 }
+		trigger = {
+			ruler ?= { adm >= 80 }
+			var:cc_byz_farmed_entrenchment < 70
+		}
+
+		cc_byz_redeem_office_effect = yes
+		add_stability = stability_severe_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_extreme_penalty
+		}
+		change_variable = { name = cc_byz_bureau_venality  add = 1 }
+		clamp_variable = { name = cc_byz_bureau_venality  min = 0  max = 5 }
+	}
+
+	# Leave it. The arrangement works, after its fashion, and the money is needed elsewhere.
+	option = {
+		name = cc_byz_bureaucracy.62.c
+		ai_chance = { base = 55 }
+
+		# Offered again in a generation. The office does not stop being for sale because one
+		# emperor declined to buy it.
+		trigger_event_silently = { id = cc_byz_bureaucracy.62  years = 25 }
 	}
 }

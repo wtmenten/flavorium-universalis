@@ -41,6 +41,11 @@ cc_byz_mamluk_confrontation = {
 
 	monthly_spawn_chance = monthly_spawn_chance_unique
 
+	# hint_tag is set on 22 of vanilla's 22 situations and was missing here. It is what makes
+	# the "?" button in the situation tooltip exist at all: shared/situation_tooltips.gui:13
+	# gates it on Situation.HasHint. Defined in common/scriptable_hints/cc_byz_hints.txt.
+	hint_tag = hint_cc_byz_mamluk_confrontation
+
 	can_start = {
 		has_dlc = "d008_fate_of_the_phoenix"
 
@@ -105,15 +110,33 @@ cc_byz_mamluk_confrontation = {
 	}
 
 	on_monthly = {
+		# Mirror the three eastern seats onto the situation so the panel can show them.
+		# The panel cannot read location ownership itself; see the effect's header.
+		cc_byz_mamluk_seat_sync_effect = yes
+
 		# Cairo's own weather. Mostly hidden or forced outcomes, giving the player openings
 		# they did not create and setbacks they could not have prevented, so the situation
 		# has weather rather than a schedule.
+		#
+		# RATE CUT FROM 2+2 TO 0.7+0.7. Playtesting: "byz_mam events fire frequently but arent
+		# impactful". At 4% a month these two alone fired 39% of years, forever, for the whole
+		# life of a situation that can run three centuries. That is roughly fifty firings of a
+		# two-event rotation, which is what turns weather into wallpaper.
+		#
+		# 1.4% a month is about 8% a year, so the frontier speaks up roughly twice a
+		# generation. The events themselves are correspondingly heavier: see the payload
+		# rework in cc_byz_mamluk.txt, which is the other half of this fix and the more
+		# important one.
+		#
+		# The per-event cooldowns live on the events' own triggers, not here, for the same
+		# reason cc_byz_bureaucracy.60's does: one guard where the event is defined beats a
+		# guard at each call site.
 		random_list = {
-			96 = { }
-			2 = {
+			986 = { }
+			7 = {
 				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.5 }
 			}
-			2 = {
+			7 = {
 				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.4 }
 			}
 		}
@@ -137,5 +160,38 @@ cc_byz_mamluk_confrontation = {
 		else = {
 			value = define:NMapColors|MAP_COLOR_NULL
 		}
+	}
+
+	# WHAT THE MAP SAYS WHEN YOU HOVER A COLOURED LOCATION. 21 of vanilla's 22 situations
+	# define this and this one did not, so the map colouring above was unexplained: two shades
+	# with nothing telling the player which was which.
+	#
+	# Root here is the LOCATION and scope:target is the situation, per situations/readme.txt.
+	# Not executed, only rendered, which is why a bare custom_tooltip is the whole body.
+	tooltip = {
+		if = {
+			limit = { owner ?= c:BYZ }
+			custom_tooltip = cc_byz_mam_map_tt_empire
+		}
+		else_if = {
+			limit = { owner ?= c:MAM }
+			custom_tooltip = cc_byz_mam_map_tt_cairo
+		}
+		else = {
+			custom_tooltip = cc_byz_mam_map_tt_other
+		}
+	}
+
+	# The map legend. Vanilla defines 79 of these across its situations and both of ours had
+	# none, so the situation's colours appeared in the legend box as nothing at all.
+	legend_key = {
+		desc = "CC_BYZ_MAM_LEGEND_EMPIRE"
+		color = blue
+		require_color_on_map = yes
+	}
+	legend_key = {
+		desc = "CC_BYZ_MAM_LEGEND_CAIRO"
+		color = red
+		require_color_on_map = yes
 	}
 }

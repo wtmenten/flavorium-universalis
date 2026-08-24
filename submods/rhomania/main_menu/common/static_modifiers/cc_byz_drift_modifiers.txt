@@ -1,0 +1,60 @@
+﻿# Timed societal drift, granted by events.
+#
+# WHY THESE EXIST. Every event in this submod moved the Taxis axis the same way: an instant
+# change_societal_value jump, seventy-four of them. Playtesting: "generally taxis pushes should
+# be temporary". An instant jump says the empire's character changed the day the decision was
+# taken, which is the wrong shape for most of what these events describe. Repealing the sale of
+# offices is not a moment, it is twenty years of a clerk somewhere refusing to accept a fee.
+#
+# So the events that describe a PROCESS grant one of these alongside their jump rather than
+# instead of it. The jump is the decision landing; the drift is the decision working.
+#
+#
+# THE RATE IS CHOSEN AGAINST THE INSTANT SCALE, not picked to look small.
+#
+#   societal_value_move_to_left        -10   one instant jump
+#   societal_value_minor_monthly_move  0.05  these modifiers, per month
+#
+# 0.05 a month is 0.6 a year, so a twenty-year grant is worth 12 points: slightly more than one
+# instant jump, spread over a period long enough that the player can undo it by acting
+# differently. That is the whole difference between the two mechanisms and the reason for
+# pairing them rather than substituting one for the other.
+#
+#
+# NO NEGATIVE FORM IS POSSIBLE, and this is an engine constraint rather than a choice.
+# monthly_towards_cc_taxis is registered with `min = 0` (the shape vanilla uses for every
+# societal drift modifier type), so a negative value is clamped away. Pushing the other way
+# means granting the OPPOSITE modifier, which is why both poles appear below.
+
+# The crown reasserting that offices are posts. Granted by the redemption of a farmed-out
+# office, the retrenchment routes on the underfunded-bureau events, and the census.
+cc_byz_taxis_reforming = {
+	game_data = {
+		category = country
+	}
+	monthly_towards_cc_taxis = societal_value_minor_monthly_move
+}
+
+# The slower version: an administrative habit taking hold rather than a policy being imposed.
+cc_byz_taxis_habit = {
+	game_data = {
+		category = country
+	}
+	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
+}
+
+# The magnates consolidating after a concession. Granted where the crown has conceded something
+# structural rather than merely lost an argument.
+cc_byz_dynatoi_ascendant = {
+	game_data = {
+		category = country
+	}
+	monthly_towards_cc_dynatoi = societal_value_minor_monthly_move
+}
+
+cc_byz_dynatoi_creeping = {
+	game_data = {
+		category = country
+	}
+	monthly_towards_cc_dynatoi = societal_value_tiny_monthly_move
+}

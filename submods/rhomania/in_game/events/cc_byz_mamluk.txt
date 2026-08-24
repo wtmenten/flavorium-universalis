@@ -146,6 +146,16 @@ cc_byz_mamluk.2 = {
 	desc = cc_byz_mamluk.2.desc
 	outcome = neutral
 
+	# THE ONLY EVENT IN THIS FILE WRITTEN FROM CAIRO'S SIDE, and it shipped with no trigger
+	# block at all, so nothing stopped it landing on whoever it was fired at. It was fired at
+	# Byzantium: see the note in .3's after block.
+	#
+	# Every other event here is Byzantine and refers to c:MAM as the other party. This one
+	# refers to c:BYZ that way, which is the tell.
+	trigger = {
+		has_or_had_tag = MAM
+	}
+
 	illustration_tags = {
 		10 = interior
 		10 = professional
@@ -196,7 +206,7 @@ cc_byz_mamluk.3 = {
 	outcome = negative
 
 	trigger = {
-		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_mamluk_chain_open_trigger = yes
 	}
 
 	illustration_tags = {
@@ -268,8 +278,18 @@ cc_byz_mamluk.3 = {
 	}
 
 	after = {
+		# ON CAIRO, NOT ON ROOT. This shipped as a bare trigger_event_silently, which fires on
+		# the event's own scope, and .3 runs on Byzantium. So the Byzantine player was handed
+		# .2, the one event in this file written from the SULTAN's side: an event whose option b
+		# does `c:BYZ = { add_opinion = { target = root } }`, meaning the emperor improved his
+		# own opinion of himself. Reported from playtesting as "as byz i am getting
+		# cc_byz_mamluk.2, this seems like it should be a mam only event".
+		#
+		# .2 now also carries its own tag guard, so a future miswiring cannot repeat this.
 		hidden_effect = {
-			trigger_event_silently = { id = cc_byz_mamluk.2  years = 4 }
+			c:MAM ?= {
+				trigger_event_silently = { id = cc_byz_mamluk.2  years = 4 }
+			}
 		}
 	}
 }
@@ -299,7 +319,7 @@ cc_byz_mamluk.4 = {
 	outcome = negative
 
 	trigger = {
-		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_mamluk_thread_open_trigger = yes
 	}
 
 	illustration_tags = {
@@ -310,6 +330,13 @@ cc_byz_mamluk.4 = {
 	immediate = {
 		cc_byz_init_levant_scores_effect = yes
 		cc_byz_init_debt_scores_effect = yes
+
+		# SIX-YEAR SHARED COOLDOWN, stamped by both events that fire from the situation's
+		# monthly roll and read by cc_byz_mamluk_thread_open_trigger. Timed, so it expires on
+		# its own with nothing to clear it. At the reworked 8% annual rate this rarely binds;
+		# what it prevents is the frontier and Cairo both speaking in consecutive months,
+		# which the monthly roll makes possible and which reads as noise.
+		set_variable = { name = cc_byz_mamluk_cd  value = yes  years = 6 }
 	}
 
 	# Buy the border emirs. They change sides for money and will change back for more.
@@ -317,7 +344,13 @@ cc_byz_mamluk.4 = {
 		name = cc_byz_mamluk.4.a
 		ai_chance = { base = 40 }
 
-		add_gold = -200
+		add_gold = -400
+		add_country_modifier = {
+			modifier = cc_byz_emirs_retained
+			years = 20
+			mode = add_and_extend
+		}
+		add_manpower = 5
 		situation:cc_byz_mamluk_confrontation ?= {
 			change_variable = { name = cc_byz_levant_progress  add = 10 }
 		}
@@ -331,8 +364,13 @@ cc_byz_mamluk.4 = {
 			ruler ?= { mil >= 70 }
 		}
 
-		add_gold = -150
-		add_army_tradition = army_tradition_mild_bonus
+		add_gold = -300
+		add_army_tradition = army_tradition_severe_bonus
+		add_country_modifier = {
+			modifier = cc_byz_syrian_garrisons
+			years = 30
+			mode = add_and_extend
+		}
 		change_variable = { name = cc_byz_levant_pressure  add = 1 }
 		clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
 		change_variable = { name = cc_byz_strain  add = 1 }
@@ -349,6 +387,19 @@ cc_byz_mamluk.4 = {
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_move_to_right
+		}
+		# The drift as well as the jump: handing a frontier to the men who hold it is a
+		# process, and it is the clearest case in the thread of the magnates gaining ground
+		# by the empire declining to govern.
+		add_country_modifier = {
+			modifier = cc_byz_dynatoi_creeping
+			years = 25
+			mode = add_and_extend
+		}
+		add_country_modifier = {
+			modifier = cc_byz_frontier_left_alone
+			years = 40
+			mode = add_and_extend
 		}
 		situation:cc_byz_mamluk_confrontation ?= {
 			change_variable = { name = cc_byz_mamluk_progress  add = 5 }
@@ -369,7 +420,7 @@ cc_byz_mamluk.5 = {
 	outcome = positive
 
 	trigger = {
-		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_mamluk_thread_open_trigger = yes
 	}
 
 	illustration_tags = {
@@ -379,6 +430,13 @@ cc_byz_mamluk.5 = {
 
 	immediate = {
 		cc_byz_init_levant_scores_effect = yes
+
+		# SIX-YEAR SHARED COOLDOWN, stamped by both events that fire from the situation's
+		# monthly roll and read by cc_byz_mamluk_thread_open_trigger. Timed, so it expires on
+		# its own with nothing to clear it. At the reworked 8% annual rate this rarely binds;
+		# what it prevents is the frontier and Cairo both speaking in consecutive months,
+		# which the monthly roll makes possible and which reads as noise.
+		set_variable = { name = cc_byz_mamluk_cd  value = yes  years = 6 }
 
 		# Not offered. A succession dispute in Cairo moves the situation whether or not the
 		# emperor does anything about it.
@@ -394,6 +452,12 @@ cc_byz_mamluk.5 = {
 
 		change_variable = { name = cc_byz_levant_pressure  add = 1 }
 		clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
+		add_prestige = prestige_severe_bonus
+		add_country_modifier = {
+			modifier = cc_byz_cairo_pressed
+			years = 20
+			mode = add_and_extend
+		}
 		situation:cc_byz_mamluk_confrontation ?= {
 			change_variable = { name = cc_byz_levant_progress  add = 15 }
 		}
@@ -407,9 +471,14 @@ cc_byz_mamluk.5 = {
 			ruler ?= { dip >= 70 }
 		}
 
-		add_gold = -150
+		add_gold = -350
+		add_country_modifier = {
+			modifier = cc_byz_cairo_divided
+			years = 25
+			mode = add_and_extend
+		}
 		situation:cc_byz_mamluk_confrontation ?= {
-			change_variable = { name = cc_byz_mamluk_progress  add = -10 }
+			change_variable = { name = cc_byz_mamluk_progress  add = -20 }
 		}
 	}
 
@@ -420,6 +489,15 @@ cc_byz_mamluk.5 = {
 
 		change_variable = { name = cc_byz_levant_pressure  add = -1 }
 		clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
+		add_country_modifier = {
+			modifier = cc_byz_levantine_terms
+			years = 30
+			mode = add_and_extend
+		}
+		add_opinion = {
+			target = c:MAM
+			modifier = cc_byz_opinion_levantine_terms
+		}
 		situation:cc_byz_mamluk_confrontation ?= {
 			change_variable = { name = cc_byz_levant_progress  add = 10 }
 		}
@@ -449,7 +527,7 @@ cc_byz_mamluk.10 = {
 	outcome = negative
 
 	trigger = {
-		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_mamluk_chain_open_trigger = yes
 		NOR = {
 			has_variable = cc_byz_mem_patriarchs_backed
 			has_variable = cc_byz_mem_patriarchs_sold
@@ -571,7 +649,7 @@ cc_byz_mamluk.11 = {
 	outcome = neutral
 
 	trigger = {
-		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_mamluk_chain_open_trigger = yes
 		NOT = { has_variable = cc_byz_mem_pentarchy_war }
 	}
 
@@ -669,6 +747,9 @@ cc_byz_mamluk.12 = {
 	desc = cc_byz_mamluk.12.desc
 	outcome = positive
 
+	# NOT WAR-GATED, unlike the rest of the thread. The other events narrate a cold war and
+	# had to stop firing once it stopped being cold; this one records seats taken IN the
+	# Pentarchy War and would never fire at all behind that guard. Same for .13 below.
 	trigger = {
 		has_societal_value = societal_value_type:latinization_vs_hellenization
 		has_variable = cc_byz_mem_pentarchy_war
@@ -768,6 +849,8 @@ cc_byz_mamluk.13 = {
 	desc = cc_byz_mamluk.13.desc
 	outcome = positive
 
+	# Not war-gated: see .12. The pentarchy is most likely to be completed during the war
+	# that completed it, and c:MAM may well not exist by this point either.
 	trigger = {
 		has_societal_value = societal_value_type:latinization_vs_hellenization
 	}
@@ -830,6 +913,14 @@ cc_byz_mamluk.20 = {
 		}
 	}
 	outcome = neutral
+
+	# Directly fired from BYZ-scoped effects, so this was unguarded by luck rather than by
+	# design. A directly-fired event still evaluates its trigger (vanilla's d008_flavor_byz.2
+	# and .3 depend on exactly that), so the guard costs nothing and closes the class of bug
+	# that put cc_byz_mamluk.2 in front of a Byzantine player.
+	trigger = {
+		has_or_had_tag = BYZ
+	}
 
 	illustration_tags = {
 		10 = interior

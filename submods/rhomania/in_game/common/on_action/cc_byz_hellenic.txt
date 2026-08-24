@@ -1,0 +1,75 @@
+﻿# The Hellenic thread's chain points.
+#
+# The vanilla hooks (on_religion_changed, yearly_country_pulse) are declared once in
+# cc_byz_on_actions.txt. This file defines only the custom on_actions they point at.
+#
+#
+# WHY THERE IS A HELLENIC THREAD AT ALL.
+#
+# Fate of the Phoenix ships a complete route out of Orthodoxy and the submod did not notice.
+# hellenism_religion_movement spawns at Hellenic holy sites held by Christian owners, and the
+# empire holds most of them: Delphi, Olympia, the Parthenon, Eleusis, Dodona, Delos. The DLC
+# then supports the destination with nine advances, ten religious aspects, six gods, an omen
+# system and the Olympiad. Vanilla's own ROM formable permits a Hellenic emperor outright.
+#
+# Rhomania assumed Orthodoxy in 341 places. On conversion six mission tasks became impossible,
+# the faith pillar's capstone became unreachable behind them, and the union arc kept offering
+# to negotiate with Rome on behalf of a church the emperor had left.
+#
+#
+# THE ARC MIRRORS THE UNION ARC ON PURPOSE, because the two are the same shape of problem seen
+# from opposite ends: a ruler changes the empire's religious settlement by decree, and then
+# discovers that the city is not the empire and does not consider itself bound by decrees.
+#
+#   union:     contacts -> council -> reception -> repudiation
+#   hellenic:  edict    -> temples -> reaction   -> suppression or accommodation
+#
+# Both have a stage three that can fail on its own, and in both the failure is the interesting
+# outcome rather than the punishment.
+
+# The rupture. Fires the moment the imperial religion changes to or from the old rites.
+#
+# NOT GATED ON WHICH DIRECTION. Both are dramatic and both need the state resetting correctly,
+# so the event sorts it out from scope:old_religion rather than being two on_actions.
+cc_byz_on_religion_changed = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		OR = {
+			cc_byz_faith_hellenic_trigger = yes
+			scope:old_religion ?= religion:hellenism_religion
+		}
+	}
+	events = {
+		cc_byz_hellenic.10
+	}
+}
+
+# The reaction, once the temples are open and the city has had time to form a view.
+#
+# Deliberately the mirror of cc_byz_on_yearly_union: the arc is driven by the four actions,
+# and the pulse handles only the thing the emperor does not decide, which is whether the
+# resistance keeps growing after he has committed.
+cc_byz_on_yearly_hellenic = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		cc_byz_faith_hellenic_trigger = yes
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		trigger_if = {
+			limit = {
+				has_variable = cc_byz_hellenic_stage
+				has_variable = cc_byz_christian_reaction
+			}
+			var:cc_byz_hellenic_stage = 3
+			var:cc_byz_christian_reaction >= 3
+		}
+		trigger_else = { always = no }
+		# Shared rate limiter across the condition pulses. See scripted_effects/cc_byz_pulse.txt.
+		NOT = { has_variable = cc_byz_pulse_cd }
+	}
+	random_events = {
+		100 = 0
+		15 = cc_byz_hellenic.30
+	}
+}

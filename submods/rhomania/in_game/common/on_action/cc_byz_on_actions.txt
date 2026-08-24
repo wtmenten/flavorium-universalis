@@ -40,6 +40,16 @@ on_bankruptcy = {
 	on_actions = { cc_byz_on_bankruptcy }
 }
 
+# on_religion_changed. root = country, scope:old_religion = the religion left behind.
+#
+# CHAINED, NOT REPLACED, and vanilla's body here is substantial: it sets the convert_religion
+# cooldown, strips excommunication, and handles leaving and rejoining autocephalous
+# patriarchates (_hardcoded.txt:3630). Redefining it with a direct effect = {} would delete all
+# of that, which is the failure mode CLAUDE.md documents for exactly this reason.
+on_religion_changed = {
+	on_actions = { cc_byz_on_religion_changed }
+}
+
 # monthly_country_pulse. Vanilla's copy (country_monthly.txt:1) carries a long on_actions list
 # and a random_events block, so this is chained rather than redefined, exactly like the others.
 #
@@ -63,5 +73,6 @@ yearly_country_pulse = {
 		cc_byz_on_yearly_papal_guard
 		cc_byz_on_yearly_strain_drift
 		cc_byz_on_yearly_strain_events
+		cc_byz_on_yearly_hellenic
 	}
 }

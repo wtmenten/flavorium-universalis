@@ -168,3 +168,76 @@ cc_byz_init_union_scores_effect = {
 		}
 	}
 }
+
+
+#############################################
+# The three eastern seats, mirrored onto the situation for the panel
+#############################################
+#
+# WHY THIS EXISTS. cc_byz_mamluk_confrontation.gui shows which of Jerusalem, Antioch and
+# Alexandria the empire holds, because those three plus Constantinople and Rome are what
+# has_all_pentarchy tests and therefore what the whole confrontation is for.
+#
+# The panel cannot read the map. The natural GUI form would be
+# GetLocation('jerusalem').GetOwner.IsSameCountry(Player), and neither function exists: a grep
+# across every vanilla .gui returns zero hits for GetLocation( and zero for IsSameCountry.
+# GUI datafunctions are a different vocabulary from script triggers and there is no
+# owns-this-location member among them.
+#
+# So script writes what the panel reads. Called from the situation's on_monthly, where root is
+# the SITUATION, which is also where the variables need to live for the panel's
+# GetActiveSituation.GetSituation.MakeScope idiom to find them.
+#
+# Flags rather than values, so the panel tests .IsSet and never reads an unset variable.
+# Worst-case staleness is one month after a conquest, which is not worth more machinery.
+cc_byz_mamluk_seat_sync_effect = {
+	if = {
+		limit = { c:BYZ ?= { owns = location:jerusalem } }
+		set_variable = { name = cc_byz_seat_jerusalem  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_jerusalem
+	}
+
+	if = {
+		limit = { c:BYZ ?= { owns = location:antioch } }
+		set_variable = { name = cc_byz_seat_antioch  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_antioch
+	}
+
+	if = {
+		limit = { c:BYZ ?= { owns = location:alexandria } }
+		set_variable = { name = cc_byz_seat_alexandria  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_alexandria
+	}
+}
+
+
+#############################################
+# The Hellenic thread's state
+#############################################
+#
+# See events/cc_byz_hellenic.txt. Initialised lazily like every other score in this file, so a
+# save from before the thread existed backfills on first contact rather than erroring.
+#
+#   cc_byz_hellenic_stage      0..4  0 nothing, 1 edict, 2 temples, 3 reaction, 4 settled
+#   cc_byz_christian_reaction  0..5  how hard the Church is pushing back
+#
+# BOTH ARE KEPT WHEN THE EMPIRE RETURNS TO ORTHODOXY rather than removed: cc_byz_hellenic.10
+# resets them to 0 by hand on the way back, which is a different thing from deleting them. The
+# same principle applies in the other direction to cc_byz_union_stage, which survives the
+# conversion untouched so a returning empire resumes the union arc where it stopped.
+cc_byz_init_hellenic_scores_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_hellenic_stage } }
+		set_variable = { name = cc_byz_hellenic_stage  value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_byz_christian_reaction } }
+		set_variable = { name = cc_byz_christian_reaction  value = 0 }
+	}
+}

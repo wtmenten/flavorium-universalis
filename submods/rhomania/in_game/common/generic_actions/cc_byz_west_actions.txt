@@ -30,12 +30,31 @@
 
 # ORDER A CENSUS. The thing a Roman administration did that nothing else in Europe could.
 cc_byz_west_order_census = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 24
 	automation_tick = monthly
 	automation_tick_frequency = 24
-	player_automated_category = governmentreforms
+
+	# type = situation puts the action in the SITUATION PANEL. It shipped as owncountry, which
+	# put all ten in the country action list instead, so the West's panel had no actions in it
+	# at all and the situation looked inert. 155 of vanilla's generic actions are type =
+	# situation and this is what every one of them looks like.
+	#
+	# The select_trigger is not optional decoration: it is what binds scope:recipient to the
+	# situation, which is the parameter the panel's action button passes
+	# (shared/cards.gui: parameter_value = SituationView.GetActiveSituation.GetSituation).
+	# Shape copied from black_death.txt:17.
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -83,12 +102,22 @@ cc_byz_west_order_census = {
 # reliably kept a Roman frontier loyal and the single thing emperors most reliably stopped
 # doing when money was short.
 cc_byz_west_donative = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 12
 	automation_tick = monthly
 	automation_tick_frequency = 12
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -128,12 +157,22 @@ cc_byz_west_donative = {
 
 # DEMAND THE TRIBUTE. Gold now, above what the subject arrangement already yields.
 cc_byz_west_demand_tribute = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 24
 	automation_tick = monthly
 	automation_tick_frequency = 24
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -174,12 +213,22 @@ cc_byz_west_demand_tribute = {
 
 # SEND THE STRATEGOS WEST. Reinforcement, and a general in the west with troops of his own.
 cc_byz_west_send_strategos = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 24
 	automation_tick = monthly
 	automation_tick_frequency = 24
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -226,12 +275,22 @@ cc_byz_west_send_strategos = {
 # THE MOST CONSEQUENTIAL ACTION HERE, and the only one with no cooldown modifier: it can only
 # be taken once because the succession law it implies is the thing it sets.
 cc_byz_west_confirm_son = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 36
 	automation_tick = monthly
 	automation_tick_frequency = 36
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -290,12 +349,22 @@ cc_byz_west_confirm_son = {
 #
 # Resolved in cc_byz_west.20, not here, because a refusal is an event and not a number.
 cc_byz_west_recall_exarch = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 24
 	automation_tick = monthly
 	automation_tick_frequency = 24
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -328,12 +397,22 @@ cc_byz_west_recall_exarch = {
 # GRANT A COMMUNE ITS CHARTER. Italy and Gaul only: the communes are a western European
 # phenomenon and there is nothing in Carthage or Cartagena to charter.
 cc_byz_west_grant_charter = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 24
 	automation_tick = monthly
 	automation_tick_frequency = 24
-	player_automated_category = governmentreforms
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -386,12 +465,22 @@ cc_byz_west_grant_charter = {
 # emperor who never takes it never loses one. The price is in the friction thread: exarchs with
 # no forum take their grievances elsewhere.
 cc_byz_io_convene_consistory = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 12
 	automation_tick = monthly
 	automation_tick_frequency = 12
-	player_automated_category = parliament
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -426,12 +515,22 @@ cc_byz_io_convene_consistory = {
 # on its own as provinces grew and the player would watch the consistory's arithmetic shift for
 # reasons they never chose.
 cc_byz_io_elevate_senior_exarch = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 36
 	automation_tick = monthly
 	automation_tick_frequency = 36
-	player_automated_category = parliament
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
@@ -491,12 +590,22 @@ cc_byz_io_elevate_senior_exarch = {
 # It is the only way to reduce the consistory's opposition, and it costs the reform modifiers,
 # the manpower, and the goodwill of every exarch who watched it happen.
 cc_byz_io_dissolve_prefecture = {
-	type = owncountry
+	type = situation
 	ai_tick = monthly
 	ai_tick_frequency = 36
 	automation_tick = monthly
 	automation_tick_frequency = 36
-	player_automated_category = parliament
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
 
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"

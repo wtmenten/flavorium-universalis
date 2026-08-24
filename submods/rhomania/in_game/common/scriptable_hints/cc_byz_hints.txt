@@ -1,0 +1,38 @@
+﻿# Hints for the submod's two situations.
+#
+# WHY THESE EXIST. hint_tag is set on 22 of vanilla's 22 situations and on neither of ours.
+# It is what makes the "?" button in a situation's tooltip do anything: shared/situation_
+# tooltips.gui:13 gates that button on Situation.HasHint and routes it through
+# Situation.GetHintTag into the hints lateral view. Without a hint_tag the button is simply
+# absent, which is one more small way the two panels read as unfinished.
+#
+# Shape copied from vanilla's scripted_hints.txt:802 (hint_western_schism), which is the
+# minimal form: show while the situation is active, hide when it is not, sort at 200.
+#
+# sort_priority 200 is vanilla's "react now" band, shared with the schism, the reformation and
+# the council of Trent. Both of these are things the player has to make decisions about rather
+# than background weather, so that is the right band.
+
+hint_cc_byz_the_west = {
+	priority = {
+		is_situation_active = situation:cc_byz_the_west
+	}
+	hide = {
+		NOT = {
+			is_situation_active = situation:cc_byz_the_west
+		}
+	}
+	sort_priority = 200
+}
+
+hint_cc_byz_mamluk_confrontation = {
+	priority = {
+		is_situation_active = situation:cc_byz_mamluk_confrontation
+	}
+	hide = {
+		NOT = {
+			is_situation_active = situation:cc_byz_mamluk_confrontation
+		}
+	}
+	sort_priority = 200
+}

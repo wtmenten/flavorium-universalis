@@ -16,6 +16,10 @@ cc_byz_on_yearly_union = {
 	trigger = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		has_or_had_tag = BYZ
+		# The ferment is the city's reaction to a union of CHURCHES. An emperor who has taken
+		# up the old rites has given the city a great deal more to riot about, and it riots
+		# about that instead, in cc_byz_hellenic.30.
+		cc_byz_faith_orthodox_trigger = yes
 		has_societal_value = societal_value_type:latinization_vs_hellenization
 		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
 		# evaluated; every trigger in a block is evaluated, so an unset variable errors
@@ -29,6 +33,10 @@ cc_byz_on_yearly_union = {
 			var:cc_byz_anti_unionist >= 3
 		}
 		trigger_else = { always = no }
+		# Shared rate limiter across all six condition pulses. See
+		# scripted_effects/cc_byz_pulse.txt for why this is one cooldown and not six
+		# retuned weight tables.
+		NOT = { has_variable = cc_byz_pulse_cd }
 	}
 	random_events = {
 		100 = 0
