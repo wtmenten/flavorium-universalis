@@ -1,3 +1,5 @@
+﻿
+
 # Flavorium Universalis
 
   
@@ -47,7 +49,7 @@ Flavorium Universalis enhances the vanilla EUV experience across multiple areas:
     * **NEW:** Ministers scheme against each other. Rivalries escalate through a three-stage event chain, and ideologically aligned ministers may form cabals and pursue joint agendas.
     * **NEW:** Assign explicit duties to ministers: war council, domestic reform, diplomatic mission, colonial posting, and more. Each duty raises related events and grants an ongoing country modifier.
     * **NEW:** Cabinet composition has aggregate effects. A court dominated by militarists, merchants, or clergy activates auto-modifiers that reflect the makeup of your advisors.
-    * **NEW:** Ministers grow through stepping-stone trait chains, starting as fumbling reformists or green adjutants and advancing through events into masters of their craft.
+    * **NEW:** Ministers accumulate experience in three tracks and climb career ladders from a minor malus to a mastery. Train them, groom successors, pair them with a mentor, and choose which way their career forks.
     * **NEW:** Military ministers run war council events during conflicts, which unlock post-war reform proposals when you win.
     * **NEW:** Post a minister overseas as a colonial governor to run charter company events, handle native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.
   * New subject types add more ways to use subjects:
@@ -145,7 +147,10 @@ Dynamic traits that spawn based on your realm's development level, societal valu
 **Negative Traits (9)**  
 Acquired through underperformance events; each has a dedicated rehabilitation chain that removes the trait when you address the underlying problem.  
   
-_Total: 145+ traits_  
+**Career Traits (6)**  
+The entry rungs and capstones of the cabinet advancement ladders: minor maluses a minister starts with, and the masteries they can earn their way to.  
+  
+_Total: 151+ traits_  
   
 **Notable traits:**  
 
@@ -220,21 +225,37 @@ Ministers who underperform acquire negative traits through yearly events. Each n
   
 
 
-### Stepping Stone Traits & Progression
+### Cabinet Experience & Advancement
 
   
   
-Ministers can enter **progressive trait chains** , starting from a Tier 0 entry trait and advancing into specialists over a lifespan:  
+Ministers accumulate **experience** in three tracks: administrative, diplomatic and military. Experience comes from the duties they hold, the years they serve, the wars and laws and marriages the realm carries through, and whatever you are willing to spend on training them.  
+  
+That experience produces two separate things:  
 
 
-  * **Chain A, The Reformer 's Path:** fumbling_reformist → … → master_reformer (driven by the Domestic Reform duty)
-  * **Chain C, The Diplomat 's Ascent:** tentative_envoy → … → master_statesman
-  * **Chain D, Military Hardening:** green_adjutant → … → standing_army_advocate or defensive_commander
-  * **Chain F, The Fiscal Path:** clumsy_accountant → … → treasury/prosperity specialist
-  * **Chain E, Colonial Pioneer:** frontier_administrator → returned_colonial_governor (driven by the Colonial Posting duty)
+  * **Seniority** , a level from 1 to 10 drawn from total experience across all three tracks. It reflects what a minister has been through, and grants a growing bonus to how effectively they work.
+  * **Specialisation** , a tier from 0 to 3 in each track separately, drawn from that track's own experience. This is what decides which traits are within reach. A minister can be very senior and still be a tier 0 soldier.
 
   
-Entry traits are mild negatives. They are the starting point, not the destination. Progress is tracked per minister via event variables and advances. Assigning a minister to the matching duty doubles their progression rate.  
+Fifteen **career ladders** run across the trait pool, each starting from a minor malus and ending in a mastery. A fumbling reformist becomes a law reformer, then a progressive reformist, then a master reformer, but only as fast as their administrative tier allows. Where a ladder forks you are asked which way it goes: whether your treasurer learns to invest or learns to audit, whether your marshal is given the whole establishment or just the field army.  
+  
+The random trait events respect this. A green adjutant can no longer simply be handed a supreme command.  
+  
+You can also spend on it directly, through interactions on any minister or protege:  
+
+
+  * **Postings.** Send someone to the chancery, on the embassy circuit, or to the staff college. They leave for months and the experience arrives with them when they return, having gone well, ordinarily, or badly.
+  * **Proteges.** Take up to three people outside the cabinet into the crown's care and groom them before a seat opens. The nobility does not care for it.
+  * **Mentorship.** Put a senior minister's time at a junior's disposal for a decade. The student gains in whatever their mentor is strongest at, so this steers a career rather than merely hurrying it.
+  * **Court examinations.** Sealed questions, answers read aloud, and one participant who does conspicuously better than anyone expected.
+
+  
+A **Court panel** lists every minister and protege with their level, their progress toward the next one, and their tier in each track, with the training actions on each row.  
+  
+Long careers have a cost. A minister two decades at the top starts to run down, and you choose whether to give them a year's leave or spend what is left of them. Two accomplished specialists of the same kind will circle each other until the crown settles it. And when a great minister dies, whoever worked beside them keeps some of what they knew.  
+  
+Switched off with the **Cabinet Experience** game rule.  
   
 
 
@@ -929,7 +950,7 @@ cc_wc| 9| War council: active-war events, post-war reform proposals, outdated ge
   
 cc_fac| 3| Estate faction capture events  
   
-cc_prog| 14| Stepping stone trait progression chains (Paths A/C/D/F/E)  
+cc_xp| 18| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
   
 cc_colonial| 6| Colonial divan: charter company events + decolonization crisis chain  
   
@@ -945,7 +966,7 @@ cc_balance_of_power| 54| European Balance of Power situation: alignment, congres
   
   
   
- _~503 events total_  
+ _~507 events total_  
   
 
 
@@ -1144,6 +1165,14 @@ When enabled, a two-pole great-power situation can arise across Europe and the N
 
   * **Enabled** _(default)_ : Papal one small loan events will fire depending on your stance during hussite crusades.
   * **Disabled** : No Papal one small loan events will fire.
+
+  
+**C &C: Cabinet Experience**  
+When enabled, cabinet ministers accumulate experience from the duties they hold, the years they serve, and the wars, laws and marriages their court carries through. Experience gives each minister a level (seniority) and a tier in each of the three abilities (specialisation), which together govern how far their traits can develop.  
+
+
+  * **Enabled** _(default)_ : Ministers gain experience and advance. Tracked for your court and for great powers; smaller AI courts are left alone.
+  * **Disabled** : Ministers do not accumulate experience. Traits behave as they did before, and the monthly pass over each court's cabinet is skipped entirely.
 
   
 

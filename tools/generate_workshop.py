@@ -70,6 +70,10 @@ TRAIT_FILES: list[tuple[str, str, str]] = [
      "Negative Traits",
      "Acquired through underperformance events; each has a dedicated rehabilitation chain "
      "that removes the trait when you address the underlying problem"),
+    ("cc_progression_traits.txt",
+     "Career Traits",
+     "The entry rungs and capstones of the cabinet advancement ladders: minor maluses a "
+     "minister starts with, and the masteries they can earn their way to"),
 ]
 
 # Second element may be a filename string or a glob pattern (e.g. "cc_bond_*.txt").
@@ -92,7 +96,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_cabal",            "cc_cabal_events.txt",              "Cabinet alliance formation: alliance forms → joint reform proposal"),
     ("cc_wc",               "cc_war_council_events.txt",        "War council: active-war events, post-war reform proposals, outdated general retirement"),
     ("cc_fac",              "cc_estate_faction_events.txt",     "Estate faction capture events"),
-    ("cc_prog",             "cc_progression_events.txt",        "Stepping stone trait progression chains (Paths A/C/D/F/E)"),
+    ("cc_xp",               "cc_xp_*.txt",                      "Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals"),
     ("cc_colonial",         "cc_colonial_events.txt",           "Colonial divan: charter company events + decolonization crisis chain"),
     ("cc_posting",          "cc_colonial_posting_events.txt",   "Colonial posting duty: dispatch, corruption, native uprising, fever"),
     ("cc_hus",              "cc_hus_events.txt",                "Hussite Wars papal loan event"),

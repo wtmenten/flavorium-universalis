@@ -1,0 +1,172 @@
+﻿l_spanish:
+ # ============================================================
+ # Cabinet Experience — service record interaction
+ #
+ # Saved scopes are referenced WITHOUT the scope: prefix, matching
+ # [cc_engage_subject.GetName] in cc_subject_bonds_l_english.yml. Writing
+ # [scope:cc_xp_subject.GetName] here parses but resolves to nothing in game.
+ # ============================================================
+ # NOTE ON KEYS. A character interaction needs more than <name> and <name>_desc:
+ #   <name>_desc_specific  the description once a target IS selected, and the one the
+ #                         engine complains about by name if it is missing
+ #   <name>_act            the verb shown on the confirm button, conventionally "$<name>$"
+ #   <name>_past           the message headline after it resolves (needs message = yes)
+ #   <name>_act_past       the message body after it resolves
+ # Interaction loc uses [SCOPE.sCharacter('recipient')], NOT the bare saved-scope form
+ # that event loc uses. See promote_to_head_of_cabinet in the vanilla localisation.
+ cc_xp_inspect_service_record: "Leer el historial de servicio"
+ cc_xp_inspect_service_record_desc: "Haz que los escribanos traigan todo lo que los archivos de la corona contienen sobre uno de tus ministros: qué han hecho, en qué se han vuelto buenos y cuánto camino les queda por recorrer."
+ cc_xp_inspect_service_record_desc_specific: "Los escribas traerán el archivo de [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_inspect_service_record_act: "$cc_xp_inspect_service_record$"
+ cc_xp_inspect_service_record_past: "Historial de servicio leído"
+ cc_xp_inspect_service_record_act_past: "La corona ha revisado el historial de [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_choose_minister: "¿El historial de quién?"
+
+ # ============================================================
+ # Cabinet Experience — service record readout (cc_xp.1)
+ # ============================================================
+ cc_xp.1.title: "El Historial de Servicio"
+ cc_xp.1.desc: "Los escribas mantienen un archivo sobre [cc_xp_subject.GetName], como hacen con cada oficial de la corona. Es una lectura más seca que los chismes de la corte, y bastante más fiable.\n\n#Y ANTIGÜEDAD#!\nNivel [cc_xp_subject.MakeScope.GetVariable('cc_level').GetValue|0] de 10, con [cc_xp_subject.MakeScope.GetVariable('cc_xp_total').GetValue|0] de experiencia. El siguiente nivel se alcanza a los [cc_xp_subject.MakeScope.GetVariable('cc_xp_next').GetValue|0].\n\n#Y ESPECIALIZACIÓN#!\nAdministración: [cc_xp_subject.MakeScope.GetVariable('cc_xp_adm').GetValue|0], rango [cc_xp_subject.MakeScope.GetVariable('cc_tier_adm').GetValue|0] de 3\nDiplomacia: [cc_xp_subject.MakeScope.GetVariable('cc_xp_dip').GetValue|0], rango [cc_xp_subject.MakeScope.GetVariable('cc_tier_dip').GetValue|0] de 3\nGuerra: [cc_xp_subject.MakeScope.GetVariable('cc_xp_mil').GetValue|0], rango [cc_xp_subject.MakeScope.GetVariable('cc_tier_mil').GetValue|0] de 3\n\nLa antigüedad es lo que un ministro ha vivido. La especialización es lo que realmente han aprendido a hacer, y es la especialización la que decide qué rasgos están a su alcance."
+ cc_xp.1.a: "Cerrar el archivo."
+
+ # ============================================================
+ # Cabinet Experience — ladder advancement (cc_xp.10)
+ # ============================================================
+ cc_xp.10.title: "Un ministro encuentra su camino"
+ cc_xp.10.desc: "No hay ceremonia para esto ni anuncio, pero todos en la corte pueden notarlo. [cc_xp_subject.GetName] ha dejado de ser alguien que ocupa un cargo para empezar a ser alguien en torno a quien se construye el cargo. El trabajo que solía llevarles una estación ahora les lleva quince días, y los escribas han dejado silenciosamente de revisarlo.\n\nLa experiencia ha llevado a [cc_xp_subject.GetName] al siguiente paso de su carrera. Su nueva posición figura en su historial y en su tarjeta en el gabinete."
+ cc_xp.10.a: "La competencia debería ser su propia recompensa. Rara vez lo es."
+
+ # ============================================================
+ # Cabinet Experience — court examination (cc_xp.11)
+ # ============================================================
+ cc_xp.11.title: "La Corte se Somete a un Examen"
+ cc_xp.11.desc: "[cc_xp_examiner.GetName] presidió, lo cual fue la elección segura y también la correcta. Las preguntas se fijaron con antelación y se sellaron, las respuestas se leyeron en voz alta, y se causó un buen número de daños reputacionales silenciosos a lo largo de una sola tarde.\n\nEl resultado que nadie predijo fue [cc_xp_subject.GetName], quien respondió a lo más difícil sin notas y luego se disculpó por tardar tanto. Todos los que realizaron el examen aprendieron algo de ello. [cc_xp_subject.GetName] aprendió bastante más.\n\nLos burgueses están encantados de que el ascenso pueda ganarse en una habitación con la puerta cerrada. La nobleza está menos encantada, por la misma razón."
+ cc_xp.11.a: "Anota el nombre. Lo necesitaremos de nuevo."
+
+ # ============================================================
+ # Cabinet Experience — training interactions
+ # ============================================================
+ cc_xp_train_adm: "Enviar a la Cancillería"
+ cc_xp_train_adm_desc: "Destácalos con los escribanos veteranos durante medio año: estatutos, precedentes, ingresos y la paciencia particular necesaria para leer un libro de cuentas que alguien más ha manipulado. Estarán ausentes mientras dure, y la experiencia llegará con ellos a su regreso."
+ cc_xp_train_adm_desc_specific: "[SCOPE.sCharacter('recipient').GetName] parte hacia la cancillería y regresará en seis meses con experiencia administrativa."
+ cc_xp_train_adm_act: "$cc_xp_train_adm$"
+ cc_xp_train_adm_past: "Partió hacia la Cancillería"
+ cc_xp_train_adm_act_past: "[SCOPE.sCharacter('recipient').GetName] ha ido a la cancillería y no estará disponible durante seis meses."
+ cc_xp_train_dip: "Enviar al circuito de embajadas"
+ cc_xp_train_dip_desc: "Un año en camino: cada corte que importa, llevando cartas sin importancia para poder observar cómo se entregan las importantes. El más largo de los tres puestos, porque es el que implica ir realmente a algún lugar."
+ cc_xp_train_dip_desc_specific: "[SCOPE.sCharacter('recipient').GetName] parte en una gira de embajadas y regresará en un año con experiencia diplomática."
+ cc_xp_train_dip_act: "$cc_xp_train_dip$"
+ cc_xp_train_dip_past: "Partió en el circuito de embajadas"
+ cc_xp_train_dip_act_past: "[SCOPE.sCharacter('recipient').GetName] ha partido en una gira diplomática y estará en el extranjero durante un año."
+ cc_xp_train_mil: "Enviar al Colegio de Estado Mayor"
+ cc_xp_train_mil_desc: "Tres cuartos de año de mapas, tablas de suministros y la compañía de oficiales que realmente han perdido una batalla y lo admitirán. No te serán de utilidad en la corte hasta que el curso termine."
+ cc_xp_train_mil_desc_specific: "[SCOPE.sCharacter('recipient').GetName] se presenta en el colegio de estado mayor y regresará en nueve meses con experiencia militar."
+ cc_xp_train_mil_act: "$cc_xp_train_mil$"
+ cc_xp_train_mil_past: "Partió hacia el Colegio de Estado Mayor"
+ cc_xp_train_mil_act_past: "[SCOPE.sCharacter('recipient').GetName] se ha presentado en el colegio de estado mayor y estará allí durante nueve meses."
+ cc_xp_choose_trainee: "¿A quién se enviará?"
+
+ # ============================================================
+ # Cabinet Experience — proteges and mentorship
+ # ============================================================
+ cc_xp_sponsor_protege: "Tomar un Protegido"
+ cc_xp_sponsor_protege_desc: "Interésate por alguien ajeno al gabinete: paga su manutención, ábrele las puertas adecuadas y ten un sucesor listo antes de que lo necesites. Los protegidos ganan experiencia lentamente por su cuenta, pero pueden ser entrenados y guiados como cualquier ministro. Tres a la vez. A la nobleza no le importa que la corona note a personas que no han sido avaladas por ella."
+ cc_xp_sponsor_protege_desc_specific: "[SCOPE.sCharacter('recipient').GetName] se convierte en un protegido de la corona y será preparado para el cargo. La nobleza lo notará."
+ cc_xp_sponsor_protege_act: "$cc_xp_sponsor_protege$"
+ cc_xp_sponsor_protege_past: "Se acepta a un protegido"
+ cc_xp_sponsor_protege_act_past: "[SCOPE.sCharacter('recipient').GetName] ahora cuenta con el patrocinio de la corona."
+ cc_xp_choose_protege: "¿Quién ha llamado tu atención?"
+ cc_xp_release_protege: "Liberar a un protegido"
+ cc_xp_release_protege_desc: "Retira el interés de la corona y libera el puesto para alguien más. Nada de lo que hayan aprendido se les quitará; si los nombras más tarde, o los reintegras, todo seguirá constando en el registro."
+ cc_xp_release_protege_desc_specific: "La corona retira su interés en [SCOPE.sCharacter('recipient').GetName]. No se le quita nada de lo que haya aprendido."
+ cc_xp_release_protege_act: "$cc_xp_release_protege$"
+ cc_xp_release_protege_past: "Patrocinio finalizado"
+ cc_xp_release_protege_act_past: "[SCOPE.sCharacter('recipient').GetName] ya no es un protegido de la corona."
+ cc_xp_choose_released_protege: "¿De quién termina el patrocinio?"
+ cc_xp_assign_mentor: "Asignar un mentor"
+ cc_xp_assign_mentor_desc: "Pon el tiempo de un ministro veterano a disposición de un novato durante una década. El estudiante gana experiencia cada año en aquello en lo que su mentor sea más fuerte, por lo que esto orienta una carrera en lugar de simplemente acelerarla. Lo enseñado sobrevive al maestro."
+ cc_xp_assign_mentor_desc_specific: "[SCOPE.sCharacter('recipient').GetName] tomará a [SCOPE.sCharacter('target').GetName] bajo su tutela durante la próxima década y le enseñará aquello que mejor sabe."
+ cc_xp_assign_mentor_act: "$cc_xp_assign_mentor$"
+ cc_xp_assign_mentor_past: "Comienza una mentoría"
+ cc_xp_assign_mentor_act_past: "[SCOPE.sCharacter('target').GetName] ha sido puesto bajo la instrucción de [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_choose_mentor: "¿Quién enseña?"
+ cc_xp_choose_student: "¿Quién aprende?"
+
+ # ============================================================
+ # Cabinet Experience — court examination
+ # ============================================================
+ cc_xp_court_examination: "Realizar un examen cortesano"
+ cc_xp_court_examination_desc: "Encargar un examen formal de toda la corte: preguntas selladas, respuestas leídas en voz alta y reputaciones decididas en una tarde. Lleva medio año organizarlo. Todos los que lo presenten ganan experiencia, y uno de ellos lo hará notablemente mejor de lo esperado. Costoso, y no debe repetirse en una década."
+ cc_xp_court_examination_desc_specific: "[SCOPE.sCharacter('recipient').GetName] pasará los próximos seis meses organizando un examen formal de toda la corte, y presidirá el mismo."
+ cc_xp_court_examination_act: "$cc_xp_court_examination$"
+ cc_xp_court_examination_past: "Se encarga un examen"
+ cc_xp_court_examination_act_past: "[SCOPE.sCharacter('recipient').GetName] ha comenzado a redactar las preguntas. La corte se reunirá en medio año."
+ cc_xp_choose_examiner: "¿Quién preside?"
+
+ # ============================================================
+ # Cabinet Experience — modifiers
+ # ============================================================
+ STATIC_MODIFIER_NAME_cc_xp_service_record: "Ministro experimentado"
+ STATIC_MODIFIER_DESC_cc_xp_service_record: "Los años en el cargo han enseñado a este ministro dónde están las palancas y qué escribanos responden realmente a sus cartas. El efecto aumenta con cada nivel de antigüedad."
+
+ # ============================================================
+ # Cabinet Experience — returns from a posting (cc_xp.30-32)
+ #
+ # Line breaks inside a value must be the two-character escape backslash-n.
+ # A real newline in the .yml truncates the value at that point.
+ # ============================================================
+ cc_xp.30.title: "Regreso de la Cancillería"
+ cc_xp.30.desc: "[cc_xp_subject.GetName] ha regresado tras seis meses entre los escribanos principales con un aspecto ligeramente atormentado, que es la reacción correcta tras haber leído las cuentas del reino en su totalidad.\n\nHan traído una lista. Varios elementos de ella son cosas que nadie ha cuestionado en treinta años, y al menos dos de ellos serán incómodos. Así es como se ve la competencia al principio: genera más trabajo antes de generar menos."
+ cc_xp.30.a: "Lee la lista."
+
+ cc_xp.31.title: "Regreso del Circuito"
+ cc_xp.31.desc: "Un año en las cortes de otros ha cambiado a [cc_xp_subject.GetName]. Partieron llevando cartas sin importancia y pasaron el tiempo observando cómo se entregaban las importantes, quién estaba en la habitación cuando ocurría y quién estaba deliberadamente ausente.\n\nAhora tienen opiniones sobre embajadores en los que hemos confiado durante una década. Algunas de esas opiniones son incómodas. Todas ellas son específicas."
+ cc_xp.31.a: "La especificidad vale más que la tacto."
+
+ cc_xp.32.title: "Regreso del Colegio de Estado Mayor"
+ cc_xp.32.desc: "[cc_xp_subject.GetName] ha regresado tras nueve meses de mapas, tablas de suministros y la compañía de oficiales que han perdido batallas y están dispuestos a decirlo en voz alta.\n\nAhora hablan de caminos, y depósitos, y de cuánto puede marchar un hombre antes de dejar de ser un soldado y convertirse en un problema. Es notablemente menos emocionante que la forma en que hablaban antes de irse, y notablemente más útil."
+ cc_xp.32.a: "La gloria es consecuencia del suministro."
+ # ============================================================
+ # Cabinet Experience — posting outcomes (phase 5)
+ #
+ # Each return event has three descs: good / poor / ordinary. The ordinary one
+ # already exists above; these are the tails.
+ # ============================================================
+ cc_xp.30.desc.good: "[cc_xp_subject.GetName] regresó pronto de la cancillería, algo que los escribanos principales insistieron en que era imposible, y luego presentó la razón: una conciliación de tres distritos de ingresos que nadie había logrado conciliar desde el último reinado.\n\nNo se muestran presumidos al respecto. De alguna manera, eso es peor. Independientemente de lo que fueran a aprender, parece que lo han aprendido y luego han seguido adelante."
+ cc_xp.30.desc.poor: "La cancillería fue educada al respecto. [cc_xp_subject.GetName] asistió, tomó notas y regresó con una comprensión básica del sistema de archivo y muy poco más.\n\nParte de ello se debe al puesto: medio año entre hombres que han pasado treinta años custodiando sus propios procedimientos no es medio año de enseñanza. Parte no se debe al puesto. El dinero se gasta de cualquier manera."
+ cc_xp.31.desc.good: "[cc_xp_subject.GetName] debía llevar cartas. En algún momento, alrededor de la tercera corte, dejó de ser la persona que las llevaba para convertirse en la persona a la que iban dirigidas las cartas, y nadie puede decir con precisión cuándo sucedió.\n\nHa regresado a casa con su propia correspondencia, tres invitaciones permanentes y un sentido muy claro de cuál de nuestros aliados nos está mintiendo."
+ cc_xp.31.desc.poor: "Un año en el extranjero, y [cc_xp_subject.GetName] ha regresado con impresiones en lugar de inteligencia. Las cortes eran espléndidas. La comida era extraña. Todos fueron muy amables.\n\nNo es que no hayan aprendido nada. Es que lo que aprendieron habría cabido cómodamente en una estación, y nosotros pagamos por cuatro."
+ cc_xp.32.desc.good: "La academia militar no otorga distinciones, bajo el argumento de que la guerra tampoco lo hace. Hizo una excepción en el caso del problema de suministros de [cc_xp_subject.GetName], que fue planteado como un ejercicio y resuelto de una manera que los instructores no habían considerado.\n\nHan regresado con la solución escrita y con los nombres de cuatro oficiales que discutieron con ellos al respecto y perdieron."
+ cc_xp.32.desc.poor: "[cc_xp_subject.GetName] ha completado el curso. El informe de los instructores es una obra maestra de decir extensamente nada que sea desagradable.\n\nAhora saben leer una tabla de suministros, lo cual es más de lo que sabían antes. Aún no pueden mirar una y saber qué está mal en ella, que es la parte que importa."
+ 
+ # ============================================================
+ # Cabinet Experience — weariness at the top (cc_xp.40)
+ # ============================================================
+ cc_xp.40.title: "El Largo Servicio de un Buen Servidor"
+ cc_xp.40.desc: "[cc_xp_subject.GetName] ha servido a esta corona durante más de veinte años y está, según cualquier medida que la corte sepa aplicar, en la cúspide de sus facultades. El trabajo se sigue haciendo. Simplemente está tardando más que antes, y se revisa con más frecuencia, y hay un cansancio particular en esa revisión.\n\nNadie ha dicho nada. Nadie lo hará. La cuestión es si la corona se da cuenta antes de que ocurra el error."
+ cc_xp.40.a: "Envíalos a sus propiedades durante un año. Nos las arreglaremos."
+ cc_xp.40.b: "No hay nadie más. Se quedan en el escritorio."
+ 
+ # ============================================================
+ # Cabinet Experience — institutional memory (cc_xp.41)
+ # ============================================================
+ cc_xp.41.title: "Lo que queda atrás"
+ cc_xp.41.desc: "Una carrera de esa longitud no termina cuando el hombre lo hace. [cc_xp_departed.GetName] dejó atrás un sistema de archivo que la mitad de la cancillería nunca ha cuestionado, un conjunto de contactos que ahora escriben a quien sea que ocupe el cargo, y una forma de hacer las cosas que nunca se escribió en ninguna parte y que se sigue al pie de la letra.\n\n[cc_xp_subject.GetName] trabajó a su lado el tiempo suficiente para haber absorbido gran parte de ello, mayormente sin darse cuenta. No es lo mismo que haberlo ganado. Pero tampoco es nada."
+ cc_xp.41.a: "Las instituciones recuerdan. Imperfectamente, pero recuerdan."
+ 
+ # ============================================================
+ # Cabinet Experience — rivalry of equals (cc_xp.42)
+ # ============================================================
+ cc_xp.42.title: "Dos gotas lo mismo"
+ cc_xp.42.desc: "[cc_xp_subject.GetName] y [cc_xp_rival.GetName] son muy buenos en lo mismo, lo cual es el problema. Solo hay un prestigio disponible en este campo en esta corte, y hay dos personas calificadas para ostentarlo.\n\nNo ha llegado a una hostilidad abierta. Se ha convertido en algo más tedioso: trabajo duplicado, memorandos escritos para ser leídos por un tercero y la costumbre de descubrir problemas en las propuestas del otro ligeramente demasiado tarde para corregirlos discretamente.\n\nLa corona puede resolverlo, o negarse a hacerlo."
+ cc_xp.42.a: "Apoyar a [cc_xp_subject.GetName]. El otro tendrá que resignarse."
+ cc_xp.42.b: "Deja que compitan. La rivalidad agudiza a las personas, hasta cierto punto."
+ cc_xp.42.c: "Ponlos ante el mismo problema y haz que lo firmen conjuntamente. (Prestigio)"
+ 
+ # ============================================================
+ # Cabinet Experience — phase 5 modifiers
+ # ============================================================
+ STATIC_MODIFIER_NAME_cc_xp_weary: "Desgastado"
+ STATIC_MODIFIER_DESC_cc_xp_weary: "Dos décadas en la cima de su profesión, y sin descanso alguno. Siguen siendo los mejores de la sala, aunque ya no son exactamente lo que eran."
+ STATIC_MODIFIER_NAME_cc_xp_professional_rival: "Rival profesional"
+ STATIC_MODIFIER_DESC_cc_xp_professional_rival: "Compartir una especialidad con alguien igualmente competente, y dedicar silenciosamente el esfuerzo al acto de compartir en lugar de a la especialidad en sí."
