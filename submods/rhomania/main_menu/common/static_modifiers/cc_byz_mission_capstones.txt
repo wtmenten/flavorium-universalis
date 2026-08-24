@@ -47,6 +47,27 @@ cc_byz_perm_ecumenical = {
 	global_estate_satisfaction_from_legitimacy = 0.05
 }
 
+# Pontifex Maximus. The Hellenic pair of cc_byz_perm_ecumenical above, granted by
+# cc_byz_task_pontifex, and deliberately the same shape: the two tasks ask the same question
+# (does the emperor's religious authority actually reach) and should pay the same way.
+#
+# ADDED AFTER A REPORTED LOAD ERROR:
+#   PostValidate of effect 'add_country_modifier' returned false
+#   at common/missions/cc_byz_renovatio_campaign.txt:568
+# The task granted this and nothing defined it. Its LOCALISATION was written, which is why the
+# omission survived: a missing-loc-key audit finds nothing when the key exists and the thing it
+# names does not. The undefined-modifier sweep that would have caught it was run before the
+# Hellenic tasks were added and never re-run afterwards.
+cc_byz_perm_pontifex = {
+	game_data = {
+		category = country
+	}
+
+	monthly_religious_influence = 0.05
+	tolerance_own = 0.5
+	global_estate_satisfaction_from_legitimacy = 0.05
+}
+
 # The Field Army. A host that can march twice in a reign.
 cc_byz_perm_field_army = {
 	game_data = {
