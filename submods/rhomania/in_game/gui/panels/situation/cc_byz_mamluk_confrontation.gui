@@ -98,25 +98,14 @@ situation_panel = {
 	}
 
 	##################################### MAIN IMAGE #####################################
-	# Flat gradient. No custom illustration is shipped, and a missing texture renders as a
-	# visible error rather than as nothing, so this uses the same colour-texture approach the
-	# main mod's ledger panel does.
-	blockoverride "situation_panel_image" {
-		background = {
-			using = color_dark_brown_texture
-			spriteType = stretched
-		}
-		background = {
-			using = color_dark_brown_texture
-			alpha = 1
-			margin_top = -140
-			modify_texture = {
-				using = bg_fade_vertical_up_mask_texture
-				blend_mode = alphamultiply
-				alpha = 1
-			}
-		}
-	}
+	# DELIBERATELY NOT OVERRIDDEN. The default block in
+	# game/in_game/gui/panels/situation/common.gui:113 calls GetSituationIllustration(...),
+	# which resolves main_menu/gfx/interface/illustrations/situation/<situation key>.dds by
+	# naming convention alone, then applies scene_fade_vertical_up.
+	# cc_byz_mamluk_confrontation.dds is shipped from the MAIN mod's main_menu folder rather
+	# than this submod's, which is safe because this submod cannot load without the main mod.
+	# The comment that used to sit here said no illustration was shipped and a missing
+	# texture renders as a visible error; the art now exists, so the override is gone.
 
 	blockoverride "situation_subheader_content" {}
 

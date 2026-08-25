@@ -52,6 +52,7 @@ cc_xp_second_to_subject = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_envoy"
+		none_available_msg_key = "cc_xp_none_envoy"
 		column = { data = name }
 
 		visible = {
@@ -64,38 +65,23 @@ cc_xp_second_to_subject = {
 		}
 	}
 
-	select_trigger = {
-		looking_for_a = country
-		source = actor
-		target_flag = target
-		name = "cc_xp_choose_subject_court"
-		column = { data = name }
-
-		visible = {
-			is_subject_of = scope:actor
-		}
-
-		enabled = {
-			cc_xp_can_receive_envoy = yes
-		}
-	}
+	# The subject court used to be a second selector here. A panel action_button cannot
+	# open a target picker, so any flag the button does not supply leaves the action
+	# unperformable and the button dead. The minister comes from their own row; the court
+	# is chosen among options in cc_xp.81.
 
 	effect = {
 		if = {
-			limit = {
-				exists = scope:recipient
-				exists = scope:target
-			}
+			limit = { exists = scope:recipient }
 
+			# Flagged rather than scoped across the event, as everywhere else in this
+			# system, and the flag doubles as "this minister is already being posted".
 			scope:recipient = {
-				set_variable = { name = cc_xp_seconded  value = yes  years = 8 }
+				set_variable = { name = cc_xp_awaiting_posting  value = yes  months = 2 }
+				save_scope_as = cc_xp_envoy
 			}
 
-			scope:target = {
-				set_variable = { name = cc_bond_envoy        value = yes  years = 8 }
-				set_variable = { name = cc_bond_envoy_track  value = scope:recipient.var:cc_track  years = 8 }
-				set_variable = { name = cc_bond_envoy_char   value = scope:recipient  years = 8 }
-			}
+			scope:actor = { trigger_event_silently = { id = cc_xp.81 } }
 		}
 	}
 
@@ -134,6 +120,7 @@ cc_xp_recall_envoy = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_recalled"
+		none_available_msg_key = "cc_xp_none_recalled"
 		column = { data = name }
 
 		visible = {

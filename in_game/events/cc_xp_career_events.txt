@@ -1,0 +1,592 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_ladders.py
+#
+# CHOOSING A CAREER. One event per track, opened from that track's training return
+# event when the minister who came back holds no ladder trait at all. This is the
+# only way onto rung 0 that the player controls, and the only way at all onto the
+# four ladders no event in the mod grants the entry trait for.
+#
+#   cc_xp.90   [adm] 4 of 6: reform, fiscal, learning, urbanism, law, integration
+#   cc_xp.91   [dip] 4 of 5: envoy, colonial, trade, exploration, intrigue
+#   cc_xp.92   [mil] 3 of 4: command, drill, siege, cavalry
+#
+# THE MENU IS PARTIAL. Each opening shows a rotating window of the track's careers,
+# rolled by cc_xp_offer_career_<track> at the moment the minister got back, so the
+# court is offering what it can rather than presenting a catalogue. Every option is
+# gated on that roll; the first also passes when the roll is somehow unset, which is
+# the guard against an event with no available option and therefore no way to close
+# it.
+#
+# There is no decline option, for the same reason the events in cc_xp_choice_events
+# have none: the training that opened this was already paid for.
+#
+# The minister is identified by a timed flag rather than a saved scope, as
+# everywhere else in this system. Two ministers back from the same posting in the
+# same month resolve to different people, because selection clears the flag.
+###############################################################################
+
+
+# ADM
+cc_xp.90 = {
+	type = country_event
+	title = cc_xp.90.title
+	desc = cc_xp.90.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_awaiting_career_adm }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_awaiting_career_adm }
+			remove_variable = cc_xp_awaiting_career_adm
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# The Reformer's Path -> fumbling_reformist
+	option = {
+		name = cc_xp.90.a
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+						var:cc_xp_career_offer = 6
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:fumbling_reformist
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Treasury -> clumsy_accountant
+	option = {
+		name = cc_xp.90.b
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 5
+						var:cc_xp_career_offer = 6
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:clumsy_accountant
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Scholar's Path -> learned_courtier
+	option = {
+		name = cc_xp.90.c
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 6
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:learned_courtier
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Builder -> urban_planner
+	option = {
+		name = cc_xp.90.d
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:urban_planner
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Jurist -> legal_scholar
+	option = {
+		name = cc_xp.90.e
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:legal_scholar
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Integrator -> fumbling_integrator
+	option = {
+		name = cc_xp.90.f
+		trigger = {
+			scope:cc_xp_subject ?= {
+				in_cabinet = yes NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+						var:cc_xp_career_offer = 6
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:fumbling_integrator
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# No suitable career. Always available.
+	option = {
+		name = cc_xp.90.g
+	}
+}
+
+
+# DIP
+cc_xp.91 = {
+	type = country_event
+	title = cc_xp.91.title
+	desc = cc_xp.91.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_awaiting_career_dip }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_awaiting_career_dip }
+			remove_variable = cc_xp_awaiting_career_dip
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# The Diplomat's Ascent -> tentative_envoy
+	option = {
+		name = cc_xp.91.a
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:tentative_envoy
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Colonial Hand -> frontier_administrator
+	option = {
+		name = cc_xp.91.b
+		trigger = {
+			scope:cc_xp_subject ?= {
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:frontier_administrator
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Merchant's Road -> merchant_syndic
+	option = {
+		name = cc_xp.91.c
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 5
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:merchant_syndic
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Navigator -> timid_landlubber
+	option = {
+		name = cc_xp.91.d
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				adm < 33
+				mil < 33
+				dip < 33
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:timid_landlubber
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Shadow -> provocateur
+	option = {
+		name = cc_xp.91.e
+		trigger = {
+			scope:cc_xp_subject ?= {
+				adm < 33 mil < 33 dip < 33 NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+						var:cc_xp_career_offer = 5
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:provocateur
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# No suitable career. Always available.
+	option = {
+		name = cc_xp.91.f
+	}
+}
+
+
+# MIL
+cc_xp.92 = {
+	type = country_event
+	title = cc_xp.92.title
+	desc = cc_xp.92.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	trigger = {
+		any_character = { has_variable = cc_xp_awaiting_career_mil }
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_awaiting_career_mil }
+			remove_variable = cc_xp_awaiting_career_mil
+			save_scope_as = cc_xp_subject
+		}
+	}
+
+	# The Military Hardening -> green_adjutant
+	option = {
+		name = cc_xp.92.a
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:green_adjutant
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Drillmaster -> infantry_drillmaster
+	option = {
+		name = cc_xp.92.b
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				mil > 33
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 4
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:infantry_drillmaster
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Engineer -> military_engineer
+	option = {
+		name = cc_xp.92.c
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				mil > 33
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 1
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:military_engineer
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# The Horse -> scout_captain
+	option = {
+		name = cc_xp.92.d
+		trigger = {
+			scope:cc_xp_subject ?= {
+				NOT = { has_trait_category = cabinet }
+				in_cabinet = yes
+				mil > 33
+				trigger_if = {
+					limit = { has_variable = cc_xp_career_offer }
+					OR = {
+						var:cc_xp_career_offer = 2
+						var:cc_xp_career_offer = 3
+						var:cc_xp_career_offer = 4
+					}
+				}
+				# The roll is unset only if the write did not commit. Fall back to
+				# offering everything this person is actually eligible for.
+				trigger_else = { always = yes }
+			}
+		}
+		scope:cc_xp_subject ?= {
+			set_variable = { name = cc_granting_trait  value = yes }
+			add_trait = trait:scout_captain
+			remove_variable = cc_granting_trait
+			if = {
+				limit = { has_variable = cc_xp_career_offer }
+				remove_variable = cc_xp_career_offer
+			}
+		}
+	}
+
+	# No suitable career. Always available.
+	option = {
+		name = cc_xp.92.e
+	}
+}

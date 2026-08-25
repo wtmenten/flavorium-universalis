@@ -48,6 +48,7 @@ cc_xp_found_institution = {
 		scope:actor = {
 			cc_xp_enabled = yes
 			cc_xp_has_institution_room = yes
+			cc_xp_has_free_university = yes
 			custom_tooltip = {
 				text = cc_xp_tt_needs_founder
 				any_cabinet_character = { cc_xp_can_found_school = yes }
@@ -60,6 +61,7 @@ cc_xp_found_institution = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_founder"
+		none_available_msg_key = "cc_xp_none_founder"
 		column = { data = name }
 
 		visible = {
@@ -84,22 +86,55 @@ cc_xp_found_institution = {
 			# It is also simply more robust. There is no running total to drift, and if a
 			# slot is ever cleared the next founding reuses it.
 			scope:actor = {
+				# WHERE THE SCHOOL SITS. A school occupies a university, and the location it
+				# occupies carries cc_xp_school_seat so the court situation can colour it on
+				# the map without dereferencing anything.
+				#
+				# The capital is preferred, because the capital's university is what unlocks
+				# the first slot in the first place and a realm's first school belongs at its
+				# centre. Later schools take whichever other university is free. The allow
+				# block has already established that one of these two branches will find
+				# something, so there is no empty case to handle.
+				if = {
+					limit = {
+						capital ?= {
+							has_building = building_type:university
+							NOT = { has_variable = cc_xp_school_seat }
+						}
+					}
+					capital = { save_scope_as = cc_xp_seat }
+				}
+				else = {
+					random_owned_location = {
+						limit = {
+							has_building = building_type:university
+							NOT = { has_variable = cc_xp_school_seat }
+						}
+						save_scope_as = cc_xp_seat
+					}
+				}
+
+				scope:cc_xp_seat ?= { set_variable = cc_xp_school_seat }
+
 				if = {
 					limit = { NOT = { has_variable = cc_xp_school_1_founder } }
 					set_variable = { name = cc_xp_school_1_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_1_founder  value = scope:recipient }
+					set_variable = { name = cc_xp_school_1_loc      value = scope:cc_xp_seat }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 1 } }
 				}
 				else_if = {
 					limit = { NOT = { has_variable = cc_xp_school_2_founder } }
 					set_variable = { name = cc_xp_school_2_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_2_founder  value = scope:recipient }
+					set_variable = { name = cc_xp_school_2_loc      value = scope:cc_xp_seat }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 2 } }
 				}
 				else_if = {
 					limit = { NOT = { has_variable = cc_xp_school_3_founder } }
 					set_variable = { name = cc_xp_school_3_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_3_founder  value = scope:recipient }
+					set_variable = { name = cc_xp_school_3_loc      value = scope:cc_xp_seat }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 3 } }
 				}
 
@@ -175,6 +210,7 @@ cc_xp_enroll_in_school = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_student_school"
+		none_available_msg_key = "cc_xp_none_school_student"
 		column = { data = name }
 
 		visible = {
@@ -190,33 +226,22 @@ cc_xp_enroll_in_school = {
 		}
 	}
 
-	select_trigger = {
-		looking_for_a = character
-		source = actor
-		target_flag = target
-		name = "cc_xp_choose_school_by_member"
-		column = { data = name }
-
-		visible = {
-			is_alive = yes
-			has_variable = cc_xp_school
-		}
-
-		enabled = {
-			cc_xp_is_school_member = yes
-		}
-	}
+	# The school used to be a second selector, picked by naming one of its members. A panel
+	# action_button cannot open a target picker, so a flag the button does not supply
+	# leaves the action dead. The student comes from their own row and the school is chosen
+	# among options in cc_xp.82, which is a better fit anyway: there are at most three, so
+	# three options name them all rather than making the player find a member of each.
 
 	effect = {
 		if = {
-			limit = {
-				exists = scope:recipient
-				exists = scope:target
-			}
+			limit = { exists = scope:recipient }
+
 			scope:recipient = {
-				set_variable = { name = cc_xp_school        value = scope:target.var:cc_xp_school }
-				set_variable = { name = cc_xp_school_track  value = scope:target.var:cc_xp_school_track }
+				set_variable = { name = cc_xp_awaiting_enrollment  value = yes  months = 2 }
+				save_scope_as = cc_xp_school_student
 			}
+
+			scope:actor = { trigger_event_silently = { id = cc_xp.82 } }
 		}
 	}
 

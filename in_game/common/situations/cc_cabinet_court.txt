@@ -43,5 +43,60 @@ cc_cabinet_court = {
 		any_cabinet_character = { cc_xp_is_tracked = yes }
 	}
 
-	# Deliberately omitted: on_start announcement, map_color, legend_key, tooltip.
+	# ---------------------------------------------------------------------------------
+	# MAP COLOUR
+	#
+	# root = location, scope:target = situation, and nothing else: map_color has no access
+	# to the viewing player, so "the player" is written as `is_ai = no`. Correct in single
+	# player, and in multiplayer it colours every human court.
+	#
+	# Three things the cabinet does have a geography for, in priority order:
+	#   school seats   the university a founded school occupies, marked with
+	#                  cc_xp_school_seat by cc_xp_found_institution
+	#   the court      the realm the cabinet belongs to
+	#   residencies    a subject currently housing a seconded minister
+	#
+	# Seats are tested FIRST because a school stands on the court's own land and would
+	# otherwise be painted over by it.
+	# ---------------------------------------------------------------------------------
+	map_color = {
+		if = {
+			limit = {
+				has_variable = cc_xp_school_seat
+				owner ?= { is_ai = no }
+			}
+			value = rgb { 205 165 55 }
+		}
+		else_if = {
+			limit = { owner ?= { is_ai = no } }
+			value = rgb { 45 85 150 }
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_variable = cc_bond_envoy
+					overlord ?= { is_ai = no }
+				}
+			}
+			value = rgb { 125 180 205 }
+		}
+		else = {
+			value = define:NMapColors|DEFAULT_COLOR
+		}
+	}
+
+	legend_key = {
+		desc = "cc_xp_legend_court"
+		color = rgb { 45 85 150 }
+	}
+	legend_key = {
+		desc = "cc_xp_legend_school"
+		color = rgb { 205 165 55 }
+	}
+	legend_key = {
+		desc = "cc_xp_legend_resident"
+		color = rgb { 125 180 205 }
+	}
+
+	# Deliberately omitted: on_start announcement and tooltip.
 }

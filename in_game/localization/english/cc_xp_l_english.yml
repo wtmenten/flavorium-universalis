@@ -26,8 +26,22 @@
  # Cabinet Experience — service record readout (cc_xp.1)
  # ============================================================
  cc_xp.1.title: "The Service Record"
- cc_xp.1.desc: "The clerks keep a file on [cc_xp_subject.GetName], as they keep one on every officer of the crown. It is drier reading than the court gossip, and rather more reliable.\n\n#Y SENIORITY#!\nLevel [cc_xp_subject.MakeScope.GetVariable('cc_level').GetValue|0] of 10, on [cc_xp_subject.MakeScope.GetVariable('cc_xp_total').GetValue|0] experience. The next level comes at [cc_xp_subject.MakeScope.GetVariable('cc_xp_next').GetValue|0].\n\n#Y SPECIALISATION#!\nAdministration: [cc_xp_subject.MakeScope.GetVariable('cc_xp_adm').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_adm').GetValue|0] of 3\nDiplomacy: [cc_xp_subject.MakeScope.GetVariable('cc_xp_dip').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_dip').GetValue|0] of 3\nWarfare: [cc_xp_subject.MakeScope.GetVariable('cc_xp_mil').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_mil').GetValue|0] of 3\n\nSeniority is what a minister has lived through. Specialization is what they have actually learned to do, and it is specialization that decides which traits are within their reach."
+ cc_xp.1.desc: "The clerks keep a file on [cc_xp_subject.GetName], as they keep one on every officer of the crown. It is drier reading than the court gossip, and rather more reliable.\n\n#Y SENIORITY#!\nLevel [cc_xp_subject.MakeScope.GetVariable('cc_level').GetValue|0] of 10, on [cc_xp_subject.MakeScope.GetVariable('cc_xp_total').GetValue|0] experience. The next level comes at [cc_xp_subject.MakeScope.GetVariable('cc_xp_next').GetValue|0].\n\n#Y SPECIALISATION#!\nAdministration: [cc_xp_subject.MakeScope.GetVariable('cc_xp_adm').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_adm').GetValue|0] of 3\nDiplomacy: [cc_xp_subject.MakeScope.GetVariable('cc_xp_dip').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_dip').GetValue|0] of 3\nWarfare: [cc_xp_subject.MakeScope.GetVariable('cc_xp_mil').GetValue|0], tier [cc_xp_subject.MakeScope.GetVariable('cc_tier_mil').GetValue|0] of 3\nTiers are reached at 150, 500 and 1200 experience in that track alone.\n\n#Y SERVICE#!\nWhat the record is actually made of. Each entry is one duty carried to its end.\nCampaigns and commands: [cc_xp_subject.MakeScope.GetVariable('cc_tf_war').GetValue|0]\nReforms and administration: [cc_xp_subject.MakeScope.GetVariable('cc_tf_reform').GetValue|0]\nColonial ventures: [cc_xp_subject.MakeScope.GetVariable('cc_tf_colonial').GetValue|0]\nMatters of faith: [cc_xp_subject.MakeScope.GetVariable('cc_tf_faith').GetValue|0]\nTrade and revenue: [cc_xp_subject.MakeScope.GetVariable('cc_tf_trade').GetValue|0]\n\n#Y PRESENT STANDING#!\n[SelectLocalization(cc_xp_subject.MakeScope.GetVariable('cc_protege').IsSet, 'CC_XP_REC_PROTEGE', 'CC_XP_REC_NOT_PROTEGE')]\n[SelectLocalization(cc_xp_subject.MakeScope.GetVariable('cc_xp_mentor_track').IsSet, 'CC_XP_REC_MENTORED', 'CC_XP_REC_NOT_MENTORED')]\n[SelectLocalization(cc_xp_subject.MakeScope.GetVariable('cc_xp_school').IsSet, 'CC_XP_REC_SCHOOLED', 'CC_XP_REC_NOT_SCHOOLED')]\n[SelectLocalization(cc_xp_subject.MakeScope.GetVariable('cc_xp_is_patron').IsSet, 'CC_XP_REC_PATRON', 'CC_XP_REC_NOT_PATRON')]\n[SelectLocalization(cc_xp_subject.MakeScope.GetVariable('cc_xp_seconded').IsSet, 'CC_XP_REC_ABROAD', 'CC_XP_REC_HOME')]\n\nSeniority is what a minister has lived through. Specialization is what they have actually learned to do, and it is specialization that decides which traits are within their reach."
  cc_xp.1.a: "Close the file."
+
+ # Lines chosen by SelectLocalization from the subject's variables. Localisation has no
+ # has_variable guard, so every branch is written out and the engine picks one; this is
+ # the same shape vanilla uses for intel fog in main_menu/localization/english.
+ CC_XP_REC_PROTEGE: "Sponsored by the crown as a protege, not yet holding office."
+ CC_XP_REC_NOT_PROTEGE: "Not a protege of the crown."
+ CC_XP_REC_MENTORED: "Studying under a senior minister, and gaining in that minister's discipline each year."
+ CC_XP_REC_NOT_MENTORED: "Has no mentor."
+ CC_XP_REC_SCHOOLED: "A member of one of the realm's schools."
+ CC_XP_REC_NOT_SCHOOLED: "Belongs to no school."
+ CC_XP_REC_PATRON: "Patron to an artist at court."
+ CC_XP_REC_NOT_PATRON: "Sponsors no artist."
+ CC_XP_REC_ABROAD: "Posted as a resident at a subject court, and away from the cabinet's other business."
+ CC_XP_REC_HOME: "At court and available."
 
  # ============================================================
  # Cabinet Experience — ladder advancement (cc_xp.10)
@@ -47,19 +61,19 @@
  # Cabinet Experience — training interactions
  # ============================================================
  cc_xp_train_adm: "Send to the Chancery"
- cc_xp_train_adm_desc: "Second them to the senior clerks for half a year: statute, precedent, revenue, and the particular patience required to read a ledger someone else has cooked. They will be away while it lasts, and the experience arrives with them when they return."
+ cc_xp_train_adm_desc: "Second them to the senior clerks for half a year: statute, precedent, revenue, and the particular patience required to read a ledger someone else has cooked. They will be away while it lasts, and the experience arrives with them when they return. A minister who has no career yet will be offered one on their return, unless the posting goes badly."
  cc_xp_train_adm_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will leave for the chancery, and return in about six months with administrative experience."
  cc_xp_train_adm_act: "$cc_xp_train_adm$"
  cc_xp_train_adm_past: "Departed for the Chancery"
  cc_xp_train_adm_act_past: "[SCOPE.sCharacter('recipient').GetName] has gone to the chancery and will not be available for six months."
  cc_xp_train_dip: "Send on the Embassy Circuit"
- cc_xp_train_dip_desc: "A year on the road: every court that matters, carrying letters of no importance so they can watch how the important ones are delivered. The longest of the three postings, because it is the one that involves actually going somewhere."
+ cc_xp_train_dip_desc: "A year on the road: every court that matters, carrying letters of no importance so they can watch how the important ones are delivered. The longest of the three postings, because it is the one that involves actually going somewhere. A minister who has no career yet will be offered one on their return, unless the posting goes badly."
  cc_xp_train_dip_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will depart on the embassy circuit, and return in about a year with diplomatic experience."
  cc_xp_train_dip_act: "$cc_xp_train_dip$"
  cc_xp_train_dip_past: "Departed on the Embassy Circuit"
  cc_xp_train_dip_act_past: "[SCOPE.sCharacter('recipient').GetName] has set out on the embassy circuit and will be abroad for a year."
  cc_xp_train_mil: "Send to the Staff College"
- cc_xp_train_mil_desc: "Three quarters of a year of maps, supply tables, and the company of officers who have actually lost a battle and will say so. They are no use to you at court until the course ends."
+ cc_xp_train_mil_desc: "Three quarters of a year of maps, supply tables, and the company of officers who have actually lost a battle and will say so. They are no use to you at court until the course ends. A minister who has no career yet will be offered one on their return, unless the posting goes badly."
  cc_xp_train_mil_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will report to the staff college, and return in about nine months with military experience."
  cc_xp_train_mil_act: "$cc_xp_train_mil$"
  cc_xp_train_mil_past: "Departed for the Staff College"
@@ -70,11 +84,7 @@
  # Cabinet Experience — proteges and mentorship
  # ============================================================
  cc_xp_sponsor_protege: "Take On a Protege"
- cc_xp_sponsor_protege_desc: "Take an interest in someone outside the cabinet: pay for their keep, open the right doors, and have a successor ready before you need one. Proteges gain experience slowly on their own, but can be trained and mentored like any minister. Three at a time. The nobility does not care for the crown noticing people it has not vouched for."
- cc_xp_sponsor_protege_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will become a protege of the crown and be groomed for office. The nobility will notice."
- cc_xp_sponsor_protege_act: "$cc_xp_sponsor_protege$"
- cc_xp_sponsor_protege_past: "A Protege Taken On"
- cc_xp_sponsor_protege_act_past: "[SCOPE.sCharacter('recipient').GetName] is now under the crown's patronage."
+ cc_xp_sponsor_protege_desc: "Take an interest in someone outside the cabinet: pay for their keep, open the right doors, and have a successor ready before you need one. The court puts forward the four most accomplished candidates and you choose among them. Proteges gain experience slowly on their own, but can be trained and mentored like any minister. Three at a time. The nobility does not care for the crown noticing people it has not vouched for."
  cc_xp_choose_protege: "Who has caught your eye?"
  cc_xp_release_protege: "Release a Protege"
  cc_xp_release_protege_desc: "Withdraw the crown's interest and free the place for someone else. Nothing they have learned is taken away from them; if you appoint them later, or take them up again, it is all still on the record."
@@ -85,10 +95,10 @@
  cc_xp_choose_released_protege: "Whose patronage ends?"
  cc_xp_assign_mentor: "Assign a Mentor"
  cc_xp_assign_mentor_desc: "Put a senior minister's time at a junior's disposal for a decade. The student gains experience each year in whatever their mentor is strongest at, so this steers a career rather than merely hurrying it. What was taught outlasts the teacher."
- cc_xp_assign_mentor_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will take [SCOPE.sCharacter('target').GetName] in hand for the next decade, and teach them what they know best."
+ cc_xp_assign_mentor_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will take a junior in hand for the next decade and teach them what they know best. You choose who."
  cc_xp_assign_mentor_act: "$cc_xp_assign_mentor$"
  cc_xp_assign_mentor_past: "A Mentorship Begins"
- cc_xp_assign_mentor_act_past: "[SCOPE.sCharacter('target').GetName] has been placed under the instruction of [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_assign_mentor_act_past: "[SCOPE.sCharacter('recipient').GetName] has taken a pupil."
  cc_xp_choose_mentor: "Who teaches?"
  cc_xp_choose_student: "Who learns?"
 
@@ -176,19 +186,15 @@
  # ============================================================
  cc_xp_sponsor_artist: "Sponsor an Artist"
  cc_xp_sponsor_artist_desc: "Put a minister's name and money behind an artist for a generation. The crown gains a slow trickle of prestige while the arrangement lasts, and the minister gains diplomatic experience: patronage is reputation work, conducted at dinner tables. One artist per minister."
- cc_xp_sponsor_artist_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will become the patron of [SCOPE.sCharacter('target').GetName], and the crown will gain prestige for as long as the arrangement lasts."
+ cc_xp_sponsor_artist_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will be taken into the crown's patronage, and the crown will gain prestige for as long as the arrangement lasts. You choose which minister puts their name to it."
  cc_xp_sponsor_artist_act: "$cc_xp_sponsor_artist$"
  cc_xp_sponsor_artist_past: "A Patronage Begins"
- cc_xp_sponsor_artist_act_past: "[SCOPE.sCharacter('target').GetName] now works under the patronage of [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_sponsor_artist_act_past: "[SCOPE.sCharacter('recipient').GetName] now works under the patronage of the court."
  cc_xp_choose_patron: "Who lends their name?"
  cc_xp_choose_artist: "Whose work?"
 
  cc_xp_sell_art_discreetly: "Sell a Work Discreetly"
- cc_xp_sell_art_discreetly_desc: "Have a minister arrange a quiet sale abroad. No counterparty is named, no offer is refused, and the price is accordingly below what an open negotiation would fetch. The piece leaves the realm, and the nobility notices which wall is bare."
- cc_xp_sell_art_discreetly_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will find a buyer abroad and ask no questions. A quiet sale fetches less than an open negotiation would."
- cc_xp_sell_art_discreetly_act: "$cc_xp_sell_art_discreetly$"
- cc_xp_sell_art_discreetly_past: "A Quiet Sale"
- cc_xp_sell_art_discreetly_act_past: "The work is gone, the money is in the treasury, and [SCOPE.sCharacter('recipient').GetName] has not said where it went."
+ cc_xp_sell_art_discreetly_desc: "Have a minister arrange a quiet sale abroad. No counterparty is named, no offer is refused, and the price is accordingly below what an open negotiation would fetch. The four most valuable pieces the collection could decently part with are offered; the nobility notices which wall goes bare."
  cc_xp_choose_broker: "Who arranges it?"
  cc_xp_choose_work: "Which work?"
  cc_xp_no_sellable_work: "There is nothing in the collection that could decently be sold."
@@ -207,10 +213,10 @@
 
  cc_xp_enroll_in_school: "Enroll in a School"
  cc_xp_enroll_in_school_desc: "Place a minister or protege in an existing school. They gain that school's discipline every year thereafter.\n\nThis is what a protege is for: years spent absorbing a discipline while waiting for a seat mean they arrive in the cabinet already pointed at its ladders, rather than starting from nothing."
- cc_xp_enroll_in_school_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will join the school that [SCOPE.sCharacter('target').GetName] belongs to, and gain its discipline every year thereafter."
+ cc_xp_enroll_in_school_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will join one of the realm's schools and gain its discipline every year thereafter. You choose which."
  cc_xp_enroll_in_school_act: "$cc_xp_enroll_in_school$"
  cc_xp_enroll_in_school_past: "A Student Enrolled"
- cc_xp_enroll_in_school_act_past: "[SCOPE.sCharacter('recipient').GetName] has been enrolled under the school of [SCOPE.sCharacter('target').GetName]."
+ cc_xp_enroll_in_school_act_past: "[SCOPE.sCharacter('recipient').GetName] has been enrolled."
  cc_xp_choose_student_school: "Who enrols?"
  cc_xp_choose_school_by_member: "Under whose school?"
 
@@ -260,10 +266,10 @@
  # ============================================================
  cc_xp_second_to_subject: "Second to a Subject Court"
  cc_xp_second_to_subject_desc: "Post a minister to one of your subjects as a resident. They are gone from your cabinet for years, they grow considerably while they are there, and the relationship they build moves that subject's bond every year.\n\nWhich bond depends on who you send. An administrator deepens the political relationship, a diplomat the personal one, a soldier the military one."
- cc_xp_second_to_subject_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will take up residence at the court of [SCOPE.sCountry('target').GetName] for some years."
+ cc_xp_second_to_subject_desc_specific: "[SCOPE.sCharacter('recipient').GetName] will take up residence at a subject court for some years. You choose which court."
  cc_xp_second_to_subject_act: "$cc_xp_second_to_subject$"
  cc_xp_second_to_subject_past: "A Resident Appointed"
- cc_xp_second_to_subject_act_past: "[SCOPE.sCharacter('recipient').GetName] has departed for [SCOPE.sCountry('target').GetName] and will be some years about it."
+ cc_xp_second_to_subject_act_past: "[SCOPE.sCharacter('recipient').GetName] has departed and will be some years about it."
  cc_xp_choose_envoy: "Who is posted?"
  cc_xp_choose_subject_court: "To which court?"
 
@@ -310,6 +316,7 @@
  cc_xp_tt_track_2: "Their discipline is diplomacy"
  cc_xp_tt_track_3: "Their discipline is warfare"
  cc_xp_tt_institution_room: "The realm has room for another institution"
+ cc_xp_tt_needs_free_university: "A university not already seating a school"
 
  # ============================================================
  # Cabinet Experience — interaction concepts
@@ -319,8 +326,6 @@
  # ============================================================
  cc_xp_court_examination_concept: "[cabinet|e]"
  cc_xp_sponsor_artist_concept: "[cabinet|e]"
- cc_xp_sell_art_discreetly_concept: "[cabinet|e]"
- cc_xp_sponsor_protege_concept: "[cabinet|e]"
  cc_xp_release_protege_concept: "[cabinet|e]"
  cc_xp_assign_mentor_concept: "[cabinet|e]"
  cc_xp_found_institution_concept: "[cabinet|e]"
@@ -344,3 +349,147 @@
  cc_xp_tt_soiree_cooldown: "The court has not held an evening in the last five years"
  cc_xp_tt_needs_envoy: "Requires a minister with a discipline who is free to travel"
  cc_xp_tt_needs_subject_court: "Requires a tracked subject with no resident already"
+
+ # Gate reasons added when the exact-count checks were rewritten. cc_xp_num_examinable,
+ # cc_xp_num_proteges and cc_xp_num_sponsorable are compared instead of `count = N`,
+ # which is an exact match in EU5 rather than a threshold.
+ cc_xp_tt_protege_room: "The crown has fewer than three proteges"
+ cc_xp_tt_needs_presider: "Requires a minister of seniority 3 or more to preside"
+ cc_xp_tt_needs_candidates: "Requires at least three people who can sit the examination"
+ cc_xp_tt_needs_candidate_protege: "Requires an adult at court who is not a minister already"
+ cc_xp_tt_needs_mentor: "Requires a minister of seniority 5 or more with a discipline to pass on"
+ cc_xp_tt_needs_pupil: "Requires a junior minister, a protege, or a courtier of the crown estate"
+
+ # ============================================================
+ # Cabinet Experience — empty selector messages
+ #
+ # A select_trigger with no ENABLED candidate disables the interaction on its own,
+ # entirely outside the allow block, and says nothing unless none_available_msg_key
+ # names a string. That silence is what made several court buttons grey out with a
+ # tooltip containing nothing but a title and a price.
+ # ============================================================
+ cc_xp_none_presider: "@trigger_no! No minister is senior enough to preside, or the ones who are are away."
+ cc_xp_none_protege: "There is nobody at court to take on: everyone is a minister, a protege, or the ruler."
+ cc_xp_none_released_protege: "@trigger_no! The crown sponsors no proteges."
+ cc_xp_none_mentor: "@trigger_no! No minister has both the seniority and the discipline to teach."
+ cc_xp_none_pupil: "Nobody at court is free to be given a mentor."
+ cc_xp_none_host: "@trigger_no! No minister is senior enough to carry an evening, or the ones who are are away."
+ cc_xp_none_envoy: "@trigger_no! No minister has a discipline to practice abroad and nothing else claiming them."
+ cc_xp_none_subject_court: "No subject court is being tracked, or each already houses a resident."
+ cc_xp_none_recalled: "@trigger_no! No minister is posted abroad."
+ cc_xp_none_trainee: "@trigger_no! Nobody is free to be sent away to be taught."
+ cc_xp_none_patron: "No minister is senior enough to put their name behind an artist."
+ cc_xp_none_artist: "@trigger_no! No artist at court is without a patron."
+ cc_xp_none_broker: "No minister at court is free to arrange it."
+ cc_xp_none_founder: "@trigger_no! No minister has the seniority and the discipline to define a school."
+ cc_xp_none_school_student: "@trigger_no! Nobody at court is eligible to be enrolled."
+ cc_xp_none_school: "No school exists to enroll into."
+ cc_xp_none_minister: "@trigger_no! There is nobody at court with a file to read."
+
+ # ============================================================
+ # Cabinet Experience - the studio visit (cc_xp.70, cc_xp.71)
+ # ============================================================
+ cc_xp_studio_visit: "Visit the Studio"
+ cc_xp_studio_visit_desc: "Call on an artist at work and decide what the crown will do about what it finds."
+ cc_xp_studio_visit_concept: "[cabinet|e]"
+ cc_xp_studio_visit_desc_specific: "The crown calls on [SCOPE.sCharacter('recipient').GetName] and decides what to do about whatever is on the easel."
+ cc_xp_studio_visit_act: "$cc_xp_studio_visit$"
+ cc_xp_studio_visit_past: "A Studio Visited"
+ cc_xp_studio_visit_act_past: "The crown has called on [SCOPE.sCharacter('recipient').GetName]."
+ cc_xp_choose_studio: "Which artist?"
+ cc_xp_tt_needs_studio: "Requires an artist at court who has not been visited in the last three years"
+ cc_xp_none_studio: "@trigger_no! No artist at court is available for a visit."
+
+ cc_xp.70.title: "The Studio"
+ cc_xp.70.desc.working: "[cc_xp_artist.GetName] is working when you arrive, and goes on working for a while before acknowledging that you are there. The piece is far enough along to see what it will be and not far enough along to be sure it will be good.\n\nThe crown can pay for what the work actually needs, or it can be made clear that the court expects to see the thing finished."
+ cc_xp.70.desc.idle: "[cc_xp_artist.GetName] has nothing on the easel. There are sketches, and reasons, and a long account of what the last commission cost in materials.\n\nAn artist at court with no work in hand is an artist the court is paying to think."
+ cc_xp.70.a: "Pay for whatever the work needs."
+ cc_xp.70.b: "Make it clear the court expects it finished."
+ cc_xp.70.c: "Set them a subject at the crown's expense."
+ cc_xp.70.d: "Look, say nothing, and leave."
+
+ cc_xp.71.title: "The Unveiling"
+ cc_xp.71.desc.unfinished: "The date was set months ago and the room has been made ready. The work is not.\n\n[cc_xp_artist.GetName] is unhurried about it, and explains at some length that the alternative was a worse painting."
+ cc_xp.71.desc.finished: "It is done, and it is hung, and the court files past it.\n\nWhatever [cc_xp_artist.GetName] was paid, the thing itself now belongs to the realm."
+ cc_xp.71.a: "Let them take the time."
+ cc_xp.71.b: "Show it to the court."
+
+ # ============================================================
+ # Cabinet Experience - the second choice (cc_xp.80 - cc_xp.85)
+ #
+ # Each of these is the half of an action that a panel button cannot ask for. The
+ # option names are the candidates themselves, gathered by ordered_x in the event.
+ # ============================================================
+ cc_xp.80.title: "A Pupil for [cc_xp_mentor.GetName]"
+ cc_xp.80.desc: "[cc_xp_mentor.GetName] has agreed to take someone on. It is not a small thing to ask of a minister with a department to run, and the offer will not stand open indefinitely.\n\nWhoever is chosen will spend the next decade learning [cc_xp_mentor.GetSheHe] trade, and will grow in [cc_xp_mentor.GetHisHer] discipline rather than their own."
+ cc_xp.80.a: "[cc_xp_pupil_1.GetName]"
+ cc_xp.80.b: "[cc_xp_pupil_2.GetName]"
+ cc_xp.80.c: "[cc_xp_pupil_3.GetName]"
+ cc_xp.80.d: "[cc_xp_pupil_4.GetName]"
+ cc_xp.81.title: "A Posting for [cc_xp_envoy.GetName]"
+ cc_xp.81.desc: "[cc_xp_envoy.GetName] is to be sent out as a resident. The household is engaged, the expenses are agreed, and all that remains is to say where.\n\nA resident is gone for years. What they build in that time moves the dimension of the bond their own discipline touches, so an administrator, a diplomat and a soldier are three genuinely different postings."
+ cc_xp.81.a: "The court of [cc_xp_court_1.GetName]"
+ cc_xp.81.b: "The court of [cc_xp_court_2.GetName]"
+ cc_xp.81.c: "The court of [cc_xp_court_3.GetName]"
+ cc_xp.81.d: "The court of [cc_xp_court_4.GetName]"
+ cc_xp.82.title: "A Place for [cc_xp_school_student.GetName]"
+ cc_xp.82.desc: "The fees are paid and the letter of introduction is written. It wants only an address on it.\n\nA member of a school gains in that school's discipline every year, in office or out of it."
+ cc_xp.82.a: "The school founded by [Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter.GetName]"
+ cc_xp.82.b: "The school founded by [Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter.GetName]"
+ cc_xp.82.c: "The school founded by [Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter.GetName]"
+ cc_xp.83.title: "A Patron for [cc_xp_artist.GetName]"
+ cc_xp.83.desc: "The crown has decided that [cc_xp_artist.GetName] is worth keeping. Patronage is not the crown's money alone, though: it wants a name on it, and the name has to belong to someone with enough standing at court that it means something.\n\nWhoever it is will spend the next twenty-five years being introduced as the person who found [cc_xp_artist.GetName], and will be the better diplomat for it."
+ cc_xp.83.a: "[cc_xp_patron_1.GetName]"
+ cc_xp.83.b: "[cc_xp_patron_2.GetName]"
+ cc_xp.83.c: "[cc_xp_patron_3.GetName]"
+ cc_xp.83.d: "[cc_xp_patron_4.GetName]"
+ cc_xp.84.title: "A Quiet Sale"
+ cc_xp.84.desc: "There is a buyer, and the buyer is not asking questions, and neither is anyone else so long as it is done properly.\n\nThe most valuable pieces the collection could decently part with are below, with what each is reckoned to be worth. A quiet sale fetches less than an open one, and what a piece fetches turns on how good it is and on how far the name of the culture that produced it carries. The court will notice which wall goes bare."
+ cc_xp.84.a: "[cc_xp_work_1.GetName], by [cc_xp_work_1.GetCreatorName]: [cc_xp_work_1.GetQualityName] ([cc_xp_work_1.GetQuality|Y]%)"
+ cc_xp.84.b: "[cc_xp_work_2.GetName], by [cc_xp_work_2.GetCreatorName]: [cc_xp_work_2.GetQualityName] ([cc_xp_work_2.GetQuality|Y]%)"
+ cc_xp.84.c: "[cc_xp_work_3.GetName], by [cc_xp_work_3.GetCreatorName]: [cc_xp_work_3.GetQualityName] ([cc_xp_work_3.GetQuality|Y]%)"
+ cc_xp.84.d: "[cc_xp_work_4.GetName], by [cc_xp_work_4.GetCreatorName]: [cc_xp_work_4.GetQualityName] ([cc_xp_work_4.GetQuality|Y]%)"
+ cc_xp.84.e: "Sell nothing."
+ cc_xp.85.title: "Worth Watching"
+ cc_xp.85.desc: "The crown has money and attention to spend on somebody who does not yet hold an office. The court has opinions about who that should be, and the nobility has opinions about the crown having opinions.\n\nA protege accumulates experience slowly while they wait, can be sent to be trained, and can be given a mentor. The point is to have a successor ready before a seat opens."
+ cc_xp.85.a: "[cc_xp_cand_1.GetName]"
+ cc_xp.85.b: "[cc_xp_cand_2.GetName]"
+ cc_xp.85.c: "[cc_xp_cand_3.GetName]"
+ cc_xp.85.d: "[cc_xp_cand_4.GetName]"
+
+ # ============================================================
+ # Cabinet Experience - choosing a career (cc_xp.90 - cc_xp.92)
+ #
+ # Opened from the training return events when the minister who came back holds no
+ # ladder trait. The option names are the careers; each grants that ladder's rung-0
+ # trait, which is usually a modest one. The climb is what the experience buys.
+ #
+ # Each opening shows a rotating subset of the track's careers, so these strings are
+ # written to stand alone rather than to be read as a complete list.
+ # ============================================================
+ cc_xp.90.title: "A Career for [cc_xp_subject.GetName]"
+ cc_xp.90.desc: "[cc_xp_subject.GetName] has come back from the chancery with an aptitude and no post to put it to. The senior clerks have views on where [cc_xp_subject.GetSheHe] would be most use, and so does everyone else who has heard about it.\n\nWhat is decided now is a career, not a competence. They will start at the bottom of it and climb as they earn the administrative experience to do so."
+ cc_xp.90.a: "The Reformer's Path. Put them to the statute book."
+ cc_xp.90.b: "The Treasury. Put them to the accounts."
+ cc_xp.90.c: "The Scholar's Path. Let them read."
+ cc_xp.90.d: "The Builder. Send them to survey the capital."
+ cc_xp.90.e: "The Jurist. Put them to the courts."
+ cc_xp.90.f: "The Integrator. Give them the new provinces."
+ cc_xp.90.g: "None of these suit. Leave it for now."
+
+ cc_xp.91.title: "A Career for [cc_xp_subject.GetName]"
+ cc_xp.91.desc: "[cc_xp_subject.GetName] has come back from the embassy circuit knowing which ambassadors are worth talking to and which are merely well dressed. That is a beginning, and it is not yet a position.\n\nWhat is decided now is a career, not a competence. They will start at the bottom of it and climb as they earn the diplomatic experience to do so."
+ cc_xp.91.a: "The Diplomat's Ascent. Give them a legation."
+ cc_xp.91.b: "The Colonial Hand. Send them to the far stations."
+ cc_xp.91.c: "The Merchant's Road. Attach them to the trade house."
+ cc_xp.91.d: "The Navigator. Put them aboard something."
+ cc_xp.91.e: "The Shadow. Do not write down what they do."
+ cc_xp.91.f: "None of these suit. Leave it for now."
+
+ cc_xp.92.title: "A Career for [cc_xp_subject.GetName]"
+ cc_xp.92.desc: "[cc_xp_subject.GetName] is back from the staff college with opinions, most of them borrowed and one or two of them [cc_xp_subject.GetHisHer] own. The army has room for [cc_xp_subject.GetHimHer] in several places and a strong preference for deciding which.\n\nWhat is decided now is a career, not a competence. They will start at the bottom of it and climb as they earn the military experience to do so."
+ cc_xp.92.a: "The Military Hardening. Attach them to a field staff."
+ cc_xp.92.b: "The Drillmaster. Give them a parade ground."
+ cc_xp.92.c: "The Engineer. Give them the fortifications."
+ cc_xp.92.d: "The Horse. Give them the remount depot."
+ cc_xp.92.e: "None of these suit. Leave it for now."

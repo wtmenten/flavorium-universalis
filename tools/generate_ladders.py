@@ -12,6 +12,10 @@ Where a rung lists several traits the ladder branches. Phase 2 picks between the
 even random_list; phase 3 replaces that coin-flip with a player choice through the
 training interactions.
 
+Rung 0 is entered the same way: a minister who returns from paid training holding no rung
+trait at all is offered a career in the track they trained in. That offer is generated
+here too, as one event per track (cc_xp.90/.91/.92) plus the effect that opens it.
+
 Validation runs before anything is written, and any failure aborts without touching the
 output. It checks that every named trait actually exists, that no trait appears on two
 ladders (which would make "which ladder is this minister on" ambiguous), and that no
@@ -45,9 +49,20 @@ TRAIT_DIR = REPO / "in_game" / "common" / "traits"
 OUT = REPO / "in_game" / "common" / "scripted_effects" / "cc_xp_ladders.txt"
 OUT_TRIGGERS = REPO / "in_game" / "common" / "scripted_triggers" / "cc_xp_ladder_triggers.txt"
 OUT_EVENTS = REPO / "in_game" / "events" / "cc_xp_branch_events.txt"
+OUT_CAREER_EVENTS = REPO / "in_game" / "events" / "cc_xp_career_events.txt"
 
 # Branch-choice events are numbered from here, in ladder order.
 BRANCH_EVENT_BASE = 20
+
+# One career-entry event per track, opened from the matching training return event.
+CAREER_EVENT = {"adm": "cc_xp.90", "dip": "cc_xp.91", "mil": "cc_xp.92"}
+
+# How many of a track's careers are offered at once. Always fewer than the track has, so
+# the court is offering what it can rather than presenting a catalogue: a player who wants
+# a Navigator and is shown four other things trains again. The window rotates, so the same
+# minister trained twice is unlikely to see the same list.
+CAREER_OFFER_WINDOW = 4
+CAREER_OFFER_MIN_WITHHELD = 1
 
 CARVE_OUT_FILES = {
     "cc_age_traits.txt",
@@ -271,6 +286,120 @@ def branch_points() -> list[dict]:
     return found
 
 
+def career_offer_plan() -> dict[str, dict]:
+    """Per track: the ladders on it, and which offer rolls put each one on the menu.
+
+    The roll picks a starting point in the track's ladder list and the window runs forward
+    from there, wrapping. So there are exactly as many possible menus as the track has
+    ladders, every ladder appears on the same number of them, and at least one career is
+    always withheld. Expressing it as a rotation rather than as every combination keeps the
+    generated option triggers to a handful of comparisons instead of ten apiece.
+    """
+    plan: dict[str, dict] = {}
+
+    for track in ("adm", "dip", "mil"):
+        ladders = [l for l in LADDERS if l["track"] == track]
+        count = len(ladders)
+        window = min(CAREER_OFFER_WINDOW, count - CAREER_OFFER_MIN_WITHHELD)
+
+        # An offer roll of `o` (1-based) shows the ladders at index o-1 .. o-2+window,
+        # wrapping. Inverted here: which rolls show ladder i.
+        offers = {
+            index: sorted(((index - step) % count) + 1 for step in range(window))
+            for index in range(count)
+        }
+
+        plan[track] = {"ladders": ladders, "count": count,
+                       "window": window, "offers": offers}
+
+    return plan
+
+
+# The mod's permission token. A trait gated on it is asking to be granted only by script
+# that means to grant it, which every career option here does. It must NOT be copied into
+# an option's trigger: the trigger runs before the effect sets it, so the option would be
+# hidden forever.
+GRANTING_TOKEN = "has_variable = cc_granting_trait"
+
+
+def _strip_comments(text: str) -> str:
+    return "\n".join(line.split("#", 1)[0] for line in text.splitlines())
+
+
+def _blocks(text: str, indented: bool):
+    """Yield (key, body) for every `key = { ... }` at the given indentation."""
+    pattern = re.compile(
+        (r"^[ \t]*" if indented else r"^") + r"([a-z_][a-z0-9_]*)\s*=\s*\{", re.M)
+    index = 0
+    while True:
+        match = pattern.search(text, index)
+        if not match:
+            return
+        depth = 0
+        cursor = match.end() - 1
+        while cursor < len(text):
+            if text[cursor] == "{":
+                depth += 1
+            elif text[cursor] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            cursor += 1
+        yield match.group(1), text[match.end():cursor]
+        index = cursor + 1
+
+
+def _clauses(body: str) -> list[str]:
+    """Split a trigger body into top-level clauses, keeping nested braces intact."""
+    found: list[str] = []
+    current = ""
+    depth = 0
+    for char in body:
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        current += char
+        if depth == 0 and char == "}":
+            found.append(" ".join(current.split()))
+            current = ""
+    for line in current.splitlines():
+        line = line.strip()
+        if line:
+            found.append(" ".join(line.split()))
+    return [c for c in found if c]
+
+
+def load_entry_allows() -> dict[str, list[str]]:
+    """The `allow` conditions on every ladder entry trait, as emittable clauses.
+
+    These are NOT decoration. An add_trait whose allow block fails is refused SILENTLY, so
+    a career option that ignores them looks like it worked, grants nothing, and eats the
+    training that paid for it. Fourteen of the fifteen entry traits carry
+    `NOT = { has_trait_category = cabinet }`, which a single age trait is enough to fail;
+    seven carry `in_cabinet = yes`, which every protege fails; three want mil > 33 and two
+    want all three stats under 33.
+
+    Read from the trait files rather than restated here, so a trait whose allow block is
+    edited cannot leave the picker offering something the engine will refuse.
+    """
+    entry_traits = {ladder["rungs"][0][0] for ladder in LADDERS}
+    allows: dict[str, list[str]] = {trait: [] for trait in entry_traits}
+
+    for path in sorted(TRAIT_DIR.glob("*.txt")):
+        text = _strip_comments(path.read_text(encoding="utf-8-sig", errors="replace"))
+        for name, body in _blocks(text, indented=False):
+            if name not in entry_traits:
+                continue
+            for key, allow_body in _blocks(body, indented=True):
+                if key != "allow":
+                    continue
+                allows[name] = [c for c in _clauses(allow_body)
+                                if c.replace(" ", "") != GRANTING_TOKEN.replace(" ", "")]
+
+    return allows
+
+
 def load_traits() -> tuple[dict[str, str], set[str]]:
     """Return ({trait: source filename}, {carved out traits})."""
     where: dict[str, str] = {}
@@ -326,6 +455,14 @@ def validate(where: dict[str, str], carved: set[str]) -> list[str]:
                         f"{key} rung {index}: {trait!r} is already on ladder {seen[trait]!r}")
                 else:
                     seen[trait] = key
+
+    # The career picker offers a rotating window of a track's ladders. A window of one
+    # would be a menu with a single item, and a window equal to the track's ladder count
+    # would withhold nothing, so both ends need a track with enough careers on it.
+    for track, spec in career_offer_plan().items():
+        if spec["window"] < 2:
+            problems.append(
+                f"{track}: only {spec['count']} ladder(s), too few to offer a career choice")
 
     return problems
 
@@ -495,6 +632,46 @@ def render_effects() -> str:
     add("}")
     add("")
 
+    # ------------------------------------------------------------ career offers ---
+    plan = career_offer_plan()
+
+    add("###############################################################################")
+    add("# CAREER ENTRY")
+    add("#")
+    add("# Rung 0 used to be reachable only by the monthly trait dispatcher, which meant the")
+    add("# player had no say at all in which of the fifteen careers a minister ended up on,")
+    add("# and four ladders (reform, fiscal, envoy, exploration) were reachable by nothing:")
+    add("# no event in the mod granted their entry trait.")
+    add("#")
+    add("# These effects are what fixes both. Called in CHARACTER scope from the training")
+    add("# return events (cc_xp.30/.31/.32) when the returning minister holds no rung trait")
+    add("# at all and the posting did not go badly. They stamp the flag the picker resolves")
+    add("# its minister by and roll which careers are on the menu.")
+    add("#")
+    add("# The flag is timed rather than permanent so a picker the player somehow never sees")
+    add("# expires instead of leaving a minister waiting forever. Two months is the same")
+    add("# window cc_xp_branch_pending uses.")
+    add("###############################################################################")
+
+    for track in ("adm", "dip", "mil"):
+        spec = plan[track]
+        names = ", ".join(l["key"] for l in spec["ladders"])
+        add("")
+        add(f"# {track}: {spec['window']} of {spec['count']} offered ({names})")
+        add(f"cc_xp_offer_career_{track} = {{")
+        add(f"\tset_variable = {{ name = cc_xp_awaiting_career_{track}  value = yes  months = 2 }}")
+        add("\trandom_list = {")
+        for roll in range(1, spec["count"] + 1):
+            shown = " ".join(
+                spec["ladders"][index]["key"]
+                for index in range(spec["count"])
+                if roll in spec["offers"][index])
+            add(f"\t\t1 = {{ set_variable = {{ name = cc_xp_career_offer  value = {roll}  months = 2 }} }}   # {shown}")
+        add("\t}")
+        add("}")
+
+    add("")
+
     return "\n".join(lines)
 
 
@@ -532,6 +709,199 @@ def render_triggers() -> str:
     add("}")
     add("")
 
+    # --------------------------------------------------------------- unladdered ---
+    # Named exhaustively rather than through has_trait_category = cabinet, which is far
+    # too broad to answer this question: 54 of the age traits and 8 of the afflictions
+    # carry that category too, so a minister who once picked up an age trait would read
+    # as already having a career and could never be offered one.
+    rungs = sorted({trait for l in LADDERS for r in l["rungs"] for trait in r})
+
+    add("###############################################################################")
+    add("# Does this character hold no ladder trait at all?")
+    add("#")
+    add("# One career per minister is an invariant of this system: the cc_xp_ladder_advance")
+    add("# chain is if/else_if keyed on trait, so a minister holding two rung traits would")
+    add("# only ever climb whichever ladder the chain reaches first. Generation enforces the")
+    add("# other half of it by refusing to let one trait sit on two ladders.")
+    add("#")
+    add("# This trigger is what keeps career ENTRY from breaking the invariant. Called in")
+    add("# CHARACTER scope from the training return events.")
+    add("###############################################################################")
+    add("")
+    add("cc_xp_is_unladdered = {")
+    add("\tNOR = {")
+    for trait in rungs:
+        add(f"\t\thas_trait = {trait}")
+    add("\t}")
+    add("}")
+    add("")
+
+    # ------------------------------------------------------- career entry gates ---
+    allows = load_entry_allows()
+    plan = career_offer_plan()
+
+    add("###############################################################################")
+    add("# Could this character actually be given a career on the given track?")
+    add("#")
+    add("# Mirrors the `allow` block of each of the track's entry traits, which the picker")
+    add("# cannot ignore: add_trait against a failing allow is refused SILENTLY, so an")
+    add("# option that skipped this would look like it worked, grant nothing, and waste the")
+    add("# training that paid for it.")
+    add("#")
+    add("# The conditions are read out of the trait files by the generator, so a trait whose")
+    add("# allow block is edited cannot leave this trigger out of date.")
+    add("#")
+    add("# Called in CHARACTER scope from the training return events, which is what stops a")
+    add("# picker ever opening for someone no career is available to.")
+    add("###############################################################################")
+
+    for track in ("adm", "dip", "mil"):
+        add("")
+        add(f"cc_xp_can_enter_career_{track} = {{")
+        add("\tOR = {")
+        for ladder in plan[track]["ladders"]:
+            entry = ladder["rungs"][0][0]
+            conditions = allows[entry]
+            add(f"\t\t# {ladder['name']}: {entry}")
+            if not conditions:
+                # Nothing gates this one beyond the permission token the option supplies.
+                add("\t\talways = yes")
+                continue
+            add("\t\tAND = {")
+            for condition in conditions:
+                add(f"\t\t\t{condition}")
+            add("\t\t}")
+        add("\t}")
+        add("}")
+
+    add("")
+
+    return "\n".join(lines)
+
+
+def render_career_events() -> str:
+    plan = career_offer_plan()
+    allows = load_entry_allows()
+    lines: list[str] = []
+    add = lines.append
+
+    add("﻿namespace = cc_xp")
+    add("")
+    add("###############################################################################")
+    add("# GENERATED FILE. Do not edit by hand.")
+    add("#   python tools/generate_ladders.py")
+    add("#")
+    add("# CHOOSING A CAREER. One event per track, opened from that track's training return")
+    add("# event when the minister who came back holds no ladder trait at all. This is the")
+    add("# only way onto rung 0 that the player controls, and the only way at all onto the")
+    add("# four ladders no event in the mod grants the entry trait for.")
+    add("#")
+    for track in ("adm", "dip", "mil"):
+        spec = plan[track]
+        add(f"#   {CAREER_EVENT[track]:10s} [{track}] {spec['window']} of {spec['count']}: "
+            f"{', '.join(l['key'] for l in spec['ladders'])}")
+    add("#")
+    add("# THE MENU IS PARTIAL. Each opening shows a rotating window of the track's careers,")
+    add("# rolled by cc_xp_offer_career_<track> at the moment the minister got back, so the")
+    add("# court is offering what it can rather than presenting a catalogue. Every option is")
+    add("# gated on that roll; the first also passes when the roll is somehow unset, which is")
+    add("# the guard against an event with no available option and therefore no way to close")
+    add("# it.")
+    add("#")
+    add("# There is no decline option, for the same reason the events in cc_xp_choice_events")
+    add("# have none: the training that opened this was already paid for.")
+    add("#")
+    add("# The minister is identified by a timed flag rather than a saved scope, as")
+    add("# everywhere else in this system. Two ministers back from the same posting in the")
+    add("# same month resolve to different people, because selection clears the flag.")
+    add("###############################################################################")
+
+    for track in ("adm", "dip", "mil"):
+        spec = plan[track]
+        event = CAREER_EVENT[track]
+        flag = f"cc_xp_awaiting_career_{track}"
+
+        add("")
+        add("")
+        add(f"# {track.upper()}")
+        add(f"{event} = {{")
+        add("\ttype = country_event")
+        add(f"\ttitle = {event}.title")
+        add(f"\tdesc = {event}.desc")
+        add("\toutcome = positive")
+        add("")
+        add("\tillustration_tags = {")
+        add("\t\t10 = interior")
+        add("\t}")
+        add("")
+        add("\ttrigger = {")
+        add(f"\t\tany_character = {{ has_variable = {flag} }}")
+        add("\t}")
+        add("")
+        add("\timmediate = {")
+        add("\t\trandom_character = {")
+        add(f"\t\t\tlimit = {{ has_variable = {flag} }}")
+        add(f"\t\t\tremove_variable = {flag}")
+        add("\t\t\tsave_scope_as = cc_xp_subject")
+        add("\t\t}")
+        add("\t}")
+
+        for index, ladder in enumerate(spec["ladders"]):
+            entry = ladder["rungs"][0][0]
+            rolls = spec["offers"][index]
+
+            add("")
+            add(f"\t# {ladder['name']} -> {entry}")
+            add("\toption = {")
+            add(f"\t\tname = {event}.{'abcdefgh'[index]}")
+            # trigger_if, not a bare var: read inside an OR. Reading an unset variable
+            # errors with "Event target link 'var' returned an unset scope" rather than
+            # evaluating false, and an OR does not save you from it: every branch is
+            # reached. This is the same guard cc_xp_tier_at_least and its neighbours use.
+            add("\t\ttrigger = {")
+            add("\t\t\tscope:cc_xp_subject ?= {")
+            for condition in allows[entry]:
+                add(f"\t\t\t\t{condition}")
+            add("\t\t\t\ttrigger_if = {")
+            add("\t\t\t\t\tlimit = { has_variable = cc_xp_career_offer }")
+            add("\t\t\t\t\tOR = {")
+            for roll in rolls:
+                add(f"\t\t\t\t\t\tvar:cc_xp_career_offer = {roll}")
+            add("\t\t\t\t\t}")
+            add("\t\t\t\t}")
+            add("\t\t\t\t# The roll is unset only if the write did not commit. Fall back to")
+            add("\t\t\t\t# offering everything this person is actually eligible for.")
+            add("\t\t\t\ttrigger_else = { always = yes }")
+            add("\t\t\t}")
+            add("\t\t}")
+            add("\t\tscope:cc_xp_subject ?= {")
+            # The mod's permission token. No entry trait is gated on it today, but the
+            # advancement chain sets it around every grant for the same reason: a gated
+            # trait added to a ladder later must not silently fail to apply.
+            add("\t\t\tset_variable = { name = cc_granting_trait  value = yes }")
+            add(f"\t\t\tadd_trait = trait:{entry}")
+            add("\t\t\tremove_variable = cc_granting_trait")
+            add("\t\t\tif = {")
+            add("\t\t\t\tlimit = { has_variable = cc_xp_career_offer }")
+            add("\t\t\t\tremove_variable = cc_xp_career_offer")
+            add("\t\t\t}")
+            add("\t\t}")
+            add("\t}")
+
+        # Always available, and the only thing guaranteeing this event can be closed.
+        # The offer gate in the return event means a picker only opens when at least one
+        # career is available, but the rotation window is rolled independently of which
+        # ones the person is eligible for, so a narrow case can still hide every career.
+        # An event with no available option cannot be dismissed at all.
+        add("")
+        add("\t# No suitable career. Always available.")
+        add("\toption = {")
+        add(f"\t\tname = {event}.{'abcdefgh'[len(spec['ladders'])]}")
+        add("\t}")
+
+        add("}")
+
+    add("")
     return "\n".join(lines)
 
 
@@ -622,6 +992,15 @@ def report_loc_keys() -> None:
         for suffix, destination in zip("abcd", b["to"]):
             print(f"    {b['event']}.{suffix}  -> {destination}")
 
+    plan = career_offer_plan()
+    print("\nlocalisation keys required by the career-entry events:")
+    for track in ("adm", "dip", "mil"):
+        event = CAREER_EVENT[track]
+        print(f"  {event}.title / .desc  ({track})")
+        for index, ladder in enumerate(plan[track]["ladders"]):
+            print(f"    {event}.{'abcdefgh'[index]}  -> {ladder['name']} "
+                  f"({ladder['rungs'][0][0]})")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -645,6 +1024,7 @@ def main() -> int:
         (OUT, render_effects()),
         (OUT_TRIGGERS, render_triggers()),
         (OUT_EVENTS, render_events()),
+        (OUT_CAREER_EVENTS, render_career_events()),
     ]
 
     if args.check:

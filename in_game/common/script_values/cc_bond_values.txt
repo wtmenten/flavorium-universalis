@@ -45,3 +45,64 @@ cc_bond_tribute_gain = {
 		add = 50
 	}
 }
+
+
+###############################################################################
+# HEADCOUNTS
+#
+# `count = N` on an any_ iterator is an EXACT match in EU5, not a threshold, so a
+# trigger meaning "two or more" has to count and compare. See the note at the head of
+# section 9 in cc_xp_values.txt.
+###############################################################################
+
+# Subjects held as shadow states.
+cc_num_shadow_states = {
+	value = 0
+	every_subject = {
+		limit = { is_subject_type = shadow_state }
+		add = 1
+	}
+}
+
+
+###############################################################################
+# MAP COLOURING
+###############################################################################
+
+# LOCATION scope. The subject's overall bond, normalised to 0-1 for a map_color lerp.
+#
+# Evaluated on the LOCATION rather than on the country because that is the only scope
+# map_color offers: the situations readme is explicit that map_color runs with
+# root = location and scope:target = situation, and there is no country or player scope
+# anywhere in it. So the owner hop happens through `owner.var:` reads rather than by
+# entering owner scope, which would move `add` onto the wrong accumulator.
+#
+# The five dimensions each run -5 to +5, so the sum runs -25 to +25; +25 then /50 puts it
+# in 0-1. Each read is guarded, because a subject the ledger has not initialised carries
+# none of these and an unguarded var: read logs a fetch failure per location per frame.
+cc_bond_overall_factor = {
+	value = 25
+	if = {
+		limit = { owner ?= { exists = var:cc_bond_pol } }
+		add = owner.var:cc_bond_pol
+	}
+	if = {
+		limit = { owner ?= { exists = var:cc_bond_eco } }
+		add = owner.var:cc_bond_eco
+	}
+	if = {
+		limit = { owner ?= { exists = var:cc_bond_mil } }
+		add = owner.var:cc_bond_mil
+	}
+	if = {
+		limit = { owner ?= { exists = var:cc_bond_cul } }
+		add = owner.var:cc_bond_cul
+	}
+	if = {
+		limit = { owner ?= { exists = var:cc_bond_per } }
+		add = owner.var:cc_bond_per
+	}
+	divide = 50
+	min = 0
+	max = 1
+}

@@ -33,23 +33,15 @@
 situation_panel = {
 
 	##################################### MAIN IMAGE #####################################
-	# Flat gradient only, as with the subject ledger. No custom illustration required.
-	blockoverride "situation_panel_image" {
-		background = {
-			using = color_dark_blue_texture
-			spriteType = stretched
-		}
-		background = {
-			using = color_dark_blue_texture
-			alpha = 1
-			margin_top = -140
-			modify_texture = {
-				using = bg_fade_vertical_up_mask_texture
-				blend_mode = alphamultiply
-				alpha = 1
-			}
-		}
-	}
+	# DELIBERATELY NOT OVERRIDDEN. The default block in
+	# game/in_game/gui/panels/situation/common.gui:113 calls
+	# GetSituationIllustration(...), which resolves
+	# main_menu/gfx/interface/illustrations/situation/<situation key>.dds by naming
+	# convention alone (no .gfx declaration step), then applies scene_fade_vertical_up.
+	# Our art is at that path as cc_cabinet_court.dds, so inheriting the default is all
+	# that is needed. This panel previously overrode the block with a flat colour
+	# gradient, which is why the illustration never appeared: the override replaced the
+	# only call site.
 
 	blockoverride "situation_subheader_content" {}
 
@@ -103,39 +95,22 @@ situation_panel = {
 			spacing = 4
 
 			# ---------------- THE CABINET ----------------
-			# ---- Court-level actions ----
+			# ---- The one court-level action ----
 			#
-			# Everything here picks all of its own targets, so no parameter is supplied and
-			# each opens its own selector. These five have no natural home on a single
-			# minister's row: they are decisions about the court, not about one person.
+			# ONLY actions that need no target at all can live up here. A panel
+			# action_button cannot open an interaction's select_trigger picker: the engine
+			# evaluates the action against the parameters the button supplies, so a
+			# target_flag that is never supplied leaves the action unperformable and the
+			# button permanently disabled, its tooltip showing only the effect text and the
+			# price. Six buttons sat here doing exactly that.
 			#
-			# Two rows of three rather than one of six, because six buttons across 490px
-			# would leave no room for readable labels.
+			# Everything that acts on one person moved to that person's row, which supplies
+			# `recipient`. Sponsoring a protege stayed because its candidates are courtiers,
+			# who are on no row anywhere; it now takes no parameter and offers the
+			# candidates as options in cc_xp.85.
 			hbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 4
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_host_soiree" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 10
-						text = "CC_XP_BTN_SOIREE"
-					}
-				}
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_court_examination" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 10
-						text = "CC_XP_BTN_EXAM"
-					}
-				}
 				card_header_action_button_01 = {
 					size = { 150 26 }
 					actor = "[Player]"
@@ -145,45 +120,6 @@ situation_panel = {
 						align = center
 						fontsize = 10
 						text = "CC_XP_BTN_PROTEGE"
-					}
-				}
-				expand = {}
-			}
-
-			hbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 4
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 10
-						text = "CC_XP_BTN_MENTOR"
-					}
-				}
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_second_to_subject" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 10
-						text = "CC_XP_BTN_SECOND"
-					}
-				}
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_recall_envoy" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 10
-						text = "CC_XP_BTN_RECALL"
 					}
 				}
 				expand = {}
@@ -320,30 +256,18 @@ situation_panel = {
 				}
 			}
 
-			# ---- Roster header, with the sponsor action ----
-			hbox = {
+			# ---- Roster header ----
+			#
+			# Sponsorship moved onto the artist rows below. It needed an artist AND a patron,
+			# and a header button can supply neither, so it was dead here. The artist now comes
+			# from their own row and the minister who puts their name to it is chosen among
+			# options in cc_xp.83.
+			text_single = {
 				layoutpolicy_horizontal = expanding
-				spacing = 4
-
-				text_single = {
-					layoutpolicy_horizontal = expanding
-					fontsize = 11
-					default_format = "#weak"
-					align = left|nobaseline
-					text = "CC_XP_ARTISTS_HEADER"
-				}
-
-				card_header_action_button_01 = {
-					size = { 150 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_sponsor_artist" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 11
-						text = "CC_XP_BTN_SPONSOR"
-					}
-				}
+				fontsize = 11
+				default_format = "#weak"
+				align = left|nobaseline
+				text = "CC_XP_ARTISTS_HEADER"
 			}
 
 			text_single = {
@@ -413,9 +337,43 @@ situation_panel = {
 								tooltip = "CC_XP_WORKS_BY_TT"
 							}
 
-							# Vanilla's own art interactions. Both use target_flag = recipient
-							# and want a character, so the artist under the cursor IS the
-							# parameter and neither needs a picker step.
+							# Sponsorship, our studio visit, then vanilla's two art
+							# interactions. All four take target_flag = recipient and want a
+							# character, so the artist under the cursor IS the parameter and
+							# none needs a picker step. That is the whole reason sponsorship
+							# had to be inverted to take the artist rather than the patron:
+							# this row can supply an artist and nothing on this panel can
+							# supply a minister.
+							card_header_action_button_01 = {
+								size = { 26 26 }
+								actor = "[Player]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[Character.MakeScope]"
+								}
+								left_click_and_hold_action = { action_name = "cc_xp_sponsor_artist" }
+								icon = {
+									parentanchor = center
+									size = { 78% 78% }
+									texture = "gfx/interface/icons/flat_icons/prestige.dds"
+								}
+							}
+
+							card_header_action_button_01 = {
+								size = { 26 26 }
+								actor = "[Player]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[Character.MakeScope]"
+								}
+								left_click_and_hold_action = { action_name = "cc_xp_studio_visit" }
+								icon = {
+									parentanchor = center
+									size = { 78% 78% }
+									texture = "gfx/interface/icons/flat_icons/work_of_art_in_progress.dds"
+								}
+							}
+
 							card_header_action_button_01 = {
 								size = { 26 26 }
 								actor = "[Player]"
@@ -480,41 +438,15 @@ situation_panel = {
 				text = "CC_XP_SCHOOLS_DESC"
 			}
 
-			hbox = {
+			# Founding and enrollment both act on ONE minister, so both are row buttons on
+			# the roster tab now. They were dead here: a header button supplies no target and
+			# an interaction whose target_flag goes unsupplied can never be performed.
+			text_single = {
 				layoutpolicy_horizontal = expanding
-				spacing = 4
-
-				text_single = {
-					layoutpolicy_horizontal = expanding
-					fontsize = 11
-					default_format = "#weak"
-					align = left|nobaseline
-					text = "CC_XP_SCHOOLS_HEADER"
-				}
-
-				card_header_action_button_01 = {
-					size = { 170 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_found_institution" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 11
-						text = "CC_XP_BTN_FOUND"
-					}
-				}
-
-				card_header_action_button_01 = {
-					size = { 110 26 }
-					actor = "[Player]"
-					left_click_and_hold_action = { action_name = "cc_xp_enroll_in_school" }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 11
-						text = "CC_XP_BTN_ENROL"
-					}
-				}
+				fontsize = 11
+				default_format = "#weak"
+				align = left|nobaseline
+				text = "CC_XP_SCHOOLS_HEADER"
 			}
 
 			# ---------------- SLOT 1 ----------------

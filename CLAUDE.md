@@ -106,6 +106,46 @@ python tools/var_refs.py --file in_game/events/cc_bond_chain_d.txt
 
 Output format: `file:line  op  event_or_block > section[option_name]`
 
+## Art assets
+
+**Use `tools/make_dds.py` to convert PNG art into DDS.** Never hand-export DDS from an image
+editor: the engine needs a full mipmap chain down to 1x1, and a file without one logs
+`Streamed texture has no mipmaps` and streams the full surface every frame. The tool builds the
+chain and writes a header byte-compatible with vanilla.
+
+```
+python tools/make_dds.py --list-slots                                  # size/format/path per art slot
+python tools/make_dds.py hero.png --slot trait --key war_hawk          # convert and place in the mod
+python tools/make_dds.py art/*.png --slot generic-action               # batch; filename becomes the key
+python tools/make_dds.py x.png --slot situation-icon --key k --submod rhomania
+python tools/make_dds.py in.png --size 1080x440 --format BC1 -o out.dds # ad-hoc, no mod placement
+python tools/make_dds.py --verify                                      # audit every DDS in the mod
+python tools/make_dds.py --verify --fix-mips                           # re-encode the broken ones
+```
+
+`--slot` sets size, compression, fit and destination folder in one go, so prefer it over
+`--size`/`--format`. Downsampling is linear-light with premultiplied alpha, which is what keeps
+soft-edged icons from picking up a dark fringe. `--verify` exits non-zero, so it works in a hook.
+
+[docs/art-asset-gaps.md](docs/art-asset-gaps.md) is the standing inventory: how the engine
+resolves each art path (there is no `.gfx` declaration step, only naming convention), the
+resolution and format table, and every mod key currently resolving to art that does not exist.
+
+**Use `tools/dds_to_png.py` to look at DDS art.** The inverse of `make_dds.py`, and a viewing
+tool only: its output is decoded from BC blocks, so never feed a PNG it wrote back in as a
+source. Writes to `tools/dds_preview/` by default (gitignored).
+
+```
+python tools/dds_to_png.py icon.dds -o out/icon.png            # one file, named target
+python tools/dds_to_png.py main_menu/gfx -r -d out/            # a whole tree
+python tools/dds_to_png.py trait.dds -d out/ --background checker --scale 3   # see an icon
+python tools/dds_to_png.py bg.dds -d out/ --mip 3              # what the engine streams
+python tools/dds_to_png.py main_menu/gfx -r --info             # sizes, formats, mip counts
+```
+
+It reads vanilla art too. Point it at the game install and it mirrors the last two folders of
+the source path under the output dir.
+
 ## Localization translation
 
 **Use `tools/translate.py` to machine-translate localization.** Never hand-write translated `.yml` files or edit them for content; re-run the tool instead.
@@ -178,6 +218,12 @@ See [docs/scripting-gotchas.md](docs/scripting-gotchas.md) for verified patterns
 - **Localization BOM**: all `.yml` files need UTF-8 BOM or they're silently ignored. `.txt` script files also need it (loads with warning if missing). Run `python tools/fix_bom.py` to fix all at once.
 - **`on_game_start` scope**: world scope, not country scope. Use `c:TAG = { }` or `every_country = { }`. Also: if multiple files each define `on_game_start = { effect = {} }` only the last one wins — keep all game-start effects in one file (`cc_game_start.txt`).
 - **Culture group check**: `has_culture_group` expects culture scope, not country scope. Use `culture = { has_culture_group = culture_group:X }` from country scope. Dynamic comparison (`root.culture.culture_group` as a dot-chain) is parsed as an event target link and fails — use `only_overlord_or_kindred_culture = yes` to enforce the restriction instead.
+- **`count = N` on an `any_` iterator means EXACTLY N**, not "at least N", and there is no at-least form. `any_character = { count = 2  X = yes }` stops passing as soon as a third character qualifies. Vanilla depends on the exactness (`count = 0` for "there are none", `count = all` for "all of them"). For a threshold, count in a script value (`every_x = { limit = {…} add = 1 }`) and compare; see `cc_xp_values.txt` section 9. This shipped four dead triggers in this repo before anyone checked.
+- **A GUI button cannot open an interaction's `select_trigger` picker.** The engine evaluates the action against the parameters the button supplies, so any `target_flag` the button does not supply leaves the action unperformable: the button is permanently disabled and its tooltip shows only the target-independent parts (effect text, price). It looks identical to a failing `allow` and is not one. Every GUI-invoked interaction in vanilla has exactly one distinct target flag and the GUI always supplies it via `parameter = { parameter_name = "recipient" parameter_value = "[Character.MakeScope]" }`. An action whose target is on no row must declare **no** `select_trigger` and offer candidates as event options (`ordered_x` + `check_range_bounds = no`); see `events/cc_xp_choice_events.txt`. This killed ten panel buttons in this mod.
+- **A `character_interaction` must have a `select_trigger`** (all ~60 vanilla ones do, no exceptions). One with none still has the engine ask for `recipient`, spamming `interaction_target.cpp:877 Asking for a flag that's not in the interaction target chooser specified` every frame the panel is open, and the button stays dead. For a target-free action use `common/generic_actions/` with `type = owncountry` (replaces `message` + `on_own_nation`); vanilla's `train_general` and `hire_advisor` are exactly this, driven from panel buttons with no parameter. When converting, drop the message-feed loc suffixes (`_desc_specific`, `_act`, `_past`, `_act_past`, `_concept`) and grep the loc for `SCOPE.sCharacter('target')` — a scope reference to a flag the action no longer declares is an error, not a blank.
+- **`none_available_msg_key` loc values must begin with `@trigger_no!`** or the engine rejects them (`interaction_target.cpp:1407 ... doesn't start with trigger_no icon`). Vanilla aliases `$no_valid_provinces$` / `$no_valid_characters$`, which carry the icon.
+- **A `select_trigger` with no *enabled* candidate disables the interaction on its own**, outside `allow`, and says nothing unless `none_available_msg_key` names a loc string. Applies where a selector is actually reached, i.e. the character interaction menu.
+- **Situation panel art resolves by naming convention** (`main_menu/gfx/interface/illustrations/situation/<key>.dds`) through `GetSituationIllustration` in the default `situation_panel_image` block. Overriding that block with a gradient removes the only call site and the art never appears.
 - **`has_custom_tag`** does NOT exist as a trigger. Trait `custom_tags = {}` values cannot be queried from character triggers.
 - **Illustration tags**: the complete valid list is `interior`, `exterior`, `regular`, `angry`, `professional`, `happy`, `armed`, `trading`, `military`, `location`, `economy`, `bank`, `army`, `ages`, `institution`, `society`, `renaissance`, `goods` (eighteen; harvested from the `N = <tag>` entries in `loading_screen/gfx/illustrations/database/*.txt`, which is the authoritative source). `combat`, `fire`, `burghers`, `interior_peasant` and **`peasant`** are NOT valid. `peasant` was previously listed here as valid and is not: it cost five `unknown illustration tag` errors before anyone read the database rather than the note.
 - **Advance cross-age `requires`**: `requires = other_advance` breaks if the required advance is in a different age. Use `potential = { has_advance = X }` + `allow = { has_advance = X }` instead.

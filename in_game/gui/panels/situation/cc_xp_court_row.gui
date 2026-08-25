@@ -35,7 +35,7 @@
 # same way -- see portrait_standard_head_framed and layoutpolicy_expanding.
 template cc_xp_court_row {
 	layoutpolicy_horizontal = expanding
-	size = { -1 76 }
+	size = { -1 100 }
 	background = { using = color_whiteish_texture  alpha = 0.10 }
 
 	hbox = {
@@ -303,6 +303,124 @@ template cc_xp_court_row {
 						parentanchor = center
 						size = { 75% 75% }
 						texture = "gfx/interface/buttons/flats/remove.dds"
+					}
+				}
+			}
+
+			# ---- Line 4: the career actions ----
+			#
+			# These used to be header buttons that supplied no parameter, and they were all
+			# dead: a panel action_button cannot open an interaction's target picker, so an
+			# unsupplied target_flag leaves the action unperformable and the button greyed
+			# out with only its price in the tooltip. Handing `recipient` from the row is
+			# what makes them work, and the row IS the choice of who.
+			#
+			# Where an action also needed a second target (a subject court, a pupil, a
+			# school) that target is now chosen among options in cc_xp_choice_events.txt.
+			#
+			# Everything except enrollment is hidden on protege rows: a protege cannot host,
+			# preside, be posted abroad, teach or found anything.
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				minimumsize = { -1 24 }
+				spacing = 3
+
+				expand = {}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_host_soiree" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/estates.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_court_examination" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/laws.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_second_to_subject" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/overlord.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/trait.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_found_institution" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/reforms.dds"
+					}
+				}
+
+				# Ministers and proteges alike. A protege enrolled in a school arrives in the
+				# cabinet already pointed at its ladders.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_enroll_in_school" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/star.dds"
 					}
 				}
 			}

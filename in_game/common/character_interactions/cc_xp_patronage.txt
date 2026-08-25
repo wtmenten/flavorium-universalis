@@ -58,29 +58,17 @@ cc_xp_sponsor_artist = {
 		}
 	}
 
-	# The patron first, then the artist.
+	# THE ARTIST is the recipient, not the patron. That is the reverse of how this read
+	# before, and it is deliberate: the patronage tab has an artist ROW and no minister
+	# row, and a panel action_button can only drive an interaction whose target it is able
+	# to supply. Handing the artist from their own row makes the button work; the minister
+	# who puts their name to it is chosen among options in cc_xp.83.
 	select_trigger = {
 		looking_for_a = character
 		source = actor
 		target_flag = recipient
-		name = "cc_xp_choose_patron"
-		column = { data = name }
-
-		visible = {
-			in_cabinet = yes
-			is_alive = yes
-		}
-
-		enabled = {
-			cc_xp_can_patronise = yes
-		}
-	}
-
-	select_trigger = {
-		looking_for_a = character
-		source = actor
-		target_flag = target
 		name = "cc_xp_choose_artist"
+		none_available_msg_key = "cc_xp_none_artist"
 		column = { data = name }
 
 		visible = {
@@ -95,148 +83,16 @@ cc_xp_sponsor_artist = {
 		}
 	}
 
-	# Guarded on `exists`, because the panel evaluates this block to build its tooltip
-	# before either target has been picked. See docs/scripting-gotchas.md.
 	effect = {
 		if = {
-			limit = {
-				exists = scope:recipient
-				exists = scope:target
-			}
-			scope:target = {
-				set_variable = { name = cc_xp_patron  value = scope:recipient  years = 25 }
-			}
-			scope:recipient = {
-				set_variable = { name = cc_xp_is_patron  value = yes  years = 25 }
-			}
-		}
-	}
-
-	ai_will_do = {
-		add = { value = 0 }
-	}
-}
-
-
-###############################################################################
-# SELL A WORK TO A DISCREET CLIENT
-#
-# The deliberate opposite of vanilla's request_work_of_art_purchase, which is a
-# diplomatic action: it names a counterparty, lets them refuse (diplo_chance base = -30),
-# and is actively harder to conclude the better the work is.
-#
-# This one names nobody, cannot be refused, and pays less for exactly that reason. The
-# piece still goes somewhere real: the effect picks a plausible buyer and calls vanilla's
-# own move_art_and_owner, so the work continues to exist in the world rather than
-# evaporating out of it.
-#
-# A minister arranges it, and takes the diplomatic experience for having done so. Selling
-# a fine piece out of the realm is noticed: the better the work, the unhappier the nobles.
-###############################################################################
-
-cc_xp_sell_art_discreetly = {
-	message = yes
-	on_own_nation = yes
-
-	ai_tick = never
-
-	potential = {
-		scope:actor = { cc_xp_enabled = yes }
-	}
-
-	allow = {
-		scope:actor = {
-			cc_xp_enabled = yes
-			custom_tooltip = {
-				text = cc_xp_tt_needs_sellable_art
-				has_sellable_art = yes
-			}
-			custom_tooltip = {
-				text = cc_xp_tt_needs_broker
-				any_cabinet_character = { cc_xp_can_broker = yes }
-			}
-		}
-	}
-
-	select_trigger = {
-		looking_for_a = character
-		source = actor
-		target_flag = recipient
-		name = "cc_xp_choose_broker"
-		column = { data = name }
-
-		visible = {
-			in_cabinet = yes
-			is_alive = yes
-		}
-
-		enabled = {
-			cc_xp_can_broker = yes
-		}
-	}
-
-	# The engine's own work selector. `cache_targets` because the list can be large and
-	# does not depend on the earlier selection, exactly as vanilla does it.
-	select_trigger = {
-		looking_for_a = work_of_art
-		source = actor
-		target_flag = target
-		cache_targets = yes
-		name = "cc_xp_choose_work"
-		none_available_msg_key = "cc_xp_no_sellable_work"
-		column = { data = name }
-
-		visible = {
-			art_is_priceless = no
-		}
-	}
-
-	effect = {
-		if = {
-			limit = {
-				exists = scope:recipient
-				exists = scope:target
-			}
-
-			# Somebody abroad wanted it. We do not ask who.
-			random_country = {
-				limit = {
-					NOT = { this = scope:actor }
-					NOT = { is_enemy_of = scope:actor }
-					exists = capital
-				}
-				save_scope_as = cc_xp_art_buyer
-			}
-
-			scope:actor = {
-				add_gold = cc_xp_discreet_sale_price
-
-				# A quiet sale is still a sale, and the court notices which wall is bare.
-				add_estate_satisfaction = {
-					type = estate_type:nobles_estate
-					value = estate_satisfaction_weak_penalty
-				}
-			}
+			limit = { exists = scope:recipient }
 
 			scope:recipient = {
-				cc_xp_gain_dip = { AMOUNT = cc_xp_brokerage_gain }
-				cc_xp_recompute = yes
+				set_variable = { name = cc_xp_awaiting_patron  value = yes  months = 2 }
+				save_scope_as = cc_xp_artist
 			}
 
-			custom_tooltip = {
-				text = cc_xp_sell_art_move_tt
-				hidden_effect = {
-					scope:cc_xp_art_buyer ?= {
-						save_scope_as = cc_xp_art_destination
-					}
-					scope:target ?= {
-						move_art_and_owner = {
-							location = scope:cc_xp_art_destination.capital
-							country = scope:cc_xp_art_destination
-						}
-					}
-				}
-			}
+			scope:actor = { trigger_event_silently = { id = cc_xp.83 } }
 		}
 	}
 

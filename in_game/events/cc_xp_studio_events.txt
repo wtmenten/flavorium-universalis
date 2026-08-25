@@ -1,0 +1,157 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — THE STUDIO VISIT
+#
+# cc_xp.70   The visit itself, opened from the patronage panel's per-artist button.
+# cc_xp.71   The unveiling, months later, when a work paid for at the visit is done.
+#
+# The artist is scope:cc_xp_artist, saved by cc_xp_studio_visit.
+#
+# WHY THE OPTIONS LOOK LIKE THIS. There is no effect that adds progress to a work of
+# art already under way; art_progress is readable and nothing more. So the options are
+# built from what the engine does expose: start_work_of_art when the easel is empty,
+# and add_artist_skill, which the engine consults when deciding how a work turns out.
+# The desc prints the raw progress figure so the decision is an informed one.
+###############################################################################
+
+
+###############################################################################
+# THE VISIT
+###############################################################################
+
+cc_xp.70 = {
+	type = country_event
+	title = cc_xp.70.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_xp_artist ?= { has_art_in_progress = yes } }
+				desc = cc_xp.70.desc.working
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_xp.70.desc.idle
+			}
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	# ---- Something is on the easel ----
+
+	# Better pigments, better marble, an assistant to grind and stretch. The engine reads
+	# artist skill when it decides how a work turns out, so this is the one lever that
+	# genuinely improves the piece being made.
+	option = {
+		name = cc_xp.70.a
+		trigger = {
+			scope:cc_xp_artist ?= { has_art_in_progress = yes }
+		}
+		add_gold = cc_xp_studio_materials_cost
+		add_prestige = prestige_weak_bonus
+		scope:cc_xp_artist ?= {
+			add_artist_skill = 1
+		}
+	}
+
+	# Hurry them. The work arrives sooner in the only sense the crown cares about, and
+	# the artist is worse for having been stood over.
+	option = {
+		name = cc_xp.70.b
+		trigger = {
+			scope:cc_xp_artist ?= { has_art_in_progress = yes }
+		}
+		scope:cc_xp_artist ?= {
+			add_artist_skill = -1
+		}
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_weak_penalty
+		}
+	}
+
+	# ---- The easel is empty ----
+
+	# Set them a subject at the crown's expense. This is the free-form counterpart to
+	# commission_art: the same start_work_of_art, reached from the visit rather than from
+	# the roster button, and priced in the event rather than by the interaction.
+	option = {
+		name = cc_xp.70.c
+		trigger = {
+			scope:cc_xp_artist ?= { has_art_in_progress = no }
+		}
+		add_gold = cc_xp_studio_commission_cost
+		scope:cc_xp_artist ?= {
+			start_work_of_art = { show_quality = yes }
+		}
+		trigger_event_silently = { id = cc_xp.71  months = { 10 18 } }
+	}
+
+	# ---- Always available ----
+
+	# The crown looked, said nothing, and left. A visit from the crown is worth something
+	# on its own, and rather more when the artist has a name behind them already.
+	option = {
+		name = cc_xp.70.d
+		add_prestige = prestige_weak_bonus
+		if = {
+			limit = { scope:cc_xp_artist ?= { has_variable = cc_xp_patron } }
+			add_prestige = prestige_weak_bonus
+		}
+	}
+}
+
+
+###############################################################################
+# THE UNVEILING
+#
+# Queued by the commission option above. Fires whether or not the work is finished by
+# then, because the point is the occasion rather than the object: the desc says which.
+#
+# Deliberately has no effect on the work itself. Nothing in the engine can hurry it and
+# this event does not pretend otherwise.
+###############################################################################
+
+cc_xp.71 = {
+	type = country_event
+	title = cc_xp.71.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_xp_artist ?= { has_art_in_progress = yes } }
+				desc = cc_xp.71.desc.unfinished
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = cc_xp.71.desc.finished
+			}
+		}
+	}
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	# Still on the easel. Wait, and say so plainly to the people who were invited.
+	option = {
+		name = cc_xp.71.a
+		trigger = {
+			scope:cc_xp_artist ?= { has_art_in_progress = yes }
+		}
+	}
+
+	# Done. Show it.
+	option = {
+		name = cc_xp.71.b
+		trigger = {
+			scope:cc_xp_artist ?= { has_art_in_progress = no }
+		}
+		add_prestige = prestige_mild_bonus
+	}
+}

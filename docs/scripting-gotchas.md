@@ -396,6 +396,152 @@ Both forms exist and they are not interchangeable.
 
 ---
 
+## `count` on an `any_` iterator is an EXACT match, not a threshold
+
+There is no at-least form. `count = 2` means "precisely two of them", so a check written to
+mean "two or more" silently stops passing the moment a third qualifies.
+
+The documented shape is:
+
+```
+any_character = {
+    filter = { <triggers> }     # optional; which items are counted
+    count = num/all             # or percent = <fixed_point>
+    <triggers>                  # what must hold of the counted items
+}
+```
+
+Triggers written *before* `count` act as the filter, triggers *after* it as the condition.
+Vanilla relies on the exactness: `generic_actions/invite_foreign_cleric.txt` uses
+`any_character = { is_ruler = no  is_adult = yes  count = 0 }` to mean "there are none of
+them", and `cabinet_actions/aptekarsky.txt` uses `count = all` for "every core location has
+disease".
+
+This cost four live bugs in this repo at once. The court examination demanded exactly two
+examinable people, so no court with three or more could ever hold one; the rivalry event and
+the soiree's match-of-minds branch were both dead for the same reason; and the shadow-state
+conflict event fired only for an overlord holding precisely two.
+
+**For a threshold, count in a script value and compare.** `every_x = { limit = {…} add = 1 }`
+inside a script value is the vanilla idiom (`script_values/high_kingship_values.txt`):
+
+```
+cc_xp_num_examinable = {
+    value = 0
+    every_character = {
+        limit = { cc_xp_is_examinable = yes }
+        add = 1
+    }
+}
+# then:  cc_xp_num_examinable >= 3
+```
+
+`cc_xp_values.txt` section 9 and `cc_bond_values.txt` hold this repo's counters.
+
+## Situation panel illustrations resolve by naming convention, and a blockoverride kills them
+
+The default `block "situation_panel_image"` in
+`game/in_game/gui/panels/situation/common.gui:113` is the only call site of
+`GetSituationIllustration(...)`, which resolves
+`main_menu/gfx/interface/illustrations/situation/<situation key>.dds`. There is no `.gfx`
+declaration step: put the file at that path under that name and it loads.
+
+A panel that overrides the block (for a flat colour gradient, say) removes that call, and the
+art is then never drawn no matter how correct the file is. Four panels in this repo shipped a
+gradient override and silently ignored the illustrations added for them. If a situation has
+art, do not override the block; the vanilla default already applies `scene_fade_vertical_up`
+over it.
+
+## A GUI button CANNOT open an interaction's `select_trigger` picker
+
+This is the single most expensive thing in this file. A panel `action_button`
+(`left_click_and_hold_action = { action_name = "..." }`) does not launch the engine's target
+selector. The engine evaluates the action against the parameters the button supplies, so any
+`target_flag` the button never supplies leaves the action unperformable: **the button renders
+permanently disabled and its tooltip shows only the parts that do not depend on a target**,
+which is the effect text and the price. No requirement line, no reason, nothing.
+
+That failure looks exactly like a failing `allow` block, and it is not one. If a button is
+grey and its tooltip has a title, an effect sentence and a cost and nothing else, this is why.
+
+The rule, verified across every GUI call site in vanilla: **every GUI-invoked interaction has
+exactly one distinct target flag, and the GUI always supplies it.**
+
+```
+card_header_action_button_01 = {
+    actor = "[Player]"
+    parameter = {
+        parameter_name = "recipient"          # must match the interaction's target_flag
+        parameter_value = "[Character.MakeScope]"
+    }
+    left_click_and_hold_action = { action_name = "my_interaction" }
+}
+```
+
+`improve_our_cultural_view` looks like a counter-example with two `select_trigger` blocks, but
+both write the same `target` flag: they are alternative pickers for one target, not two steps.
+The interactions that genuinely take two distinct flags (`ennoble`, `assume_fort_command`) have
+no GUI call site anywhere in the game.
+
+So an interaction reachable from a panel must take **at most one** target flag, and that flag
+must come from a row whose datacontext is the target. An action whose target is not on any row
+must be a `generic_action` with no selector at all (see the next section) and offer its
+candidates as event options instead. `ordered_x` with `check_range_bounds = no` gathers them;
+see `events/cc_xp_choice_events.txt`.
+
+## A `character_interaction` MUST have a `select_trigger`; a `generic_action` need not
+
+All ~60 vanilla `character_interactions` declare at least one `select_trigger`. **Zero
+exceptions.** An interaction that declares none still has the engine ask for its `recipient`
+flag, and because a panel re-evaluates its buttons every frame, `error.log` fills at tens of
+thousands of lines per session with:
+
+```
+[interaction_target.cpp:877]: Asking for a flag that's not in the interaction target chooser specified
+```
+
+and the button does not work.
+
+For an action with no target, use `common/generic_actions/` with `type = owncountry` instead.
+Ten vanilla generic_actions declare no selector, and `train_general` (unit_overview.gui) and
+`hire_advisor` (government_lateralview.gui) are both driven from a panel button with an
+`actor` and no `parameter`. `type = owncountry` replaces the character-interaction pair
+`message = yes` + `on_own_nation = yes`; `price`, `potential`, `allow`, `effect` and
+`ai_will_do` all work the same.
+
+**When converting, fix the localisation too.** The message-feed suffixes
+(`_desc_specific`, `_act`, `_past`, `_act_past`, `_concept`) belong to character interactions
+and typically name `[SCOPE.sCharacter('recipient')...]`. A generic_action wants only `<name>`
+and `<name>_desc`. More generally, a scope reference to a flag the action no longer declares
+is an error, not a blank: after removing a `target` selector, grep the loc for
+`SCOPE.sCharacter('target')` and `SCOPE.sCountry('target')`.
+
+## `none_available_msg_key` values must start with `@trigger_no!`
+
+Otherwise the engine rejects the string outright:
+
+```
+[interaction_target.cpp:1407]: Key cc_xp_none_trainee doesn't exist or doesn't start with trigger_no icon.
+```
+
+Every vanilla value is an alias of one of a handful of base strings that carry the icon:
+
+```
+no_valid_provinces:  "@trigger_no! No valid [provinces|e] available"
+no_valid_characters: "@trigger_no! No valid [characters|e] available"
+aptekarsky_no_provinces: "$no_valid_provinces$"
+```
+
+## A `select_trigger` with no enabled candidate disables the button and says nothing
+
+Separately from the above, and only where a selector is actually reached (the character
+interaction menu): if every candidate fails its `enabled`, the engine greys the entry out, and
+with no `none_available_msg_key` it gives no reason. Vanilla sets the key for exactly this case
+(`cabinet_actions/aptekarsky.txt`: `none_available_msg_key = "aptekarsky_no_provinces"`).
+
+Set one on every selector. Also keep each `allow` clause in the same terms its selector uses,
+so a passing `allow` actually implies a pickable target.
+
 ## Trigger & Effect Name Quick Reference
 
 Names that look obvious but are wrong, with verified replacements:
@@ -703,6 +849,102 @@ If two files each define `on_game_start = { effect = {} }`, the engine warns "mo
 ## Trait Allow blocks
 
 Vanilla traits use an `allow = { alway = no }` in many traits. This causes them to be dead code and un-assignable - even in events, despite them being commented otherwise.
+
+### `has_trait_category = cabinet` is NOT "does this minister have a career"
+
+The category is far broader than the ladder traits. In this mod it covers **134 traits** of
+the 159 defined: 69 in `cc_conditional_traits.txt`, 24 in `cabinet.txt`, **27 in
+`cc_age_traits.txt`**, **8 in `cc_negative_traits.txt`**, 6 in `cc_progression_traits.txt`.
+Only 63 are ladder rungs, and the age traits and afflictions are explicit carve-outs that
+`generate_ladders.py` refuses to place on a ladder.
+
+(Counting these with `grep -c "category = cabinet"` roughly **doubles** every figure, because
+it also matches the `has_trait_category = cabinet` inside each trait's own `allow` block.
+Match `^\s*category\s*=\s*cabinet\s*$` instead.)
+
+So `NOT = { has_trait_category = cabinet }` reads as "has a career already" for any minister
+who once picked up an age trait or an affliction, and they can never be offered one. Use the
+generated exhaustive trigger instead:
+
+```
+# RIGHT — cc_xp_is_unladdered, generated into cc_xp_ladder_triggers.txt from the
+# ladder table, so it can never drift from the ladders themselves
+cc_xp_is_unladdered = { NOR = { has_trait = fumbling_reformist  ... } }
+```
+
+`cc_on_age_2_military` in `cc_on_actions.txt` still uses the category form. That one wants
+"has no cabinet trait of any kind" and is correct as written; the distinction is the point.
+
+### A bare `desc = { triggered_desc ... }` renders EVERY match; wrap in `first_valid`
+
+Vanilla uses `first_valid = { }` around mutually-exclusive `triggered_desc` blocks in **300**
+places. A bare list is only ever written with mutually-exclusive triggers, so the wrapper is
+not decoration: without it an unconditional fallback entry is **appended** to the specific
+text rather than standing in for it.
+
+```
+desc = {
+    first_valid = {                    # <-- required
+        triggered_desc = { trigger = { ...good... }  desc = my.1.desc.good }
+        triggered_desc = { trigger = { ...poor... }  desc = my.1.desc.poor }
+        triggered_desc = {                           desc = my.1.desc      }   # fallback
+    }
+}
+```
+
+Four descs in this mod shipped without it (`cc_xp.30`, `.31`, `.32`, `.55`), each with a
+good/poor pair plus an unconditional fallback, so a good outcome read as good-text followed
+by generic-text. Reference: `in_game/events/character/character_events.txt:7`.
+
+### A script value cannot take a parameter; give it a saved scope
+
+`cc_xp_discreet_sale_price = { value = scope:target.art_price }` was lifted from vanilla's
+`country_interactions/sell_work_of_art.txt`, where `scope:target` exists because the
+interaction declares `select_trigger = { target_flag = target }`. Called from an event option
+instead, nothing sets it, so every evaluation logged
+
+```
+Undefined event target 'target'
+Event target link 'scope' returned an unset scope
+Value of wrong type ... Got value of type 'none'
+```
+
+and the value silently fell through to its `min`, which is why **every** work sold for exactly
+the floor price. A scripted effect takes `$PARAM$`; a script value does not. The fix is for the
+effect to `save_scope_as` what the value needs before invoking it, and for the value to guard
+on `exists` because an event option's effect is evaluated to build the option **tooltip**
+before anything is chosen. Vanilla guards the identical read the same way
+(`sell_work_of_art.txt:22`).
+
+Note the failure shape: a wrong-scope read in a script value does not abort the effect. It
+logs and yields `none`, which `min`/`max` then quietly turn into a plausible-looking number.
+
+### Anything that OFFERS a trait must mirror that trait's `allow` block
+
+`add_trait` against a failing `allow` is refused **silently**. An event option, decision or
+interaction that grants a trait without re-checking its `allow` therefore looks like it
+worked, changes nothing, and consumes whatever the player paid for it. There is no log line.
+
+Every one of the fifteen ladder entry traits carries a real `allow`:
+
+| condition | on how many | who it excludes |
+|---|---|---|
+| `NOT = { has_trait_category = cabinet }` | 14 of 15 | anyone holding one age trait or affliction |
+| `in_cabinet = yes` | 7 of 15 | **every protege** (they are not seated) |
+| `mil > 33` | 3 of 15 | low-`mil` ministers |
+| `adm < 33  mil < 33  dip < 33` | 2 of 15 | anyone competent (these are the malus entries) |
+| `has_variable = cc_granting_trait` | 1 of 15 | nothing; it is the permission token |
+
+Two consequences for any picker UI:
+
+1. Gate the option on the trait's own allow conditions, and gate whether the picker opens
+   at all on "at least one is grantable". `cc_xp_can_enter_career_<track>` does the latter.
+2. **Never copy `has_variable = cc_granting_trait` into a trigger.** The trigger runs before
+   the effect sets the token, so the option would be hidden permanently.
+
+`generate_ladders.py` reads these blocks out of the trait files (`load_entry_allows`) rather
+than restating them, so editing a trait's `allow` cannot leave the picker offering something
+the engine will refuse.
 
 ---
 

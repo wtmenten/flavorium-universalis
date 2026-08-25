@@ -34,6 +34,58 @@ cc_subject_bonds = {
 		any_subject = { has_variable = cc_bond_initialized }
 	}
 
-	# Deliberately omitted: on_start announcement, map_color, legend_key, tooltip —
-	# this is an informational ledger, not a crisis.
+	# ---------------------------------------------------------------------------------
+	# MAP COLOUR
+	#
+	# root = location, scope:target = situation. Those are the ONLY scopes map_color gets:
+	# the situations readme says so and no vanilla map_color in the game references a
+	# player or an observer. The colour is computed once per location, globally, not once
+	# per viewer.
+	#
+	# So "the player" has to be written as `is_ai = no`. In single player that is exactly
+	# right. In multiplayer it colours every human realm and every human's subjects, which
+	# is a knowing trade for having the ledger legible on the map at all.
+	#
+	# Subjects are shaded by the same thing the panel ranks them by, so the map and the
+	# ledger cannot tell different stories. cc_bond_overall_factor is in
+	# script_values/cc_bond_values.txt.
+	# ---------------------------------------------------------------------------------
+	map_color = {
+		if = {
+			limit = { owner ?= { is_ai = no } }
+			value = rgb { 45 120 65 }
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_variable = cc_bond_initialized
+					overlord ?= { is_ai = no }
+				}
+			}
+			lerp = {
+				min_color = rgb { 175 205 230 }
+				max_color = rgb { 20 55 115 }
+				factor = "cc_bond_overall_factor"
+			}
+		}
+		else = {
+			value = define:NMapColors|DEFAULT_COLOR
+		}
+	}
+
+	legend_key = {
+		desc = "cc_bond_legend_overlord"
+		color = rgb { 45 120 65 }
+	}
+	legend_key = {
+		desc = "cc_bond_legend_weak"
+		color = rgb { 175 205 230 }
+	}
+	legend_key = {
+		desc = "cc_bond_legend_strong"
+		color = rgb { 20 55 115 }
+	}
+
+	# Deliberately omitted: on_start announcement and tooltip. This is an informational
+	# ledger, not a crisis.
 }

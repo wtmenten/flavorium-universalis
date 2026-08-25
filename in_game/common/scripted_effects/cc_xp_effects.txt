@@ -390,6 +390,40 @@ cc_xp_task_family = {
 }
 
 
+# Character scope. Seeds the five task-family counters to zero so a readout can print
+# all five unconditionally.
+#
+# The counters are created lazily by cc_xp_task_family above, which is right for the
+# pulse (a minister who never sees a colony carries no colonial counter, and the save is
+# smaller for it) but wrong for localisation: a loc string has no has_variable guard, and
+# reading an unset one prints nothing useful. So the seeding happens HERE, on demand, for
+# the one character whose file is being opened, rather than in cc_xp_init for every
+# tracked minister in the world.
+cc_xp_record_prepare = {
+	cc_xp_init = yes
+	if = {
+		limit = { NOT = { has_variable = cc_tf_war } }
+		set_variable = { name = cc_tf_war value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tf_reform } }
+		set_variable = { name = cc_tf_reform value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tf_colonial } }
+		set_variable = { name = cc_tf_colonial value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tf_faith } }
+		set_variable = { name = cc_tf_faith value = 0 }
+	}
+	if = {
+		limit = { NOT = { has_variable = cc_tf_trade } }
+		set_variable = { name = cc_tf_trade value = 0 }
+	}
+}
+
+
 ###############################################################################
 # TRAINING BOOKKEEPING (phase 3)
 ###############################################################################
@@ -565,4 +599,130 @@ cc_xp_sync_proteges = {
 			}
 		}
 	}
+}
+
+
+###############################################################################
+# THE SECOND CHOICE (phase 8)
+#
+# Four effects shared by the option blocks in events/cc_xp_choice_events.txt. Each option
+# in those events differs only in WHICH candidate it acts on, so the body lives here once
+# rather than four times per event.
+#
+# All are called in COUNTRY scope, from an event option, with the chosen candidate passed
+# as a scope. The person the interaction acted on is already in a saved scope by then,
+# resolved in the event's immediate block from the timed flag the interaction set.
+###############################################################################
+
+# Post the waiting minister to a subject court.
+#
+# The state lives on the SUBJECT, not the minister, so the yearly bond pulse can iterate
+# subjects and read everything it needs without dereferencing a country stored on a
+# character. cc_bond_envoy_char exists purely so the ledger panel can print a name.
+# cc_xp_post_envoy = { COURT = scope:cc_xp_court_1 }
+cc_xp_post_envoy = {
+	scope:cc_xp_envoy ?= {
+		set_variable = { name = cc_xp_seconded  value = yes  years = 8 }
+	}
+	$COURT$ ?= {
+		set_variable = { name = cc_bond_envoy        value = yes  years = 8 }
+		set_variable = { name = cc_bond_envoy_track  value = scope:cc_xp_envoy.var:cc_track  years = 8 }
+		set_variable = { name = cc_bond_envoy_char   value = scope:cc_xp_envoy  years = 8 }
+	}
+}
+
+# Bind a minister's name to the waiting artist.
+#
+# Two variables for one relationship, deliberately: the GUI can dereference a character
+# held in a variable and script does not have to, so the artist carries the reference for
+# the panel and the minister carries a plain timed flag for the yearly payoff.
+# cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_1 }
+cc_xp_bind_patron = {
+	scope:cc_xp_artist ?= {
+		set_variable = { name = cc_xp_patron  value = $PATRON$  years = 25 }
+	}
+	$PATRON$ ?= {
+		set_variable = { name = cc_xp_is_patron  value = yes  years = 25 }
+	}
+}
+
+# Sell one work quietly. The piece goes somewhere real rather than evaporating: a
+# plausible buyer is picked and vanilla's own move_art_and_owner does the transfer.
+# cc_xp_sell_work = { WORK = scope:cc_xp_work_1 }
+cc_xp_sell_work = {
+	# The price values below read the work through THIS scope, not through $WORK$.
+	# A script value cannot take a parameter, so the only way to tell one which piece is
+	# being sold is to put it somewhere the value can find it.
+	#
+	# cc_xp_discreet_sale_price used to read `scope:target`, copied from vanilla's
+	# sell_work_of_art (which has a select_trigger with target_flag = target, so vanilla
+	# really does have that scope). Nothing here ever set it, so every evaluation logged
+	# "Undefined event target 'target'" and the value fell through to its `min` of 25.
+	# That is why every piece sold for exactly 25 gold.
+	#
+	# The origin culture is saved alongside it rather than reached as
+	# scope:cc_xp_sale_work.creator.culture from inside the value: a three-link dot chain
+	# in a comparison is the shape this codebase has been bitten by before (see the
+	# has_culture_group note in CLAUDE.md), and one link on each side is the form vanilla
+	# uses in hegemons/4_cultural_hegemon.txt. A work whose creator is gone simply leaves
+	# the scope unset, which cc_xp_art_culture_factor reads as "price it at face value".
+	$WORK$ ?= {
+		save_scope_as = cc_xp_sale_work
+		creator ?= {
+			culture ?= { save_scope_as = cc_xp_sale_culture }
+		}
+	}
+
+	random_country = {
+		limit = {
+			NOT = { this = root }
+			NOT = { is_enemy_of = root }
+			exists = capital
+		}
+		save_scope_as = cc_xp_art_destination
+	}
+
+	add_gold = cc_xp_discreet_sale_price
+
+	# A quiet sale is still a sale, and the court notices which wall is bare.
+	add_estate_satisfaction = {
+		type = estate_type:nobles_estate
+		value = estate_satisfaction_weak_penalty
+	}
+
+	scope:cc_xp_broker ?= {
+		cc_xp_gain_dip = { AMOUNT = cc_xp_brokerage_gain }
+		cc_xp_recompute = yes
+	}
+
+	custom_tooltip = {
+		text = cc_xp_sell_art_move_tt
+		hidden_effect = {
+			$WORK$ ?= {
+				move_art_and_owner = {
+					location = scope:cc_xp_art_destination.capital
+					country = scope:cc_xp_art_destination
+				}
+			}
+		}
+	}
+}
+
+# Take a courtier into the crown's care.
+#
+# The nobility does not care for the crown taking an interest in people it has not
+# vouched for; the coin and the political capital are charged by the interaction's price.
+# cc_xp_take_protege = { WHO = scope:cc_xp_cand_1 }
+cc_xp_take_protege = {
+	$WHO$ ?= {
+		set_variable = { name = cc_protege value = yes }
+		cc_xp_init = yes
+		cc_xp_recompute = yes
+	}
+
+	add_estate_satisfaction = {
+		type = estate_type:nobles_estate
+		value = estate_satisfaction_weak_penalty
+	}
+	cc_xp_sync_slots = yes
 }

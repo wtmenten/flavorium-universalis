@@ -13,84 +13,6 @@
 
 
 ###############################################################################
-# SPONSOR A PROTEGE
-#
-# Elevating an outsider costs coin, political capital (charged as government_power by
-# the price) and noble goodwill (charged in the effect). The nobility does not care for
-# the crown taking an interest in people it has not vouched for.
-###############################################################################
-
-cc_xp_sponsor_protege = {
-	message = yes
-	on_own_nation = yes
-
-	price = price:cc_xp_sponsor_protege
-
-	# The AI does not groom successors. It appoints from whoever is available, which is
-	# what it did before this system existed, and the protege slots are a player tool.
-	ai_tick = never
-
-	potential = {
-		scope:actor = { cc_xp_enabled = yes }
-	}
-
-	allow = {
-		scope:actor = {
-			cc_xp_enabled = yes
-			cc_xp_has_protege_room = yes
-			any_character = { cc_xp_can_be_sponsored = yes }
-		}
-	}
-
-	select_trigger = {
-		looking_for_a = character
-		source = actor
-		target_flag = recipient
-		name = "cc_xp_choose_protege"
-		column = { data = name }
-
-		visible = {
-			is_alive = yes
-			is_adult = yes
-			NOT = { in_cabinet = yes }
-			NOT = { has_variable = cc_protege }
-		}
-
-		enabled = {
-			cc_xp_can_be_sponsored = yes
-		}
-	}
-
-	effect = {
-		# Guarded on `exists`. A character interaction's effect block is evaluated to
-		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
-		# during that pass any more than a second target is. Without this the log fills
-		# with "Undefined event target 'recipient'" every time the panel is opened.
-		if = {
-			limit = { exists = scope:recipient }
-			scope:recipient = {
-				set_variable = { name = cc_protege value = yes }
-				cc_xp_init = yes
-				cc_xp_recompute = yes
-			}
-
-			scope:actor = {
-				add_estate_satisfaction = {
-					type = estate_type:nobles_estate
-					value = estate_satisfaction_weak_penalty
-				}
-				cc_xp_sync_slots = yes
-			}
-		}
-	}
-
-	ai_will_do = {
-		add = { value = 0 }
-	}
-}
-
-
-###############################################################################
 # RELEASE A PROTEGE
 #
 # Frees a slot. Their experience is not touched: if they are picked up again later, or
@@ -119,6 +41,7 @@ cc_xp_release_protege = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_released_protege"
+		none_available_msg_key = "cc_xp_none_released_protege"
 		column = { data = name }
 
 		visible = {
@@ -178,20 +101,44 @@ cc_xp_assign_mentor = {
 		scope:actor = { cc_xp_enabled = yes }
 	}
 
+	# Two independently tooltipped halves: a teacher and a pupil. They fail for entirely
+	# different reasons (nobody senior enough versus nobody junior enough who is free), and
+	# an undescribed pair of any_ checks told the player neither.
+	#
+	# The pupil pool is deliberately wide: seated ministers below level 5, sponsored
+	# proteges, and crown-estate courtiers who are not in the system at all. That last group
+	# is the cheapest way into the ladder for the large pool of people standing around the
+	# court that nothing else looks at, and the effect below initialises them.
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
-			any_cabinet_character = { cc_xp_can_mentor = yes }
-			any_character = { cc_xp_can_be_mentored = yes }
+			custom_tooltip = {
+				text = cc_xp_tt_needs_mentor
+				any_cabinet_character = { cc_xp_can_mentor = yes }
+			}
+			# Not cc_xp_tt_needs_student: that key already belongs to school enrollment.
+			custom_tooltip = {
+				text = cc_xp_tt_needs_pupil
+				any_character = { cc_xp_can_be_mentored = yes }
+			}
 		}
 	}
 
-	# First the teacher, then the pupil.
+	# ONE target flag only, and the panel supplies it from the mentor's own row.
+	#
+	# There used to be a second selector here for the pupil. A panel action_button cannot
+	# open an interaction's target picker at all: the engine evaluates the action against
+	# the parameters the button hands it, so a flag that is never supplied leaves the
+	# action unperformable and the button dead with no stated reason. Vanilla never invokes
+	# a two-flag interaction from a button for exactly this reason (ennoble and
+	# assume_fort_command have no GUI call site anywhere). The pupil is chosen in cc_xp.80
+	# instead, which keeps the choice and keeps the button alive.
 	select_trigger = {
 		looking_for_a = character
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_mentor"
+		none_available_msg_key = "cc_xp_none_mentor"
 		column = { data = name }
 
 		visible = {
@@ -204,52 +151,20 @@ cc_xp_assign_mentor = {
 		}
 	}
 
-	select_trigger = {
-		looking_for_a = character
-		source = actor
-		target_flag = target
-		name = "cc_xp_choose_student"
-		column = { data = name }
-
-		visible = {
-			is_alive = yes
-			is_adult = yes
-			OR = {
-				in_cabinet = yes
-				has_variable = cc_protege
-			}
-		}
-
-		enabled = {
-			cc_xp_can_be_mentored = yes
-		}
-	}
-
-	# The panel evaluates this block to build the tooltip BEFORE either target has been
-	# picked, so every reference to the second target has to be guarded with
-	# `exists = scope:target`. Vanilla does the same in every multi-select interaction:
-	# see ennoble.txt:68 and assume_fort_command.txt:74. Without the guard the log fills
-	# with "Undefined event target 'target'" every time the panel is opened.
-	#
-	# scope:recipient.var:cc_track is guarded by the same check, since a mentor who has
-	# not been picked yet has no variables to read either.
 	effect = {
 		if = {
-			limit = {
-				exists = scope:target
-				exists = scope:recipient
+			limit = { exists = scope:recipient }
+
+			# The mentor is identified to cc_xp.80 by a timed flag rather than a saved
+			# scope, for the reason the rest of this system does the same: a scope is not
+			# something to rely on across a queued event, and the flag also marks them as
+			# occupied while the pupil is being settled on.
+			scope:recipient = {
+				set_variable = { name = cc_xp_offering_mentorship  value = yes  months = 2 }
+				save_scope_as = cc_xp_mentor
 			}
-			scope:target = {
-				# The student may be a crown-estate courtier who has never been in the
-				# system. Initialising here is what lets a mentorship reach outside the
-				# cabinet at all; it is idempotent, and guarded internally.
-				cc_xp_init = yes
-				set_variable = {
-					name = cc_xp_mentor_track
-					value = scope:recipient.var:cc_track
-					years = 10
-				}
-			}
+
+			scope:actor = { trigger_event_silently = { id = cc_xp.80 } }
 		}
 	}
 

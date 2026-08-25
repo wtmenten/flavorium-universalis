@@ -155,10 +155,17 @@ cc_xp_can_be_trained = {
 	NOT = { cc_xp_is_away = yes }
 }
 
-# Character scope. Anyone at court not already spoken for.
+# Character scope. Anyone at court not already spoken for, and young enough that grooming
+# them is an investment rather than a courtesy.
+#
+# The age ceiling lives HERE rather than in cc_xp.85's candidate ordering so that the
+# count, the allow block and the offered options can never disagree: cc_xp_num_sponsorable
+# reads this same trigger. A protege who ages past the ceiling keeps their place; the gate
+# is on being taken on, not on staying.
 cc_xp_can_be_sponsored = {
 	is_alive = yes
 	is_adult = yes
+	character_age <= 25
 	NOT = { in_cabinet = yes }
 	NOT = { has_variable = cc_protege }
 	NOT = { is_ruler = yes }
@@ -170,14 +177,14 @@ cc_xp_can_be_sponsored = {
 # to the cabinet would otherwise leave the counter permanently overstated, and the
 # player would lose slots with no way to get them back.
 #
-# The cap is a literal rather than a script value: `count` is parsed by the engine and is
-# not the place to find out whether script values are accepted there.
+# This used to read `NOT = { any_character = { count = 3  has_variable = cc_protege } }`,
+# which is "not EXACTLY three", not "fewer than three": `count` on an any_ iterator is an
+# exact match in EU5. It happened to behave correctly below the cap and would have let a
+# fourth protege through. cc_xp_num_proteges counts and this compares.
 cc_xp_has_protege_room = {
-	NOT = {
-		any_character = {
-			count = 3
-			has_variable = cc_protege
-		}
+	custom_tooltip = {
+		text = cc_xp_tt_protege_room
+		cc_xp_num_proteges < 3
 	}
 }
 
@@ -282,6 +289,25 @@ cc_xp_has_institution_room = {
 				NOT = { has_variable = cc_xp_school_3_founder }
 				cc_xp_school_capacity >= 3
 			}
+		}
+	}
+}
+
+# Country scope. Is there a university that is not already somebody's school?
+#
+# A school is SEATED. It occupies a location with a university, that location carries
+# cc_xp_school_seat, and the situation map colours it. The first school wants the capital's
+# university (which is also what unlocks the first slot at all); the second and third want
+# universities elsewhere, so a realm that wants three schools has to build for them.
+#
+# Checked as a separate clause rather than folded into cc_xp_has_institution_room, because
+# the two fail for different reasons and the player should be told which.
+cc_xp_has_free_university = {
+	custom_tooltip = {
+		text = cc_xp_tt_needs_free_university
+		any_owned_location = {
+			has_building = building_type:university
+			NOT = { has_variable = cc_xp_school_seat }
 		}
 	}
 }

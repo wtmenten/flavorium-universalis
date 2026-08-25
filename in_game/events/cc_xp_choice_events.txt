@@ -1,0 +1,488 @@
+﻿namespace = cc_xp
+
+###############################################################################
+# FLAVORIUM UNIVERSALIS — THE SECOND CHOICE
+#
+# cc_xp.80   Who the mentor will teach
+# cc_xp.81   Which subject court a minister is posted to
+# cc_xp.82   Which school someone is enrolled in
+# cc_xp.83   Which minister puts their name behind an artist
+# cc_xp.84   Which work is sold, and by whom
+# cc_xp.85   Which courtier the crown takes an interest in
+#
+# WHY THESE EXIST. A panel action_button cannot open an interaction's own select_trigger
+# picker. The engine evaluates the action against the parameters the button supplies, so
+# a target_flag that is never supplied leaves the action unperformable: the button renders
+# disabled and its tooltip shows only the parts that do not depend on a target, which is
+# the effect text and the price. Across all of vanilla, every GUI-invoked interaction has
+# exactly one distinct target flag and the GUI always supplies it; the two that take two
+# flags (ennoble, assume_fort_command) have no GUI call site anywhere.
+#
+# So each interaction now takes at most one flag, handed to it by the row the subject sits
+# on, and the second choice is made here.
+#
+# THE SHAPE IS THE SAME IN ALL SIX. The person the button acted on is identified by a
+# timed flag rather than a saved scope, as everywhere else in this system: a scope is not
+# something to rely on across a queued event. Candidates are gathered with ordered_x,
+# `check_range_bounds = no` so a short list simply yields fewer scopes, and each option
+# gates itself on its candidate existing. There is no decline option: the interaction's
+# allow block guarantees at least one candidate, and the price has already been charged.
+###############################################################################
+
+
+###############################################################################
+# WHO WILL THEY TEACH?
+###############################################################################
+
+cc_xp.80 = {
+	type = country_event
+	title = cc_xp.80.title
+	desc = cc_xp.80.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_variable = cc_xp_offering_mentorship }
+			remove_variable = cc_xp_offering_mentorship
+			save_scope_as = cc_xp_mentor
+		}
+
+		ordered_character = {
+			limit = {
+				cc_xp_can_be_mentored = yes
+				NOT = { this = scope:cc_xp_mentor }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_pupil_1
+		}
+		ordered_character = {
+			limit = {
+				cc_xp_can_be_mentored = yes
+				NOT = { this = scope:cc_xp_mentor }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_xp_pupil_2
+		}
+		ordered_character = {
+			limit = {
+				cc_xp_can_be_mentored = yes
+				NOT = { this = scope:cc_xp_mentor }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_xp_pupil_3
+		}
+		ordered_character = {
+			limit = {
+				cc_xp_can_be_mentored = yes
+				NOT = { this = scope:cc_xp_mentor }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_xp_pupil_4
+		}
+	}
+
+	# The pupil may be a crown-estate courtier who has never been in the system.
+	# cc_xp_init is what lets a mentorship reach outside the cabinet at all; it is
+	# idempotent and guarded internally.
+	option = {
+		name = cc_xp.80.a
+		trigger = { exists = scope:cc_xp_pupil_1 }
+		scope:cc_xp_pupil_1 = {
+			cc_xp_init = yes
+			set_variable = { name = cc_xp_mentor_track  value = scope:cc_xp_mentor.var:cc_track  years = 10 }
+		}
+	}
+	option = {
+		name = cc_xp.80.b
+		trigger = { exists = scope:cc_xp_pupil_2 }
+		scope:cc_xp_pupil_2 = {
+			cc_xp_init = yes
+			set_variable = { name = cc_xp_mentor_track  value = scope:cc_xp_mentor.var:cc_track  years = 10 }
+		}
+	}
+	option = {
+		name = cc_xp.80.c
+		trigger = { exists = scope:cc_xp_pupil_3 }
+		scope:cc_xp_pupil_3 = {
+			cc_xp_init = yes
+			set_variable = { name = cc_xp_mentor_track  value = scope:cc_xp_mentor.var:cc_track  years = 10 }
+		}
+	}
+	option = {
+		name = cc_xp.80.d
+		trigger = { exists = scope:cc_xp_pupil_4 }
+		scope:cc_xp_pupil_4 = {
+			cc_xp_init = yes
+			set_variable = { name = cc_xp_mentor_track  value = scope:cc_xp_mentor.var:cc_track  years = 10 }
+		}
+	}
+}
+
+
+###############################################################################
+# WHICH COURT?
+###############################################################################
+
+cc_xp.81 = {
+	type = country_event
+	title = cc_xp.81.title
+	desc = cc_xp.81.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		random_cabinet_character = {
+			limit = { has_variable = cc_xp_awaiting_posting }
+			remove_variable = cc_xp_awaiting_posting
+			save_scope_as = cc_xp_envoy
+		}
+
+		ordered_subject = {
+			limit = { cc_xp_can_receive_envoy = yes }
+			order_by = total_development
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_court_1
+		}
+		ordered_subject = {
+			limit = { cc_xp_can_receive_envoy = yes }
+			order_by = total_development
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_xp_court_2
+		}
+		ordered_subject = {
+			limit = { cc_xp_can_receive_envoy = yes }
+			order_by = total_development
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_xp_court_3
+		}
+		ordered_subject = {
+			limit = { cc_xp_can_receive_envoy = yes }
+			order_by = total_development
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_xp_court_4
+		}
+	}
+
+	option = {
+		name = cc_xp.81.a
+		trigger = { exists = scope:cc_xp_court_1 }
+		cc_xp_post_envoy = { COURT = scope:cc_xp_court_1 }
+	}
+	option = {
+		name = cc_xp.81.b
+		trigger = { exists = scope:cc_xp_court_2 }
+		cc_xp_post_envoy = { COURT = scope:cc_xp_court_2 }
+	}
+	option = {
+		name = cc_xp.81.c
+		trigger = { exists = scope:cc_xp_court_3 }
+		cc_xp_post_envoy = { COURT = scope:cc_xp_court_3 }
+	}
+	option = {
+		name = cc_xp.81.d
+		trigger = { exists = scope:cc_xp_court_4 }
+		cc_xp_post_envoy = { COURT = scope:cc_xp_court_4 }
+	}
+}
+
+
+###############################################################################
+# WHICH SCHOOL?
+#
+# At most three exist, so three options name them all. The old design picked a school by
+# naming one of its members, which read well in a selector and reads worse than this.
+###############################################################################
+
+cc_xp.82 = {
+	type = country_event
+	title = cc_xp.82.title
+	desc = cc_xp.82.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		random_character = {
+			limit = { has_variable = cc_xp_awaiting_enrollment }
+			remove_variable = cc_xp_awaiting_enrollment
+			save_scope_as = cc_xp_school_student
+		}
+	}
+
+	option = {
+		name = cc_xp.82.a
+		trigger = { has_variable = cc_xp_school_1_founder }
+		scope:cc_xp_school_student ?= {
+			set_variable = { name = cc_xp_school        value = 1 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_1_track }
+		}
+	}
+	option = {
+		name = cc_xp.82.b
+		trigger = { has_variable = cc_xp_school_2_founder }
+		scope:cc_xp_school_student ?= {
+			set_variable = { name = cc_xp_school        value = 2 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_2_track }
+		}
+	}
+	option = {
+		name = cc_xp.82.c
+		trigger = { has_variable = cc_xp_school_3_founder }
+		scope:cc_xp_school_student ?= {
+			set_variable = { name = cc_xp_school        value = 3 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_3_track }
+		}
+	}
+}
+
+
+###############################################################################
+# WHOSE NAME GOES ON IT?
+###############################################################################
+
+cc_xp.83 = {
+	type = country_event
+	title = cc_xp.83.title
+	desc = cc_xp.83.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		random_artist = {
+			limit = { has_variable = cc_xp_awaiting_patron }
+			remove_variable = cc_xp_awaiting_patron
+			save_scope_as = cc_xp_artist
+		}
+
+		ordered_cabinet_character = {
+			limit = { cc_xp_can_patronise = yes }
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_patron_1
+		}
+		ordered_cabinet_character = {
+			limit = { cc_xp_can_patronise = yes }
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_xp_patron_2
+		}
+		ordered_cabinet_character = {
+			limit = { cc_xp_can_patronise = yes }
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_xp_patron_3
+		}
+		ordered_cabinet_character = {
+			limit = { cc_xp_can_patronise = yes }
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_xp_patron_4
+		}
+	}
+
+	option = {
+		name = cc_xp.83.a
+		trigger = { exists = scope:cc_xp_patron_1 }
+		cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_1 }
+	}
+	option = {
+		name = cc_xp.83.b
+		trigger = { exists = scope:cc_xp_patron_2 }
+		cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_2 }
+	}
+	option = {
+		name = cc_xp.83.c
+		trigger = { exists = scope:cc_xp_patron_3 }
+		cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_3 }
+	}
+	option = {
+		name = cc_xp.83.d
+		trigger = { exists = scope:cc_xp_patron_4 }
+		cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_4 }
+	}
+}
+
+
+###############################################################################
+# WHICH WALL GOES BARE?
+#
+# The four most valuable saleable works, which is the list a player actually wants: the
+# decision is what you are willing to part with, and the cheap end of the collection is
+# not a decision.
+#
+# The broker is not offered. Any minister at court can carry a letter, so the event takes
+# the most senior one available rather than spending a choice on it.
+###############################################################################
+
+cc_xp.84 = {
+	type = country_event
+	title = cc_xp.84.title
+	desc = cc_xp.84.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		ordered_cabinet_character = {
+			limit = { cc_xp_can_broker = yes }
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_broker
+		}
+
+		ordered_work_of_art_in_country = {
+			limit = { art_is_priceless = no }
+			order_by = art_price
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_work_1
+		}
+		ordered_work_of_art_in_country = {
+			limit = { art_is_priceless = no }
+			order_by = art_price
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_xp_work_2
+		}
+		ordered_work_of_art_in_country = {
+			limit = { art_is_priceless = no }
+			order_by = art_price
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_xp_work_3
+		}
+		ordered_work_of_art_in_country = {
+			limit = { art_is_priceless = no }
+			order_by = art_price
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_xp_work_4
+		}
+	}
+
+	option = {
+		name = cc_xp.84.a
+		trigger = { exists = scope:cc_xp_work_1 }
+		cc_xp_sell_work = { WORK = scope:cc_xp_work_1 }
+	}
+	option = {
+		name = cc_xp.84.b
+		trigger = { exists = scope:cc_xp_work_2 }
+		cc_xp_sell_work = { WORK = scope:cc_xp_work_2 }
+	}
+	option = {
+		name = cc_xp.84.c
+		trigger = { exists = scope:cc_xp_work_3 }
+		cc_xp_sell_work = { WORK = scope:cc_xp_work_3 }
+	}
+	option = {
+		name = cc_xp.84.d
+		trigger = { exists = scope:cc_xp_work_4 }
+		cc_xp_sell_work = { WORK = scope:cc_xp_work_4 }
+	}
+	option = {
+		name = cc_xp.84.e
+		# The one action in this file that IS declinable, because nothing was charged for
+		# it: cc_xp_sell_art_discreetly has no price, it raises money rather than spending
+		# it. Walking away costs the court nothing but the afternoon.
+	}
+}
+
+
+###############################################################################
+# WHO IS WORTH THE CROWN'S ATTENTION?
+###############################################################################
+
+cc_xp.85 = {
+	type = country_event
+	title = cc_xp.85.title
+	desc = cc_xp.85.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		ordered_character = {
+			limit = { cc_xp_can_be_sponsored = yes }
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_cand_1
+		}
+		ordered_character = {
+			limit = { cc_xp_can_be_sponsored = yes }
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_xp_cand_2
+		}
+		ordered_character = {
+			limit = { cc_xp_can_be_sponsored = yes }
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_xp_cand_3
+		}
+		ordered_character = {
+			limit = { cc_xp_can_be_sponsored = yes }
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_xp_cand_4
+		}
+	}
+
+	option = {
+		name = cc_xp.85.a
+		trigger = { exists = scope:cc_xp_cand_1 }
+		cc_xp_take_protege = { WHO = scope:cc_xp_cand_1 }
+	}
+	option = {
+		name = cc_xp.85.b
+		trigger = { exists = scope:cc_xp_cand_2 }
+		cc_xp_take_protege = { WHO = scope:cc_xp_cand_2 }
+	}
+	option = {
+		name = cc_xp.85.c
+		trigger = { exists = scope:cc_xp_cand_3 }
+		cc_xp_take_protege = { WHO = scope:cc_xp_cand_3 }
+	}
+	option = {
+		name = cc_xp.85.d
+		trigger = { exists = scope:cc_xp_cand_4 }
+		cc_xp_take_protege = { WHO = scope:cc_xp_cand_4 }
+	}
+}

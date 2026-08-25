@@ -832,3 +832,57 @@ cc_xp_resum = {
 	change_variable = { name = cc_xp_total  add   = var:cc_xp_dip }
 	change_variable = { name = cc_xp_total  add   = var:cc_xp_mil }
 }
+
+###############################################################################
+# CAREER ENTRY
+#
+# Rung 0 used to be reachable only by the monthly trait dispatcher, which meant the
+# player had no say at all in which of the fifteen careers a minister ended up on,
+# and four ladders (reform, fiscal, envoy, exploration) were reachable by nothing:
+# no event in the mod granted their entry trait.
+#
+# These effects are what fixes both. Called in CHARACTER scope from the training
+# return events (cc_xp.30/.31/.32) when the returning minister holds no rung trait
+# at all and the posting did not go badly. They stamp the flag the picker resolves
+# its minister by and roll which careers are on the menu.
+#
+# The flag is timed rather than permanent so a picker the player somehow never sees
+# expires instead of leaving a minister waiting forever. Two months is the same
+# window cc_xp_branch_pending uses.
+###############################################################################
+
+# adm: 4 of 6 offered (reform, fiscal, learning, urbanism, law, integration)
+cc_xp_offer_career_adm = {
+	set_variable = { name = cc_xp_awaiting_career_adm  value = yes  months = 2 }
+	random_list = {
+		1 = { set_variable = { name = cc_xp_career_offer  value = 1  months = 2 } }   # reform fiscal learning urbanism
+		1 = { set_variable = { name = cc_xp_career_offer  value = 2  months = 2 } }   # fiscal learning urbanism law
+		1 = { set_variable = { name = cc_xp_career_offer  value = 3  months = 2 } }   # learning urbanism law integration
+		1 = { set_variable = { name = cc_xp_career_offer  value = 4  months = 2 } }   # reform urbanism law integration
+		1 = { set_variable = { name = cc_xp_career_offer  value = 5  months = 2 } }   # reform fiscal law integration
+		1 = { set_variable = { name = cc_xp_career_offer  value = 6  months = 2 } }   # reform fiscal learning integration
+	}
+}
+
+# dip: 4 of 5 offered (envoy, colonial, trade, exploration, intrigue)
+cc_xp_offer_career_dip = {
+	set_variable = { name = cc_xp_awaiting_career_dip  value = yes  months = 2 }
+	random_list = {
+		1 = { set_variable = { name = cc_xp_career_offer  value = 1  months = 2 } }   # envoy colonial trade exploration
+		1 = { set_variable = { name = cc_xp_career_offer  value = 2  months = 2 } }   # colonial trade exploration intrigue
+		1 = { set_variable = { name = cc_xp_career_offer  value = 3  months = 2 } }   # envoy trade exploration intrigue
+		1 = { set_variable = { name = cc_xp_career_offer  value = 4  months = 2 } }   # envoy colonial exploration intrigue
+		1 = { set_variable = { name = cc_xp_career_offer  value = 5  months = 2 } }   # envoy colonial trade intrigue
+	}
+}
+
+# mil: 3 of 4 offered (command, drill, siege, cavalry)
+cc_xp_offer_career_mil = {
+	set_variable = { name = cc_xp_awaiting_career_mil  value = yes  months = 2 }
+	random_list = {
+		1 = { set_variable = { name = cc_xp_career_offer  value = 1  months = 2 } }   # command drill siege
+		1 = { set_variable = { name = cc_xp_career_offer  value = 2  months = 2 } }   # drill siege cavalry
+		1 = { set_variable = { name = cc_xp_career_offer  value = 3  months = 2 } }   # command siege cavalry
+		1 = { set_variable = { name = cc_xp_career_offer  value = 4  months = 2 } }   # command drill cavalry
+	}
+}

@@ -147,10 +147,104 @@ cc_xp_level_bonus_size = {
 # What a discreet, unnegotiated sale fetches. Deliberately below what vanilla's
 # diplomatic request_work_of_art_purchase would pay: the discount IS the mechanic.
 # Nobody refuses, nobody haggles, and nobody pays full price either.
+#
+# scope:cc_xp_sale_work is set by cc_xp_sell_work from its $WORK$ parameter. Guarded on
+# `exists` because an event option's effect is evaluated to build the option TOOLTIP
+# before anything is chosen, exactly as vanilla guards the same read in
+# country_interactions/sell_work_of_art.txt:22 (`if = { limit = { exists = scope:target } }`).
+# Without the guard this logged "Undefined event target" twice per option per open.
+#
+# art_price already carries the piece's quality, so nothing here re-applies it.
 cc_xp_discreet_sale_price = {
-	value = scope:target.art_price
+	if = {
+		limit = { exists = scope:cc_xp_sale_work }
+		value = scope:cc_xp_sale_work.art_price
+	}
+	else = { value = 0 }
+
 	multiply = 0.7
+	multiply = cc_xp_art_culture_factor
+	multiply = cc_xp_art_wealth_factor
+
 	min = 25
+}
+
+# How much the origin culture's standing is worth on top of the piece itself.
+#
+# Measured as a RATIO against our own culture rather than against an absolute number,
+# because cultural_influence is an accumulating stat with no documented ceiling and any
+# fixed reference point would drift as the game goes on. Our own work is the 1.0 case,
+# which is what "or your own by default" means here: a piece by one of our own artists is
+# priced at face value and everything else is measured against it.
+#
+# Bands rather than a division, because a script value cannot divide by a scope read
+# safely when that read can be zero. The comparison form is vanilla's own, from
+# hegemons/4_cultural_hegemon.txt:16.
+cc_xp_art_culture_factor = {
+	value = 1
+
+	if = {
+		# Half again our own standing or better: a name that carries abroad.
+		limit = {
+			exists = scope:cc_xp_sale_culture
+			scope:cc_xp_sale_culture = {
+				cultural_influence > {
+					value = root.culture.cultural_influence
+					multiply = 1.5
+				}
+			}
+		}
+		add = 0.35
+	}
+	else_if = {
+		limit = {
+			exists = scope:cc_xp_sale_culture
+			scope:cc_xp_sale_culture = {
+				cultural_influence > root.culture.cultural_influence
+			}
+		}
+		add = 0.15
+	}
+	else_if = {
+		# Less than half our standing: provincial work, and priced like it.
+		limit = {
+			exists = scope:cc_xp_sale_culture
+			scope:cc_xp_sale_culture = {
+				cultural_influence < {
+					value = root.culture.cultural_influence
+					multiply = 0.5
+				}
+			}
+		}
+		add = -0.25
+	}
+	else_if = {
+		limit = {
+			exists = scope:cc_xp_sale_culture
+			scope:cc_xp_sale_culture = {
+				cultural_influence < root.culture.cultural_influence
+			}
+		}
+		add = -0.1
+	}
+	# else: our own culture, or a work whose creator is gone. Face value.
+}
+
+# The market gets richer as the world does. Without this a sale worth a month's income in
+# 1337 is worth an afternoon by 1750, and the whole action quietly stops mattering.
+#
+# country_tax_base is the growth measure rather than monthly_income_total, which the rest
+# of this file uses for COSTS: income swings with war, loans and trade, and the price of a
+# painting should not. Tax base only ratchets.
+cc_xp_art_wealth_factor = {
+	value = 1
+	add = {
+		value = country_tax_base
+		multiply = 0.0015
+	}
+	# A large realm pays more for everything, but not without limit: past this the piece
+	# is simply the most anyone in the room will pay for it.
+	max = 3.0
 }
 
 # Diplomatic experience for the minister who arranged the sale. Brokerage is
@@ -256,3 +350,124 @@ cc_xp_envoy_favor_cost = {
 	max = -50
 }
 
+
+
+###############################################################################
+# 9. COURT HEADCOUNTS
+#
+# WHY THESE EXIST RATHER THAN `count = N` INSIDE AN any_ TRIGGER. In EU5 `count` on an
+# any_ iterator means EXACTLY that many, not at least: vanilla writes
+# `any_character = { is_ruler = no  is_adult = yes  count = 0 }` in
+# generic_actions/invite_foreign_cleric.txt to mean "there are none of them", and the
+# form documented in the trigger reference is
+# `any_x = { filter = { <triggers> } count = num/all <triggers> }`, where the triggers
+# BEFORE count are the filter and count says how many of them must meet the ones after.
+#
+# So `any_character = { count = 2  cc_xp_is_examinable = yes }` did not mean "at least
+# two people can sit the examination". It meant "exactly two can", and a court with
+# five ministers failed it. There is no at-least form of `count`, so anything needing a
+# threshold counts here and compares the result.
+###############################################################################
+
+# Everyone eligible to sit a court examination: the seated cabinet and the proteges,
+# provided the system tracks them.
+cc_xp_num_examinable = {
+	value = 0
+	every_character = {
+		limit = { cc_xp_is_examinable = yes }
+		add = 1
+	}
+}
+
+# Proteges currently sponsored. Counted live rather than kept in a running total, for the
+# reason the old cc_xp_has_protege_room comment gave: a protege who dies or is appointed
+# to the cabinet would otherwise burn a slot forever.
+cc_xp_num_proteges = {
+	value = 0
+	every_character = {
+		limit = { has_variable = cc_protege }
+		add = 1
+	}
+}
+
+# People at court who could be taken on as a protege, and ministers senior enough to be
+# given a pupil. Both exist so an interaction's `allow` can state a threshold in the same
+# terms its selector uses, instead of asserting a bare existence check that passes while
+# the selector still finds nobody to offer.
+cc_xp_num_sponsorable = {
+	value = 0
+	every_character = {
+		limit = { cc_xp_can_be_sponsored = yes }
+		add = 1
+	}
+}
+
+# Everyone the experience system tracks, for events that need two people who could
+# plausibly have met rather than one.
+cc_xp_num_tracked = {
+	value = 0
+	every_character = {
+		limit = {
+			is_alive = yes
+			cc_xp_is_tracked = yes
+		}
+		add = 1
+	}
+}
+
+# Seated ministers of seniority 5 or more. Read by the rivalry event, which needs two
+# accomplished people to have a rivalry between.
+cc_xp_num_senior_ministers = {
+	value = 0
+	every_cabinet_character = {
+		limit = {
+			in_cabinet = yes
+			cc_xp_level_at_least = { LEVEL = 5 }
+		}
+		add = 1
+	}
+}
+
+
+###############################################################################
+# 10. THE STUDIO VISIT
+#
+# Both negative: paid through add_gold in cc_xp.70 rather than through the price system,
+# because the visit itself is free and only the choice made on arrival costs anything.
+###############################################################################
+
+# Better materials for a work already under way.
+cc_xp_studio_materials_cost = {
+	value = monthly_income_total
+	multiply = -0.8
+	min = -160
+	max = -25
+}
+
+# Setting an idle artist a new subject at the crown's expense.
+cc_xp_studio_commission_cost = {
+	value = monthly_income_total
+	multiply = -1.5
+	min = -300
+	max = -50
+}
+
+
+###############################################################################
+# 11. ORDERING VALUES
+#
+# `ordered_x = { order_by = <script value> position = N }` is how a follow-up event picks
+# its candidate list, so each of those lists needs a value to sort on. Guarded with
+# `exists = var:` the way vanilla guards the same read in
+# script_values/economy_satisfaction_target.txt: an unguarded var: read logs
+# "Failed to fetch variable ... due to not being set" once per candidate per evaluation.
+###############################################################################
+
+# Character scope. Total experience, or zero for someone the system has never touched.
+cc_xp_order_seniority = {
+	if = {
+		limit = { exists = var:cc_xp_total }
+		value = var:cc_xp_total
+	}
+	else = { value = 0 }
+}

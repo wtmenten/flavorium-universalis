@@ -205,3 +205,184 @@ cc_xp_can_advance = {
 		}
 	}
 }
+
+###############################################################################
+# Does this character hold no ladder trait at all?
+#
+# One career per minister is an invariant of this system: the cc_xp_ladder_advance
+# chain is if/else_if keyed on trait, so a minister holding two rung traits would
+# only ever climb whichever ladder the chain reaches first. Generation enforces the
+# other half of it by refusing to let one trait sit on two ladders.
+#
+# This trigger is what keeps career ENTRY from breaking the invariant. Called in
+# CHARACTER scope from the training return events.
+###############################################################################
+
+cc_xp_is_unladdered = {
+	NOR = {
+		has_trait = able_integrator
+		has_trait = admiral_counselor
+		has_trait = capable_explorer
+		has_trait = cavalry_marshal
+		has_trait = clumsy_accountant
+		has_trait = colonial_planner
+		has_trait = commissariat_officer
+		has_trait = continental_marshal
+		has_trait = defensive_commander
+		has_trait = development_patron
+		has_trait = diplomatic_attache
+		has_trait = efficiency_administrator
+		has_trait = elite_trainer
+		has_trait = enlightenment_herald
+		has_trait = espionage_director
+		has_trait = estate_guardian
+		has_trait = free_market_advocate
+		has_trait = frontier_administrator
+		has_trait = fumbling_integrator
+		has_trait = fumbling_reformist
+		has_trait = grand_architect
+		has_trait = grand_chancellor
+		has_trait = green_adjutant
+		has_trait = humanist_philosopher
+		has_trait = infantry_drillmaster
+		has_trait = iron_disciplinarian
+		has_trait = iron_integrator
+		has_trait = law_reformer
+		has_trait = learned_counselor
+		has_trait = learned_courtier
+		has_trait = legal_scholar
+		has_trait = loyal_steward
+		has_trait = maritime_champion
+		has_trait = mass_levy_commander
+		has_trait = master_integrator
+		has_trait = master_of_horse
+		has_trait = master_reformer
+		has_trait = master_statesman
+		has_trait = master_urbanist
+		has_trait = mercantilist_official
+		has_trait = merchant_prince
+		has_trait = merchant_syndic
+		has_trait = military_engineer
+		has_trait = new_world_pioneer
+		has_trait = offensive_strategist
+		has_trait = progressive_rationalist
+		has_trait = progressive_reformist
+		has_trait = prosperity_planner
+		has_trait = provocateur
+		has_trait = regional_magnate
+		has_trait = restless_pioneer
+		has_trait = returned_colonial_governor
+		has_trait = scout_captain
+		has_trait = seasoned_integrator
+		has_trait = shadow_counselor
+		has_trait = siege_engineer
+		has_trait = supreme_commander
+		has_trait = tactful_envoy
+		has_trait = tactical_advisor
+		has_trait = tentative_envoy
+		has_trait = timid_landlubber
+		has_trait = treasury_enforcer
+		has_trait = urban_planner
+	}
+}
+
+###############################################################################
+# Could this character actually be given a career on the given track?
+#
+# Mirrors the `allow` block of each of the track's entry traits, which the picker
+# cannot ignore: add_trait against a failing allow is refused SILENTLY, so an
+# option that skipped this would look like it worked, grant nothing, and waste the
+# training that paid for it.
+#
+# The conditions are read out of the trait files by the generator, so a trait whose
+# allow block is edited cannot leave this trigger out of date.
+#
+# Called in CHARACTER scope from the training return events, which is what stops a
+# picker ever opening for someone no career is available to.
+###############################################################################
+
+cc_xp_can_enter_career_adm = {
+	OR = {
+		# The Reformer's Path: fumbling_reformist
+		AND = {
+			NOT = { has_trait_category = cabinet }
+		}
+		# The Treasury: clumsy_accountant
+		AND = {
+			NOT = { has_trait_category = cabinet }
+		}
+		# The Scholar's Path: learned_courtier
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+		}
+		# The Builder: urban_planner
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+		}
+		# The Jurist: legal_scholar
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+		}
+		# The Integrator: fumbling_integrator
+		AND = {
+			in_cabinet = yes NOT = { has_trait_category = cabinet }
+		}
+	}
+}
+
+cc_xp_can_enter_career_dip = {
+	OR = {
+		# The Diplomat's Ascent: tentative_envoy
+		AND = {
+			NOT = { has_trait_category = cabinet }
+		}
+		# The Colonial Hand: frontier_administrator
+		always = yes
+		# The Merchant's Road: merchant_syndic
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+		}
+		# The Navigator: timid_landlubber
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			adm < 33
+			mil < 33
+			dip < 33
+		}
+		# The Shadow: provocateur
+		AND = {
+			adm < 33 mil < 33 dip < 33 NOT = { has_trait_category = cabinet }
+		}
+	}
+}
+
+cc_xp_can_enter_career_mil = {
+	OR = {
+		# The Military Hardening: green_adjutant
+		AND = {
+			NOT = { has_trait_category = cabinet }
+		}
+		# The Drillmaster: infantry_drillmaster
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+			mil > 33
+		}
+		# The Engineer: military_engineer
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+			mil > 33
+		}
+		# The Horse: scout_captain
+		AND = {
+			NOT = { has_trait_category = cabinet }
+			in_cabinet = yes
+			mil > 33
+		}
+	}
+}

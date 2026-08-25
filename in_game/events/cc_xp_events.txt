@@ -26,6 +26,17 @@
 #
 # Each posting can go well, ordinarily, or badly; the branch is in the immediate block
 # and the desc picks its text from the outcome flag afterwards.
+#
+# A POSTING IS ALSO HOW A CAREER STARTS. If the minister who came back holds no ladder
+# trait at all, the option chains into that track's career picker (cc_xp.90/.91/.92) and
+# the player chooses which of the track's careers they are now on. Before this, rung 0 was
+# reachable only by the monthly trait dispatcher's random roll, and four of the fifteen
+# ladders were reachable by nothing at all.
+#
+# A POOR POSTING GRANTS NO CAREER. Wash out of the chancery and you keep the reduced
+# experience and get no commission; train them again. That is what stops career entry
+# from being a straight purchase, and it is the only thing the outcome roll decides
+# besides the size of the award.
 ###############################################################################
 
 # Requires scope:cc_xp_subject, set by the interaction.
@@ -175,16 +186,23 @@ cc_xp.30 = {
 	}
 
 	desc = {
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
-			desc = cc_xp.30.desc.good
-		}
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
-			desc = cc_xp.30.desc.poor
-		}
-		triggered_desc = {
-			desc = cc_xp.30.desc
+		# first_valid, not a bare list. A bare `desc = { triggered_desc ... }` renders
+		# EVERY matching entry; vanilla wraps mutually-exclusive ones in first_valid in
+		# 300 places for exactly this reason. Without it the unconditional entry below
+		# is appended to the good/poor text instead of standing in for it.
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+				desc = cc_xp.30.desc.good
+			}
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+				desc = cc_xp.30.desc.poor
+			}
+			triggered_desc = {
+				desc = cc_xp.30.desc
+			}
+	
 		}
 	}
 
@@ -219,11 +237,33 @@ cc_xp.30 = {
 			}
 
 			cc_xp_recompute = yes
+
+			# Offer a career if they have none. Rolled here rather than in the picker so
+			# the offer is stamped on the MINISTER: two ministers back from the chancery in
+			# the same month get their own menus instead of sharing whichever was rolled last.
+			if = {
+				limit = {
+					cc_xp_is_unladdered = yes
+					NOT = { has_variable = cc_xp_outcome_poor }
+					# Every entry trait has a real allow block, and add_trait against a
+					# failing one is refused silently. Without this a minister carrying an
+					# age trait, or a protege (seven entry traits want in_cabinet = yes),
+					# would get a picker whose every option grants nothing.
+					cc_xp_can_enter_career_adm = yes
+				}
+				cc_xp_offer_career_adm = yes
+			}
 		}
 	}
 
 	option = {
 		name = cc_xp.30.a
+		# Chained from the option rather than the immediate so the player reads the report
+		# before choosing, and so the two events cannot open on top of each other.
+		if = {
+			limit = { any_character = { has_variable = cc_xp_awaiting_career_adm } }
+			trigger_event_silently = { id = cc_xp.90 }
+		}
 	}
 }
 
@@ -238,16 +278,23 @@ cc_xp.31 = {
 	}
 
 	desc = {
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
-			desc = cc_xp.31.desc.good
-		}
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
-			desc = cc_xp.31.desc.poor
-		}
-		triggered_desc = {
-			desc = cc_xp.31.desc
+		# first_valid, not a bare list. A bare `desc = { triggered_desc ... }` renders
+		# EVERY matching entry; vanilla wraps mutually-exclusive ones in first_valid in
+		# 300 places for exactly this reason. Without it the unconditional entry below
+		# is appended to the good/poor text instead of standing in for it.
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+				desc = cc_xp.31.desc.good
+			}
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+				desc = cc_xp.31.desc.poor
+			}
+			triggered_desc = {
+				desc = cc_xp.31.desc
+			}
+	
 		}
 	}
 
@@ -282,11 +329,29 @@ cc_xp.31 = {
 			}
 
 			cc_xp_recompute = yes
+
+			# Offer a career if they have none. See cc_xp.30 for why the roll lives here.
+			if = {
+				limit = {
+					cc_xp_is_unladdered = yes
+					NOT = { has_variable = cc_xp_outcome_poor }
+					# Every entry trait has a real allow block, and add_trait against a
+					# failing one is refused silently. Without this a minister carrying an
+					# age trait, or a protege (seven entry traits want in_cabinet = yes),
+					# would get a picker whose every option grants nothing.
+					cc_xp_can_enter_career_dip = yes
+				}
+				cc_xp_offer_career_dip = yes
+			}
 		}
 	}
 
 	option = {
 		name = cc_xp.31.a
+		if = {
+			limit = { any_character = { has_variable = cc_xp_awaiting_career_dip } }
+			trigger_event_silently = { id = cc_xp.91 }
+		}
 	}
 }
 
@@ -301,16 +366,23 @@ cc_xp.32 = {
 	}
 
 	desc = {
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
-			desc = cc_xp.32.desc.good
-		}
-		triggered_desc = {
-			trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
-			desc = cc_xp.32.desc.poor
-		}
-		triggered_desc = {
-			desc = cc_xp.32.desc
+		# first_valid, not a bare list. A bare `desc = { triggered_desc ... }` renders
+		# EVERY matching entry; vanilla wraps mutually-exclusive ones in first_valid in
+		# 300 places for exactly this reason. Without it the unconditional entry below
+		# is appended to the good/poor text instead of standing in for it.
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_good } }
+				desc = cc_xp.32.desc.good
+			}
+			triggered_desc = {
+				trigger = { scope:cc_xp_subject ?= { has_variable = cc_xp_outcome_poor } }
+				desc = cc_xp.32.desc.poor
+			}
+			triggered_desc = {
+				desc = cc_xp.32.desc
+			}
+	
 		}
 	}
 
@@ -345,11 +417,29 @@ cc_xp.32 = {
 			}
 
 			cc_xp_recompute = yes
+
+			# Offer a career if they have none. See cc_xp.30 for why the roll lives here.
+			if = {
+				limit = {
+					cc_xp_is_unladdered = yes
+					NOT = { has_variable = cc_xp_outcome_poor }
+					# Every entry trait has a real allow block, and add_trait against a
+					# failing one is refused silently. Without this a minister carrying an
+					# age trait, or a protege (seven entry traits want in_cabinet = yes),
+					# would get a picker whose every option grants nothing.
+					cc_xp_can_enter_career_mil = yes
+				}
+				cc_xp_offer_career_mil = yes
+			}
 		}
 	}
 
 	option = {
 		name = cc_xp.32.a
+		if = {
+			limit = { any_character = { has_variable = cc_xp_awaiting_career_mil } }
+			trigger_event_silently = { id = cc_xp.92 }
+		}
 	}
 }
 
@@ -512,11 +602,10 @@ cc_xp.42 = {
 			NOT = { has_character_modifier = cc_xp_professional_rival }
 			NOT = { has_variable = cc_xp_rivalry_cd }
 		}
-		any_cabinet_character = {
-			count = 2
-			in_cabinet = yes
-			cc_xp_level_at_least = { LEVEL = 5 }
-		}
+		# Two or more, counted. This used to be `any_cabinet_character = { count = 2 ... }`,
+		# which is an EXACT match in EU5: a court with three senior ministers, which is
+		# precisely the court a rivalry belongs in, could never fire this event.
+		cc_xp_num_senior_ministers >= 2
 	}
 
 	immediate = {

@@ -48,6 +48,12 @@ cc_xp_host_soiree = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_host"
+		# A selector with no ENABLED candidate disables the button on its own, entirely
+		# outside the allow block. Without this key the engine says nothing about it, which
+		# is how this button came to be greyed out with a tooltip containing only its title
+		# and its price. Vanilla sets the key for exactly this case; see
+		# cabinet_actions/aptekarsky.txt.
+		none_available_msg_key = "cc_xp_none_host"
 		column = { data = name }
 
 		visible = {

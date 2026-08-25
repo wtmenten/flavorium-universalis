@@ -1,0 +1,90 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: the studio visit
+#
+# A per-artist button on the patronage panel. The crown calls on one artist and finds
+# out what is actually on the easel, then decides what to do about it.
+#
+# WHAT THE ENGINE ALLOWS, AND WHAT IT DOES NOT. `art_progress` is a read-only value
+# trigger in character scope; there is no effect anywhere that adds progress to a work
+# already under way. The effects that exist are start_work_of_art, create_art,
+# destroy_art and add_artist_skill. So this chain moves an artist's work along by the
+# only means the engine offers: setting them a subject when the easel is empty, and
+# changing their skill, which is what the engine consults when it decides how a work
+# turns out. Nothing here pretends to push a progress bar.
+#
+# The visit itself is free. Everything it costs is decided in cc_xp.70, which is the
+# same shape the soiree uses: the interaction commissions, the event spends.
+#
+# The artist carries cc_xp_studio_cd afterwards, so the button is a decision every few
+# years rather than a thing to click until an outcome arrives.
+###############################################################################
+
+cc_xp_studio_visit = {
+	message = no
+	on_own_nation = yes
+
+	# The AI does not tour studios. It has no way to exploit the outcome and the button
+	# exists to give the patronage panel something to do.
+	ai_tick = never
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			custom_tooltip = {
+				text = cc_xp_tt_needs_studio
+				any_artist = {
+					is_alive = yes
+					NOT = { has_variable = cc_xp_studio_cd }
+				}
+			}
+		}
+	}
+
+	# The panel supplies the artist under the cursor as `recipient`, exactly as it does
+	# for vanilla's commission_art, so this selector is only reached when the interaction
+	# is opened without one.
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_xp_choose_studio"
+		none_available_msg_key = "cc_xp_none_studio"
+		column = { data = name }
+
+		visible = {
+			is_alive = yes
+			is_artist = yes
+		}
+
+		enabled = {
+			is_alive = yes
+			is_artist = yes
+			NOT = { has_variable = cc_xp_studio_cd }
+		}
+	}
+
+	effect = {
+		# Guarded on `exists`. A character interaction's effect block is evaluated to
+		# build its tooltip BEFORE a target is chosen, and scope:recipient is not set
+		# during that pass. Without this the log fills with "Undefined event target
+		# 'recipient'" every time the panel is opened.
+		if = {
+			limit = { exists = scope:recipient }
+
+			scope:recipient = {
+				set_variable = { name = cc_xp_studio_cd  value = yes  years = 3 }
+				save_scope_as = cc_xp_artist
+			}
+
+			scope:actor = { trigger_event_silently = { id = cc_xp.70 } }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

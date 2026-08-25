@@ -115,14 +115,12 @@ cc_xp.51 = {
 
 			# A match of minds. Needs two people who could plausibly have met.
 			20 = {
+				# Fewer than two people the system knows about, so there is no match to make.
+				# This was `NOT = { any_character = { count = 2 ... } }`, and `count` is an
+				# EXACT match in EU5, so any court with three or more tracked people had this
+				# branch zeroed out: the match of minds effectively never happened.
 				modifier = { factor = 0
-					NOT = {
-						any_character = {
-							count = 2
-							cc_xp_is_tracked = yes
-							is_alive = yes
-						}
-					}
+					cc_xp_num_tracked < 2
 				}
 				trigger_event_silently = { id = cc_xp.52 }
 			}
@@ -184,11 +182,8 @@ cc_xp.52 = {
 	}
 
 	trigger = {
-		any_character = {
-			count = 2
-			cc_xp_is_tracked = yes
-			is_alive = yes
-		}
+		# Two or more, counted rather than matched exactly. See cc_xp.51 above.
+		cc_xp_num_tracked >= 2
 	}
 
 	immediate = {
@@ -354,16 +349,23 @@ cc_xp.55 = {
 	}
 
 	desc = {
-		triggered_desc = {
-			trigger = { var:cc_xp_petition_estate = 1 }
-			desc = cc_xp.55.desc.nobles
-		}
-		triggered_desc = {
-			trigger = { var:cc_xp_petition_estate = 2 }
-			desc = cc_xp.55.desc.burghers
-		}
-		triggered_desc = {
-			desc = cc_xp.55.desc.clergy
+		# first_valid, not a bare list. A bare `desc = { triggered_desc ... }` renders
+		# EVERY matching entry; vanilla wraps mutually-exclusive ones in first_valid in
+		# 300 places for exactly this reason. Without it the unconditional entry below
+		# is appended to the good/poor text instead of standing in for it.
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_xp_petition_estate = 1 }
+				desc = cc_xp.55.desc.nobles
+			}
+			triggered_desc = {
+				trigger = { var:cc_xp_petition_estate = 2 }
+				desc = cc_xp.55.desc.burghers
+			}
+			triggered_desc = {
+				desc = cc_xp.55.desc.clergy
+			}
+	
 		}
 	}
 

@@ -32,14 +32,23 @@ cc_xp_court_examination = {
 		scope:actor = { cc_xp_enabled = yes }
 	}
 
+	# A presider, and at least two other people to examine. Three total, since the presider
+	# is themselves examinable: a sitting of one is not an examination, it is a chat.
+	#
+	# This block used to read `any_character = { count = 2  cc_xp_is_examinable = yes }`,
+	# meaning EXACTLY two examinable characters, so a court of five ministers could never
+	# hold an examination at all. `count` on an any_ iterator is an exact match in EU5 and
+	# has no at-least form, which is why cc_xp_num_examinable counts and this compares.
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
-			# Needs a presider and at least one other person to examine.
-			any_cabinet_character = { cc_xp_can_preside = yes }
-			any_character = {
-				count = 2
-				cc_xp_is_examinable = yes
+			custom_tooltip = {
+				text = cc_xp_tt_needs_presider
+				any_cabinet_character = { cc_xp_can_preside = yes }
+			}
+			custom_tooltip = {
+				text = cc_xp_tt_needs_candidates
+				cc_xp_num_examinable >= 3
 			}
 		}
 	}
@@ -49,6 +58,7 @@ cc_xp_court_examination = {
 		source = actor
 		target_flag = recipient
 		name = "cc_xp_choose_examiner"
+		none_available_msg_key = "cc_xp_none_presider"
 		column = { data = name }
 
 		visible = {

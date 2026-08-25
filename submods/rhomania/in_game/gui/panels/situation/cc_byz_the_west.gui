@@ -96,22 +96,13 @@ situation_panel = {
 	}
 
 	##################################### MAIN IMAGE #####################################
-	blockoverride "situation_panel_image" {
-		background = {
-			using = color_dark_purple_texture
-			spriteType = stretched
-		}
-		background = {
-			using = color_dark_purple_texture
-			alpha = 1
-			margin_top = -140
-			modify_texture = {
-				using = bg_fade_vertical_up_mask_texture
-				blend_mode = alphamultiply
-				alpha = 1
-			}
-		}
-	}
+	# DELIBERATELY NOT OVERRIDDEN. The default block in
+	# game/in_game/gui/panels/situation/common.gui:113 calls GetSituationIllustration(...),
+	# which resolves main_menu/gfx/interface/illustrations/situation/<situation key>.dds by
+	# naming convention alone, then applies scene_fade_vertical_up. cc_byz_the_west.dds is
+	# shipped from the MAIN mod's main_menu folder rather than this submod's, which is safe
+	# because this submod cannot load without the main mod. This panel previously overrode
+	# the block with a flat colour gradient, which is why the illustration never appeared.
 
 	blockoverride "situation_subheader_content" {}
 

@@ -122,10 +122,14 @@ cc_traits.1 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+	# TIER 2, not TIER 3. Master and Iron both demanded the top of the administrative
+	# ladder (1200 adm experience), which put every non-negative outcome out of reach for
+	# most of a campaign and left the fumbling option below as the only grantable result.
+	# Iron keeps TIER 3; it is the capstone and should be.
 	option = {
 		name = cc_traits.1.b
 		trigger = {
-			scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 3 } }
+			scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 2 } }
 			scope:minister = {
 				adm > 66
 				dip > 66
@@ -168,33 +172,42 @@ cc_traits.1 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+	# THE FALLBACK. It used to require adm/dip/mil all above 33, which the event's own
+	# trigger contradicts: the trigger admits a minister with all three BELOW 33, and that
+	# minister then matched no option at all except the decline below. The weakest
+	# candidates the event exists to catch were the ones it could not resolve.
+	#
+	# So this option now carries no stat window. Everyone who reaches it has already failed
+	# the three above, which is the entire qualification for fumbling an integration.
+	#
+	# The country modifier is the part that cannot be dodged. The trait alone stops applying
+	# the moment the minister leaves the integration seat, so taking the bad outcome and
+	# immediately reassigning the seat used to cost nothing at all.
 	option = {
 		name = cc_traits.1.d
 		trigger = {
-			scope:minister = {
-				AND = {
-					adm > 33
-					dip > 33
-					mil > 33
-					OR = {
-						adm < 66
-						dip < 66
-					}
-				}
-			}
+			scope:minister = { NOT = { has_trait = fumbling_integrator } }
 		}
 		scope:minister = {
 			set_variable = cc_integration_done
 			add_trait = trait:fumbling_integrator
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
+		add_country_modifier = {
+			modifier = cc_xp_fumbled_integration
+			years = 10
+		}
 	}
+
+	# Walking away. Cheaper than it was: the minister is off the table for five years rather
+	# than five months, so declining is a real decision about that person's career and not a
+	# free reroll on next month's dispatch.
 	option = {
 		name = cc_traits.1.e
 		scope:minister = {
-			set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+			set_variable = cc_integration_done
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 5 }
 		}
-		scope:minister = { set_variable = cc_integration_done }
 	}
 }
 

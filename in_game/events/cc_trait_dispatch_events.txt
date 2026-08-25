@@ -15,6 +15,22 @@
 # chosen character, fires the event at country scope via root, and the event's
 # immediate block picks the character with that flag and removes it immediately
 # so subsequent iterations find a clean state.
+#
+# CAREER ENTRY. Five of the branches below fire an event that can grant a ladder
+# rung-0 trait, which is to say a CAREER: cc_traits.1, cc_cond.1, cc_cond.3,
+# cc_cond.20 and cc_cond.31. Since the training return events began offering the
+# player a career of their choosing (cc_xp.90/.91/.92), those five carry
+#
+#   modifier = { factor = 0.3  root = { is_ai = no } }
+#
+# so a human court's minister is much less likely to be committed to a random
+# career before the player gets to pick one, while an occasional unasked-for
+# career still happens. AI courts are untouched: nothing offers them a choice, so
+# the random path is the only path they have.
+#
+# The other twenty-nine branches are deliberately NOT reduced. They grant age
+# traits, afflictions, estate-faction traits and conditional flavour, none of
+# which are ladder rungs and none of which the picker competes with.
 ###############################################################################
 
 cc_trait_dispatch.1 = {
@@ -32,11 +48,26 @@ cc_trait_dispatch.1 = {
 			random_list = {
 
 				# ── No event ────────────────────────────────────────────────────
-				70 = { }
+				#
+				# WHY THIS NUMBER IS SO MUCH LARGER THAN ANY BRANCH. random_list renormalises
+				# over the entries whose weight is still non-zero, so zeroing a branch does not
+				# make the court quieter: it makes every SURVIVING branch proportionally more
+				# likely. The thirty-four branches below sum to 283, but most of them switch
+				# themselves off, and once the cabinet experience gates were added most of them
+				# switch off early. With this entry at 70 a minister for whom only three
+				# branches were live faced 70-against-30, or roughly a 30% chance of an event
+				# every month, and the handful of branches carrying no experience gate at all
+				# (the five age events and integration) took nearly all of it.
+				#
+				# At 300 the same minister faces 300-against-30, about 9%. Raise this number to
+				# quieten the whole system; it is the one lever that does not change which
+				# events dominate.
+				300 = { }
 
 				# ── Integration trait (cc_traits.1) ─────────────────────────────
 				13 = {
 					modifier = { factor = 0  has_variable = cc_integration_done }
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 1 } } }
 					modifier = { factor = 0  NOT = { has_cabinet_action = yes } }
 					modifier = { factor = 0
 						NOR = {
@@ -57,6 +88,7 @@ cc_trait_dispatch.1 = {
 					}
 					modifier = { factor = 1.5  adm > 60 }
 					modifier = { factor = 1.5  dip > 60 }
+					modifier = { factor = 0.3  root = { is_ai = no } }   # see CAREER ENTRY note above
 					set_variable = { name = cc_trait_dispatch_selected value = yes }
 					root = { trigger_event_silently = { id = cc_traits.1 } }
 				}
@@ -104,6 +136,10 @@ cc_trait_dispatch.1 = {
 				# ── Age of Renaissance (cc_traits.10) ────────────────────────────
 				10 = {
 					modifier = { factor = 0  has_variable = cc_age_trait_10_done }
+					# Paced like every other branch. Without this the age events were the only
+					# ones with no experience gate, so they took the lion's share of whatever
+					# weight the gated branches gave up.
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready_any = { TIER = 1 } } }
 					modifier = { factor = 0
 						NOT = {
 							root = {
@@ -126,6 +162,10 @@ cc_trait_dispatch.1 = {
 				# ── Age of Discovery (cc_traits.11) ──────────────────────────────
 				10 = {
 					modifier = { factor = 0  has_variable = cc_age_trait_11_done }
+					# Paced like every other branch. Without this the age events were the only
+					# ones with no experience gate, so they took the lion's share of whatever
+					# weight the gated branches gave up.
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready_any = { TIER = 1 } } }
 					
 					modifier = { factor = 0  
 						root.capital.continent = {
@@ -158,6 +198,10 @@ cc_trait_dispatch.1 = {
 				# ── Age of Reformation (cc_traits.12) ────────────────────────────
 				10 = {
 					modifier = { factor = 0  has_variable = cc_age_trait_12_done }
+					# Paced like every other branch. Without this the age events were the only
+					# ones with no experience gate, so they took the lion's share of whatever
+					# weight the gated branches gave up.
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready_any = { TIER = 1 } } }
 					modifier = { factor = 0
 						NOT = {
 							root = {
@@ -177,6 +221,10 @@ cc_trait_dispatch.1 = {
 				# ── Age of Absolutism (cc_traits.13) ─────────────────────────────
 				10 = {
 					modifier = { factor = 0  has_variable = cc_age_trait_13_done }
+					# Paced like every other branch. Without this the age events were the only
+					# ones with no experience gate, so they took the lion's share of whatever
+					# weight the gated branches gave up.
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready_any = { TIER = 1 } } }
 					modifier = { factor = 0
 						NOT = {
 							root = {
@@ -195,6 +243,10 @@ cc_trait_dispatch.1 = {
 				# ── Age of Revolutions (cc_traits.14) ────────────────────────────
 				10 = {
 					modifier = { factor = 0  has_variable = cc_age_trait_14_done }
+					# Paced like every other branch. Without this the age events were the only
+					# ones with no experience gate, so they took the lion's share of whatever
+					# weight the gated branches gave up.
+					modifier = { factor = 0  NOT = { cc_xp_dispatch_ready_any = { TIER = 1 } } }
 					modifier = { factor = 0  NOT = { root = { current_age = age_6_revolutions } } }
 					modifier = { factor = 1.5
 						OR = {
@@ -484,6 +536,7 @@ cc_trait_dispatch.1 = {
 					modifier = { factor = 1.5  root = { capital.development > 50 } }
 					modifier = { factor = 2.0  root = { capital.development > 70 } }
 					modifier = { factor = 1.5  adm > 60 }
+					modifier = { factor = 0.3  root = { is_ai = no } }   # see CAREER ENTRY note above
 					set_variable = { name = cc_trait_dispatch_selected value = yes }
 					root = { trigger_event_silently = { id = cc_cond.1 } }
 				}
@@ -513,6 +566,7 @@ cc_trait_dispatch.1 = {
 						}
 					}
 					modifier = { factor = 1.5  OR = { adm > 60  dip > 60 } }
+					modifier = { factor = 0.3  root = { is_ai = no } }   # see CAREER ENTRY note above
 					set_variable = { name = cc_trait_dispatch_selected value = yes }
 					root = { trigger_event_silently = { id = cc_cond.20 } }
 				}
@@ -662,6 +716,7 @@ cc_trait_dispatch.1 = {
 						}
 					}
 					modifier = { factor = 1.5  mil > 60 }
+					modifier = { factor = 0.3  root = { is_ai = no } }   # see CAREER ENTRY note above
 					set_variable = { name = cc_trait_dispatch_selected value = yes }
 					root = { trigger_event_silently = { id = cc_cond.3 } }
 				}
@@ -770,6 +825,7 @@ cc_trait_dispatch.1 = {
 						}
 					}
 					modifier = { factor = 1.5  dip > 65 }
+					modifier = { factor = 0.3  root = { is_ai = no } }   # see CAREER ENTRY note above
 					set_variable = { name = cc_trait_dispatch_selected value = yes }
 					root = { trigger_event_silently = { id = cc_cond.31 } }
 				}

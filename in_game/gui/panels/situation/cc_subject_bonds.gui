@@ -17,23 +17,13 @@
 situation_panel = {
 
 	##################################### MAIN IMAGE #####################################
-	# Flat gradient only — no custom illustration art required.
-	blockoverride "situation_panel_image" {
-		background = {
-			using = color_dark_blue_texture
-			spriteType = stretched
-		}
-		background = {
-			using = color_dark_blue_texture
-			alpha = 1
-			margin_top = -140
-			modify_texture = {
-				using = bg_fade_vertical_up_mask_texture
-				blend_mode = alphamultiply
-				alpha = 1
-			}
-		}
-	}
+	# DELIBERATELY NOT OVERRIDDEN. The default block in
+	# game/in_game/gui/panels/situation/common.gui:113 calls
+	# GetSituationIllustration(...), which resolves
+	# main_menu/gfx/interface/illustrations/situation/<situation key>.dds by naming
+	# convention alone, then applies scene_fade_vertical_up. Our art is at that path as
+	# cc_subject_bonds.dds. This panel previously overrode the block with a flat colour
+	# gradient, which is why the illustration never appeared.
 
 	blockoverride "situation_subheader_content" {}
 

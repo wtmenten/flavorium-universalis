@@ -1677,10 +1677,9 @@ cc.141 = {
 
 	trigger = {
 		NOT = { has_variable = cc_shadow_conflict_cooldown }
-		any_subject = {
-			count = 2
-			is_subject_type = shadow_state
-		}
+		# Two or more shadow states, counted. `count = N` on an any_ iterator is an EXACT
+		# match in EU5, so this previously fired only for an overlord holding precisely two.
+		cc_num_shadow_states >= 2
 	}
 
 	immediate = {
