@@ -127,13 +127,14 @@ slot sizes for you.
 
 ## Icon families and concept prompts
 
-The gap lists below come to 459 missing icons, of which 135 are traits and 90 are mission
-tasks. That is paralysing as a list and tractable as a dozen families of ten. A family is
+The gap lists below come to 233 missing icons. That is paralysing as a list and tractable as
+a dozen families of ten. A family is
 worth more than the sum of its icons, because a shared prop vocabulary is what makes a set
 look authored rather than assembled.
 
 This section covers the three largest and most self-contained groups: traits, subject types
-and mission tasks. The other slots are smaller and mostly follow from these, since a generic
+and mission tasks. All three are now done, and are kept here as worked examples for the
+remaining slots and as the key lists a redraw needs. The other slots are smaller and mostly follow from these, since a generic
 action or a cabinet duty can borrow the trait family whose work it represents.
 
 Three rules make that work at 128x128, and they matter more than the prompt text:
@@ -179,10 +180,10 @@ size and the shipped size are the same.
 
 ### Trait icon families
 
-135 icons is not a first pass. These are the thirteen groups they fall into, each
-sharing one prop vocabulary and one accent so that a family drawn in an afternoon
-reads as a set. Draw a family at a time and the mod looks finished in stages rather
-than uniformly unfinished.
+**Authored and shipped.** Thirteen sources, 135 icons, each family sharing one prop
+vocabulary and one accent so it reads as a set. The per-family key lists below are not
+decoration: a trait icon cannot be aliased, so these are the argument lists for re-running
+the conversion when a family is redrawn.
 
 Path: `gfx/interface/icons/traits/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
 
@@ -399,10 +400,12 @@ a third of any family will want to leave it once drawn.
 
 ### Mission task icon families
 
-The Renovatio campaign's 90 task icons. Note the path: task icons are bare-key aliases
-into `advance/`, not files under `icons/missions/`, which is the bug recorded in [Hard gaps](#hard-gaps).
-Aliasing existing advance icons costs no art at all and is still the recommended fix;
-these families are for when someone wants the real thing.
+**Authored and shipped**, as eight icons rather than ninety. A mission icon is an alias, so
+every task in a family names one key and the art exists once; see
+[Mission task icons](#1-mission-task-icons-fixed) for the key each family resolves to.
+
+The families below are the grouping the art was drawn against, and the list of which task
+sits in which is the thing to consult before redrawing one.
 
 Path: `gfx/interface/advance/<key>.dds`  ·  256x256  ·  1:1  ·  BC3 / DXT5
 
@@ -506,39 +509,65 @@ cc_byz_task_serbian_question cc_byz_task_bulgarian_question
 These have no `_default.dds` fallback in their directory, or are already logged as errors.
 Fix these first.
 
-### 1. Mission task icons: 91 broken paths (rhomania)
+### 1. Mission task icons: fixed
 
 [submods/rhomania/in_game/common/missions/cc_byz_renovatio_campaign.txt](../submods/rhomania/in_game/common/missions/cc_byz_renovatio_campaign.txt)
-gives all 90 tasks plus the campaign an explicit path of the form
-`icon = "gfx/interface/icons/missions/cc_byz_task_<name>.dds"`. None of those files exist, in
-the mod or in vanilla: `icons/missions/` ships exactly three files (`_default`, `agenda`,
-`reward`), and it is not where task icons live.
+used to give all 90 tasks plus the campaign an explicit path of the form
+`icon = "gfx/interface/icons/missions/cc_byz_task_<name>.dds"`. None of those files existed,
+in the mod or in vanilla, and that directory is not where task icons live: it ships exactly
+three files (`_default`, `agenda`, `reward`). No vanilla mission uses an explicit path for an
+icon; all of them are bare-key aliases resolving to `gfx/interface/advance/<key>.dds`.
 
-Vanilla task icons are bare-key aliases into `gfx/interface/advance/`, for example
-`icon = banking_advance`. Rewriting the 91 lines to alias existing advance icons costs no art
-and is the recommended fix. Authoring real ones means 91 files at 256x256 BC3.
+All 91 lines now name a key, and every key resolves.
 
-Grouped for authoring in [Mission task icon families](#mission-task-icon-families).
+**THE ALIAS IS WHY THIS COST EIGHT FILES AND NOT NINETY-ONE.** A subject type icon has to
+exist once per key, so 24 keys meant 24 files even where four of them shared a source. A
+mission icon is a *reference*, so any number of tasks can name the same key and the art
+exists once. Redrawing a family is one file, not eighteen. Do not author these per task.
 
-Full key list: `cc_byz_renovatio_campaign`, then `cc_byz_task_` + academy, adriatic, africa,
-akritai, anatolia_secured, anatolian_return, antioch, arsenal, athonite, autocephalous,
-balkan_frontier, bank, beylik_ended, bulgarian_question, bureaus, carthage, cataphracts,
-chartered_company, city_adorned, convert_anatolia, council, crown_monopoly, danube, despotate,
-dromon, duchy_dissolved, eastern_sees, ecumenical_throne, egypt, embassies, exarch_seated,
-field_army, fleet_restored, galata, genoese_compact, great_palace, greek_again, greek_fire,
-hagia_sophia, hippodrome, holy_city, horn, icons, illyricum, india, italy, latin_bride,
-latin_powers, lighthouse, literate_admin, logothete, mare_nostrum, merchant_fleet, mint,
-no_second_emperor, nomisma, notitia, old_rites, orthodox_concord, patriarch, pentarchy_war,
-pilgrim_road, pillars, pontifex, pronoia_host, purple_born, ravenna, red_sea, roman_title,
-serbian_question, sicily, silk_looms, sinai_road, spania, spice_dues, spice_islands,
-state_restored, sultan_tributary, sultans_friend, tagmata, temples, themes, thessaloniki,
-triumph, union_received, varangians, venetian_alliance, veterans, walls, western_sea.
+| Key | Tasks | Source |
+|---|---|---|
+| `cc_byz_mission_reconquest` | 18 | `mission_family_campaign` |
+| `cc_byz_mission_church` | 15 | `mission_family_the_church` |
+| `cc_byz_mission_crown` | 14 | `mission_family_crown_and_title` |
+| `cc_byz_mission_army` | 11 | `mission_family_the_army` |
+| `cc_byz_mission_coin` | 11 | `mission_family_coin` |
+| `cc_byz_mission_trade` | 9 | `mission_family_trade` |
+| `cc_byz_mission_fleet` | 8 | `mission_family_fleet` |
+| `cc_byz_mission_city` | 4 | `mission_family_the_city` |
+| `cc_byz_renovatio_campaign` | the campaign node | `mission_family_campaign` |
 
-### 2. Mission pack banner (no `_default` in that directory)
+Files live in
+[submods/rhomania/main_menu/gfx/interface/advance/](../submods/rhomania/main_menu/gfx/interface/advance/),
+256x256 BC3, nine mip levels, 85.5 KB each.
 
-`illustrations/missions/` has no fallback file, so `cc_byz_renovatio_campaign` has nothing to
-draw at the top of the mission tree. Needs `illustrations/missions/cc_byz_renovatio_campaign.dds`
-at 1932x264, BC1, full mips.
+The campaign node shares its art with the Reconquest tasks, since the Renovatio *is* the
+reconquest, but carries its own key so the two can diverge later without touching eighteen
+task lines.
+
+Which task belongs to which family is listed in
+[Mission task icon families](#mission-task-icon-families).
+
+### 2. Mission pack banner: fixed
+
+`illustrations/missions/` has no `_default`, so `cc_byz_renovatio_campaign` had nothing at all
+to draw at the top of the mission tree. Written to
+[submods/rhomania/main_menu/gfx/interface/illustrations/missions/cc_byz_renovatio_campaign.dds](../submods/rhomania/main_menu/gfx/interface/illustrations/missions/cc_byz_renovatio_campaign.dds),
+1932x264, DXT1, 11 mips, 333.2 KB. That matches vanilla `generic_capable_cabinet.dds`; the
+other banners in that directory are a mix of DXT1, DXT5 and BC7, so the engine reads all three
+and BC1 is the right default for an illustration with no alpha.
+
+**`header` takes a path, `icon` takes a key.** The two fields in a mission definition do not
+work the same way and this is worth keeping straight, because the icon version of the mistake
+is what produced 91 broken paths above. `header = "gfx/..."` is a literal string, documented
+as `[String] Image to show in the header` in vanilla's own
+`common/missions/____Info.txt`, and the line in this campaign was correct as written. No
+vanilla mission actually sets one, so the field is documented but unexercised; if the banner
+does not appear in game, that is the first thing to suspect rather than the file.
+
+The source was 1920x256 against a 1932x264 slot, so `make_dds.py` scaled to cover and
+centre-cropped about 2% of the width. The composition is symmetric and the loss was sky, but
+author at 1932x264 to avoid the question.
 
 ### 3. Custom event background referenced but absent
 
@@ -731,166 +760,26 @@ submod's. That is safe, because the submod cannot load without the main mod, but
 knowing when auditing the submod alone.
 
 
-### Character traits: 135 of 159 missing
+### Character traits: complete
 
 Path: `gfx/interface/icons/traits/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
 
-Grouped for authoring in [Trait icon families](#trait-icon-families). The list below is by
-source file, which is how the gap was found; it is not the order to draw them in.
+All 159 now resolve. The 24 that already had art are untouched; the other 135 were written
+from thirteen family sources, listed in [Trait icon families](#trait-icon-families) along with
+which trait belongs to which family.
 
-[in_game/common/traits/cc_age_traits.txt](../in_game/common/traits/cc_age_traits.txt)
+**A TRAIT ICON CANNOT BE ALIASED.** No vanilla trait declares an `icon` field, and none can:
+grepping all of `common/traits/` for the word returns nothing. The path is resolved purely by
+naming convention from the trait key, so 135 keys means 135 files even though thirteen images
+produced them. This is the opposite of a mission task, where one key serves any number of
+tasks; see [Mission task icons](#1-mission-task-icons-fixed) for that contrast.
 
-- `renaissance_humanist`
-- `eastern_pragmatist`
-- `sufi_scholar`
-- `cautious_merchant`
-- `age_of_discovery_pioneer`
-- `age_of_discovery_skeptic`
-- `reformist_theologian`
-- `orthodox_defender`
-- `reformation_preacher`
-- `reformation_inquisitor`
-- `crown_theologian`
-- `absolute_administrator`
-- `noble_patron`
-- `parliamentarian`
-- `privilege_reformer`
-- `revolutionary_agitator`
-- `counterrevolutionary`
-- `privilege_champion`
-- `dogmatic_zealot`
-- `empiricist_counselor`
-- `civic_chancellor`
-- `chief_cartographer`
-- `trade_consortium_minister`
-- `peace_commissioner`
-- `theological_statesman`
-- `standing_army_advocate`
-- `tax_inspector_general`
-- `national_reformer`
-- `industrial_visionary`
-- `federal_architect`
-- `seneschal`
-- `court_chaplain`
-- `marshal_of_the_court`
-- `master_of_coin`
-- `herald_of_arms`
-- `court_astrologer`
-- `cc_master_balancer`
+The practical consequence is that **redrawing a family means re-running the conversion for
+every key in it**, not replacing one file. The family lists are what makes that a single
+command rather than an archaeology exercise, which is the reason they are recorded at all.
 
-[in_game/common/traits/cc_conditional_traits.txt](../in_game/common/traits/cc_conditional_traits.txt)
-
-- `urban_planner`
-- `prosperity_herald`
-- `merchant_syndic`
-- `grand_architect`
-- `arts_patron`
-- `learned_courtier`
-- `reform_minded_counselor`
-- `master_urbanist`
-- `enlightenment_herald`
-- `progressive_rationalist`
-- `revolutionary_herald`
-- `innovative_counselor`
-- `traditionalist_guardian`
-- `royal_absolutist`
-- `liberal_reformer`
-- `efficiency_administrator`
-- `regional_magnate`
-- `mystical_patriarch`
-- `humanist_philosopher`
-- `noble_champion`
-- `merchant_prince`
-- `serf_overseer`
-- `emancipation_minister`
-- `mystical_counselor`
-- `legal_scholar`
-- `mercantilist_official`
-- `free_market_advocate`
-- `capitalist_minister`
-- `estate_guardian`
-- `free_spirit_counselor`
-- `community_steward`
-- `elite_trainer`
-- `mass_levy_commander`
-- `offensive_strategist`
-- `defensive_commander`
-- `hawk_minister`
-- `peacemaker_counselor`
-- `expansionist_advisor`
-- `consolidation_minister`
-- `continental_marshal`
-- `admiral_counselor`
-- `roman_administrator`
-- `hellenistic_scholar`
-- `confucian_mandarin`
-- `steppe_warlord_advisor`
-- `christian_diplomat`
-- `caliphate_diplomat`
-- `brahmin_counselor`
-- `dharma_minister`
-- `renaissance_patron`
-- `griot_diplomat`
-- `steppe_strategos`
-- `mughal_administrator`
-- `maritime_champion`
-- `ecumenical_patriarch_advisor`
-- `new_world_pioneer`
-- `infantry_drillmaster`
-- `scout_captain`
-- `military_engineer`
-- `commissariat_officer`
-- `cavalry_marshal`
-- `siege_engineer`
-- `supreme_commander`
-- `parliamentary_broker`
-- `diplomatic_attache`
-- `grand_chancellor`
-- `seasoned_integrator`
-- `frontier_administrator`
-- `development_patron`
-- `espionage_director`
-- `treasury_enforcer`
-- `retired_legend`
-- `philosopher_king`
-- `grand_vizier_legendary`
-- `tribune_of_the_people`
-
-[in_game/common/traits/cc_estate_faction_traits.txt](../in_game/common/traits/cc_estate_faction_traits.txt)
-
-- `noble_champion_of_court`
-- `merchant_of_the_crown`
-- `court_prelate`
-- `tribune_of_the_commons`
-- `steppe_voice`
-- `dhimmi_advocate`
-- `cossack_hetman_liaison`
-
-[in_game/common/traits/cc_general_traits.txt](../in_game/common/traits/cc_general_traits.txt)
-
-- `master_of_horse`
-
-[in_game/common/traits/cc_negative_traits.txt](../in_game/common/traits/cc_negative_traits.txt)
-
-- `stagnant_counselor`
-- `war_profiteer`
-- `court_schemer`
-- `inefficient_bureaucrat`
-- `corrupted_official`
-- `zealous_fanatic`
-- `outdated_general`
-- `cynical_courtier`
-- `reckless_expander`
-
-[in_game/common/traits/cc_progression_traits.txt](../in_game/common/traits/cc_progression_traits.txt)
-
-- `fumbling_reformist`
-- `tentative_envoy`
-- `green_adjutant`
-- `clumsy_accountant`
-- `master_reformer`
-- `returned_colonial_governor`
-
+A trait with no file falls back to `icons/traits/_default.dds`, which vanilla ships, so a
+missing trait icon was never an error in the log. That is why 135 of them went unnoticed.
 
 ### Subject types: complete
 

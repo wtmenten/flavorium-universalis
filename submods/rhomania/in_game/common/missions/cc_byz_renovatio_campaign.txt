@@ -142,7 +142,7 @@
 
 cc_byz_renovatio_campaign = {
 	header = "gfx/interface/illustrations/missions/cc_byz_renovatio_campaign.dds"
-	icon = "gfx/interface/icons/missions/cc_byz_renovatio_campaign.dds"
+	icon = cc_byz_renovatio_campaign
 
 	repeatable = no
 	player_playstyle = administrative
@@ -166,7 +166,7 @@ cc_byz_renovatio_campaign = {
 	# at the start date, so without a timer this completed on the first evaluation and the
 	# player could then demolish them.
 	cc_byz_task_walls = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_walls.dds"
+		icon = cc_byz_mission_army
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
 			current_date > 1347.1.1
@@ -184,7 +184,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_hippodrome = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_hippodrome.dds"
+		icon = cc_byz_mission_city
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
 			location:constantinople = {
@@ -202,7 +202,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_council = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_council.dds"
+		icon = cc_byz_mission_coin
 		enabled = { any_cabinet_character = { count >= 5  is_alive = yes } }
 		duration = 0
 		on_persistent_completion = {
@@ -217,7 +217,7 @@ cc_byz_renovatio_campaign = {
 	# close to the practical ceiling for most of the campaign and belongs on the pillar
 	# capstone, not on a root.
 	cc_byz_task_bureaus = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_bureaus.dds"
+		icon = cc_byz_mission_coin
 		enabled = {
 			any_current_bureaucracy = { count >= 2 }
 			custom_tooltip = {
@@ -239,7 +239,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_arsenal = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_arsenal.dds"
+		icon = cc_byz_mission_fleet
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
 			location:constantinople = {
@@ -265,7 +265,7 @@ cc_byz_renovatio_campaign = {
 	# ---- The Fisc ----
 
 	cc_byz_task_nomisma = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_nomisma.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_bureaus }
 		enabled = { country_tax_base >= 60 }
 		duration = 0
@@ -277,7 +277,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_silk_looms = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_silk_looms.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_nomisma }
 		enabled = { monthly_trade_income >= 10 }
 		duration = 0
@@ -289,7 +289,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_literate_admin = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_literate_admin.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_council }
 		enabled = { average_country_literacy > 25 }
 		duration = 0
@@ -301,7 +301,7 @@ cc_byz_renovatio_campaign = {
 
 	# The second city's mint. A stone, and the only Fisc task that names a place.
 	cc_byz_task_mint = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_mint.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_nomisma }
 		highlight = { scope:province = { this = location:thessaloniki } }
 		enabled = {
@@ -322,7 +322,7 @@ cc_byz_renovatio_campaign = {
 	# creditor threads will arrive here owing a great deal, and this is the task that asks
 	# whether any of it was ever paid off.
 	cc_byz_task_bank = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_bank.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_silk_looms }
 		enabled = {
 			num_loans < 1
@@ -339,7 +339,7 @@ cc_byz_renovatio_campaign = {
 	# PILLAR CAPSTONE. Four funded bureaus, not five: see cc_byz_task_bureaus above for why
 	# five was unreachable before age 4 and therefore gated The State Restored behind it.
 	cc_byz_task_logothete = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_logothete.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_silk_looms  cc_byz_task_literate_admin }
 		enabled = {
 			country_tax_base >= 100
@@ -364,7 +364,7 @@ cc_byz_renovatio_campaign = {
 	# ---- The Faith ----
 
 	cc_byz_task_athonite = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_athonite.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_hippodrome }
 		enabled = { religious_influence >= 40 }
 		duration = 0
@@ -378,7 +378,7 @@ cc_byz_renovatio_campaign = {
 	# start date exactly two BYZ works clear 60 (Hagia Sophia 91, the crown jewels 65), so this
 	# needs one commissioned rather than nothing at all.
 	cc_byz_task_icons = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_icons.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_athonite }
 		enabled = {
 			any_work_of_art_in_country = {
@@ -401,7 +401,7 @@ cc_byz_renovatio_campaign = {
 	# is an Orthodox institution and vanilla's IO type says so; there is no Hellenic reading of
 	# it, which is why the sibling asks for sanctuaries instead.
 	cc_byz_task_autocephalous = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_autocephalous.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_hippodrome }
 		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
 		bypass = { cc_byz_faith_hellenic_trigger = yes }
@@ -436,7 +436,7 @@ cc_byz_renovatio_campaign = {
 	# the faith layer: it is hidden for a Hellenic emperor and bypassed so the branch still
 	# flows. Same visible/bypass idiom as the sultans_friend / pentarchy_war fork.
 	cc_byz_task_orthodox_concord = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_orthodox_concord.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_athonite }
 		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
 		bypass = { cc_byz_faith_hellenic_trigger = yes }
@@ -479,7 +479,7 @@ cc_byz_renovatio_campaign = {
 	# the only kind of emperor who can reopen the Academy. It makes the question askable; the
 	# answering is vanilla's movement, which this deliberately neither duplicates nor bypasses.
 	cc_byz_task_academy = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_academy.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_hippodrome }
 		enabled = {
 			average_country_literacy > 25
@@ -500,7 +500,7 @@ cc_byz_renovatio_campaign = {
 
 	# Pairs with cc_byz_task_orthodox_concord.
 	cc_byz_task_old_rites = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_old_rites.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_athonite }
 		visible = { cc_byz_faith_hellenic_trigger = yes }
 		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
@@ -525,7 +525,7 @@ cc_byz_renovatio_campaign = {
 	# Pairs with cc_byz_task_autocephalous. The sanctuaries are real vanilla holy sites with
 	# real locations: Delphi at salona, Olympia at pontikokastro, the Telesterion at megara.
 	cc_byz_task_temples = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_temples.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_hippodrome }
 		visible = { cc_byz_faith_hellenic_trigger = yes }
 		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
@@ -547,7 +547,7 @@ cc_byz_renovatio_campaign = {
 	# Pairs with cc_byz_task_ecumenical_throne. Same mechanical bar, because the question
 	# (does the emperor's religious authority actually reach) is the same one.
 	cc_byz_task_pontifex = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_pontifex.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_icons  cc_byz_task_temples }
 		visible = { cc_byz_faith_hellenic_trigger = yes }
 		bypass = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
@@ -572,7 +572,7 @@ cc_byz_renovatio_campaign = {
 
 	# Orthodox half of the pair with cc_byz_task_pontifex above.
 	cc_byz_task_ecumenical_throne = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_ecumenical_throne.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_icons  cc_byz_task_autocephalous }
 		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
 		bypass = { cc_byz_faith_hellenic_trigger = yes }
@@ -591,7 +591,7 @@ cc_byz_renovatio_campaign = {
 	# ---- The Sword ----
 
 	cc_byz_task_veterans = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_veterans.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_arsenal }
 		enabled = { army_tradition >= 40 }
 		duration = 0
@@ -602,7 +602,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_dromon = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_dromon.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_arsenal }
 		enabled = { navy_size >= 20 }
 		duration = 0
@@ -619,7 +619,7 @@ cc_byz_renovatio_campaign = {
 	# the age-1 type: a player who researched the DLC's unlock_byzantine_varangians line and
 	# upgraded to a_varangians_2 would have stopped satisfying a task they had already met.
 	cc_byz_task_varangians = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_varangians.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_walls }
 		enabled = {
 			any_country_sub_unit = {
@@ -648,7 +648,7 @@ cc_byz_renovatio_campaign = {
 
 	# Naval spur off the Sword pillar. A dead end with a reward; nothing requires it.
 	cc_byz_task_fleet_restored = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_fleet_restored.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_dromon }
 		enabled = {
 			navy_size >= 40
@@ -664,7 +664,7 @@ cc_byz_renovatio_campaign = {
 
 	# PILLAR CAPSTONE.
 	cc_byz_task_field_army = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_field_army.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_veterans  cc_byz_task_dromon  cc_byz_task_varangians }
 		enabled = {
 			army_size >= 40
@@ -680,7 +680,7 @@ cc_byz_renovatio_campaign = {
 	# ---- RECONVERGENCE 1: two of the three pillars ----
 
 	cc_byz_task_state_restored = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_state_restored.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_walls }
 		enabled = {
 			custom_tooltip = {
@@ -721,7 +721,7 @@ cc_byz_renovatio_campaign = {
 
 	# GATEWAY A. The claim itself, before any of the claimants are dealt with.
 	cc_byz_task_roman_title = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_roman_title.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_state_restored }
 		enabled = {
 			prestige >= 50
@@ -737,7 +737,7 @@ cc_byz_renovatio_campaign = {
 	# GATEWAY B. The Balkan hinterland, which the empire has to hold before any of its
 	# individual quarrels there can be settled.
 	cc_byz_task_balkan_frontier = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_balkan_frontier.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_state_restored }
 		enabled = { any_owned_location = { count >= 15  region = region:balkan_region } }
 		duration = 0
@@ -751,7 +751,7 @@ cc_byz_renovatio_campaign = {
 	# point of the gateway is that the Latin branch opens on a single working relationship, and
 	# the tasks under it are where the price of that relationship is argued.
 	cc_byz_task_latin_powers = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_latin_powers.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_state_restored }
 		enabled = {
 			any_country = {
@@ -768,7 +768,7 @@ cc_byz_renovatio_campaign = {
 
 	# GATEWAY D. A foothold in Anatolia before the Turkish question is put.
 	cc_byz_task_anatolian_return = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_anatolian_return.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_state_restored }
 		enabled = { any_owned_location = { count >= 10  region = region:anatolia_region } }
 		duration = 0
@@ -784,7 +784,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_no_second_emperor = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_no_second_emperor.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_roman_title }
 		enabled = { NOT = { country_exists = c:TRE } }
 		duration = 0
@@ -795,7 +795,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_duchy_dissolved = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_duchy_dissolved.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_roman_title }
 		enabled = { NOT = { country_exists = c:ATH } }
 		duration = 0
@@ -806,7 +806,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_greek_again = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_greek_again.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_duchy_dissolved }
 		enabled = {
 			own_entire_province = province_definition:attica_province
@@ -827,7 +827,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_despotate = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_despotate.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_roman_title }
 		enabled = {
 			own_entire_province = province_definition:achaea_province
@@ -843,7 +843,7 @@ cc_byz_renovatio_campaign = {
 	# SPUR. A porphyrogenitus heir, which is the only thing that ever made a Byzantine
 	# succession quiet. Dead end with a reward.
 	cc_byz_task_purple_born = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_purple_born.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_roman_title }
 		enabled = {
 			legitimacy >= 90
@@ -866,7 +866,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_serbian_question = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_serbian_question.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_balkan_frontier }
 		enabled = {
 			OR = {
@@ -884,7 +884,7 @@ cc_byz_renovatio_campaign = {
 	# The other half of the Balkan problem, and the one that carried a rival patriarchate at
 	# Tarnovo rather than merely a rival army.
 	cc_byz_task_bulgarian_question = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_bulgarian_question.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_balkan_frontier }
 		enabled = {
 			OR = {
@@ -901,7 +901,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_adriatic = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_adriatic.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_balkan_frontier }
 		highlight = {
 			scope:province = { OR = { this = location:durres  this = location:split } }
@@ -920,7 +920,7 @@ cc_byz_renovatio_campaign = {
 	# SPUR. The old Danube line, which is where the empire's Balkan frontier sat before 1180
 	# and never sat again. Dead end with a reward.
 	cc_byz_task_danube = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_danube.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_balkan_frontier }
 		enabled = { any_owned_location = { count >= 8  area = area:bulgaria_area } }
 		duration = 0
@@ -937,7 +937,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_latin_bride = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_latin_bride.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_latin_powers }
 		enabled = {
 			any_country = {
@@ -954,7 +954,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_embassies = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_embassies.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_latin_powers }
 		enabled = { num_of_diplomats >= 4 }
 		duration = 0
@@ -970,7 +970,7 @@ cc_byz_renovatio_campaign = {
 	# emperor still needs the western powers; it is the union of CHURCHES that stops meaning
 	# anything, and the four union actions gate on Orthodoxy for the same reason.
 	cc_byz_task_union_received = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_union_received.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_latin_bride }
 		visible = { NOT = { cc_byz_faith_hellenic_trigger = yes } }
 		bypass = { cc_byz_faith_hellenic_trigger = yes }
@@ -995,7 +995,7 @@ cc_byz_renovatio_campaign = {
 	# ---- FORK 1: Venice or Genoa ----
 
 	cc_byz_task_venetian_alliance = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_venetian_alliance.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_latin_powers }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_genoese_compact } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_genoese_compact }
@@ -1011,7 +1011,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_genoese_compact = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_genoese_compact.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_latin_powers }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_venetian_alliance }
@@ -1034,7 +1034,7 @@ cc_byz_renovatio_campaign = {
 	# ---- FORK 2: end the Turks, or make them a tributary ----
 
 	cc_byz_task_beylik_ended = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_beylik_ended.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_anatolian_return }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_sultan_tributary }
@@ -1050,7 +1050,7 @@ cc_byz_renovatio_campaign = {
 	# The historically ironic answer: the empire spent decades as an Ottoman tributary, and
 	# reversing that arrangement is cheaper than destroying them.
 	cc_byz_task_sultan_tributary = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_sultan_tributary.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_anatolian_return }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_beylik_ended } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_beylik_ended }
@@ -1066,7 +1066,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_themes = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_themes.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_anatolian_return }
 		enabled = { any_owned_location = { count >= 25  region = region:anatolia_region } }
 		duration = 0
@@ -1080,7 +1080,7 @@ cc_byz_renovatio_campaign = {
 	# same upgrade reason as the Varangians: the DLC ships a_byzantine_cataphracts_2 through _6
 	# and there is no _1.
 	cc_byz_task_cataphracts = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_cataphracts.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_anatolian_return }
 		enabled = {
 			any_country_sub_unit = {
@@ -1105,7 +1105,7 @@ cc_byz_renovatio_campaign = {
 	# Converges the fork. enabled accepts EITHER branch, which is why both siblings need their
 	# bypass: without it this would wait forever on the one that can no longer complete.
 	cc_byz_task_anatolia_secured = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_anatolia_secured.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_themes }
 		enabled = {
 			custom_tooltip = {
@@ -1124,7 +1124,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_convert_anatolia = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_convert_anatolia.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_anatolia_secured }
 		# WRAPPED, like the two location-scope uses. The country-scope form looked safe because
 		# vanilla DOES define religion_percentage_in_country_greater_or_equal, unlike the
@@ -1151,7 +1151,7 @@ cc_byz_renovatio_campaign = {
 
 	# SPUR. The frontier soldiery of the eastern marches, settled on the land they hold.
 	cc_byz_task_akritai = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_akritai.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_anatolia_secured }
 		enabled = { any_owned_location = { count >= 40  region = region:anatolia_region } }
 		duration = 0
@@ -1166,7 +1166,7 @@ cc_byz_renovatio_campaign = {
 	# Taxis against Dynatoi expressed militarily. The two push the axis in opposite directions.
 
 	cc_byz_task_tagmata = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_tagmata.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_anatolia_secured }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_pronoia_host } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_pronoia_host }
@@ -1183,7 +1183,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_pronoia_host = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_pronoia_host.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_anatolia_secured }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_tagmata } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_tagmata }
@@ -1202,7 +1202,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_antioch = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_antioch.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_anatolia_secured }
 		highlight = { scope:province = { this = location:antioch } }
 		enabled = {
@@ -1219,7 +1219,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_holy_city = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_holy_city.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_antioch }
 		highlight = { scope:province = { this = location:jerusalem } }
 		enabled = {
@@ -1238,7 +1238,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_patriarch = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_patriarch.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_holy_city }
 		enabled = {
 			custom_tooltip = {
@@ -1260,7 +1260,7 @@ cc_byz_renovatio_campaign = {
 	# SPUR. Pilgrim traffic is what made custody of the holy places worth arguing about, and it
 	# is the one thing in the Levant that pays in coin rather than in standing.
 	cc_byz_task_pilgrim_road = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_pilgrim_road.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_holy_city }
 		enabled = {
 			owns_or_non_sovereign_subject_owns = location:jerusalem
@@ -1276,7 +1276,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_egypt = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_egypt.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_holy_city }
 		highlight = {
 			scope:province = { OR = { this = location:alexandria  this = location:cairo } }
@@ -1298,7 +1298,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_lighthouse = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_lighthouse.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_egypt }
 		highlight = { scope:province = { this = location:alexandria } }
 		enabled = {
@@ -1318,7 +1318,7 @@ cc_byz_renovatio_campaign = {
 	# ---- RECONVERGENCE 2: two of the three eastern seats ----
 
 	cc_byz_task_eastern_sees = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_eastern_sees.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_holy_city }
 		enabled = {
 			custom_tooltip = {
@@ -1350,7 +1350,7 @@ cc_byz_renovatio_campaign = {
 	# ---- FORK 4: a treaty with Cairo, or the Pentarchy War ----
 
 	cc_byz_task_sultans_friend = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_sultans_friend.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_eastern_sees }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_pentarchy_war } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_pentarchy_war }
@@ -1364,7 +1364,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_pentarchy_war = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_pentarchy_war.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_eastern_sees }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_sultans_friend } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_sultans_friend }
@@ -1378,7 +1378,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_sinai_road = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_sinai_road.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_egypt }
 		highlight = { scope:province = { this = location:sinai_desert } }
 		enabled = { owns_or_non_sovereign_subject_owns = location:sinai_desert }
@@ -1395,7 +1395,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_illyricum = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_illyricum.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_despotate  cc_byz_task_no_second_emperor  cc_byz_task_adriatic }
 		highlight = {
 			scope:province = {
@@ -1413,7 +1413,7 @@ cc_byz_renovatio_campaign = {
 	# --- Italy line ---
 
 	cc_byz_task_exarch_seated = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_exarch_seated.dds"
+		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_illyricum }
 		enabled = { any_subject = { has_variable = cc_byz_is_exarchate } }
 		duration = 0
@@ -1425,7 +1425,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_ravenna = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_ravenna.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_exarch_seated }
 		highlight = { scope:province = { this = location:ravenna } }
 		enabled = { owns_or_non_sovereign_subject_owns = location:ravenna }
@@ -1437,7 +1437,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_italy = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_italy.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_exarch_seated }
 		highlight = {
 			scope:province = {
@@ -1455,7 +1455,7 @@ cc_byz_renovatio_campaign = {
 	# --- Africa line, independent of Italy ---
 
 	cc_byz_task_sicily = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_sicily.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_illyricum }
 		highlight = {
 			scope:province = { OR = { this = location:palermo  this = location:syracuse } }
@@ -1472,7 +1472,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_carthage = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_carthage.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_sicily }
 		enabled = { own_entire_province = province_definition:tunis_province }
 		duration = 0
@@ -1483,7 +1483,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_africa = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_africa.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_carthage }
 		highlight = {
 			scope:province = {
@@ -1504,7 +1504,7 @@ cc_byz_renovatio_campaign = {
 	# --- Spania line, independent of both ---
 
 	cc_byz_task_pillars = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_pillars.dds"
+		icon = cc_byz_mission_city
 		requires = { cc_byz_task_illyricum }
 		enabled = {
 			OR = {
@@ -1520,7 +1520,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_spania = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_spania.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_pillars }
 		highlight = {
 			scope:province = { OR = { this = location:cartagena  this = location:malaga } }
@@ -1536,7 +1536,7 @@ cc_byz_renovatio_campaign = {
 	# ---- RECONVERGENCE 3: two of the three western theatres ----
 
 	cc_byz_task_western_sea = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_western_sea.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_illyricum }
 		enabled = {
 			custom_tooltip = {
@@ -1571,7 +1571,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_red_sea = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_red_sea.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_sinai_road }
 		highlight = {
 			scope:province = {
@@ -1587,7 +1587,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_horn = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_horn.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_red_sea }
 		highlight = {
 			scope:province = {
@@ -1603,7 +1603,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_galata = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_galata.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_bureaus }
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
@@ -1631,7 +1631,7 @@ cc_byz_renovatio_campaign = {
 	# Threshold raised 15 -> 40 so the trade ladder reads 10 / 40 / 100 / 500 rather than
 	# jumping from 15 straight to 100.
 	cc_byz_task_merchant_fleet = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_merchant_fleet.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_galata }
 		enabled = { monthly_trade_income >= 40 }
 		duration = 0
@@ -1646,7 +1646,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_spice_dues = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_spice_dues.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_merchant_fleet }
 		enabled = { monthly_trade_income >= 100 }
 		duration = 0
@@ -1657,7 +1657,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_india = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_india.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_horn  cc_byz_task_merchant_fleet }
 		enabled = { cc_byz_theatre_india_trigger = yes }
 		duration = 0
@@ -1668,7 +1668,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_spice_islands = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_spice_islands.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_india  cc_byz_task_spice_dues }
 		enabled = { cc_byz_theatre_spice_islands_trigger = yes }
 		duration = 0
@@ -1681,7 +1681,7 @@ cc_byz_renovatio_campaign = {
 	# ---- FORK 5: crown monopoly or chartered company ----
 
 	cc_byz_task_crown_monopoly = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_crown_monopoly.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_spice_islands }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_chartered_company } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_chartered_company }
@@ -1694,7 +1694,7 @@ cc_byz_renovatio_campaign = {
 	}
 
 	cc_byz_task_chartered_company = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_chartered_company.dds"
+		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_spice_islands }
 		visible = { NOT = { mission_task_completed = mission_task:cc_byz_task_crown_monopoly } }
 		bypass = { mission_task_completed = mission_task:cc_byz_task_crown_monopoly }
@@ -1724,7 +1724,7 @@ cc_byz_renovatio_campaign = {
 	# The permanent modifier is granted by cc_byz_fire.3, not here, exactly as the nine theatre
 	# cornerstones grant theirs inside cc_byz_theatre_*_effect rather than in the task.
 	cc_byz_task_greek_fire = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_greek_fire.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_dromon }
 		enabled = {
 			navy_tradition >= 50
@@ -1740,7 +1740,7 @@ cc_byz_renovatio_campaign = {
 	# --- The wonders, feeding an optional capstone ---
 
 	cc_byz_task_hagia_sophia = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_hagia_sophia.dds"
+		icon = cc_byz_mission_church
 		requires = { cc_byz_task_hippodrome }
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
@@ -1760,7 +1760,7 @@ cc_byz_renovatio_campaign = {
 	# country_art_quality, not a count. BYZ starts on 503 across nine works, so a count of six
 	# was satisfied before the player pressed unpause.
 	cc_byz_task_great_palace = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_great_palace.dds"
+		icon = cc_byz_mission_city
 		requires = { cc_byz_task_hippodrome }
 		enabled = { country_art_quality >= 800 }
 		duration = 0
@@ -1773,7 +1773,7 @@ cc_byz_renovatio_campaign = {
 	# Thessaloniki is OWNED at the start date, so ownership alone was not an objective. Control
 	# is: the second city sits at the far end of a road the empire has not policed in a century.
 	cc_byz_task_thessaloniki = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_thessaloniki.dds"
+		icon = cc_byz_mission_reconquest
 		requires = { cc_byz_task_walls }
 		highlight = { scope:province = { this = location:thessaloniki } }
 		enabled = {
@@ -1793,7 +1793,7 @@ cc_byz_renovatio_campaign = {
 	# THE OPTIONAL CAPSTONE. It used to carry enabled = { always = yes }, so it completed the
 	# instant its three parents did and asked nothing of its own.
 	cc_byz_task_city_adorned = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_city_adorned.dds"
+		icon = cc_byz_mission_city
 		requires = {
 			cc_byz_task_hagia_sophia
 			cc_byz_task_great_palace
@@ -1821,7 +1821,7 @@ cc_byz_renovatio_campaign = {
 	# made it the new widest node in the tree, and a triumph belongs to the army that earned it
 	# rather than to a Balkan theatre.
 	cc_byz_task_triumph = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_triumph.dds"
+		icon = cc_byz_mission_army
 		requires = { cc_byz_task_field_army }
 		enabled = { army_tradition >= 70 }
 		duration = 0
@@ -1837,7 +1837,7 @@ cc_byz_renovatio_campaign = {
 	# Moved off Illyricum to the Fisc capstone for the same width reason as the Triumph, and it
 	# reads better there: recovering the register of the old provinces is the logothete's work.
 	cc_byz_task_notitia = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_notitia.dds"
+		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_logothete }
 		enabled = {
 			num_of_advances_researched >= 30
@@ -1857,7 +1857,7 @@ cc_byz_renovatio_campaign = {
 	######################################################################
 
 	cc_byz_task_mare_nostrum = {
-		icon = "gfx/interface/icons/missions/cc_byz_task_mare_nostrum.dds"
+		icon = cc_byz_mission_fleet
 		requires = { cc_byz_task_western_sea }
 		final = yes
 		enabled = { cc_byz_theatre_mare_nostrum_trigger = yes }
