@@ -12,179 +12,17 @@
 # cc_feudal.7  — The Call to Holy War (faith-gated, one-time)
 ###############################################################################
 
-# "A Servant of the Court Finds Their Calling"
-# Grants one of the 6 feudal court traits to a random cabinet minister.
-# court_chaplain / court_astrologer are religious_figure; others are cabinet.
-cc_feudal.1 = {
-	type = country_event
-	title = cc_feudal.1.title
-	desc = cc_feudal.1.desc
-	outcome = neutral
-
-	illustration_tags = {
-		10 = interior
-	}
-
-	trigger = {
-		current_age = age_1_traditions
-		any_cabinet_character = {
-			in_cabinet = yes
-			NOT = { has_variable = cc_recent_trait_assignment }
-			NOR = {
-				has_trait = seneschal
-				has_trait = court_chaplain
-				has_trait = marshal_of_the_court
-				has_trait = master_of_coin
-				has_trait = herald_of_arms
-				has_trait = court_astrologer
-			}
-		}
-	}
-
-	immediate = {
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				NOT = { has_variable = cc_recent_trait_assignment }
-				NOR = {
-					has_trait = seneschal
-					has_trait = court_chaplain
-					has_trait = marshal_of_the_court
-					has_trait = master_of_coin
-					has_trait = herald_of_arms
-					has_trait = court_astrologer
-				}
-			}
-			save_scope_as = minister
-		}
-	}
-
-	# Administrative minister — Seneschal
-	option = {
-		name = cc_feudal.1.a
-		scope:minister = {
-			add_trait = trait:seneschal
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-
-	# Clergy minister — Court Chaplain (religious_figure, always active)
-	option = {
-		name = cc_feudal.1.b
-		scope:minister = {
-			add_trait = trait:court_chaplain
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-
-	# Military minister — Marshal of the Court
-	option = {
-		name = cc_feudal.1.c
-		scope:minister = {
-			add_trait = trait:marshal_of_the_court
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-
-	# Economic minister — Master of Coin
-	option = {
-		name = cc_feudal.1.d
-		scope:minister = {
-			add_trait = trait:master_of_coin
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-
-	# Diplomatic minister — Herald of Arms
-	option = {
-		name = cc_feudal.1.e
-		scope:minister = {
-			add_trait = trait:herald_of_arms
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-
-	# Scholar minister — Court Astrologer (religious_figure, always active)
-	option = {
-		name = cc_feudal.1.f
-		scope:minister = {
-			add_trait = trait:court_astrologer
-			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
-		}
-	}
-}
-
-
-# "The Old Court Gives Way"
-# Fires once when Age 2 begins. Feudal ministers must adapt or stagnate.
-cc_feudal.10 = {
-	type = country_event
-	title = cc_feudal.10.title
-	desc = cc_feudal.10.desc
-	outcome = neutral
-
-	illustration_tags = {
-		10 = interior
-		10 = ages
-	}
-
-	trigger = {
-		current_age = age_2_renaissance
-		NOT = { has_variable = cc_feudal_transition_fired }
-		any_cabinet_character = {
-			in_cabinet = yes
-			OR = {
-				has_trait = seneschal
-				has_trait = marshal_of_the_court
-				has_trait = master_of_coin
-				has_trait = herald_of_arms
-			}
-		}
-	}
-
-	immediate = {
-		set_variable = { name = cc_feudal_transition_fired value = yes }
-		random_cabinet_character = {
-			limit = {
-				in_cabinet = yes
-				OR = {
-					has_trait = seneschal
-					has_trait = marshal_of_the_court
-					has_trait = master_of_coin
-					has_trait = herald_of_arms
-				}
-			}
-			set_variable = { name = cc_granting_trait value = yes }
-			save_scope_as = minister
-		}
-	}
-
-	after = {
-		scope:minister = {
-			remove_variable = cc_granting_trait
-		}
-	}
-
-	# Minister embraces the new age — swap feudal trait for Renaissance equivalent
-	option = {
-		name = cc_feudal.10.a
-		scope:minister = {
-			if = { limit = { has_trait = seneschal } remove_trait = trait:seneschal add_trait = trait:prosperity_herald }
-			else_if = { limit = { has_trait = marshal_of_the_court } remove_trait = trait:marshal_of_the_court add_trait = trait:infantry_drillmaster }
-			else_if = { limit = { has_trait = master_of_coin } remove_trait = trait:master_of_coin add_trait = trait:merchant_syndic }
-			else_if = { limit = { has_trait = herald_of_arms } remove_trait = trait:herald_of_arms add_trait = trait:diplomatic_attache }
-		}
-		add_prestige = prestige_mild_bonus
-	}
-
-	# Minister resists change — feudal trait stays but stagnant_counselor risk
-	option = {
-		name = cc_feudal.10.b
-		scope:minister = { add_trait = trait:stagnant_counselor }
-		add_prestige = prestige_weak_penalty
-	}
-}
-
+# cc_feudal.1 ("A Servant of the Court Finds Their Calling") and cc_feudal.10 ("The Old
+# Court Gives Way") were removed when household offices replaced the six office traits.
+#
+# cc_feudal.1 granted an office trait at random. Appointment is now a paid, tier-gated
+# player action (cc_office_appoint_to_household), so a random grant would be the same
+# bypass the wider migration exists to close.
+#
+# cc_feudal.10 converted an office trait into a Renaissance trait when age 2 began. That
+# job is now done by each office's own obsoleting advance: the Seneschal is retired by
+# chancery_records, the Master of Coin by standardized_coins, and so on. See
+# tools/generate_offices.py.
 
 # "Feast or Fast"
 # Treasury > 15x monthly income. Nobles demand celebration.
@@ -249,8 +87,8 @@ cc_feudal.3 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
-				has_trait = court_chaplain
-				has_trait = court_astrologer
+				has_variable = cc_office_held_court_chaplain
+				has_variable = cc_office_held_court_astrologer
 			}
 		}
 		NOT = { has_variable = cc_feudal_confessor_fired }
@@ -291,7 +129,7 @@ cc_feudal.4 = {
 		current_age = age_1_traditions
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = master_of_coin
+			has_variable = cc_office_held_master_of_coin
 		}
 		NOT = { has_variable = cc_feudal_survey_fired }
 	}
@@ -336,7 +174,7 @@ cc_feudal.5 = {
 		current_age = age_1_traditions
 		any_cabinet_character = {
 			in_cabinet = yes
-			has_trait = marshal_of_the_court
+			has_variable = cc_office_held_marshal_of_the_court
 		}
 		NOT = { has_variable = cc_feudal_tournament_fired }
 	}
@@ -430,8 +268,8 @@ cc_feudal.6 = {
 			any_cabinet_character = {
 				in_cabinet = yes
 				OR = {
-					has_trait = court_chaplain
-					has_trait = court_astrologer
+					has_variable = cc_office_held_court_chaplain
+					has_variable = cc_office_held_court_astrologer
 				}
 			}
 		}
@@ -471,8 +309,8 @@ cc_feudal.7 = {
 		any_cabinet_character = {
 			in_cabinet = yes
 			OR = {
-				has_trait = court_chaplain
-				has_trait = court_astrologer
+				has_variable = cc_office_held_court_chaplain
+				has_variable = cc_office_held_court_astrologer
 				has_trait = sufi_scholar
 				has_trait = brahmin_counselor
 				has_trait = dharma_minister

@@ -42,8 +42,8 @@ cc_legacy.1 = {
 				has_trait = progressive_rationalist
 				has_trait = confucian_mandarin
 				has_trait = caliphate_diplomat
-				has_trait = seneschal
-				has_trait = marshal_of_the_court
+				has_variable = cc_office_held_seneschal
+				has_variable = cc_office_held_marshal_of_the_court
 			}
 		}
 	}
@@ -62,8 +62,8 @@ cc_legacy.1 = {
 					has_trait = supreme_commander   has_trait = learned_courtier
 					has_trait = enlightenment_herald  has_trait = master_urbanist
 					has_trait = progressive_rationalist  has_trait = confucian_mandarin
-					has_trait = caliphate_diplomat  has_trait = seneschal
-					has_trait = marshal_of_the_court
+					has_trait = caliphate_diplomat  has_variable = cc_office_held_seneschal
+					has_variable = cc_office_held_marshal_of_the_court
 				}
 				NOT = { has_variable = cc_legacy_1_offered }
 			}
@@ -80,8 +80,8 @@ cc_legacy.1 = {
 					has_trait = supreme_commander   has_trait = learned_courtier
 					has_trait = enlightenment_herald  has_trait = master_urbanist
 					has_trait = progressive_rationalist  has_trait = confucian_mandarin
-					has_trait = caliphate_diplomat  has_trait = seneschal
-					has_trait = marshal_of_the_court
+					has_trait = caliphate_diplomat  has_variable = cc_office_held_seneschal
+					has_variable = cc_office_held_marshal_of_the_court
 				}
 				NOT = { has_variable = cc_legacy_1_offered }
 			}
@@ -99,8 +99,8 @@ cc_legacy.1 = {
 					has_trait = supreme_commander   has_trait = learned_courtier
 					has_trait = enlightenment_herald  has_trait = master_urbanist
 					has_trait = progressive_rationalist  has_trait = confucian_mandarin
-					has_trait = caliphate_diplomat  has_trait = seneschal
-					has_trait = marshal_of_the_court
+					has_trait = caliphate_diplomat  has_variable = cc_office_held_seneschal
+					has_variable = cc_office_held_marshal_of_the_court
 				}
 				NOT = { has_variable = cc_legacy_1_offered }
 			}
@@ -124,8 +124,8 @@ cc_legacy.1 = {
 					has_trait = progressive_rationalist
 					has_trait = confucian_mandarin
 					has_trait = caliphate_diplomat
-					has_trait = seneschal
-					has_trait = marshal_of_the_court
+					has_variable = cc_office_held_seneschal
+					has_variable = cc_office_held_marshal_of_the_court
 				}
 			}
 			set_variable = { name = cc_granting_trait value = yes }
@@ -144,7 +144,7 @@ cc_legacy.1 = {
 			else_if = { limit = { has_trait = progressive_rationalist } set_variable = { name = cc_retired_legend_type value = 7 } }
 			else_if = { limit = { has_trait = confucian_mandarin } set_variable = { name = cc_retired_legend_type value = 8 } }
 			else_if = { limit = { has_trait = caliphate_diplomat } set_variable = { name = cc_retired_legend_type value = 9 } }
-			else_if = { limit = { has_trait = seneschal } set_variable = { name = cc_retired_legend_type value = 10 } }
+			else_if = { limit = { has_variable = cc_office_held_seneschal } set_variable = { name = cc_retired_legend_type value = 10 } }
 			else = { set_variable = { name = cc_retired_legend_type value = 11 } }
 		}
 
@@ -202,14 +202,10 @@ cc_legacy.1 = {
 				limit = { scope:cc_legacy_elder = { has_trait = caliphate_diplomat } }
 				add_trait = trait:caliphate_diplomat
 			}
-			else_if = {
-				limit = { scope:cc_legacy_elder = { has_trait = seneschal } }
-				add_trait = trait:seneschal
-			}
-			else_if = {
-				limit = { scope:cc_legacy_elder = { has_trait = marshal_of_the_court } }
-				add_trait = trait:marshal_of_the_court
-			}
+			# An elder who held a household office passes on nothing here. Offices vacate
+			# rather than transfer (see docs/plans/household_offices_and_event_migration.md),
+			# and cc_office_on_holder_left has already released the post by the time this
+			# runs, so the successor is appointed through the household like anyone else.
 		}
 		scope:cc_legacy_elder = {
 			# Remove the transferred cabinet trait and become a retired legend
@@ -222,8 +218,6 @@ cc_legacy.1 = {
 			else_if = { limit = { has_trait = progressive_rationalist } remove_trait = trait:progressive_rationalist }
 			else_if = { limit = { has_trait = confucian_mandarin } remove_trait = trait:confucian_mandarin }
 			else_if = { limit = { has_trait = caliphate_diplomat } remove_trait = trait:caliphate_diplomat }
-			else_if = { limit = { has_trait = seneschal } remove_trait = trait:seneschal }
-			else_if = { limit = { has_trait = marshal_of_the_court } remove_trait = trait:marshal_of_the_court }
 			add_trait = trait:retired_legend
 		}
 		add_prestige = prestige_mild_bonus
@@ -250,7 +244,7 @@ cc_legacy.1 = {
 				add_dip = 8
 			}
 			else_if = {
-				limit = { scope:cc_legacy_elder = { OR = { has_trait = cavalry_marshal  has_trait = supreme_commander  has_trait = marshal_of_the_court } } }
+				limit = { scope:cc_legacy_elder = { OR = { has_trait = cavalry_marshal  has_trait = supreme_commander  has_variable = cc_office_held_marshal_of_the_court } } }
 				add_mil = 8
 			}
 			else = {
@@ -271,7 +265,7 @@ cc_legacy.1 = {
 					OR = {
 						has_trait = cavalry_marshal
 						has_trait = supreme_commander
-						has_trait = marshal_of_the_court
+						has_variable = cc_office_held_marshal_of_the_court
 					}
 				}
 			}
@@ -284,7 +278,7 @@ cc_legacy.1 = {
 						has_trait = learned_courtier
 						has_trait = master_urbanist
 						has_trait = grand_chancellor
-						has_trait = seneschal
+						has_variable = cc_office_held_seneschal
 					}
 				}
 			}

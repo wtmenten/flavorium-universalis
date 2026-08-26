@@ -1,0 +1,95 @@
+﻿###############################################################################
+# Flavorium Universalis — Household offices: pulses and hooks
+#
+# Three jobs, deliberately kept apart because they cost very different amounts:
+#
+#   RETIRE   country-level has_advance checks only, no character iteration. Cheap
+#            enough to run monthly for every tracked court.
+#   PUBLISH  one pass over the seated cabinet to refresh the level each office's
+#            auto_modifier scales with. Also monthly, also one pass regardless of how
+#            many offices exist.
+#   VACATE   exact, driven by scope:target on death or removal. No iteration needed to
+#            work out which office the departing minister held, because they carry the
+#            cc_office_held_<key> flag themselves.
+#
+# There is no periodic orphan sweep. The two lifecycle hooks below cover every way a
+# holder can leave a post, and an office whose unlocking advance is gone is caught by
+# the retire pass. Adding a sweep would mean iterating the cabinet once per office.
+#
+# Root pulse declarations merge across files, which is why this file may declare
+# monthly_country_pulse while cc_cabinet_pulse.txt and cc_xp_pulse.txt also do. It is
+# on_game_start's effect = {} block that does not merge.
+###############################################################################
+
+monthly_country_pulse = {
+	on_actions = {
+		cc_office_monthly
+	}
+}
+
+
+###############################################################################
+# MONTHLY
+#
+# Unlike most of the XP pulses this is NOT gated on `is_ai = no`. AI courts can appoint
+# through the interaction's ai_will_do, so their offices have to be retired and their
+# levels published too, or an AI household would keep paying out on a post the age has
+# abolished.
+###############################################################################
+
+cc_office_monthly = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+	}
+
+	effect = {
+		# Save migration, once per country. Runs here rather than from on_game_start,
+		# which does not fire when an existing save is loaded, and rather than from
+		# cc_xp_init, which is character scope. See cc_office_backfill.
+		if = {
+			limit = { NOT = { has_variable = cc_office_migrated } }
+			set_variable = { name = cc_office_migrated  value = yes }
+			cc_office_backfill = yes
+		}
+
+		cc_office_retire_obsolete = yes
+
+		if = {
+			limit = { any_cabinet_character = { cc_office_holds_any = yes } }
+			cc_office_publish_levels = yes
+		}
+
+		# Panel feed only, so human courts only: no panel ever renders an AI household.
+		# GUI has no by-key `has_advance` lookup, which is why the roster has to be pushed
+		# out as variables the Household tab can test with IsSet.
+		if = {
+			limit = { is_ai = no }
+			cc_office_publish_roster = yes
+		}
+	}
+}
+
+
+###############################################################################
+# LIFECYCLE
+#
+# root = country, scope:target = the departing minister.
+#
+# cc_office_on_departure is listed in the on_actions chains of BOTH on_cabinet_death
+# (declared in cc_legacy_pulse.txt) and on_cabinet_removed (declared in cc_xp_pulse.txt)
+# rather than redeclaring either here. One declaration per hardcoded on_action, all its
+# consumers visible in one place, the same way cc_xp_milestone_war is handled.
+#
+# Not gated on is_ai for the reason above: an AI court that loses its Constable must
+# lose the modifier with him.
+###############################################################################
+
+cc_office_on_departure = {
+	trigger = {
+		cc_xp_country_is_tracked = yes
+	}
+
+	effect = {
+		cc_office_on_holder_left = yes
+	}
+}

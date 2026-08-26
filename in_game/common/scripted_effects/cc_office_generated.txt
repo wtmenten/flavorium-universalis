@@ -1,0 +1,1529 @@
+﻿# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_offices.py
+#
+# Household offices. See the docstring in the generator for why offices are
+# auto_modifiers keyed on country variables rather than traits.
+#
+# The appoint and vacate effects are parameterised on $OFFICE$ rather than
+# generated forty-three times, because Clausewitz substitutes parameters inside
+# variable names (cc_bond_aor_effects.txt:34 does the same thing).
+#
+# WHICH SIDE HOLDS WHAT. The country holds cc_office_<key>_filled (the office is
+# occupied), cc_office_<key>_level (published for scales_with) and
+# cc_office_<key>_holder. That last one exists ONLY so the panel can print a name:
+# GUI can dereference a character held in a variable and script cannot. Nothing in
+# this file reads it. The holder instead carries cc_office_held_<key>, so every
+# lookup is an iteration filtered by a flag, which is the same shape mentorship,
+# patronage, schools and secondment already use.
+#
+# All effects here run in COUNTRY scope.
+
+# scope:office_holder = the minister being appointed.
+cc_office_appoint = {
+	save_scope_as = cc_office_court
+
+	set_variable = { name = cc_office_$OFFICE$_filled  value = yes }
+	set_variable = { name = cc_office_$OFFICE$_holder  value = scope:office_holder }
+
+	scope:office_holder = {
+		set_variable = { name = cc_office_held_$OFFICE$  value = yes }
+	}
+
+	cc_office_publish_levels = yes
+}
+
+# Ends the office and clears the holder's flag. The every_character sweep is affordable
+# because vacating is rare: it happens on an advance retiring the office, or when the
+# holder dies or leaves the cabinet, never on an ordinary tick.
+cc_office_vacate = {
+	every_character = {
+		limit = { has_variable = cc_office_held_$OFFICE$ }
+		remove_variable = cc_office_held_$OFFICE$
+	}
+
+	if = {
+		limit = { has_variable = cc_office_$OFFICE$_filled }
+		remove_variable = cc_office_$OFFICE$_filled
+	}
+	if = {
+		limit = { has_variable = cc_office_$OFFICE$_holder }
+		remove_variable = cc_office_$OFFICE$_holder
+	}
+	if = {
+		limit = { has_variable = cc_office_$OFFICE$_level }
+		remove_variable = cc_office_$OFFICE$_level
+	}
+}
+
+# Publishes every holder's level so scales_with can read it. ONE pass over the
+# cabinet, not one per office: the inner ifs are variable checks on a character
+# already in scope, which is far cheaper than 43 separate iterations.
+#
+# cc_level (not cc_xp_level) is the 1-10 seniority variable; see the contract
+# in cc_xp_effects.txt.
+cc_office_publish_levels = {
+	save_scope_as = cc_office_court
+
+	every_cabinet_character = {
+		limit = {
+			in_cabinet = yes
+			is_alive = yes
+			has_variable = cc_level
+			cc_office_holds_any = yes
+		}
+		save_scope_as = cc_office_seen
+
+		if = {
+			limit = { has_variable = cc_office_held_seneschal }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_seneschal_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_coin }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_coin_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_herald_of_arms }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_herald_of_arms_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_marshal_of_the_court }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_marshal_of_the_court_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_clerk_of_the_signet }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_clerk_of_the_signet_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_keeper_of_the_wardrobe }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_keeper_of_the_wardrobe_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_chancellor_of_the_rolls }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_chancellor_of_the_rolls_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_the_mint }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_the_mint_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_court_chamberlain }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_court_chamberlain_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_protocol }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_protocol_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_intendant }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_intendant_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_permanent_secretary }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_permanent_secretary_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_director_of_public_instruction }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_director_of_public_instruction_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_court_chaplain }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_court_chaplain_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_court_astrologer }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_court_astrologer_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_grand_inquisitor }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_grand_inquisitor_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_ecclesiarch }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_ecclesiarch_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_qadi_of_the_court }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_qadi_of_the_court_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_court_ulema }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_court_ulema_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_court_pandit }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_court_pandit_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_sangha_preceptor }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_sangha_preceptor_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_consistory_superintendent }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_consistory_superintendent_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_confessional_overseer }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_confessional_overseer_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_steward_of_the_demesne }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_steward_of_the_demesne_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_constable }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_constable_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_consul_of_merchants }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_consul_of_merchants_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_chancellor_of_the_see }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_chancellor_of_the_see_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_keeper_of_the_kurultai }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_keeper_of_the_kurultai_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_the_yam }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_the_yam_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_phanariote_secretary }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_phanariote_secretary_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_hansa_factor }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_hansa_factor_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_postelnic }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_postelnic_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_voivode_of_the_court }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_voivode_of_the_court_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_herald_of_the_table_of_ranks }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_herald_of_the_table_of_ranks_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_state_inquisitor }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_state_inquisitor_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_priori_of_the_council }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_priori_of_the_council_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_jokamachi_warden }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_jokamachi_warden_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_siege_works }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_siege_works_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_keeper_of_the_wampum }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_keeper_of_the_wampum_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_speaker_of_the_elders }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_speaker_of_the_elders_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_keeper_of_regnal_chronicles }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_keeper_of_regnal_chronicles_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_the_silk_road }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_the_silk_road_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = cc_office_held_master_of_ceremonies }
+			scope:cc_office_court = {
+				set_variable = {
+					name = cc_office_master_of_ceremonies_level
+					value = scope:cc_office_seen.var:cc_level
+				}
+			}
+		}
+	}
+}
+
+# An advance retired one or more offices. Country-level checks only, no
+# character iteration, so this is cheap enough to run on the monthly pulse.
+# Fires the notification once if anything was actually wound up.
+cc_office_retire_obsolete = {
+	set_variable = { name = cc_office_retired_any  value = 0 }
+
+	if = {
+		limit = {
+			has_variable = cc_office_seneschal_filled
+			NOT = { cc_office_seneschal_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = seneschal }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_coin_filled
+			NOT = { cc_office_master_of_coin_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_coin }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_herald_of_arms_filled
+			NOT = { cc_office_herald_of_arms_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = herald_of_arms }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_marshal_of_the_court_filled
+			NOT = { cc_office_marshal_of_the_court_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = marshal_of_the_court }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_clerk_of_the_signet_filled
+			NOT = { cc_office_clerk_of_the_signet_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = clerk_of_the_signet }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_keeper_of_the_wardrobe_filled
+			NOT = { cc_office_keeper_of_the_wardrobe_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = keeper_of_the_wardrobe }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_chancellor_of_the_rolls_filled
+			NOT = { cc_office_chancellor_of_the_rolls_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = chancellor_of_the_rolls }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_the_mint_filled
+			NOT = { cc_office_master_of_the_mint_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_the_mint }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_court_chamberlain_filled
+			NOT = { cc_office_court_chamberlain_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = court_chamberlain }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_protocol_filled
+			NOT = { cc_office_master_of_protocol_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_protocol }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_intendant_filled
+			NOT = { cc_office_intendant_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = intendant }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_permanent_secretary_filled
+			NOT = { cc_office_permanent_secretary_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = permanent_secretary }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_director_of_public_instruction_filled
+			NOT = { cc_office_director_of_public_instruction_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = director_of_public_instruction }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_court_astrologer_filled
+			NOT = { cc_office_court_astrologer_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = court_astrologer }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_grand_inquisitor_filled
+			NOT = { cc_office_grand_inquisitor_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = grand_inquisitor }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_ecclesiarch_filled
+			NOT = { cc_office_ecclesiarch_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = ecclesiarch }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_qadi_of_the_court_filled
+			NOT = { cc_office_qadi_of_the_court_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = qadi_of_the_court }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_court_ulema_filled
+			NOT = { cc_office_court_ulema_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = court_ulema }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_court_pandit_filled
+			NOT = { cc_office_court_pandit_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = court_pandit }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_sangha_preceptor_filled
+			NOT = { cc_office_sangha_preceptor_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = sangha_preceptor }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_consistory_superintendent_filled
+			NOT = { cc_office_consistory_superintendent_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = consistory_superintendent }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_confessional_overseer_filled
+			NOT = { cc_office_confessional_overseer_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = confessional_overseer }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_steward_of_the_demesne_filled
+			NOT = { cc_office_steward_of_the_demesne_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = steward_of_the_demesne }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_constable_filled
+			NOT = { cc_office_constable_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = constable }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_consul_of_merchants_filled
+			NOT = { cc_office_consul_of_merchants_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = consul_of_merchants }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_chancellor_of_the_see_filled
+			NOT = { cc_office_chancellor_of_the_see_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = chancellor_of_the_see }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_keeper_of_the_kurultai_filled
+			NOT = { cc_office_keeper_of_the_kurultai_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = keeper_of_the_kurultai }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_the_yam_filled
+			NOT = { cc_office_master_of_the_yam_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_the_yam }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_phanariote_secretary_filled
+			NOT = { cc_office_phanariote_secretary_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = phanariote_secretary }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_hansa_factor_filled
+			NOT = { cc_office_hansa_factor_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = hansa_factor }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_postelnic_filled
+			NOT = { cc_office_postelnic_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = postelnic }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_voivode_of_the_court_filled
+			NOT = { cc_office_voivode_of_the_court_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = voivode_of_the_court }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_herald_of_the_table_of_ranks_filled
+			NOT = { cc_office_herald_of_the_table_of_ranks_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = herald_of_the_table_of_ranks }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_state_inquisitor_filled
+			NOT = { cc_office_state_inquisitor_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = state_inquisitor }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_priori_of_the_council_filled
+			NOT = { cc_office_priori_of_the_council_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = priori_of_the_council }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_jokamachi_warden_filled
+			NOT = { cc_office_jokamachi_warden_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = jokamachi_warden }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_siege_works_filled
+			NOT = { cc_office_master_of_siege_works_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_siege_works }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_keeper_of_the_wampum_filled
+			NOT = { cc_office_keeper_of_the_wampum_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = keeper_of_the_wampum }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_speaker_of_the_elders_filled
+			NOT = { cc_office_speaker_of_the_elders_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = speaker_of_the_elders }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_keeper_of_regnal_chronicles_filled
+			NOT = { cc_office_keeper_of_regnal_chronicles_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = keeper_of_regnal_chronicles }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_the_silk_road_filled
+			NOT = { cc_office_master_of_the_silk_road_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_the_silk_road }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+	if = {
+		limit = {
+			has_variable = cc_office_master_of_ceremonies_filled
+			NOT = { cc_office_master_of_ceremonies_exists = yes }
+		}
+		cc_office_vacate = { OFFICE = master_of_ceremonies }
+		change_variable = { name = cc_office_retired_any  add = 1 }
+	}
+
+	if = {
+		limit = {
+			is_ai = no
+			has_variable = cc_office_retired_any
+			var:cc_office_retired_any > 0
+		}
+		trigger_event_silently = { id = cc_office.2 }
+	}
+	remove_variable = cc_office_retired_any
+}
+
+# Publishes which offices are open, for the Household panel tab ONLY.
+#
+# The panel cannot work this out for itself. GUI can dereference a character
+# held in a variable, but it has no way to ask whether a NAMED advance has been
+# researched: IsResearched exists only on an AdvanceItem handed out by the
+# advances screen's own datamodel, and there is no by-key lookup. So the roster
+# has to be pushed out as country variables the panel can test with IsSet.
+#
+# Human courts only. No panel ever renders an AI household, and this is the one
+# effect here that exists purely to feed the UI.
+cc_office_publish_roster = {
+	if = {
+		limit = {
+			cc_office_seneschal_vacant = yes
+		}
+		set_variable = { name = cc_office_seneschal_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_seneschal_open }
+		remove_variable = cc_office_seneschal_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_coin_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_coin_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_coin_open }
+		remove_variable = cc_office_master_of_coin_open
+	}
+	if = {
+		limit = {
+			cc_office_herald_of_arms_vacant = yes
+		}
+		set_variable = { name = cc_office_herald_of_arms_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_herald_of_arms_open }
+		remove_variable = cc_office_herald_of_arms_open
+	}
+	if = {
+		limit = {
+			cc_office_marshal_of_the_court_vacant = yes
+		}
+		set_variable = { name = cc_office_marshal_of_the_court_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_marshal_of_the_court_open }
+		remove_variable = cc_office_marshal_of_the_court_open
+	}
+	if = {
+		limit = {
+			cc_office_clerk_of_the_signet_vacant = yes
+		}
+		set_variable = { name = cc_office_clerk_of_the_signet_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_clerk_of_the_signet_open }
+		remove_variable = cc_office_clerk_of_the_signet_open
+	}
+	if = {
+		limit = {
+			cc_office_keeper_of_the_wardrobe_vacant = yes
+		}
+		set_variable = { name = cc_office_keeper_of_the_wardrobe_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_keeper_of_the_wardrobe_open }
+		remove_variable = cc_office_keeper_of_the_wardrobe_open
+	}
+	if = {
+		limit = {
+			cc_office_chancellor_of_the_rolls_vacant = yes
+		}
+		set_variable = { name = cc_office_chancellor_of_the_rolls_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_chancellor_of_the_rolls_open }
+		remove_variable = cc_office_chancellor_of_the_rolls_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_the_mint_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_the_mint_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_the_mint_open }
+		remove_variable = cc_office_master_of_the_mint_open
+	}
+	if = {
+		limit = {
+			cc_office_court_chamberlain_vacant = yes
+		}
+		set_variable = { name = cc_office_court_chamberlain_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_court_chamberlain_open }
+		remove_variable = cc_office_court_chamberlain_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_protocol_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_protocol_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_protocol_open }
+		remove_variable = cc_office_master_of_protocol_open
+	}
+	if = {
+		limit = {
+			cc_office_intendant_vacant = yes
+		}
+		set_variable = { name = cc_office_intendant_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_intendant_open }
+		remove_variable = cc_office_intendant_open
+	}
+	if = {
+		limit = {
+			cc_office_permanent_secretary_vacant = yes
+		}
+		set_variable = { name = cc_office_permanent_secretary_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_permanent_secretary_open }
+		remove_variable = cc_office_permanent_secretary_open
+	}
+	if = {
+		limit = {
+			cc_office_director_of_public_instruction_vacant = yes
+		}
+		set_variable = { name = cc_office_director_of_public_instruction_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_director_of_public_instruction_open }
+		remove_variable = cc_office_director_of_public_instruction_open
+	}
+	if = {
+		limit = {
+			cc_office_court_chaplain_vacant = yes
+		}
+		set_variable = { name = cc_office_court_chaplain_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_court_chaplain_open }
+		remove_variable = cc_office_court_chaplain_open
+	}
+	if = {
+		limit = {
+			cc_office_court_astrologer_vacant = yes
+		}
+		set_variable = { name = cc_office_court_astrologer_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_court_astrologer_open }
+		remove_variable = cc_office_court_astrologer_open
+	}
+	if = {
+		limit = {
+			cc_office_grand_inquisitor_vacant = yes
+		}
+		set_variable = { name = cc_office_grand_inquisitor_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_grand_inquisitor_open }
+		remove_variable = cc_office_grand_inquisitor_open
+	}
+	if = {
+		limit = {
+			cc_office_ecclesiarch_vacant = yes
+		}
+		set_variable = { name = cc_office_ecclesiarch_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_ecclesiarch_open }
+		remove_variable = cc_office_ecclesiarch_open
+	}
+	if = {
+		limit = {
+			cc_office_qadi_of_the_court_vacant = yes
+		}
+		set_variable = { name = cc_office_qadi_of_the_court_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_qadi_of_the_court_open }
+		remove_variable = cc_office_qadi_of_the_court_open
+	}
+	if = {
+		limit = {
+			cc_office_court_ulema_vacant = yes
+		}
+		set_variable = { name = cc_office_court_ulema_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_court_ulema_open }
+		remove_variable = cc_office_court_ulema_open
+	}
+	if = {
+		limit = {
+			cc_office_court_pandit_vacant = yes
+		}
+		set_variable = { name = cc_office_court_pandit_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_court_pandit_open }
+		remove_variable = cc_office_court_pandit_open
+	}
+	if = {
+		limit = {
+			cc_office_sangha_preceptor_vacant = yes
+		}
+		set_variable = { name = cc_office_sangha_preceptor_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_sangha_preceptor_open }
+		remove_variable = cc_office_sangha_preceptor_open
+	}
+	if = {
+		limit = {
+			cc_office_consistory_superintendent_vacant = yes
+		}
+		set_variable = { name = cc_office_consistory_superintendent_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_consistory_superintendent_open }
+		remove_variable = cc_office_consistory_superintendent_open
+	}
+	if = {
+		limit = {
+			cc_office_confessional_overseer_vacant = yes
+		}
+		set_variable = { name = cc_office_confessional_overseer_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_confessional_overseer_open }
+		remove_variable = cc_office_confessional_overseer_open
+	}
+	if = {
+		limit = {
+			cc_office_steward_of_the_demesne_vacant = yes
+		}
+		set_variable = { name = cc_office_steward_of_the_demesne_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_steward_of_the_demesne_open }
+		remove_variable = cc_office_steward_of_the_demesne_open
+	}
+	if = {
+		limit = {
+			cc_office_constable_vacant = yes
+		}
+		set_variable = { name = cc_office_constable_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_constable_open }
+		remove_variable = cc_office_constable_open
+	}
+	if = {
+		limit = {
+			cc_office_consul_of_merchants_vacant = yes
+		}
+		set_variable = { name = cc_office_consul_of_merchants_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_consul_of_merchants_open }
+		remove_variable = cc_office_consul_of_merchants_open
+	}
+	if = {
+		limit = {
+			cc_office_chancellor_of_the_see_vacant = yes
+		}
+		set_variable = { name = cc_office_chancellor_of_the_see_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_chancellor_of_the_see_open }
+		remove_variable = cc_office_chancellor_of_the_see_open
+	}
+	if = {
+		limit = {
+			cc_office_keeper_of_the_kurultai_vacant = yes
+		}
+		set_variable = { name = cc_office_keeper_of_the_kurultai_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_keeper_of_the_kurultai_open }
+		remove_variable = cc_office_keeper_of_the_kurultai_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_the_yam_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_the_yam_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_the_yam_open }
+		remove_variable = cc_office_master_of_the_yam_open
+	}
+	if = {
+		limit = {
+			cc_office_phanariote_secretary_vacant = yes
+		}
+		set_variable = { name = cc_office_phanariote_secretary_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_phanariote_secretary_open }
+		remove_variable = cc_office_phanariote_secretary_open
+	}
+	if = {
+		limit = {
+			cc_office_hansa_factor_vacant = yes
+		}
+		set_variable = { name = cc_office_hansa_factor_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_hansa_factor_open }
+		remove_variable = cc_office_hansa_factor_open
+	}
+	if = {
+		limit = {
+			cc_office_postelnic_vacant = yes
+		}
+		set_variable = { name = cc_office_postelnic_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_postelnic_open }
+		remove_variable = cc_office_postelnic_open
+	}
+	if = {
+		limit = {
+			cc_office_voivode_of_the_court_vacant = yes
+		}
+		set_variable = { name = cc_office_voivode_of_the_court_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_voivode_of_the_court_open }
+		remove_variable = cc_office_voivode_of_the_court_open
+	}
+	if = {
+		limit = {
+			cc_office_herald_of_the_table_of_ranks_vacant = yes
+		}
+		set_variable = { name = cc_office_herald_of_the_table_of_ranks_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_herald_of_the_table_of_ranks_open }
+		remove_variable = cc_office_herald_of_the_table_of_ranks_open
+	}
+	if = {
+		limit = {
+			cc_office_state_inquisitor_vacant = yes
+		}
+		set_variable = { name = cc_office_state_inquisitor_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_state_inquisitor_open }
+		remove_variable = cc_office_state_inquisitor_open
+	}
+	if = {
+		limit = {
+			cc_office_priori_of_the_council_vacant = yes
+		}
+		set_variable = { name = cc_office_priori_of_the_council_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_priori_of_the_council_open }
+		remove_variable = cc_office_priori_of_the_council_open
+	}
+	if = {
+		limit = {
+			cc_office_jokamachi_warden_vacant = yes
+		}
+		set_variable = { name = cc_office_jokamachi_warden_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_jokamachi_warden_open }
+		remove_variable = cc_office_jokamachi_warden_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_siege_works_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_siege_works_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_siege_works_open }
+		remove_variable = cc_office_master_of_siege_works_open
+	}
+	if = {
+		limit = {
+			cc_office_keeper_of_the_wampum_vacant = yes
+		}
+		set_variable = { name = cc_office_keeper_of_the_wampum_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_keeper_of_the_wampum_open }
+		remove_variable = cc_office_keeper_of_the_wampum_open
+	}
+	if = {
+		limit = {
+			cc_office_speaker_of_the_elders_vacant = yes
+		}
+		set_variable = { name = cc_office_speaker_of_the_elders_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_speaker_of_the_elders_open }
+		remove_variable = cc_office_speaker_of_the_elders_open
+	}
+	if = {
+		limit = {
+			cc_office_keeper_of_regnal_chronicles_vacant = yes
+		}
+		set_variable = { name = cc_office_keeper_of_regnal_chronicles_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_keeper_of_regnal_chronicles_open }
+		remove_variable = cc_office_keeper_of_regnal_chronicles_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_the_silk_road_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_the_silk_road_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_the_silk_road_open }
+		remove_variable = cc_office_master_of_the_silk_road_open
+	}
+	if = {
+		limit = {
+			cc_office_master_of_ceremonies_vacant = yes
+		}
+		set_variable = { name = cc_office_master_of_ceremonies_open  value = yes }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_master_of_ceremonies_open }
+		remove_variable = cc_office_master_of_ceremonies_open
+	}
+
+	# The panel prints a count against the cap. GUI reads variables, not
+	# script values, so the count has to be materialised here.
+	set_variable = { name = cc_office_filled_var  value = cc_office_filled_count }
+}
+
+# scope:target = a minister who has just died or left the cabinet. Exact, and
+# reached only from on_cabinet_death / on_cabinet_removed, so no iteration is
+# needed to work out which office (if any) they held.
+cc_office_on_holder_left = {
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_seneschal } }
+		cc_office_vacate = { OFFICE = seneschal }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_coin } }
+		cc_office_vacate = { OFFICE = master_of_coin }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_herald_of_arms } }
+		cc_office_vacate = { OFFICE = herald_of_arms }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_marshal_of_the_court } }
+		cc_office_vacate = { OFFICE = marshal_of_the_court }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_clerk_of_the_signet } }
+		cc_office_vacate = { OFFICE = clerk_of_the_signet }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_keeper_of_the_wardrobe } }
+		cc_office_vacate = { OFFICE = keeper_of_the_wardrobe }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_chancellor_of_the_rolls } }
+		cc_office_vacate = { OFFICE = chancellor_of_the_rolls }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_the_mint } }
+		cc_office_vacate = { OFFICE = master_of_the_mint }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_court_chamberlain } }
+		cc_office_vacate = { OFFICE = court_chamberlain }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_protocol } }
+		cc_office_vacate = { OFFICE = master_of_protocol }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_intendant } }
+		cc_office_vacate = { OFFICE = intendant }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_permanent_secretary } }
+		cc_office_vacate = { OFFICE = permanent_secretary }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_director_of_public_instruction } }
+		cc_office_vacate = { OFFICE = director_of_public_instruction }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_court_chaplain } }
+		cc_office_vacate = { OFFICE = court_chaplain }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_court_astrologer } }
+		cc_office_vacate = { OFFICE = court_astrologer }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_grand_inquisitor } }
+		cc_office_vacate = { OFFICE = grand_inquisitor }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_ecclesiarch } }
+		cc_office_vacate = { OFFICE = ecclesiarch }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_qadi_of_the_court } }
+		cc_office_vacate = { OFFICE = qadi_of_the_court }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_court_ulema } }
+		cc_office_vacate = { OFFICE = court_ulema }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_court_pandit } }
+		cc_office_vacate = { OFFICE = court_pandit }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_sangha_preceptor } }
+		cc_office_vacate = { OFFICE = sangha_preceptor }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_consistory_superintendent } }
+		cc_office_vacate = { OFFICE = consistory_superintendent }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_confessional_overseer } }
+		cc_office_vacate = { OFFICE = confessional_overseer }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_steward_of_the_demesne } }
+		cc_office_vacate = { OFFICE = steward_of_the_demesne }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_constable } }
+		cc_office_vacate = { OFFICE = constable }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_consul_of_merchants } }
+		cc_office_vacate = { OFFICE = consul_of_merchants }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_chancellor_of_the_see } }
+		cc_office_vacate = { OFFICE = chancellor_of_the_see }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_keeper_of_the_kurultai } }
+		cc_office_vacate = { OFFICE = keeper_of_the_kurultai }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_the_yam } }
+		cc_office_vacate = { OFFICE = master_of_the_yam }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_phanariote_secretary } }
+		cc_office_vacate = { OFFICE = phanariote_secretary }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_hansa_factor } }
+		cc_office_vacate = { OFFICE = hansa_factor }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_postelnic } }
+		cc_office_vacate = { OFFICE = postelnic }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_voivode_of_the_court } }
+		cc_office_vacate = { OFFICE = voivode_of_the_court }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_herald_of_the_table_of_ranks } }
+		cc_office_vacate = { OFFICE = herald_of_the_table_of_ranks }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_state_inquisitor } }
+		cc_office_vacate = { OFFICE = state_inquisitor }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_priori_of_the_council } }
+		cc_office_vacate = { OFFICE = priori_of_the_council }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_jokamachi_warden } }
+		cc_office_vacate = { OFFICE = jokamachi_warden }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_siege_works } }
+		cc_office_vacate = { OFFICE = master_of_siege_works }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_keeper_of_the_wampum } }
+		cc_office_vacate = { OFFICE = keeper_of_the_wampum }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_speaker_of_the_elders } }
+		cc_office_vacate = { OFFICE = speaker_of_the_elders }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_keeper_of_regnal_chronicles } }
+		cc_office_vacate = { OFFICE = keeper_of_regnal_chronicles }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_the_silk_road } }
+		cc_office_vacate = { OFFICE = master_of_the_silk_road }
+	}
+	if = {
+		limit = { scope:target ?= { has_variable = cc_office_held_master_of_ceremonies } }
+		cc_office_vacate = { OFFICE = master_of_ceremonies }
+	}
+}
+
+# Save migration. Converts a minister still holding one of the six original
+# office traits into the matching office and removes the trait.
+#
+# COUNTRY scope, so it cannot live in cc_xp_init (character scope) the way
+# cc_xp_ladder_backfill does. It is called from cc_office_monthly behind the
+# cc_office_migrated flag instead, which runs on the first monthly tick after a
+# save is loaded. on_game_start would be wrong for the same reason it was wrong
+# for the ladder backfill: it does not run when an existing save is loaded.
+#
+# The six traits are kept as always = no shells in cc_age_traits.txt purely so
+# this can read and remove them. See the header there.
+cc_office_backfill = {
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = seneschal }
+			cc_office_seneschal_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = seneschal }
+			remove_trait = trait:seneschal
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = seneschal }
+	}
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = master_of_coin }
+			cc_office_master_of_coin_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = master_of_coin }
+			remove_trait = trait:master_of_coin
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = master_of_coin }
+	}
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = herald_of_arms }
+			cc_office_herald_of_arms_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = herald_of_arms }
+			remove_trait = trait:herald_of_arms
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = herald_of_arms }
+	}
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = marshal_of_the_court }
+			cc_office_marshal_of_the_court_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = marshal_of_the_court }
+			remove_trait = trait:marshal_of_the_court
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = marshal_of_the_court }
+	}
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = court_chaplain }
+			cc_office_court_chaplain_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = court_chaplain }
+			remove_trait = trait:court_chaplain
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = court_chaplain }
+	}
+	if = {
+		limit = {
+			any_cabinet_character = { in_cabinet = yes  has_trait = court_astrologer }
+			cc_office_court_astrologer_vacant = yes
+		}
+		random_cabinet_character = {
+			limit = { in_cabinet = yes  has_trait = court_astrologer }
+			remove_trait = trait:court_astrologer
+			save_scope_as = office_holder
+		}
+		cc_office_appoint = { OFFICE = court_astrologer }
+	}
+}

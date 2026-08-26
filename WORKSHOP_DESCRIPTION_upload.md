@@ -138,7 +138,7 @@ Cabinet members accumulate traits through gameplay events. Traits reflect a mini
 **Core Cabinet Traits (24)**  
 Tier 1 simple traits, Tier 2 kiss-curse trade-offs with real downsides, Tier 3 attribute-scaled triads covering integration, antagonism, exploration, and more.  
   
-**Age Traits (37)**  
+**Age Traits (31)**  
 Era-specific traits granted through historical period events: Renaissance humanists, Reformation theologians, Absolutist administrators, Revolutionary agitators.  
   
 **Conditional Traits (75)**  
@@ -150,7 +150,7 @@ Acquired through underperformance events; each has a dedicated rehabilitation ch
 **Career Traits (6)**  
 The entry rungs and capstones of the cabinet advancement ladders: minor maluses a minister starts with, and the masteries they can earn their way to.  
   
-_Total: 151+ traits_  
+_Total: 145+ traits_  
   
 **Notable traits:**  
 
@@ -164,6 +164,46 @@ _Total: 151+ traits_
   * **Grand Chancellor** : This advisor does not merely conduct diplomacy; they direct foreign policy.
   * **Tribune of the People** : This advisor is genuinely popular with the commons and uses that popularity to govern: smoothing legislation through parliament, suppressing unrest, and making the estates feel heard.
   * **Philosopher King** : This ruler combines real intellectual power with political authority.
+
+  
+
+
+* * *
+
+  
+  
+
+
+### Household Offices
+
+  
+  
+The one-trait limit above is why household offices are not traits. An office is a post at court: a minister holds it alongside whatever career trait they already have, and the benefit belongs to the post rather than to the person. Which posts your court has depends on what it has researched, so the household changes shape across the game rather than staying as it was in 1337.  
+  
+**Core (13)**  
+Open to every realm and driven by the universal age advances, from the Seneschal at the start to the Director of Public Instruction under an enlightened court.  
+  
+**Religious (10)**  
+Opened by a faith's own advances, so a Catholic court can raise a Grand Inquisitor where an Orthodox one raises an Ecclesiarch.  
+  
+**Government (6)**  
+Tied to the form of the state: Constable, Consul of Merchants, Chancellor of the See, Keeper of the Kurultai.  
+  
+**Cultural (9)**  
+Posts a particular culture group actually kept, such as the Phanariote Secretary, the Postelnic and the Venetian State Inquisitor.  
+  
+**Regional (5)**  
+Opened by regional advances: Keeper of the Wampum, Speaker of the Elders, Master of the Road.  
+  
+_43 offices in total, of which 8 are retired again by a later advance. A court may fill 6._  
+  
+**How it works:**  
+
+
+  * An office is a post, not a trait, so holding one does not use up a minister's career trait
+  * Researching an advance can open a post; a later advance can close one, releasing whoever held it
+  * Appointment costs gold and government power, and requires the minister to have reached the office's tier in its track
+  * Each office's effect scales with the holder's seniority
 
   
 
@@ -930,7 +970,7 @@ cc_dual| 10| Cabinet × religious figure dual-role synergies
   
 cc_intl| 12| Cross-country interactions between neighboring courts  
   
-cc_feudal| 8| Feudal era court events  
+cc_feudal| 6| Feudal era court events  
   
 cc_legacy| 3| Senior minister retirement and legacy transmission  
   
@@ -950,7 +990,7 @@ cc_wc| 9| War council: active-war events, post-war reform proposals, outdated ge
   
 cc_fac| 3| Estate faction capture events  
   
-cc_xp| 27| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
+cc_xp| 38| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
   
 cc_colonial| 6| Colonial divan: charter company events + decolonization crisis chain  
   
@@ -964,9 +1004,11 @@ cc_invasion_mexico| 28| Mexican Conquest situation: expedition decisions, Mesoam
   
 cc_balance_of_power| 54| European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings  
   
+cc_office| 2| Household offices: the appointment picker and the notice that an advance has retired a post  
   
   
- _~516 events total_  
+  
+ _~527 events total_  
   
 
 

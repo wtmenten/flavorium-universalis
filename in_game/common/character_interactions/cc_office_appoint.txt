@@ -1,0 +1,107 @@
+﻿###############################################################################
+# Flavorium Universalis — Household offices: appointment
+#
+# ONE interaction, not one per office. A character_interaction carries a single
+# target, and appointing minister X to office Y needs two values. The minister is on
+# a row in the character interaction menu, so select_trigger picks them cleanly; the
+# office is then picked from the options of cc_office.1, which is generated with one
+# option per office by tools/generate_offices.py.
+#
+# This is the shape the scripting-gotchas doc prescribes: a GUI button cannot open a
+# select_trigger picker, but the character interaction menu can, and a second value
+# that is on no row belongs in event options rather than in a second target flag.
+#
+# WHAT MAKES A MINISTER ELIGIBLE is deliberately split. The interaction's own
+# select_trigger only asks whether they are seated, alive and unencumbered, because
+# whether ANY office suits them depends on the office. The per-office tier gate lives
+# on the matching option in cc_office.1, so a minister who qualifies for nothing sees
+# the picker with only the decline option, which reads as "no post suits them yet"
+# rather than as a dead button with no explanation.
+###############################################################################
+
+cc_office_appoint_to_household = {
+	message = yes
+	on_own_nation = yes
+	sound = PROMOTE_TO_HEAD_OF_CABINET
+
+	price = price:cc_office_appointment
+
+	ai_tick = monthly
+	ai_tick_frequency = 36
+
+	potential = {
+		scope:actor = { cc_xp_enabled = yes }
+	}
+
+	allow = {
+		scope:actor = {
+			cc_xp_enabled = yes
+
+			# There is a post to fill and room to fill it. Without the cap check the
+			# button stays live on a full household and the picker then offers nothing,
+			# which looks like a bug rather than a limit.
+			cc_office_filled_count < cc_office_slot_cap
+			cc_office_any_vacant = yes
+
+			any_cabinet_character = { cc_office_can_be_appointed = yes }
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = character
+		source = actor
+		target_flag = recipient
+		name = "cc_office_choose_appointee"
+		none_available_msg_key = "cc_office_none_appointee"
+		column = { data = name }
+
+		visible = {
+			in_cabinet = yes
+			is_alive = yes
+		}
+
+		enabled = {
+			cc_office_can_be_appointed = yes
+		}
+	}
+
+	effect = {
+		# Guarded on `exists` for the same reason cc_xp_train_adm is: a character
+		# interaction's effect block is evaluated to build its tooltip BEFORE a target
+		# is chosen, and scope:recipient is unset during that pass.
+		if = {
+			limit = { exists = scope:recipient }
+
+			custom_tooltip = {
+				text = cc_office_appoint_tt
+			}
+			custom_tooltip = {
+				text = cc_office_appoint_advance_tt
+			}
+			custom_tooltip = {
+				text = cc_office_appoint_obsolete_tt
+			}
+
+			scope:recipient = { save_scope_as = office_holder }
+			scope:actor = {
+				trigger_event_silently = { id = cc_office.1 }
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+		add = {
+			# An AI court staffs its household with whoever it has already trained,
+			# and stops caring once the treasury is thin.
+			if = {
+				limit = { scope:recipient = { cc_xp_level_at_least = { LEVEL = 4 } } }
+				add = 25
+			}
+			if = {
+				limit = { scope:actor = { gold < 300 } }
+				subtract = 100
+			}
+		}
+	}
+}

@@ -103,6 +103,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc",                  "cc_subject_events.txt",            "Protectorate & holy protectorate chains: ward maturation, diplomatic incidents, faith crises, religion divergence, papal interactions"),
     ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation: expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
     ("cc_balance_of_power",  "cc_balance_of_power.txt",          "European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings"),
+    ("cc_office",           "cc_office_events.txt",             "Household offices: the appointment picker and the notice that an advance has retired a post"),
 ]
 
 HIGHLIGHTED_TRAITS: list[str] = [
@@ -587,6 +588,25 @@ def gen_game_rules(loc: dict[str, str]) -> str:
     return "\n\n".join(blocks)
 
 
+def count_live_traits(path: Path) -> int:
+    """Top-level traits, excluding retired ones.
+
+    A trait kept only so a save migration can still read and remove it carries
+    `allow = { always = no }`, which is vanilla's own way of retiring one
+    (00_ruler.txt:895). Counting those would advertise traits no game can grant: the six
+    household office traits are exactly this while the office backfill is still shipping.
+    extract_top_blocks flattens nested blocks to '__block__', so this reads the raw text.
+    """
+    text = read_bom(path)
+    live = 0
+    for name, _ in extract_top_blocks(path):
+        m = re.search(rf"^{re.escape(name)}\s*=\s*\{{(.*?)^\}}", text, re.M | re.S)
+        body = m.group(1) if m else text
+        if not re.search(r"allow\s*=\s*\{[^}]*always\s*=\s*no", body, re.S):
+            live += 1
+    return live
+
+
 def gen_trait_summary(loc: dict[str, str]) -> str:
     traits_dir = MOD_ROOT / "in_game" / "common" / "traits"
     lines: list[str] = []
@@ -594,7 +614,7 @@ def gen_trait_summary(loc: dict[str, str]) -> str:
 
     for filename, category, desc in TRAIT_FILES:
         path = traits_dir / filename
-        count = len(extract_top_blocks(path)) if path.exists() else 0
+        count = count_live_traits(path) if path.exists() else 0
         total += count
         lines.append(bold(f"{category} ({count})"))
         lines.append(desc + ".")
@@ -855,9 +875,79 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
 # GEN: section injection
 # ---------------------------------------------------------------------------
 
+def gen_household_offices(loc: dict[str, str]) -> str:
+    """Household office roster, read from the office table rather than the output files.
+
+    generate_offices.py owns the roster, including which family each office belongs to and
+    which advance opens it. Re-deriving that from the generated auto_modifiers would mean a
+    second parser that can drift, so this imports the table directly. If that import fails
+    the section degrades to nothing rather than emitting a wrong count.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "gen_offices", Path(__file__).resolve().parent / "generate_offices.py")
+    if spec is None or spec.loader is None:
+        return ""
+    mod = importlib.util.module_from_spec(spec)
+    saved = sys.argv
+    sys.argv = ["generate_offices.py", "--check"]
+    try:
+        spec.loader.exec_module(mod)
+    except SystemExit:
+        pass
+    finally:
+        sys.argv = saved
+
+    offices = getattr(mod, "OFFICES", None)
+    if not offices:
+        return ""
+    cap = getattr(mod, "SLOT_CAP", 6)
+
+    FAMILY_DESC = [
+        ("core", "Core", "Open to every realm and driven by the universal age advances, "
+                         "from the Seneschal at the start to the Director of Public "
+                         "Instruction under an enlightened court"),
+        ("religion", "Religious", "Opened by a faith's own advances, so a Catholic court can "
+                                  "raise a Grand Inquisitor where an Orthodox one raises an "
+                                  "Ecclesiarch"),
+        ("government", "Government", "Tied to the form of the state: Constable, Consul of "
+                                     "Merchants, Chancellor of the See, Keeper of the Kurultai"),
+        ("culture", "Cultural", "Posts a particular culture group actually kept, such as the "
+                                "Phanariote Secretary, the Postelnic and the Venetian State "
+                                "Inquisitor"),
+        ("region", "Regional", "Opened by regional advances: Keeper of the Wampum, Speaker of "
+                               "the Elders, Master of the Road"),
+    ]
+
+    lines: list[str] = []
+    for key, label, desc in FAMILY_DESC:
+        count = sum(1 for o in offices if o["family"] == key)
+        lines.append(bold(f"{label} ({count})"))
+        lines.append(desc + ".")
+        lines.append("")
+
+    retired = sum(1 for o in offices if o["obsolete"])
+    lines.append(italic(f"{len(offices)} offices in total, of which {retired} are retired "
+                        f"again by a later advance. A court may fill {cap}."))
+    lines.append("")
+    lines.append(bold("How it works:"))
+    lines.append(list_block([
+        "An office is a post, not a trait, so holding one does not use up a minister's "
+        "career trait",
+        "Researching an advance can open a post; a later advance can close one, releasing "
+        "whoever held it",
+        "Appointment costs gold and government power, and requires the minister to have "
+        "reached the office's tier in its track",
+        "Each office's effect scales with the holder's seniority",
+    ]))
+    return "\n".join(lines).rstrip()
+
+
 SECTION_GENERATORS: dict[str, object] = {
     "game-rules":         gen_game_rules,
     "trait-summary":      gen_trait_summary,
+    "household-offices":  gen_household_offices,
     "event-categories":   gen_event_categories,
     "subject-types":      gen_subject_types,
     "advances":           gen_advances,

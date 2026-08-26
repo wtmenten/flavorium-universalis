@@ -200,6 +200,16 @@ situation_panel = {
 			}
 			down = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_schools' )]"
 		}
+
+		button_secondary_tab_alt = {
+			using = layoutpolicy_expanding
+			blockoverride "tab_text" { text = "CC_OFFICE_TAB_HOUSEHOLD" }
+			action_tooltip = {
+				title = "OPEN_TAB"
+				on_action = "[SituationView.Vars.Set( 'situation_tab', 'cc_office_household' )]"
+			}
+			down = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_office_household' )]"
+		}
 	}
 	blockoverride "situation_extra_tab_panels" {
 
@@ -567,6 +577,28 @@ situation_panel = {
 			}
 
 			expand = {}
+		}
+
+		################################ HOUSEHOLD ################################
+		#
+		# Which posts exist depends on what the realm has researched, so this tab is
+		# generated: tools/generate_offices.py writes one block per office into
+		# cc_office_household.gui and this is the container that shows it.
+		#
+		# Like the schools tab, it depends on variables republished for the panel's
+		# benefit, because GUI cannot evaluate the underlying condition itself. There it
+		# was a script value; here it is `has_advance`, which GUI has no by-key lookup
+		# for. cc_office_publish_roster writes cc_office_<key>_open and
+		# cc_office_filled_var monthly for human courts.
+		#
+		# There is no appoint button here. A button supplies no target, so it could not
+		# open the interaction's character picker; appointment is done from a minister's
+		# own interaction menu. That is the same limitation that moved ten other buttons
+		# off this panel. See docs/scripting-gotchas.md.
+		###########################################################################
+		widget = {
+			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_office_household' )]"
+			using = cc_office_household_content
 		}
 	}
 }

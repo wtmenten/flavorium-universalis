@@ -1,0 +1,773 @@
+######################################################################
+# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_offices.py
+#
+# The Household tab of the Court Ledger.
+#
+# WHY THIS IS ONE BLOCK PER OFFICE RATHER THAN SIX GENERIC SLOTS. Schools use six
+# sequential slot variables because there are only three of them and they are
+# interchangeable. Offices are not: which posts exist depends on what the realm has
+# researched, so a generic slot would still need a number-to-name mapping in GUI, which
+# is the same 43 visibility checks with an extra indirection on top.
+#
+# WHY IT NEEDS cc_office_<key>_open. GUI can dereference a character held in a variable,
+# but it cannot ask whether a named advance has been researched: IsResearched exists only
+# on an AdvanceItem from the advances screen's datamodel, and there is no by-key lookup.
+# cc_office_publish_roster pushes the answer out as country variables the panel tests with
+# IsSet.
+#
+# Properties in a template are declared at top level, not wrapped in a widget:
+# `using = <template>` merges a template's contents into the widget it is used on, and an
+# extra layer collapses to zero size and takes its children's mouse input with it.
+# See docs/scripting-gotchas.md.
+######################################################################
+
+# One office and the minister holding it. Expects that minister as its Character
+# datacontext, which is what cc_office_<key>_holder holds.
+template cc_office_row {
+	layoutpolicy_horizontal = expanding
+	size = { -1 46 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	hbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 6 3 }
+		spacing = 6
+
+		portrait_standard_head_framed_button = {
+			size = { 34 38 }
+			onclick = "[ShowCharacter(Character.Self)]"
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 0
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 5
+				text_single = {
+					fontsize = 13
+					align = left|nobaseline
+					block "office_name" {}
+				}
+				expand = {}
+			}
+
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 4
+
+				text_single = {
+					fontsize = 11
+					align = left|nobaseline
+					text = "[Character.GetShortNameWithNoTooltip]"
+				}
+
+				text_single = {
+					fontsize = 10
+					default_format = "#weak"
+					align = left|nobaseline
+					text = "CC_OFFICE_SENIORITY"
+				}
+				text_single = {
+					fontsize = 11
+					align = left|nobaseline
+					raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_level').GetValue)]"
+				}
+
+				expand = {}
+			}
+		}
+	}
+}
+
+# An office the realm has but nobody holds.
+template cc_office_open_slot {
+	layoutpolicy_horizontal = expanding
+	size = { -1 40 }
+	background = { using = color_black_texture  alpha = 0.18 }
+
+	hbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 8 3 }
+		spacing = 8
+
+		widget = {
+			size = { 34 32 }
+			background = { using = color_whiteish_texture  alpha = 0.06 }
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 0
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 12
+				default_format = "#weak"
+				align = left|nobaseline
+				block "office_name" {}
+			}
+
+			text_single = {
+				layoutpolicy_horizontal = expanding
+				fontsize = 10
+				default_format = "#weak"
+				align = left|nobaseline
+				block "office_requirement" {}
+			}
+		}
+	}
+}
+
+template cc_office_household_content {
+	layoutpolicy_horizontal = expanding
+	layoutpolicy_vertical = expanding
+
+	vbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		using = bg_secondary_inner_alt
+		margin = { 10 8 }
+		spacing = 6
+
+		# ---- Summary ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 4
+			text_single = { fontsize = 12  default_format = "#weak"  text = "CC_OFFICE_FILLED_LABEL" }
+			text_single = {
+				fontsize = 15
+				raw_text = "[FixedPointToInt(Player.MakeScope.GetVariable('cc_office_filled_var').GetValue)]/6"
+			}
+			expand = {}
+		}
+
+		text_multi = {
+			layoutpolicy_horizontal = expanding
+			autoresize = yes
+			multiline = yes
+			max_width = 330
+			fontsize = 11
+			default_format = "#weak"
+			text = "CC_OFFICE_TAB_NOTE"
+		}
+
+		# ---- Posts held ----
+		text_single = { fontsize = 12  text = "CC_OFFICE_HELD_HEADER" }
+
+		# Seneschal
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_seneschal" }
+		}
+		# Master of Coin
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_coin" }
+		}
+		# Herald of Arms
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_herald_of_arms" }
+		}
+		# Marshal of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
+		}
+		# Clerk of the Signet
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
+		}
+		# Keeper of the Wardrobe
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
+		}
+		# Chancellor of the Rolls
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
+		}
+		# Master of the Mint
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
+		}
+		# Court Chamberlain
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_court_chamberlain" }
+		}
+		# Master of Protocol
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_protocol" }
+		}
+		# Intendant of the Household
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_intendant" }
+		}
+		# Permanent Secretary
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_permanent_secretary" }
+		}
+		# Director of Public Instruction
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
+		}
+		# Court Chaplain
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_court_chaplain" }
+		}
+		# Court Astrologer
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_court_astrologer" }
+		}
+		# Grand Inquisitor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
+		}
+		# Ecclesiarch of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_ecclesiarch" }
+		}
+		# Qadi of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
+		}
+		# Court Ulema
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_court_ulema" }
+		}
+		# Court Pandit
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_court_pandit" }
+		}
+		# Sangha Preceptor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
+		}
+		# Consistory Superintendent
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
+		}
+		# Overseer of the Confession
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_confessional_overseer" }
+		}
+		# Steward of the Demesne
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
+		}
+		# Constable
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_constable_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_constable_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_constable" }
+		}
+		# Consul of Merchants
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
+		}
+		# Chancellor of the See
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
+		}
+		# Keeper of the Kurultai
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
+		}
+		# Master of the Yam
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
+		}
+		# Phanariote Secretary
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
+		}
+		# Hansa Factor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_hansa_factor" }
+		}
+		# Postelnic
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_postelnic" }
+		}
+		# Voivode of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
+		}
+		# Herald of the Table of Ranks
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
+		}
+		# State Inquisitor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_state_inquisitor" }
+		}
+		# Priore of the Council
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
+		}
+		# Warden of the Castle Town
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
+		}
+		# Master of Siege Works
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
+		}
+		# Keeper of the Wampum
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
+		}
+		# Speaker of the Elders
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
+		}
+		# Keeper of the Chronicles
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
+		}
+		# Master of the Road
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
+		}
+		# Master of Ceremonies
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').IsSet]"
+			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').GetCharacter]"
+			using = cc_office_row
+			blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
+		}
+
+		# ---- Posts standing open ----
+		text_single = { fontsize = 12  text = "CC_OFFICE_OPEN_HEADER" }
+
+		# Seneschal
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_seneschal" }
+			blockoverride "office_requirement" { text = "cc_office_seneschal_req" }
+		}
+		# Master of Coin
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_coin" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_coin_req" }
+		}
+		# Herald of Arms
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_herald_of_arms" }
+			blockoverride "office_requirement" { text = "cc_office_herald_of_arms_req" }
+		}
+		# Marshal of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
+			blockoverride "office_requirement" { text = "cc_office_marshal_of_the_court_req" }
+		}
+		# Clerk of the Signet
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
+			blockoverride "office_requirement" { text = "cc_office_clerk_of_the_signet_req" }
+		}
+		# Keeper of the Wardrobe
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
+			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wardrobe_req" }
+		}
+		# Chancellor of the Rolls
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
+			blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_rolls_req" }
+		}
+		# Master of the Mint
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_the_mint_req" }
+		}
+		# Court Chamberlain
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_court_chamberlain" }
+			blockoverride "office_requirement" { text = "cc_office_court_chamberlain_req" }
+		}
+		# Master of Protocol
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_protocol" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_protocol_req" }
+		}
+		# Intendant of the Household
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_intendant_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_intendant" }
+			blockoverride "office_requirement" { text = "cc_office_intendant_req" }
+		}
+		# Permanent Secretary
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_permanent_secretary" }
+			blockoverride "office_requirement" { text = "cc_office_permanent_secretary_req" }
+		}
+		# Director of Public Instruction
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
+			blockoverride "office_requirement" { text = "cc_office_director_of_public_instruction_req" }
+		}
+		# Court Chaplain
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_court_chaplain" }
+			blockoverride "office_requirement" { text = "cc_office_court_chaplain_req" }
+		}
+		# Court Astrologer
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_court_astrologer" }
+			blockoverride "office_requirement" { text = "cc_office_court_astrologer_req" }
+		}
+		# Grand Inquisitor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
+			blockoverride "office_requirement" { text = "cc_office_grand_inquisitor_req" }
+		}
+		# Ecclesiarch of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_ecclesiarch" }
+			blockoverride "office_requirement" { text = "cc_office_ecclesiarch_req" }
+		}
+		# Qadi of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
+			blockoverride "office_requirement" { text = "cc_office_qadi_of_the_court_req" }
+		}
+		# Court Ulema
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_court_ulema" }
+			blockoverride "office_requirement" { text = "cc_office_court_ulema_req" }
+		}
+		# Court Pandit
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_court_pandit" }
+			blockoverride "office_requirement" { text = "cc_office_court_pandit_req" }
+		}
+		# Sangha Preceptor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
+			blockoverride "office_requirement" { text = "cc_office_sangha_preceptor_req" }
+		}
+		# Consistory Superintendent
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
+			blockoverride "office_requirement" { text = "cc_office_consistory_superintendent_req" }
+		}
+		# Overseer of the Confession
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_confessional_overseer" }
+			blockoverride "office_requirement" { text = "cc_office_confessional_overseer_req" }
+		}
+		# Steward of the Demesne
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
+			blockoverride "office_requirement" { text = "cc_office_steward_of_the_demesne_req" }
+		}
+		# Constable
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_constable_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_constable" }
+			blockoverride "office_requirement" { text = "cc_office_constable_req" }
+		}
+		# Consul of Merchants
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
+			blockoverride "office_requirement" { text = "cc_office_consul_of_merchants_req" }
+		}
+		# Chancellor of the See
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
+			blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_see_req" }
+		}
+		# Keeper of the Kurultai
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
+			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_kurultai_req" }
+		}
+		# Master of the Yam
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_the_yam_req" }
+		}
+		# Phanariote Secretary
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
+			blockoverride "office_requirement" { text = "cc_office_phanariote_secretary_req" }
+		}
+		# Hansa Factor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_hansa_factor" }
+			blockoverride "office_requirement" { text = "cc_office_hansa_factor_req" }
+		}
+		# Postelnic
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_postelnic" }
+			blockoverride "office_requirement" { text = "cc_office_postelnic_req" }
+		}
+		# Voivode of the Court
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
+			blockoverride "office_requirement" { text = "cc_office_voivode_of_the_court_req" }
+		}
+		# Herald of the Table of Ranks
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
+			blockoverride "office_requirement" { text = "cc_office_herald_of_the_table_of_ranks_req" }
+		}
+		# State Inquisitor
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_state_inquisitor" }
+			blockoverride "office_requirement" { text = "cc_office_state_inquisitor_req" }
+		}
+		# Priore of the Council
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
+			blockoverride "office_requirement" { text = "cc_office_priori_of_the_council_req" }
+		}
+		# Warden of the Castle Town
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
+			blockoverride "office_requirement" { text = "cc_office_jokamachi_warden_req" }
+		}
+		# Master of Siege Works
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_siege_works_req" }
+		}
+		# Keeper of the Wampum
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
+			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wampum_req" }
+		}
+		# Speaker of the Elders
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
+			blockoverride "office_requirement" { text = "cc_office_speaker_of_the_elders_req" }
+		}
+		# Keeper of the Chronicles
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
+			blockoverride "office_requirement" { text = "cc_office_keeper_of_regnal_chronicles_req" }
+		}
+		# Master of the Road
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_the_silk_road_req" }
+		}
+		# Master of Ceremonies
+		widget = {
+			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_open').IsSet]"
+			using = cc_office_open_slot
+			blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
+			blockoverride "office_requirement" { text = "cc_office_master_of_ceremonies_req" }
+		}
+
+		# Keeps content at the TOP. Without it a vbox with an expanding
+		# vertical policy spreads its children down the whole panel.
+		expand = {}
+	}
+}
