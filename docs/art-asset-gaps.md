@@ -125,6 +125,382 @@ a dark fringe, and midtone contrast survives the mip chain.
 (`-m 0` for the full chain, `BC3_UNORM` for alpha), but it will not place the file or match the
 slot sizes for you.
 
+## Icon families and concept prompts
+
+The gap lists below come to 459 missing icons, of which 135 are traits and 90 are mission
+tasks. That is paralysing as a list and tractable as a dozen families of ten. A family is
+worth more than the sum of its icons, because a shared prop vocabulary is what makes a set
+look authored rather than assembled.
+
+This section covers the three largest and most self-contained groups: traits, subject types
+and mission tasks. The other slots are smaller and mostly follow from these, since a generic
+action or a cabinet duty can borrow the trait family whose work it represents.
+
+Three rules make that work at 128x128, and they matter more than the prompt text:
+
+- **One object, one silhouette.** At 128x128 in a list, a scene is mud. Everything below is
+  a single readable object or a pair of objects with one clear overlap.
+- **The accent colour is the family label.** A player scanning the trait list should be able
+  to tell a fiscal trait from a military one before reading either. That is the accent
+  doing the work, not the prop.
+- **Vary the prop, never the treatment.** Same framing, same light direction, same margin,
+  same level of detail across a family. The moment one icon is rendered more finely than its
+  neighbours the set falls apart.
+
+### The house stem
+
+Prepend this to every prompt in this section. It is the part that has to stay identical.
+
+```
+single centred object on a plain dark ground, painted game icon, late medieval
+illuminated manuscript style, soft light from the upper left, muted palette, visible
+brushwork, object fills about 70 percent of the frame, generous even margin, no text,
+no lettering, no border, no frame, square composition
+```
+
+Then append the family's accent and one line from that family's list. So a full prompt for
+`master_of_coin` reads:
+
+```
+single centred object on a plain dark ground, painted game icon, late medieval
+illuminated manuscript style, soft light from the upper left, muted palette, visible
+brushwork, object fills about 70 percent of the frame, generous even margin, no text,
+no lettering, no border, no frame, square composition, ochre and old gold,
+an open strongbox with a key still in the lock, coin stacks inside
+```
+
+The example lines are starting points, not a per-key script. Within a family, swap the prop
+for something the key name suggests and keep everything else fixed. The trait families carry
+two examples each rather than one, so that the shape of the variation is visible.
+
+Author at 256x256 or higher and let `tools/make_dds.py --slot trait` downsample; see
+[Converting](#converting). The 256x256 mission task slot is the exception where the authored
+size and the shipped size are the same.
+
+### Trait icon families
+
+135 icons is not a first pass. These are the thirteen groups they fall into, each
+sharing one prop vocabulary and one accent so that a family drawn in an afternoon
+reads as a set. Draw a family at a time and the mod looks finished in stages rather
+than uniformly unfinished.
+
+Path: `gfx/interface/icons/traits/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
+
+| Family | Icons | Accent | Shared kit |
+|---|---|---|---|
+| **Coin & Ledger** | 15 | ochre and old gold | stacked coins, a bound ledger, a counting board, brass scales, a strongbox and its key |
+| **Seal & Quill** | 15 | deep red wax on grey stone | a wax seal and matrix, a rolled writ, a quill, a bundle of filed papers, a chancery ribbon |
+| **Book & Instrument** | 15 | ink blue and pale vellum | an open book, an astrolabe, dividers, a celestial globe, a rolled chart, spectacles |
+| **Cross & Crozier** | 14 | white and gold on incense blue | a crozier, a censer, an icon panel, a closed gospel with a clasp, a stole |
+| **Sword & Drum** | 16 | steel grey and crimson | a sheathed sword, a field drum, a helm, a marshal's baton, a standard, a spear rack |
+| **Sail & Compass** | 6 | sea green and weathered rope | a mariner's compass, a furled sail, an anchor, a sounding line, a spyglass |
+| **Letter & Ribbon** | 6 | cream and violet | a sealed letter, a ribboned credential, an olive sprig, two clasped gloves, a safe-conduct |
+| **Rule & Trowel** | 6 | stone grey and terracotta | a set square, a plumb bob, a trowel, a scaffold, a gabion, a fortification plan |
+| **Coronet & Charter** | 8 | imperial purple and gold | a coronet, a sealed charter, an ermine band, a signet ring, a heraldic shield |
+| **Rostrum & Cockade** | 13 | cockade blue, white and red | a speaker's rostrum, a cockade, a broadsheet, a raised hand, a voting urn, a broken chain |
+| **Delegate's Badge** | 5 | brass on undyed wool | a hung badge on a chain, a spokesman's staff, a petition roll, a group emblem on a plaque |
+| **Mask & Tarnish** | 11 | desaturated, verdigris and soot | the family's own prop, cracked, tarnished or half-hidden: a split mask, a rusted lock, a blotted page, a moth-eaten banner |
+| **Laurel & Relic** | 5 | gold leaf on deep blue | a laurel wreath framing one relic of the career: a worn baton, a folded robe, a signet |
+| | **135** | | |
+
+**Coin & Ledger** (15)
+
+```
+master_of_coin tax_inspector_general treasury_enforcer clumsy_accountant merchant_syndic
+merchant_prince mercantilist_official free_market_advocate capitalist_minister
+cautious_merchant trade_consortium_minister maritime_champion prosperity_herald
+development_patron merchant_of_the_crown
+```
+
+> a brass balance scale standing on a closed ledger, three coins beside it
+
+> an open strongbox with a key still in the lock, coin stacks inside
+
+**Seal & Quill** (15)
+
+```
+efficiency_administrator absolute_administrator roman_administrator mughal_administrator
+confucian_mandarin civic_chancellor grand_chancellor seneschal legal_scholar
+regional_magnate estate_guardian marshal_of_the_court herald_of_arms seasoned_integrator
+consolidation_minister
+```
+
+> a red wax seal hanging on a ribbon from a rolled writ
+
+> a quill upright in an inkwell beside a stack of tied papers
+
+**Book & Instrument** (15)
+
+```
+learned_courtier renaissance_humanist humanist_philosopher progressive_rationalist
+enlightenment_herald empiricist_counselor innovative_counselor hellenistic_scholar
+sufi_scholar brahmin_counselor court_astrologer chief_cartographer industrial_visionary
+arts_patron renaissance_patron
+```
+
+> an open book with an astrolabe resting on the page
+
+> a pair of dividers stepping across an unrolled chart
+
+**Cross & Crozier** (14)
+
+```
+court_chaplain crown_theologian theological_statesman reformist_theologian orthodox_defender
+reformation_preacher reformation_inquisitor mystical_patriarch mystical_counselor
+ecumenical_patriarch_advisor court_prelate dharma_minister caliphate_diplomat
+christian_diplomat
+```
+
+> a swinging censer with a thin trail of smoke, gold on deep blue
+
+> a clasped gospel book laid flat, a simple cross worked into the cover
+
+**Sword & Drum** (16)
+
+```
+green_adjutant offensive_strategist defensive_commander supreme_commander
+continental_marshal infantry_drillmaster elite_trainer mass_levy_commander hawk_minister
+standing_army_advocate steppe_strategos steppe_warlord_advisor master_of_horse
+cavalry_marshal scout_captain expansionist_advisor
+```
+
+> a marshal's baton crossed over a sheathed sword
+
+> a field drum with sticks laid across the head
+
+**Sail & Compass** (6)
+
+```
+admiral_counselor new_world_pioneer frontier_administrator returned_colonial_governor
+age_of_discovery_pioneer age_of_discovery_skeptic
+```
+
+> a brass mariner's compass with its lid open, resting on coiled rope
+
+> a spyglass laid across a rolled sea chart
+
+**Letter & Ribbon** (6)
+
+```
+tentative_envoy diplomatic_attache peace_commissioner peacemaker_counselor griot_diplomat
+parliamentary_broker
+```
+
+> a sealed letter tied with a violet ribbon, an olive sprig across it
+
+> a folded credential with two seals hanging from it
+
+**Rule & Trowel** (6)
+
+```
+urban_planner master_urbanist grand_architect military_engineer siege_engineer
+commissariat_officer
+```
+
+> a plumb bob hanging over an unrolled building plan
+
+> a set square and trowel crossed on cut stone
+
+**Coronet & Charter** (8)
+
+```
+noble_patron noble_champion privilege_champion privilege_reformer royal_absolutist
+traditionalist_guardian serf_overseer eastern_pragmatist
+```
+
+> a coronet resting on a sealed charter
+
+> a signet ring standing upright on an ermine band
+
+**Rostrum & Cockade** (13)
+
+```
+parliamentarian revolutionary_agitator revolutionary_herald counterrevolutionary
+liberal_reformer national_reformer reform_minded_counselor master_reformer
+fumbling_reformist federal_architect emancipation_minister community_steward
+free_spirit_counselor
+```
+
+> a cockade pinned to a folded broadsheet
+
+> a voting urn with a single folded ballot above the slot
+
+**Delegate's Badge** (5)
+
+```
+noble_champion_of_court tribune_of_the_commons steppe_voice dhimmi_advocate
+cossack_hetman_liaison
+```
+
+> a brass badge on a short chain, an estate emblem struck into the face
+
+> a petition roll held upright by a plain wooden staff
+
+**Mask & Tarnish** (11)
+
+```
+espionage_director court_schemer cynical_courtier stagnant_counselor war_profiteer
+inefficient_bureaucrat corrupted_official zealous_fanatic outdated_general reckless_expander
+dogmatic_zealot
+```
+
+> a plain mask split down the middle, verdigris in the crack
+
+> an inkblot spreading across an official page, the seal smudged
+
+**Laurel & Relic** (5)
+
+```
+retired_legend philosopher_king grand_vizier_legendary tribune_of_the_people
+cc_master_balancer
+```
+
+> a laurel wreath framing an empty chair, gold on deep blue
+
+> a worn baton laid on folded cloth inside a laurel ring
+
+### Subject type icon families
+
+**Authored and shipped.** Kept here as the worked example of what a family pass looks like:
+fourteen sources covering 24 keys, in an afternoon.
+
+Path: `gfx/interface/icons/subject_types/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
+
+All 24 say the same thing: who is bound to whom, and by what. One silhouette across the set,
+and only the binding changes. Four of the groups share a source; the rest earned their own
+because the relationship they describe is not a variation on anything else.
+
+| Family | Keys | Binding motif |
+|---|---|---|
+| **Unions** | 2 | joined as partners, unequal but not coerced |
+| **Charter** | 6 | an institution created by a document |
+| **Frontier** | 2 | a boundary held on the crown's behalf |
+| **Bound** | 3 | protection extended and submission implied |
+| *Individual* | 11 | federal members, enclave, palatinate, shadow, client, puppet, crown dependency |
+
+> two heraldic shields side by side, the right one smaller, joined by a plain band
+
+> an open charter with a heavy seal, a mason's compass laid across the text
+
+> a carved boundary stone with a banner planted behind it, low horizon
+
+> a small shield held in an armoured gauntlet, a short chain at the wrist
+
+The per-key mapping is recorded in [Subject types](#subject-types-complete), which is where to
+look before redrawing a source, since the shared ones were written to more than one key.
+
+WHAT THE PASS ACTUALLY TAUGHT. The plan had four families of 7/6/7/4 and the result has four
+families covering 13 keys and eleven one-offs. The keys that resisted grouping were the ones carrying a specific
+constitutional relationship rather than a general kind of subjection: the three federal member
+grades read as three positions in one assembly, not as three variations on a shield, and
+`palatinate` and `elite_enclave` are privileges rather than bindings. Expect the same when
+grouping the 135 traits: the family plan is a starting allocation, not a contract, and roughly
+a third of any family will want to leave it once drawn.
+
+### Mission task icon families
+
+The Renovatio campaign's 90 task icons. Note the path: task icons are bare-key aliases
+into `advance/`, not files under `icons/missions/`, which is the bug recorded in [Hard gaps](#hard-gaps).
+Aliasing existing advance icons costs no art at all and is still the recommended fix;
+these families are for when someone wants the real thing.
+
+Path: `gfx/interface/advance/<key>.dds`  ·  256x256  ·  1:1  ·  BC3 / DXT5
+
+| Family | Icons | Accent | Shared kit |
+|---|---|---|---|
+| **Reconquest** | 18 | map ochre and campaign red | a province outline, a planted standard, a city taken, a road opened |
+| **The Church** | 15 | gold mosaic on deep blue | a dome, an icon panel, a crozier, a synod table, a lit lamp |
+| **The Army** | 11 | steel and imperial purple | a themed banner, a cataphract helm, a drilled rank, a wall section, a siphon of fire |
+| **The Fleet** | 8 | sea green and bronze | a dromon prow, an oar bank, a fire siphon, a harbour chain, a lighthouse |
+| **Chancery & Coin** | 11 | parchment and gold | a struck coin, a tax roll, an office seal, a register, an abacus |
+| **Trade & Concession** | 9 | spice red and silk gold | a bale, a spice measure, a silk bolt, a harbour concession post, a merchant's stamp |
+| **The City** | 4 | marble white and porphyry | a colonnade, a hippodrome turn post, a palace facade, a column |
+| **Crown & Title** | 14 | porphyry purple and gold | a diadem, a purple birth chamber, a signed title deed, a tributary's bowed standard |
+| | **90** | | |
+
+**Reconquest** (18)
+
+```
+cc_byz_task_anatolia_secured cc_byz_task_anatolian_return cc_byz_task_balkan_frontier
+cc_byz_task_danube cc_byz_task_illyricum cc_byz_task_italy cc_byz_task_sicily
+cc_byz_task_carthage cc_byz_task_africa cc_byz_task_egypt cc_byz_task_spania
+cc_byz_task_ravenna cc_byz_task_adriatic cc_byz_task_thessaloniki cc_byz_task_antioch
+cc_byz_task_holy_city cc_byz_task_sinai_road cc_byz_task_horn
+```
+
+> a standard planted in a coastline outline, campaign red on map ochre
+
+**The Church** (15)
+
+```
+cc_byz_task_hagia_sophia cc_byz_task_patriarch cc_byz_task_pentarchy_war
+cc_byz_task_autocephalous cc_byz_task_athonite cc_byz_task_orthodox_concord
+cc_byz_task_old_rites cc_byz_task_eastern_sees cc_byz_task_ecumenical_throne
+cc_byz_task_icons cc_byz_task_temples cc_byz_task_pontifex cc_byz_task_union_received
+cc_byz_task_convert_anatolia cc_byz_task_pilgrim_road
+```
+
+> a domed church rendered in gold mosaic tesserae on deep blue
+
+**The Army** (11)
+
+```
+cc_byz_task_tagmata cc_byz_task_themes cc_byz_task_cataphracts cc_byz_task_varangians
+cc_byz_task_field_army cc_byz_task_veterans cc_byz_task_akritai cc_byz_task_walls
+cc_byz_task_greek_fire cc_byz_task_triumph cc_byz_task_pronoia_host
+```
+
+> a cataphract helm in profile, purple plume, steel highlights
+
+**The Fleet** (8)
+
+```
+cc_byz_task_dromon cc_byz_task_fleet_restored cc_byz_task_arsenal cc_byz_task_merchant_fleet
+cc_byz_task_mare_nostrum cc_byz_task_lighthouse cc_byz_task_western_sea cc_byz_task_red_sea
+```
+
+> a dromon prow cutting water, bronze ram catching the light
+
+**Chancery & Coin** (11)
+
+```
+cc_byz_task_bureaus cc_byz_task_logothete cc_byz_task_notitia cc_byz_task_mint
+cc_byz_task_nomisma cc_byz_task_literate_admin cc_byz_task_crown_monopoly
+cc_byz_task_council cc_byz_task_academy cc_byz_task_bank cc_byz_task_state_restored
+```
+
+> a freshly struck gold coin held in tongs over a die
+
+**Trade & Concession** (9)
+
+```
+cc_byz_task_chartered_company cc_byz_task_silk_looms cc_byz_task_spice_dues
+cc_byz_task_spice_islands cc_byz_task_galata cc_byz_task_genoese_compact
+cc_byz_task_venetian_alliance cc_byz_task_embassies cc_byz_task_india
+```
+
+> a bolt of patterned silk half unrolled beside a brass spice measure
+
+**The City** (4)
+
+```
+cc_byz_task_great_palace cc_byz_task_hippodrome cc_byz_task_city_adorned cc_byz_task_pillars
+```
+
+> a single porphyry column against a marble colonnade, low sun
+
+**Crown & Title** (14)
+
+```
+cc_byz_task_purple_born cc_byz_task_roman_title cc_byz_task_no_second_emperor
+cc_byz_task_greek_again cc_byz_task_latin_bride cc_byz_task_latin_powers
+cc_byz_task_sultan_tributary cc_byz_task_sultans_friend cc_byz_task_despotate
+cc_byz_task_exarch_seated cc_byz_task_duchy_dissolved cc_byz_task_beylik_ended
+cc_byz_task_serbian_question cc_byz_task_bulgarian_question
+```
+
+> a jewelled diadem resting on folded porphyry cloth
+
 ## Hard gaps
 
 These have no `_default.dds` fallback in their directory, or are already logged as errors.
@@ -133,7 +509,7 @@ Fix these first.
 ### 1. Mission task icons: 91 broken paths (rhomania)
 
 [submods/rhomania/in_game/common/missions/cc_byz_renovatio_campaign.txt](../submods/rhomania/in_game/common/missions/cc_byz_renovatio_campaign.txt)
-gives all 86 tasks plus the campaign an explicit path of the form
+gives all 90 tasks plus the campaign an explicit path of the form
 `icon = "gfx/interface/icons/missions/cc_byz_task_<name>.dds"`. None of those files exist, in
 the mod or in vanilla: `icons/missions/` ships exactly three files (`_default`, `agenda`,
 `reward`), and it is not where task icons live.
@@ -141,6 +517,8 @@ the mod or in vanilla: `icons/missions/` ships exactly three files (`_default`, 
 Vanilla task icons are bare-key aliases into `gfx/interface/advance/`, for example
 `icon = banking_advance`. Rewriting the 91 lines to alias existing advance icons costs no art
 and is the recommended fix. Authoring real ones means 91 files at 256x256 BC3.
+
+Grouped for authoring in [Mission task icon families](#mission-task-icon-families).
 
 Full key list: `cc_byz_renovatio_campaign`, then `cc_byz_task_` + academy, adriatic, africa,
 akritai, anatolia_secured, anatolian_return, antioch, arsenal, athonite, autocephalous,
@@ -357,6 +735,9 @@ knowing when auditing the submod alone.
 
 Path: `gfx/interface/icons/traits/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
 
+Grouped for authoring in [Trait icon families](#trait-icon-families). The list below is by
+source file, which is how the gap was found; it is not the order to draw them in.
+
 [in_game/common/traits/cc_age_traits.txt](../in_game/common/traits/cc_age_traits.txt)
 
 - `renaissance_humanist`
@@ -511,39 +892,34 @@ Path: `gfx/interface/icons/traits/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DX
 - `returned_colonial_governor`
 
 
-### Subject types: 24 of 24 missing
+### Subject types: complete
 
 Path: `gfx/interface/icons/subject_types/<key>.dds`  ·  128x128  ·  1:1  ·  BC3 / DXT5
 
-[in_game/common/subject_types/cc_subject_types.txt](../in_game/common/subject_types/cc_subject_types.txt)
+All 24 authored. Fourteen 128x128 sources, four of them shared across a family. Recorded as a
+mapping rather than a list of files, because that is what has to be repeated if a source is
+ever redrawn: most of the shared ones were written to more than one key.
 
-- `junior_partner`
-- `lesser_partner`
-- `shadow_state`
-- `client_state`
-- `puppet_state`
-- `elite_enclave`
-- `palatinate`
-- `associated_republic`
-- `chartered_company`
-- `artists_commune`
-- `scientific_college`
-- `naval_administration`
-- `protectorate`
-- `crown_dependency`
-- `holy_protectorate`
-- `military_academy`
-- `provincial_governorate`
-- `tax_farm`
-- `military_march`
-- `imperial_council_member`
-- `equal_federal_member`
-- `lesser_federal_member`
-- `false_federal_member`
+| Source | Keys it was written to |
+|---|---|
+| `subject_type_unions` | `junior_partner`, `lesser_partner` |
+| `subject_type_charter` | `chartered_company`, `artists_commune`, `scientific_college`, `naval_administration`, `military_academy`, `tax_farm` |
+| `subject_type_frontier` | `provincial_governorate`, `military_march` |
+| `subject_type_bound` | `protectorate`, `holy_protectorate`, `cc_byz_exarchate` (submod) |
+| `subject_type_elite_enclave` | `elite_enclave`, `associated_republic` |
+| `subject_type_client_state` | `client_state` |
+| `subject_type_crown_dependency` | `crown_dependency` |
+| `subject_type_palatinate` | `palatinate` |
+| `subject_type_shadow_state` | `shadow_state` |
+| `subject_type_puppet_state` | `puppet_state` |
+| `subject_type_equal_federal_member` | `equal_federal_member` |
+| `subject_type_lesser_federal_member` | `lesser_federal_member` |
+| `subject_type_false_federal_member` | `false_federal_member` |
+| `subject_type_imperial_council` | `imperial_council_member` |
 
-[submods/rhomania/in_game/common/subject_types/cc_byz_exarchate.txt](../submods/rhomania/in_game/common/subject_types/cc_byz_exarchate.txt)
-
-- `cc_byz_exarchate`
+`cc_byz_exarchate` is the only one outside the main mod, at
+[submods/rhomania/main_menu/gfx/interface/icons/subject_types/](../submods/rhomania/main_menu/gfx/interface/icons/subject_types/),
+since that is where the type is defined.
 
 
 ### Generic actions: 57 of 57 missing
