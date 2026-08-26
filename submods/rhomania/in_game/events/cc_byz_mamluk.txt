@@ -175,10 +175,15 @@ cc_byz_mamluk.2 = {
 		ai_chance = { base = 40 }
 
 		add_prestige = prestige_weak_bonus
-		c:BYZ ?= {
-			add_opinion = {
-				target = root
-				modifier = cc_byz_levant_accommodation
+		# Through the situation's handle rather than through c:BYZ, so the sultan's gesture still
+		# lands on an emperor who has renamed himself Rome. This is the last c:BYZ in the thread;
+		# see the header on cc_byz_resolve_empire_effect for why none of them survived.
+		situation:cc_byz_mamluk_confrontation ?= {
+			var:cc_byz_empire ?= {
+				add_opinion = {
+					target = root
+					modifier = cc_byz_levant_accommodation
+				}
 			}
 		}
 	}

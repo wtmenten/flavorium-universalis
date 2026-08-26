@@ -452,6 +452,52 @@ gradient override and silently ignored the illustrations added for them. If a si
 art, do not override the block; the vanilla default already applies `scene_fade_vertical_up`
 over it.
 
+## `c:TAG` is not a stable reference to a country; a formable silently breaks every one
+
+Forming a country keeps the same country object. Its variables, modifiers, opinions and
+memories all survive, and `has_or_had_tag` keeps passing for the old tag, which is why gating
+on `has_or_had_tag = BYZ` is safe. What stops existing is the **tag**: after `ROM_BYZ_f`,
+`country_exists = c:BYZ` is false and every `c:BYZ` in script resolves to nothing.
+
+This is quiet rather than loud. `c:BYZ ?= { ... }` skips its whole body, so scheduled events
+are never fired and monthly upkeep silently stops. `NOT = { country_exists = c:BYZ }` in a
+situation's `can_end` is worse: it becomes true the month the formable fires, so the situation
+deletes itself mid-run, and if `on_ended` also reaches for `c:BYZ ?=` it does so without even
+narrating an ending. Both Rhomania situations shipped with exactly this, across `can_start`,
+`can_end`, `on_start`, `on_monthly`, `on_ended` / `on_ending` and `map_color`.
+
+Two other shapes of the same bug, neither of which involves a situation:
+
+- **`is_subject_of = c:TAG` in a subject type's `visible_through_diplomacy`.** The overlord
+  renames itself and every existing subject of that type drops out of its own diplomacy screen
+  while remaining a subject. Use `overlord ?= { has_or_had_tag = BYZ }`.
+- **A maintenance effect that adds and removes modifiers through `c:TAG`.** Neither branch can
+  reach a country any more, so whatever the badge said the month before is what it says forever.
+  `cc_byz_west_signal_effect` froze `cc_byz_west_restive` this way.
+
+Store a **country handle in a variable** instead. A scope variable points at the object, not at
+the name, so it follows a country through any number of renames. Vanilla does this on a
+situation and reads it back through the full path:
+
+```
+set_variable = { name = strongest_beylik_variable  value = scope:target_beylik }   # on_start
+country_exists = situation:rise_of_the_ottomans.var:strongest_beylik_variable      # trigger
+var:strongest_beylik_variable ?= { ... }                                           # effect
+```
+
+(`rise_of_the_ottomans.txt:22`, `golden_age_of_piracy.txt:101-106`.) Resolve it again from
+`on_monthly` so old saves backfill. Two traps when writing the resolver:
+
+- `exists = var:x` is false both for "never set" and for "set, but that country is dead", so it
+  is the whole guard; a separate `has_variable` check is not needed.
+- Do **not** express "the stored country is gone" as a `trigger_if` inside an `OR`. A
+  `trigger_if` whose `limit` fails evaluates to **true**, so on a save where the variable is not
+  resolved yet the clause fires. Use `AND = { has_variable = x  NOT = { country_exists = … } }`.
+
+For map colours and tooltips, where the situation is only reachable as `scope:target` and a
+dot-chained `var:` would error on an unresolved save, prefer `owner ?= { has_or_had_tag = BYZ }`
+over either form.
+
 ## A GUI button CANNOT open an interaction's `select_trigger` picker
 
 This is the single most expensive thing in this file. A panel `action_button`

@@ -33,8 +33,22 @@
 #   cc_byz_levant_progress   0..100  the empire's position in the Levant
 #   cc_byz_mamluk_progress   0..100  Cairo's
 #   cc_byz_mamluk_phase      1 or 2  cold war, or the Pentarchy War
+#   cc_byz_empire            scope   the country fighting this, as a handle rather than a tag
 #
 # Country variable (on Byzantium): cc_byz_levant_pressure -5..5
+#
+#
+# NO c:BYZ ANYWHERE IN THIS FILE, deliberately.
+#
+# A player who forms Rome keeps the same country object, its variables and its memories, and
+# has_or_had_tag = BYZ keeps passing, which is what the events and the four situation actions
+# gate on. The tag BYZ is what stops existing. This file was written entirely in c:BYZ, so
+# forming Rome ended the confrontation on the next can_end evaluation and on_ended's c:BYZ ?=
+# then skipped, meaning the thread was deleted mid-run without even narrating an ending.
+#
+# Everything below goes through var:cc_byz_empire instead, set by
+# cc_byz_resolve_empire_effect (cc_byz_scores.txt) and re-resolved every month so old
+# saves backfill. The header on that effect is the full explanation.
 
 cc_byz_mamluk_confrontation = {
 	content_priority = 650
@@ -55,9 +69,12 @@ cc_byz_mamluk_confrontation = {
 		NOT = { is_situation_active = situation:rise_of_the_ottomans }
 
 		country_exists = c:MAM
-		country_exists = c:BYZ
 
-		c:BYZ = {
+		# ANY_COUNTRY, NOT c:BYZ. A player who formed Rome before the Ottoman situation resolved
+		# could otherwise never see this at all, since the tag test would fail forever. Holding
+		# the City is the identifying condition, and ROM_BYZ_f requires it anyway.
+		any_country = {
+			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:latinization_vs_hellenization
 			owns = location:constantinople
 			# A meaningful presence in Anatolia, not a toehold.
@@ -82,7 +99,16 @@ cc_byz_mamluk_confrontation = {
 				var:cc_byz_mamluk_progress >= 100
 			}
 			NOT = { country_exists = c:MAM }
-			NOT = { country_exists = c:BYZ }
+
+			# THE EMPIRE IS GONE, tested through the handle rather than through the tag. Written
+			# as an AND rather than a trigger_if because a trigger_if whose limit fails evaluates
+			# to TRUE, and inside this OR that would end the confrontation on any save where the
+			# variable has not been resolved yet.
+			AND = {
+				has_variable = cc_byz_empire
+				NOT = { country_exists = situation:cc_byz_mamluk_confrontation.var:cc_byz_empire }
+			}
+
 			current_year > 1650
 		}
 	}
@@ -100,7 +126,9 @@ cc_byz_mamluk_confrontation = {
 		set_variable = { name = cc_byz_mamluk_progress  value = 0 }
 		set_variable = { name = cc_byz_mamluk_phase     value = 1 }
 
-		c:BYZ = {
+		cc_byz_resolve_empire_effect = yes
+
+		var:cc_byz_empire ?= {
 			cc_byz_init_levant_scores_effect = yes
 			trigger_event_non_silently = cc_byz_mamluk.1
 		}
@@ -110,6 +138,11 @@ cc_byz_mamluk_confrontation = {
 	}
 
 	on_monthly = {
+		# Re-resolve the empire before anything reads it. A no-op in the ordinary case; it is
+		# what backfills a save from before this variable existed, and what picks the empire up
+		# again on the tick after a formable renamed it.
+		cc_byz_resolve_empire_effect = yes
+
 		# Mirror the three eastern seats onto the situation so the panel can show them.
 		# The panel cannot read location ownership itself; see the effect's header.
 		cc_byz_mamluk_seat_sync_effect = yes
@@ -134,27 +167,37 @@ cc_byz_mamluk_confrontation = {
 		random_list = {
 			986 = { }
 			7 = {
-				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.5 }
+				var:cc_byz_empire ?= { trigger_event_silently = cc_byz_mamluk.5 }
 			}
 			7 = {
-				c:BYZ ?= { trigger_event_silently = cc_byz_mamluk.4 }
+				var:cc_byz_empire ?= { trigger_event_silently = cc_byz_mamluk.4 }
 			}
 		}
 	}
 
 	on_ended = {
-		c:BYZ ?= {
+		# Resolved once more here rather than trusting the last monthly tick, because the two
+		# endings that matter most (levant_progress or mamluk_progress hitting 100) are written
+		# by an event and can be followed by can_end before another month passes.
+		cc_byz_resolve_empire_effect = yes
+
+		var:cc_byz_empire ?= {
 			trigger_event_non_silently = cc_byz_mamluk.20
 		}
 	}
 
+	# Both sides are identified by the sticky tag test rather than by the current tag, so the map
+	# does not go blank the month an emperor forms Rome or a sultan forms Egypt. The situation
+	# variable would be marginally more exact, but it is reachable from here only as
+	# scope:target.var:cc_byz_empire and would error on a save where it is not yet resolved,
+	# which is a bad trade for a colour.
 	map_color = {
 		if = {
-			limit = { owner ?= c:BYZ }
+			limit = { owner ?= { has_or_had_tag = BYZ } }
 			value = define:NMapColors|MAP_COLOR_HIGH
 		}
 		else_if = {
-			limit = { owner ?= c:MAM }
+			limit = { owner ?= { has_or_had_tag = MAM } }
 			value = define:NMapColors|MAP_COLOR_LOW
 		}
 		else = {
@@ -170,11 +213,11 @@ cc_byz_mamluk_confrontation = {
 	# Not executed, only rendered, which is why a bare custom_tooltip is the whole body.
 	tooltip = {
 		if = {
-			limit = { owner ?= c:BYZ }
+			limit = { owner ?= { has_or_had_tag = BYZ } }
 			custom_tooltip = cc_byz_mam_map_tt_empire
 		}
 		else_if = {
-			limit = { owner ?= c:MAM }
+			limit = { owner ?= { has_or_had_tag = MAM } }
 			custom_tooltip = cc_byz_mam_map_tt_cairo
 		}
 		else = {

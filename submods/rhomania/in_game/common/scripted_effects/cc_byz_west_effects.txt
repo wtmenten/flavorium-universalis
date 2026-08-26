@@ -217,7 +217,13 @@ cc_byz_west_enrol_prefecture_effect = {
 # ---- The visible signals ----
 #
 # Called from the situation's on_monthly, so root here is the SITUATION and every country-scope
-# test has to be reached through c:BYZ explicitly.
+# test has to be reached through the overlord explicitly.
+#
+# THROUGH var:cc_byz_empire, NOT c:BYZ. The situation resolves the overlord into that handle at
+# the top of the same on_monthly, immediately before this runs. With c:BYZ here, an emperor who
+# formed Rome kept cc_byz_west_restive and every cc_byz_exarch_disaffected badge frozen at
+# whatever it said the month before, since neither the add nor the remove branch could reach a
+# country any more. See cc_byz_resolve_empire_effect in cc_byz_scores.txt.
 #
 # WHY THIS EXISTS. cc_byz_west.40, the rising, needs four things at once, and the player could
 # only see two of them. The situation panel shows the counters but never states that 55 is the
@@ -240,8 +246,8 @@ cc_byz_west_signal_effect = {
 		limit = {
 			has_variable = cc_byz_western_autonomy
 			var:cc_byz_western_autonomy >= 45
-			exists = c:BYZ
-			c:BYZ = {
+			exists = var:cc_byz_empire
+			var:cc_byz_empire ?= {
 				any_subject = {
 					has_variable = cc_byz_is_exarchate
 					trigger_if = {
@@ -252,7 +258,7 @@ cc_byz_west_signal_effect = {
 				}
 			}
 		}
-		c:BYZ = {
+		var:cc_byz_empire ?= {
 			if = {
 				limit = { NOT = { has_country_modifier = cc_byz_west_restive } }
 				add_country_modifier = {
@@ -269,10 +275,10 @@ cc_byz_west_signal_effect = {
 	else = {
 		if = {
 			limit = {
-				exists = c:BYZ
-				c:BYZ = { has_country_modifier = cc_byz_west_restive }
+				exists = var:cc_byz_empire
+				var:cc_byz_empire ?= { has_country_modifier = cc_byz_west_restive }
 			}
-			c:BYZ = { remove_country_modifier = cc_byz_west_restive }
+			var:cc_byz_empire ?= { remove_country_modifier = cc_byz_west_restive }
 		}
 	}
 
@@ -281,8 +287,8 @@ cc_byz_west_signal_effect = {
 	# The overlord warning says the west is restive. It cannot say who, and with four
 	# prefectures that is most of what the player needs to know.
 	if = {
-		limit = { exists = c:BYZ }
-		c:BYZ = {
+		limit = { exists = var:cc_byz_empire }
+		var:cc_byz_empire ?= {
 			every_subject = {
 				limit = { has_variable = cc_byz_is_exarchate }
 

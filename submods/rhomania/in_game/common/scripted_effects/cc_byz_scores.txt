@@ -171,6 +171,71 @@ cc_byz_init_union_scores_effect = {
 
 
 #############################################
+# Who "the empire" is. Shared by both situations.
+#############################################
+#
+# WHY THIS EXISTS. A Byzantine player who forms Rome (ROM_BYZ_f, or ROM_f once BYZ is gone)
+# keeps the same country object and every variable, modifier and memory on it: has_or_had_tag
+# = BYZ still passes, which is how the rest of this submod gates itself. What stops existing is
+# the TAG. Both situations were written entirely in c:BYZ, and every one of those references
+# resolved to nothing the moment the formable fired:
+#
+#   can_end had NOT = { country_exists = c:BYZ }, so forming Rome ENDED the situation on the
+#   next evaluation, whatever state it was in
+#   the ending hook ran through c:BYZ ?=, which then skipped, so it ended silently
+#   can_start had the same test, so it could never start again either
+#
+# A scope variable does not have that problem. It is a handle on the country, and a country that
+# renames itself is the same country. Vanilla stores a country on a situation exactly this way:
+# rise_of_the_ottomans' strongest_beylik_variable, read back as
+# country_exists = situation:rise_of_the_ottomans.var:strongest_beylik_variable
+# (rise_of_the_ottomans.txt:22).
+#
+# Called from on_start and again from on_monthly. The second call is not redundant: it backfills
+# a save whose situation began before this variable existed, and it repoints if the empire is
+# annexed outright and the tag is later released to somebody else.
+#
+# ONE EFFECT FOR BOTH SITUATIONS rather than one each. It writes cc_byz_empire into whichever
+# situation scope calls it, so the two copies would have been identical, and a resolver that
+# exists twice is a resolver that gets fixed once.
+#
+# ROOT IS THE SITUATION.
+cc_byz_resolve_empire_effect = {
+	if = {
+		# No has_variable guard, deliberately. exists is false both for "never set" and for
+		# "set, but that country is dead", and those are the same case here.
+		limit = { NOT = { exists = var:cc_byz_empire } }
+
+		if = {
+			limit = { exists = c:BYZ }
+			c:BYZ = { save_scope_as = cc_byz_empire_found }
+		}
+		else = {
+			# The City is the tiebreak. has_or_had_tag = BYZ on its own would also match a rump
+			# Byzantium released by whoever conquered the empire, and both situations are about
+			# the emperor rather than about the name.
+			random_country = {
+				limit = {
+					has_or_had_tag = BYZ
+					owns = location:constantinople
+				}
+				save_scope_as = cc_byz_empire_found
+			}
+		}
+
+		# One write path for both branches, through a saved scope, which is the form vanilla uses
+		# when it stores a country on a situation (golden_age_of_piracy.txt:103). If neither
+		# branch found anybody the variable is simply left unset and every reader ?= past it;
+		# can_end has its own separate test for the empire being gone.
+		if = {
+			limit = { exists = scope:cc_byz_empire_found }
+			set_variable = { name = cc_byz_empire  value = scope:cc_byz_empire_found }
+		}
+	}
+}
+
+
+#############################################
 # The three eastern seats, mirrored onto the situation for the panel
 #############################################
 #
@@ -190,9 +255,14 @@ cc_byz_init_union_scores_effect = {
 #
 # Flags rather than values, so the panel tests .IsSet and never reads an unset variable.
 # Worst-case staleness is one month after a conquest, which is not worth more machinery.
+#
+# READS var:cc_byz_empire, NOT c:BYZ. See cc_byz_resolve_empire_effect above: with c:BYZ
+# here, an emperor who formed Rome had all three seats blank out on the panel a month later,
+# including seats he was standing in. The resolve effect is called immediately before this one in
+# the situation's on_monthly, so the handle is current by the time this runs.
 cc_byz_mamluk_seat_sync_effect = {
 	if = {
-		limit = { c:BYZ ?= { owns = location:jerusalem } }
+		limit = { var:cc_byz_empire ?= { owns = location:jerusalem } }
 		set_variable = { name = cc_byz_seat_jerusalem  value = yes }
 	}
 	else = {
@@ -200,7 +270,7 @@ cc_byz_mamluk_seat_sync_effect = {
 	}
 
 	if = {
-		limit = { c:BYZ ?= { owns = location:antioch } }
+		limit = { var:cc_byz_empire ?= { owns = location:antioch } }
 		set_variable = { name = cc_byz_seat_antioch  value = yes }
 	}
 	else = {
@@ -208,7 +278,7 @@ cc_byz_mamluk_seat_sync_effect = {
 	}
 
 	if = {
-		limit = { c:BYZ ?= { owns = location:alexandria } }
+		limit = { var:cc_byz_empire ?= { owns = location:alexandria } }
 		set_variable = { name = cc_byz_seat_alexandria  value = yes }
 	}
 	else = {

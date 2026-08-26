@@ -38,10 +38,31 @@
 #   cc_byz_western_autonomy   0..100
 #   cc_byz_west_ending        0 none, 1 reabsorption, 2 diarchy, 3 acclamation, 4 neglect
 #   cc_byz_west_consistory    set once the consistory has been convened
+#   cc_byz_empire             scope   the overlord, as a handle rather than a tag
 #
 # NO has_enabled_situation_trigger GATE, for the same reason the Mamluk situation has none:
 # this is a submod and a second declaration of on_game_start would be last-one-wins against the
 # main mod's entire game-start block. can_start is narrow enough on its own.
+#
+#
+# NO c:BYZ ANYWHERE IN THIS FILE, deliberately.
+#
+# Forming Rome keeps the same country object, its variables and its subjects, and
+# has_or_had_tag = BYZ keeps passing. The TAG is what stops existing. This file was written in
+# c:BYZ throughout, so an emperor who formed Rome had can_end's NOT = { country_exists = c:BYZ }
+# come true immediately: the west was dissolved without an ending, and on_ending's own
+# exists = c:BYZ guard then declined to resolve one, so the four endings became unreachable by
+# the single act of taking the western capital.
+#
+# Everything below goes through var:cc_byz_empire instead, set by cc_byz_resolve_empire_effect
+# (cc_byz_scores.txt), shared with the Mamluk situation. The header on that effect is the full
+# explanation.
+#
+# THE CAPITAL TEST IN can_start IS NOT PART OF THAT and stays as it is. ROM_BYZ_f force-moves
+# the capital to Rome, and cc_byz_appoint_exarch's allow block already requires the capital to be
+# Constantinople, so an emperor who has gone west in person cannot appoint exarchs and should not
+# be able to open the western question either. That is a deliberate consequence of the formable,
+# not a casualty of the tag.
 
 cc_byz_the_west = {
 	content_priority = 640
@@ -67,8 +88,10 @@ cc_byz_the_west = {
 		# situation that starts and force-ends in the same decade.
 		NOT = { current_age_or_later = { age = age_6_revolutions } }
 
-		country_exists = c:BYZ
-		c:BYZ = {
+		# ANY_COUNTRY, NOT c:BYZ. See the header: the capital test inside it is the deliberate
+		# part and stays, the tag test is the one that had to go.
+		any_country = {
+			has_or_had_tag = BYZ
 			has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
 			capital = location:constantinople
 			any_subject = { has_variable = cc_byz_is_exarchate }
@@ -87,8 +110,20 @@ cc_byz_the_west = {
 			trigger_else = { always = no }
 
 			# The arrangement simply stopped existing.
-			NOT = { country_exists = c:BYZ }
-			c:BYZ ?= {
+			#
+			# THE EMPIRE IS GONE, tested through the handle rather than through the tag. Written
+			# as an AND rather than a trigger_if because a trigger_if whose limit fails evaluates
+			# to TRUE, and inside this OR that would dissolve the west on any save where the
+			# variable has not been resolved yet.
+			AND = {
+				has_variable = cc_byz_empire
+				NOT = { country_exists = situation:cc_byz_the_west.var:cc_byz_empire }
+			}
+
+			# THE LAST PREFECTURE IS GONE. ?= rather than a bare read, so an unresolved handle
+			# makes this clause false rather than ending the situation: "we cannot see the
+			# overlord" is not the same finding as "the overlord has no exarchs left".
+			var:cc_byz_empire ?= {
 				NOT = { any_subject = { has_variable = cc_byz_is_exarchate } }
 			}
 
@@ -124,11 +159,13 @@ cc_byz_the_west = {
 		set_variable = { name = cc_byz_western_autonomy  value = 20 }
 		set_variable = { name = cc_byz_west_ending       value = 0 }
 
+		cc_byz_resolve_empire_effect = yes
+
 		# The consistory is NOT convened here. The IO is created dormant and the emperor must
 		# call it into session (cc_byz_io_convene_consistory), exactly as the Balancing
 		# Coalition's congress works. An emperor who never convenes it never gives the west a
 		# forum, which is a legitimate and rather tempting way to play.
-		c:BYZ ?= {
+		var:cc_byz_empire ?= {
 			# prev, NOT root. In on_start the root scope is the SITUATION, so root here would
 			# try to seat the situation itself as a member and leader. Inside
 			# create_international_organization the enclosing country is prev, which is the
@@ -158,13 +195,18 @@ cc_byz_the_west = {
 	# of this, which is why the drift below is deliberately small: it is a pull toward the value
 	# the west's actual condition implies, not the whole story.
 	on_monthly = {
+		# Re-resolve the overlord before anything reads it. A no-op in the ordinary case; it is
+		# what backfills a save from before this variable existed, and what picks the empire up
+		# again on the tick after a formable renamed it.
+		cc_byz_resolve_empire_effect = yes
+
 		if = {
-			limit = { exists = c:BYZ }
+			limit = { exists = var:cc_byz_empire }
 
 			# --- Autonomy pulls up with every prefecture and every disloyal exarch ---
 			if = {
 				limit = {
-					c:BYZ = {
+					var:cc_byz_empire ?= {
 						any_subject = {
 							count >= 3
 							has_variable = cc_byz_is_exarchate
@@ -175,7 +217,7 @@ cc_byz_the_west = {
 			}
 			else_if = {
 				limit = {
-					c:BYZ = {
+					var:cc_byz_empire ?= {
 						any_subject = {
 							count >= 2
 							has_variable = cc_byz_is_exarchate
@@ -188,7 +230,7 @@ cc_byz_the_west = {
 			# A resentful exarch anywhere pulls the whole west with him.
 			if = {
 				limit = {
-					c:BYZ = {
+					var:cc_byz_empire ?= {
 						any_subject = {
 							has_variable = cc_byz_is_exarchate
 							trigger_if = {
@@ -206,7 +248,7 @@ cc_byz_the_west = {
 			# --- Grip pulls up when the exarchs are content and the emperor is present ---
 			if = {
 				limit = {
-					c:BYZ = {
+					var:cc_byz_empire ?= {
 						any_subject = {
 							has_variable = cc_byz_is_exarchate
 							trigger_if = {
@@ -222,7 +264,7 @@ cc_byz_the_west = {
 
 			# An empire that cannot pay is an empire that cannot govern at this distance.
 			if = {
-				limit = { c:BYZ = { is_during_bankruptcy = yes } }
+				limit = { var:cc_byz_empire ?= { is_during_bankruptcy = yes } }
 				change_variable = { name = cc_byz_imperial_grip     add = -0.15 }
 				change_variable = { name = cc_byz_western_autonomy  add = 0.10 }
 			}
@@ -236,10 +278,13 @@ cc_byz_the_west = {
 	}
 
 	on_ending = {
-		if = {
-			limit = { exists = c:BYZ }
-			c:BYZ = { cc_byz_west_resolve_ending_effect = yes }
-		}
+		# Resolved once more here rather than trusting the last monthly tick. on_ending fires
+		# immediately after can_end passes, and the ending that matters most is set by
+		# cc_byz_west_check_endings_effect in the same tick, so there need not have been a month
+		# in between.
+		cc_byz_resolve_empire_effect = yes
+
+		var:cc_byz_empire ?= { cc_byz_west_resolve_ending_effect = yes }
 	}
 
 	# if/else_if, not trigger_if. map_color is an effect-shaped block that returns a value, and
@@ -249,8 +294,12 @@ cc_byz_the_west = {
 			limit = { owner ?= { has_variable = cc_byz_is_exarchate } }
 			value = define:NMapColors|MAP_COLOR_LOW
 		}
+		# has_or_had_tag rather than the situation handle, matching the Mamluk situation's map
+		# block: the handle is reachable from a location scope only as
+		# scope:target.var:cc_byz_empire and would error on a save where it is not yet resolved,
+		# which is a bad trade for a colour.
 		else_if = {
-			limit = { owner ?= c:BYZ }
+			limit = { owner ?= { has_or_had_tag = BYZ } }
 			value = define:NMapColors|MAP_COLOR_HIGH
 		}
 		else = {
