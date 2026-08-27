@@ -713,6 +713,22 @@ cc_xp_sell_work = {
 # The nobility does not care for the crown taking an interest in people it has not
 # vouched for; the coin and the political capital are charged by the interaction's price.
 # cc_xp_take_protege = { WHO = scope:cc_xp_cand_1 }
+# COUNTRY scope. $WHO$ is the candidate, passed as a saved scope from cc_xp.85.
+#
+# WHICH ESTATE THE CANDIDATE COMES FROM DECIDES WHAT SPONSORING THEM COSTS. `has_estate`
+# is a character trigger taking an estate_type (trigger.md:2280); the estate is a property
+# of the person, not of the crown.
+#
+#   nobles    no penalty. The resentment is at the crown elevating an OUTSIDER, and a
+#             noble protege is one of their own being advanced.
+#   burghers  the outlay comes straight back. A merchant house funds its own candidate.
+#   peasants  half comes back. A village can club together; it cannot cover a court.
+#   clergy    paid in the church's own coin instead of gold.
+#   otherwise the nobility resents it and nothing offsets the cost.
+#
+# The branches are what the player sees before choosing, because the engine builds an
+# option's tooltip from its effect and honours the conditionals: each candidate's option
+# shows that candidate's outcome without a line of custom_tooltip.
 cc_xp_take_protege = {
 	$WHO$ ?= {
 		set_variable = { name = cc_protege value = yes }
@@ -720,10 +736,34 @@ cc_xp_take_protege = {
 		cc_xp_recompute = yes
 	}
 
-	add_estate_satisfaction = {
-		type = estate_type:nobles_estate
-		value = estate_satisfaction_weak_penalty
+	if = {
+		limit = { exists = $WHO$ }
+
+		if = {
+			limit = { NOT = { $WHO$ = { has_estate = estate_type:nobles_estate } } }
+			add_estate_satisfaction = {
+				type = estate_type:nobles_estate
+				value = estate_satisfaction_weak_penalty
+			}
+		}
+
+		if = {
+			limit = { $WHO$ = { has_estate = estate_type:burghers_estate } }
+			add_gold = cc_xp_protege_refund_full
+		}
+		else_if = {
+			limit = { $WHO$ = { has_estate = estate_type:peasants_estate } }
+			add_gold = cc_xp_protege_refund_half
+		}
+		else_if = {
+			limit = { $WHO$ = { has_estate = estate_type:clergy_estate } }
+			# Vanilla's own guarded wrapper: it checks
+			# religion = { has_religious_influence = yes } first, because the currency
+			# does not exist for every faith and awarding it otherwise does nothing.
+			add_religious_influence_if_valid = { VALUE = religious_influence_mild_bonus }
+		}
 	}
+
 	cc_xp_sync_slots = yes
 }
 

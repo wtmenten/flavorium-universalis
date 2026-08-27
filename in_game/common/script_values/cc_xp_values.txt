@@ -113,6 +113,28 @@ cc_xp_training_gain_poor = { value = 45 }
 # the seated tenure trickle: watching is not the same as doing.
 cc_xp_protege_tick = { value = 3 }
 
+# What the crown gets back when a protege's own estate funds their advancement.
+#
+# MIRRORS common/prices/cc_xp_prices.txt : cc_xp_sponsor_protege. If that price changes,
+# these change with it, because the engine gives no way to read a price back out of a
+# price definition. The two are commented in both directions so neither moves alone.
+#
+# A burghers candidate refunds the whole outlay: a merchant house pays for its own son's
+# advancement and considers the money well spent. A peasants candidate refunds half,
+# because a village can club together but cannot cover a court's expenses.
+cc_xp_protege_refund_full = {
+	value = 25
+	add = {
+		value = monthly_income_trade_and_tax
+		multiply = 0.5
+	}
+}
+
+cc_xp_protege_refund_half = {
+	value = cc_xp_protege_refund_full
+	multiply = 0.5
+}
+
 # What a dying minister's accumulated knowledge is worth to whoever inherits it. A
 # fraction of a long career, not the whole of it: institutions remember imperfectly.
 cc_xp_legacy_transfer = { value = 150 }
