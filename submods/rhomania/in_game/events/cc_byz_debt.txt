@@ -923,7 +923,7 @@ cc_byz_debt.20 = {
 		}
 		add_country_modifier = {
 			modifier = cc_byz_revenue_farmed
-			years = 15
+			years = 5
 			mode = add_and_extend
 		}
 		change_societal_value = {
@@ -943,7 +943,7 @@ cc_byz_debt.20 = {
 		add_gold = 300
 		add_country_modifier = {
 			modifier = cc_byz_revenue_farmed
-			years = 20
+			years = 10
 			mode = add_and_extend
 		}
 		change_variable = { name = cc_byz_creditor_grip  add = 1 }
@@ -979,7 +979,9 @@ cc_byz_debt.20 = {
 		name = cc_byz_debt.20.c
 		ai_chance = { base = 30 }
 		trigger = {
-			ruler ?= { adm >= 75 }
+			OR = {
+				ruler ?= { adm >= 75 }
+			}
 		}
 
 		add_country_modifier = {
@@ -995,6 +997,37 @@ cc_byz_debt.20 = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_move_to_left
 		}
+	}
+
+	# THE WARTIME EXPEDIENT. Offered only while the army is in the field, which is the case
+	# desc_war already narrates and which had no option of its own: a Byzantine emperor who
+	# needed a month's pay for the tagmata had to choose between a five-year farm, a ten-year
+	# one, and cutting spending in the middle of a campaign.
+	#
+	# Deliberately the worst rate in the event and deliberately the shortest. One campaign
+	# season's revenue against a sum that will not clear a siege, on terms nobody would take in
+	# peacetime, which is the point the description makes about who is in a hurry.
+	#
+	# DOES NOT SET cc_byz_mem_tax_farmed, unlike a and b. That variable is what schedules .21
+	# seven years out and what makes .22 reachable, and both of those are about a farm that has
+	# had time to become an institution: collectors with families in the districts, an
+	# assessment nobody can rebuild. A contract that expires before the next campaigning season
+	# does not produce any of that. It is a bad year, not a bad generation.
+	option = {
+		name = cc_byz_debt.20.d
+		ai_chance = { base = 50 }
+		trigger = {
+			at_war = yes
+		}
+
+		add_gold = 120
+		add_country_modifier = {
+			modifier = cc_byz_revenue_farmed
+			years = 1
+			mode = add_and_extend
+		}
+		change_variable = { name = cc_byz_strain  add = 1 }
+		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
 	}
 
 	after = {
