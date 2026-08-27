@@ -347,7 +347,12 @@ def load_advances() -> dict:
         lines = path.read_text(encoding='utf-8-sig', errors='replace').split('\n')
         i = 0
         while i < len(lines):
-            m = re.match(r'^([a-zA-Z_0-9]+) = \{', lines[i])
+            # \s* around the '=' is load-bearing. Vanilla is not consistent about
+            # spacing: medieval_administration, government_size_renaissance and four
+            # more of the government-size spine are written `name  = {` with two
+            # spaces, and a strict ' = ' would leave them out of the index, so a
+            # perfectly valid advance name would fail validation.
+            m = re.match(r'^([a-zA-Z_0-9]+)\s*=\s*\{', lines[i])
             if m:
                 depth, body, j = 0, [], i
                 while j < len(lines):
@@ -377,7 +382,9 @@ def load_modifier_types() -> set:
     out = set()
     for path in sorted(MODTYPE_DIR.glob('*.txt')):
         txt = path.read_text(encoding='utf-8-sig', errors='replace')
-        out |= set(re.findall(r'^([a-z_0-9]+)=\{', txt, re.M))
+        # Same spacing caution as load_advances:
+        # global_bureaucracy_maintenance_efficiency is declared as `name = {`.
+        out |= set(re.findall(r'^([a-z_0-9]+)\s*=\s*\{', txt, re.M))
     return out
 
 
