@@ -325,7 +325,80 @@ template cc_xp_court_row {
 				minimumsize = { -1 24 }
 				spacing = 3
 
+				# LEFT: rare or one-time commitments. Founding a school, enrolling in one,
+				# binding a mentorship and taking a household office are all things a court
+				# does once for a given minister and then lives with.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_found_institution" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/reforms.dds"
+					}
+				}
+
+				# Ministers and proteges alike. A protege enrolled in a school arrives in the
+				# cabinet already pointed at its ladders.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_enroll_in_school" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/star.dds"
+					}
+				}
+
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/trait.dds"
+					}
+				}
+
+				# Appoint to a household office. Seated ministers only: an office needs
+				# in_cabinet = yes, so a protege can never hold one.
+				card_header_action_button_01 = {
+					size = { 22 22 }
+					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
+					actor = "[Player]"
+					parameter = {
+						parameter_name = "recipient"
+						parameter_value = "[Character.MakeScope]"
+					}
+					left_click_and_hold_action = { action_name = "cc_office_appoint_to_household" }
+					icon = {
+						parentanchor = center
+						size = { 78% 78% }
+						texture = "gfx/interface/icons/flat_icons/government_power.dds"
+					}
+				}
+
 				expand = {}
+
+				# RIGHT: the repeatables. A soiree, an examination and a secondment can each be
+				# run again whenever the court can afford them.
 
 				card_header_action_button_01 = {
 					size = { 22 22 }
@@ -372,55 +445,6 @@ template cc_xp_court_row {
 						parentanchor = center
 						size = { 78% 78% }
 						texture = "gfx/interface/icons/flat_icons/overlord.dds"
-					}
-				}
-
-				card_header_action_button_01 = {
-					size = { 22 22 }
-					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
-					}
-					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
-					icon = {
-						parentanchor = center
-						size = { 78% 78% }
-						texture = "gfx/interface/icons/flat_icons/trait.dds"
-					}
-				}
-
-				card_header_action_button_01 = {
-					size = { 22 22 }
-					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
-					}
-					left_click_and_hold_action = { action_name = "cc_xp_found_institution" }
-					icon = {
-						parentanchor = center
-						size = { 78% 78% }
-						texture = "gfx/interface/icons/flat_icons/reforms.dds"
-					}
-				}
-
-				# Ministers and proteges alike. A protege enrolled in a school arrives in the
-				# cabinet already pointed at its ladders.
-				card_header_action_button_01 = {
-					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
-					}
-					left_click_and_hold_action = { action_name = "cc_xp_enroll_in_school" }
-					icon = {
-						parentanchor = center
-						size = { 78% 78% }
-						texture = "gfx/interface/icons/flat_icons/star.dds"
 					}
 				}
 			}

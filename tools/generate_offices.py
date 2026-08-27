@@ -70,9 +70,25 @@ OUT_GUI = REPO / 'in_game' / 'gui' / 'panels' / 'situation' / 'cc_office_househo
 # may be FILLED, which is what turns a wide roster into a choice.
 SLOT_CAP = 6
 
+# What each FILLED office costs in court upkeep, applied once per office held.
+#
+# This is a separate auto_modifier scaling on cc_office_filled_count rather than a
+# court_spending_efficiency line inside every office's own modifier block, because each
+# office's block is multiplied by its holder's level through scales_with. Putting the cost
+# there would make a senior holder cost two and a half times as much to keep, which is the
+# opposite of the intent: the household costs what it costs, and seniority buys more
+# benefit for the same overhead.
+#
+# It is what stops filling all six slots from being free. A full household runs at -12%
+# court spending efficiency against the cap of 6.
+UPKEEP_PER_OFFICE = -0.02
+UPKEEP_KEY = 'cc_office_household_upkeep'
+
 # Appointment picker event. One event, options generated per office.
 PICKER_EVENT = 'cc_office.1'
 VACATED_EVENT = 'cc_office.2'
+
+MODTYPES: dict = {}          # filled by main(); emit_loc renders values with it
 
 TRACKS = {'adm', 'dip', 'mil'}
 TRACK_NAMES = {'adm': 'administrative', 'dip': 'diplomatic', 'mil': 'military'}
@@ -378,14 +394,61 @@ def load_advances() -> dict:
     return out
 
 
-def load_modifier_types() -> set:
-    out = set()
+def load_modifier_types() -> dict:
+    """name -> {percent, already_percent, bad}, so a value can be rendered the way the
+    engine would render it.
+
+    `percent = yes` means the stored value is a fraction to show as a percentage (0.08 is
+    8%). `already_percent = yes` means it is already in percent units and is shown as is.
+    `color = bad` inverts what a positive number means, which is why
+    army_light_cavalry_build_cost_modifier = -0.08 is a GOOD thing and must not be
+    coloured red.
+    """
+    out: dict = {}
     for path in sorted(MODTYPE_DIR.glob('*.txt')):
         txt = path.read_text(encoding='utf-8-sig', errors='replace')
-        # Same spacing caution as load_advances:
-        # global_bureaucracy_maintenance_efficiency is declared as `name = {`.
-        out |= set(re.findall(r'^([a-z_0-9]+)\s*=\s*\{', txt, re.M))
+        lines = txt.split('\n')
+        i = 0
+        while i < len(lines):
+            # Same spacing caution as load_advances:
+            # global_bureaucracy_maintenance_efficiency is declared as `name = {`.
+            m = re.match(r'^([a-z_0-9]+)\s*=\s*\{', lines[i])
+            if m:
+                depth, body, j = 0, [], i
+                while j < len(lines):
+                    depth += lines[j].count('{') - lines[j].count('}')
+                    body.append(lines[j])
+                    j += 1
+                    if depth <= 0:
+                        break
+                b = '\n'.join(body)
+                out[m.group(1)] = dict(
+                    percent=bool(re.search(r'\bpercent\s*=\s*yes', b)),
+                    already_percent=bool(re.search(r'\balready_percent\s*=\s*yes', b)),
+                    bad=bool(re.search(r'\bcolor\s*=\s*bad', b)))
+                i = j
+            else:
+                i += 1
     return out
+
+
+def format_modifier(name: str, value, modtypes: dict) -> str:
+    """One modifier as the player will read it, coloured by whether it is good for them.
+
+    #G / #R are the engine's green and red; the closing #! is required or the colour
+    bleeds into everything after it.
+    """
+    meta = modtypes.get(name, {})
+    if meta.get('percent'):
+        shown = value * 100
+        text = f'{shown:+.10g}%'
+    elif meta.get('already_percent'):
+        text = f'{value:+.10g}%'
+    else:
+        text = f'{value:+.10g}'
+    beneficial = (value < 0) if meta.get('bad') else (value > 0)
+    colour = 'G' if beneficial else 'R'
+    return f"[ShowModifierTypeName('{name}')]: #{colour} {text}#!"
 
 
 ###############################################################################
@@ -517,6 +580,18 @@ def emit_auto_modifiers() -> str:
         for mname, mval in o['mod'].items():
             out.append(f'\t{mname} = {mval}\n')
         out.append('}\n\n')
+
+    out.append('# Household upkeep. One entry scaling on how many offices are filled, rather\n'
+               '# than a cost line inside each office, because an office block is multiplied by\n'
+               "# its holder's level and the overhead should not be.\n")
+    out.append(f'{UPKEEP_KEY} = {{\n')
+    out.append('\trequires_real = yes\n\n')
+    out.append('\tpotential_trigger = {\n')
+    out.append('\t\tcc_office_filled_count > 0\n')
+    out.append('\t}\n\n')
+    out.append('\tscales_with = { value = cc_office_filled_count }\n\n')
+    out.append(f'\tcourt_spending_efficiency = {UPKEEP_PER_OFFICE}\n')
+    out.append('}\n')
     return ''.join(out)
 
 
@@ -813,6 +888,11 @@ def emit_events() -> str:
         out.append('\t\t\t\tNOT = { cc_office_holds_any = yes }\n')
         out.append('\t\t\t}\n')
         out.append('\t\t}\n')
+        # What the post does, before the player commits. cc_office_appoint only writes
+        # variables, so without this the option's generated tooltip says nothing at all
+        # and the choice is made blind. The auto_modifier's own tooltip only appears once
+        # the office is already filled, which is too late to be a decision aid.
+        out.append(f'\t\tcustom_tooltip = {{ text = cc_office_{k}_tt }}\n')
         out.append(f'\t\tcc_office_appoint = {{ OFFICE = {k} }}\n')
         out.append('\t}\n\n')
 
@@ -1007,6 +1087,9 @@ def emit_gui() -> str:
         out.append(f'\t\t\tvisible = "[Player.MakeScope.GetVariable(\'cc_office_{k}_holder\').IsSet]"\n')
         out.append(f'\t\t\tdatacontext = "[Player.MakeScope.GetVariable(\'cc_office_{k}_holder\').GetCharacter]"\n')
         out.append('\t\t\tusing = cc_office_row\n')
+        # Same tooltip the picker shows, so a player can read what a post is doing for
+        # them without having to remember what they picked.
+        out.append(f'\t\t\ttooltip = "cc_office_{k}_tt"\n')
         out.append(f'\t\t\tblockoverride "office_name" {{ text = "cc_office_{k}" }}\n')
         out.append('\t\t}\n')
     out.append('\n')
@@ -1019,6 +1102,7 @@ def emit_gui() -> str:
         out.append('\t\twidget = {\n')
         out.append(f'\t\t\tvisible = "[Player.MakeScope.GetVariable(\'cc_office_{k}_open\').IsSet]"\n')
         out.append('\t\t\tusing = cc_office_open_slot\n')
+        out.append(f'\t\t\ttooltip = "cc_office_{k}_tt"\n')
         out.append(f'\t\t\tblockoverride "office_name" {{ text = "cc_office_{k}" }}\n')
         out.append(f'\t\t\tblockoverride "office_requirement" {{ text = "cc_office_{k}_req" }}\n')
         out.append('\t\t}\n')
@@ -1074,6 +1158,14 @@ def emit_loc() -> str:
     out.append(' CC_OFFICE_HELD_HEADER: "In office"\n')
     out.append(' CC_OFFICE_OPEN_HEADER: "Standing open"\n')
     out.append(' CC_OFFICE_SENIORITY: "seniority"\n')
+    out.append(' CC_OFFICE_SCALES_TT: "Scales with the holder\'s seniority, up to two and '
+               'a half times."\n')
+    out.append(' CC_OFFICE_UPKEEP_TT: "for every post filled"\n')
+    out.append(f' {UPKEEP_KEY}: "Household Upkeep"\n')
+    out.append(f' {UPKEEP_KEY}_desc: "Every post the court fills costs something to keep up. '
+               f'A full household of {SLOT_CAP} runs at '
+               f'{SLOT_CAP * UPKEEP_PER_OFFICE * 100:+.10g}% court spending efficiency."\n')
+    out.append(f' AUTO_MODIFIER_NAME_{UPKEEP_KEY}: "Household posts filled"\n')
     # "Advances open posts" reads as an imperative once translated, which is how the German
     # came back as "Besetzt offene Aemter". Naming research as the subject removes the
     # ambiguity in every target language.
@@ -1090,7 +1182,23 @@ def emit_loc() -> str:
         out.append(f' cc_office_{k}_desc: "{o["desc"]}"\n')
         out.append(f' AUTO_MODIFIER_NAME_cc_office_{k}: "{n} appointed"\n')
         out.append(f' {PICKER_EVENT}.{k}: "Name them {n}."\n')
-        out.append(f' cc_office_{k}_req: "Needs {track} tier {o["tier"]}."\n\n')
+        out.append(f' cc_office_{k}_req: "Needs {track} tier {o["tier"]}."\n')
+
+        # What the post actually does, spelled out before the player commits to it. The
+        # auto_modifier generates its own tooltip once the office is FILLED, which is no
+        # help at the moment of choosing, so the same information is built here from the
+        # office table and hung on both the picker option and the panel row.
+        lines = [f'#T {n}#!', f'$cc_office_{k}_desc$', '']
+        lines += [format_modifier(mn, mv, MODTYPES) for mn, mv in o['mod'].items()]
+        # The upkeep is charged per filled post, not per office, so it belongs in every
+        # office's tooltip: the cost of taking THIS one is the same whichever it is.
+        lines.append(format_modifier('court_spending_efficiency', UPKEEP_PER_OFFICE,
+                                     MODTYPES) + ' $CC_OFFICE_UPKEEP_TT$')
+        lines.append('')
+        lines.append(f'$cc_office_{k}_req$')
+        lines.append('$CC_OFFICE_SCALES_TT$')
+        body = '\\n'.join(lines)
+        out.append(f' cc_office_{k}_tt: "{body}"\n\n')
     return ''.join(out)
 
 
@@ -1108,8 +1216,10 @@ def main() -> int:
         print(f'ERROR: vanilla advances not found at {ADVANCE_DIR}', file=sys.stderr)
         return 2
 
+    global MODTYPES
     advances = load_advances()
     modtypes = load_modifier_types()
+    MODTYPES = modtypes
     print(f'loaded {len(advances)} vanilla advances, {len(modtypes)} modifier types')
 
     errs = validate(advances, modtypes)
