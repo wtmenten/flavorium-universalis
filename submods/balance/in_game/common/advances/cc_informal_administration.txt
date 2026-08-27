@@ -1,0 +1,69 @@
+﻿# Informal Administration: the ramp-down
+#
+# auto_modifiers/cc_informal_administration.txt gives every country
+# global_bureaucracy_maintenance_efficiency = 0.30. The six advances below each
+# take 5% back:
+#
+#   age 1  medieval_administration       +30% -> +25%
+#   age 2  government_size_renaissance   +25% -> +20%
+#   age 3  government_size_discovery     +20% -> +15%
+#   age 4  early_modern_administation    +15% -> +10%   (vanilla's typo, not ours)
+#   age 5  government_size_absolutism    +10% ->  +5%
+#   age 6  government_size_revolutions    +5% ->   0%   (vanilla cost)
+#
+# This is vanilla's own government-size spine, one advance per age. Each already
+# grants +1 government size or +1 government reform slot, each sits on a trunk
+# nobody skips, and each is administrative in theme. None of them carries a
+# global_bureaucracy_maintenance_efficiency line of its own, so there is no key to
+# collide with. (efficient_bureaucracy does carry one, which is why it is not used
+# here: INJECT: cannot edit an existing key, only add a second one.)
+#
+# INJECT: merges at the entry's top level and restates no vanilla content, so
+# these entries survive EU5 patches unless an advance is renamed or gains its own
+# global_bureaucracy_maintenance_efficiency / ai_weight line. INJECT: rather than
+# TRY_INJECT: is deliberate: a rename should error loudly in the log, not silently
+# leave the +30% in place with nothing to remove it.
+#
+# ai_weight = { add = 2 } is the value vanilla already puts on
+# government_size_renaissance. It keeps the AI from deprioritising these advances
+# on account of the negative modifier. government_size_renaissance is the one
+# entry that already has an ai_weight block, so nothing is injected there.
+#
+# Save-game safe. Advance modifiers are read from the definition on load, so a
+# country that already holds these advances in an existing save picks up the
+# reductions immediately.
+
+# Age 1, Age of Traditions
+INJECT:medieval_administration = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+	ai_weight = { add = 2 }
+}
+
+# Age 2, Age of Renaissance. Already has ai_weight = { add = 2 } in vanilla.
+INJECT:government_size_renaissance = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+}
+
+# Age 3, Age of Discovery
+INJECT:government_size_discovery = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+	ai_weight = { add = 2 }
+}
+
+# Age 4, Age of Reformation
+INJECT:early_modern_administation = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+	ai_weight = { add = 2 }
+}
+
+# Age 5, Age of Absolutism
+INJECT:government_size_absolutism = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+	ai_weight = { add = 2 }
+}
+
+# Age 6, Age of Revolutions
+INJECT:government_size_revolutions = {
+	global_bureaucracy_maintenance_efficiency = -0.05
+	ai_weight = { add = 2 }
+}
