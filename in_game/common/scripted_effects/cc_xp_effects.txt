@@ -726,10 +726,18 @@ cc_xp_sell_work = {
 #   clergy    paid in the church's own coin instead of gold.
 #   otherwise the nobility resents it and nothing offsets the cost.
 #
-# The branches are what the player sees before choosing, because the engine builds an
-# option's tooltip from its effect and honours the conditionals: each candidate's option
-# shows that candidate's outcome without a line of custom_tooltip.
+# EVERY PATH CARRIES A custom_tooltip, including the ones that do nothing mechanical.
+# The engine builds an option's tooltip out of its effect, and taking on a noble spends
+# no satisfaction and refunds no gold, so without a line of its own that option renders
+# completely blank and reads as broken. The variable writes above generate no tooltip
+# either, which is why even the shared "becomes a protege" line has to be stated.
+#
+# The clergy branch states its outcome only when the outcome is real. Religious influence
+# belongs to the RELIGION, so a faith without it would otherwise be promised a payment
+# that add_religious_influence_if_valid then declines to make.
 cc_xp_take_protege = {
+	custom_tooltip = { text = cc_xp_protege_tt_taken }
+
 	$WHO$ ?= {
 		set_variable = { name = cc_protege value = yes }
 		cc_xp_init = yes
@@ -740,7 +748,11 @@ cc_xp_take_protege = {
 		limit = { exists = $WHO$ }
 
 		if = {
-			limit = { NOT = { $WHO$ = { has_estate = estate_type:nobles_estate } } }
+			limit = { $WHO$ = { has_estate = estate_type:nobles_estate } }
+			custom_tooltip = { text = cc_xp_protege_tt_noble }
+		}
+		else = {
+			custom_tooltip = { text = cc_xp_protege_tt_outsider }
 			add_estate_satisfaction = {
 				type = estate_type:nobles_estate
 				value = estate_satisfaction_weak_penalty
@@ -749,18 +761,26 @@ cc_xp_take_protege = {
 
 		if = {
 			limit = { $WHO$ = { has_estate = estate_type:burghers_estate } }
+			custom_tooltip = { text = cc_xp_protege_tt_burghers }
 			add_gold = cc_xp_protege_refund_full
 		}
 		else_if = {
 			limit = { $WHO$ = { has_estate = estate_type:peasants_estate } }
+			custom_tooltip = { text = cc_xp_protege_tt_peasants }
 			add_gold = cc_xp_protege_refund_half
 		}
 		else_if = {
 			limit = { $WHO$ = { has_estate = estate_type:clergy_estate } }
-			# Vanilla's own guarded wrapper: it checks
-			# religion = { has_religious_influence = yes } first, because the currency
-			# does not exist for every faith and awarding it otherwise does nothing.
-			add_religious_influence_if_valid = { VALUE = religious_influence_mild_bonus }
+			if = {
+				limit = { religion = { has_religious_influence = yes } }
+				custom_tooltip = { text = cc_xp_protege_tt_clergy }
+				# Vanilla's own guarded wrapper. Kept even inside this check so the
+				# guard lives in one place if the condition above is ever relaxed.
+				add_religious_influence_if_valid = { VALUE = religious_influence_mild_bonus }
+			}
+			else = {
+				custom_tooltip = { text = cc_xp_protege_tt_clergy_none }
+			}
 		}
 	}
 
