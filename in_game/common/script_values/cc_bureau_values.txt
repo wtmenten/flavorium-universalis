@@ -121,3 +121,44 @@ cc_bureau_count = {
 cc_bureau_steward_discount = {
 	value = 0.75
 }
+
+
+###############################################################################
+# WHAT BUREAUCRACY UPKEEP SCALES WITH
+#
+# Vanilla scales every bureaucracy's maintenance on country_economical_base alone. That
+# is total wealth AND population "regardless of control" (game_concept_economical_base),
+# plus subjects, embraced institutions, interest and foreign buildings. So the bill
+# tracks how BIG a realm is and ignores entirely how much of it the crown can reach.
+#
+# WHY NOT SIMPLY SWAP IT FOR country_tax_base. Tax base is the wealth that can actually
+# be taxed, and it "directly depends on control" (game_concept_tax_base). Scaling upkeep
+# on it alone creates a feedback loop vanilla deliberately avoids: every point of control
+# gained raises the crown's own administrative bill, so consolidating a realm is punished
+# and leaving it ungoverned is rewarded. That is backwards.
+#
+# So both, blended. Economic base still carries the weight, and a real share of the bill
+# now responds to what the crown can actually extract rather than to raw size.
+#
+# THE WEIGHTS ARE PROVISIONAL. Tax base is materially smaller than economic base, but
+# how much smaller is not derivable from the files: it depends on control, estate wealth
+# shares and institutions at run time. Both weights sit at 0.75, so the blend is simply
+# three quarters of (economic base + tax base). If tax base runs around a third of
+# economic base, that lands near today's total while making roughly a quarter of the bill
+# control-sensitive. CHECK THAT RATIO IN GAME AND RETUNE HERE: this is the one place the
+# whole system's cost scaling lives, and the per-bureaucracy multipliers (0.003 and 0.004)
+# were deliberately left alone so the relative cost of each family is unchanged.
+###############################################################################
+
+cc_bureau_base_econ_share = { value = 0.75 }
+cc_bureau_base_tax_share  = { value = 0.75 }
+
+cc_bureau_maintenance_base = {
+	value = country_economical_base
+	multiply = cc_bureau_base_econ_share
+	add = {
+		value = country_tax_base
+		multiply = cc_bureau_base_tax_share
+	}
+	min = 0
+}
