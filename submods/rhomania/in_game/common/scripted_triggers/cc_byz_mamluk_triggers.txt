@@ -43,3 +43,97 @@ cc_byz_mamluk_chain_open_trigger = {
 	country_exists = c:MAM
 	NOT = { is_at_war_with = c:MAM }
 }
+
+
+#############################################
+# Who actually holds the holy sites
+#############################################
+#
+# WHY THIS EXISTS. Playtesting, playing Byzantium: "i am getting cc_byz_mamluk.10 ... it should
+# either be modified or retargeted". That event opens with "they are the sultan's subjects ... the
+# third is the one that governs", and it was landing on an emperor who had taken the sees. The
+# thread never looked at the map once. Every event in it was written on the premise that Cairo
+# holds Jerusalem, Antioch and Alexandria and the emperor holds none of them, which is true in
+# 1337 and stops being true the moment the player does the thing the situation is asking him to do.
+#
+# The delays are what made it visible. .10 was scheduled twelve years ahead and .11 eight years
+# after that, so a premise checked when the chain STARTS is a premise not checked at all.
+#
+# STICKY TAG TEST, not c:MAM = owner, for the reason every other test in this submod is sticky:
+# a sultan who forms Egypt is the same adversary, and the custody dispute does not end because
+# the chancery changed its letterhead.
+#
+# SCOPE. The three atomic triggers read the map through location:x = { owner ?= { ... } } and work
+# from any scope, including the situation's can_start, where root is the situation. The two marked
+# COUNTRY SCOPE use owns_or_non_sovereign_subject_owns, which has no other form.
+
+cc_byz_jerusalem_under_cairo_trigger = {
+	location:jerusalem = { owner ?= { has_or_had_tag = MAM } }
+}
+
+cc_byz_antioch_under_cairo_trigger = {
+	location:antioch = { owner ?= { has_or_had_tag = MAM } }
+}
+
+cc_byz_alexandria_under_cairo_trigger = {
+	location:alexandria = { owner ?= { has_or_had_tag = MAM } }
+}
+
+
+# THE TWO LEVANTINE SITES. Alexandria is the third eastern seat but it sits in Egypt, behind
+# Cairo rather than on the frontier, so the custody and frontier threads are about these two and
+# the patriarch thread is about all three.
+cc_byz_levant_sites_under_cairo_trigger = {
+	OR = {
+		cc_byz_jerusalem_under_cairo_trigger = yes
+		cc_byz_antioch_under_cairo_trigger = yes
+	}
+}
+
+cc_byz_eastern_sees_under_cairo_trigger = {
+	OR = {
+		cc_byz_jerusalem_under_cairo_trigger = yes
+		cc_byz_antioch_under_cairo_trigger = yes
+		cc_byz_alexandria_under_cairo_trigger = yes
+	}
+}
+
+
+# COUNTRY SCOPE. Both Levantine sites are the emperor's, in his own hand or a subject's.
+cc_byz_levant_sites_held_trigger = {
+	owns_or_non_sovereign_subject_owns = location:jerusalem
+	owns_or_non_sovereign_subject_owns = location:antioch
+}
+
+# COUNTRY SCOPE. At least one eastern seat is the emperor's.
+cc_byz_any_eastern_see_held_trigger = {
+	OR = {
+		owns_or_non_sovereign_subject_owns = location:jerusalem
+		owns_or_non_sovereign_subject_owns = location:antioch
+		owns_or_non_sovereign_subject_owns = location:alexandria
+	}
+}
+
+
+# COUNTRY SCOPE. A seat is held and has not been recorded yet.
+#
+# PLAIN owns, NOT owns_or_non_sovereign_subject_owns, deliberately: this is what gates
+# cc_byz_mamluk.12, which calls add_pentarchy_modifier and feeds has_all_pentarchy
+# (country_triggers.txt:1355), and both of those are direct ownership. A seat held by a vassal
+# counts for the mission tasks, which test either form, and not for the pentarchy.
+cc_byz_mamluk_unrecorded_seat_trigger = {
+	OR = {
+		AND = {
+			owns = location:jerusalem
+			NOT = { has_variable = cc_byz_mem_seat_jerusalem }
+		}
+		AND = {
+			owns = location:antioch
+			NOT = { has_variable = cc_byz_mem_seat_antioch }
+		}
+		AND = {
+			owns = location:alexandria
+			NOT = { has_variable = cc_byz_mem_seat_alexandria }
+		}
+	}
+}

@@ -70,6 +70,13 @@ cc_byz_mamluk_confrontation = {
 
 		country_exists = c:MAM
 
+		# THE PREMISE, TESTED. A confrontation over holy places the sultan does not hold is not
+		# this confrontation. An emperor who settled Anatolia late, or who took the Levant on the
+		# way, could otherwise open a situation whose every event tells him Cairo holds sees he is
+		# standing in. Root here is the situation, which is why the trigger reads the map through
+		# the location rather than through owns.
+		cc_byz_eastern_sees_under_cairo_trigger = yes
+
 		# ANY_COUNTRY, NOT c:BYZ. A player who formed Rome before the Ottoman situation resolved
 		# could otherwise never see this at all, since the tag test would fail forever. Holding
 		# the City is the identifying condition, and ROM_BYZ_f requires it anyway.
@@ -131,6 +138,24 @@ cc_byz_mamluk_confrontation = {
 		var:cc_byz_empire ?= {
 			cc_byz_init_levant_scores_effect = yes
 			trigger_event_non_silently = cc_byz_mamluk.1
+
+			# THE CHAIN, SCHEDULED HERE RATHER THAN FROM .1's after BLOCK.
+			#
+			# Every event in the thread now tests who holds the sites it is about, and a gated
+			# event that does not fire also does not run its after block. With the chain strung
+			# through those blocks, one event declining to fire silently ended the confrontation:
+			# no .10, therefore no .11, therefore no hinge, therefore nothing but the 1650 timeout.
+			#
+			# Scheduling all four from here costs the same timings (.1 fires at zero, so 5/12/20
+			# years from on_start is 5/12/20 years from .1) and makes each event's guard independent
+			# of every other's. .10 and .14 are the two answers to the same question and are
+			# scheduled together on purpose: their triggers are complementary, so exactly one of
+			# them lands, and which one depends on the map twelve years from now rather than on
+			# the map today.
+			trigger_event_silently = { id = cc_byz_mamluk.3   years = 5 }
+			trigger_event_silently = { id = cc_byz_mamluk.10  years = 12 }
+			trigger_event_silently = { id = cc_byz_mamluk.14  years = 12 }
+			trigger_event_silently = { id = cc_byz_mamluk.11  years = 20 }
 		}
 		c:MAM = {
 			trigger_event_non_silently = cc_byz_mamluk.2
@@ -146,6 +171,24 @@ cc_byz_mamluk_confrontation = {
 		# Mirror the three eastern seats onto the situation so the panel can show them.
 		# The panel cannot read location ownership itself; see the effect's header.
 		cc_byz_mamluk_seat_sync_effect = yes
+
+		# THE SEATS, RECORDED WHEN THEY ARE TAKEN RATHER THAN WHEN A PARTICULAR WAR TAKES THEM.
+		#
+		# cc_byz_mamluk.12 is what writes cc_byz_mem_seat_jerusalem / _antioch / _alexandria and
+		# what calls add_pentarchy_modifier, and it used to be reachable only from inside the
+		# Pentarchy War: it gated on cc_byz_mem_pentarchy_war and was scheduled from .11's war
+		# option. An emperor who took Antioch in an ordinary border war, or through the Renovatio
+		# missions, held the seat on the map and had none of it recorded, so the per-seat modifier
+		# never applied and the three mission tasks that read those variables saw nothing.
+		#
+		# The event's own trigger is the guard against repeats: its immediate writes the memories,
+		# so the month after it fires there is no unrecorded seat and this does nothing.
+		var:cc_byz_empire ?= {
+			if = {
+				limit = { cc_byz_mamluk_unrecorded_seat_trigger = yes }
+				trigger_event_non_silently = cc_byz_mamluk.12
+			}
+		}
 
 		# Cairo's own weather. Mostly hidden or forced outcomes, giving the player openings
 		# they did not create and setbacks they could not have prevented, so the situation

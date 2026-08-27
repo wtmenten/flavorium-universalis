@@ -260,6 +260,16 @@ cc_byz_resolve_empire_effect = {
 # here, an emperor who formed Rome had all three seats blank out on the panel a month later,
 # including seats he was standing in. The resolve effect is called immediately before this one in
 # the situation's on_monthly, so the handle is current by the time this runs.
+#
+# TWO FLAGS PER SEAT, NOT ONE. The panel used to say "Held" or "Not held", and "not held" was
+# doing too much work: it covered the sultan holding Jerusalem, a Latin kingdom holding it, and
+# the emperor's own vassal holding it, which are three different positions in a confrontation
+# whose entire subject is who holds these three places. A player looking at the panel could not
+# tell whether the confrontation still had an object.
+#
+# The second flag is set only where Cairo holds the seat, so the panel reads ours / the sultan's /
+# neither, and the three-way split matches the triggers the events gate on
+# (cc_byz_mamluk_triggers.txt). Neither flag set means somebody else entirely.
 cc_byz_mamluk_seat_sync_effect = {
 	if = {
 		limit = { var:cc_byz_empire ?= { owns = location:jerusalem } }
@@ -283,6 +293,30 @@ cc_byz_mamluk_seat_sync_effect = {
 	}
 	else = {
 		remove_variable = cc_byz_seat_alexandria
+	}
+
+	if = {
+		limit = { cc_byz_jerusalem_under_cairo_trigger = yes }
+		set_variable = { name = cc_byz_seat_jerusalem_cairo  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_jerusalem_cairo
+	}
+
+	if = {
+		limit = { cc_byz_antioch_under_cairo_trigger = yes }
+		set_variable = { name = cc_byz_seat_antioch_cairo  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_antioch_cairo
+	}
+
+	if = {
+		limit = { cc_byz_alexandria_under_cairo_trigger = yes }
+		set_variable = { name = cc_byz_seat_alexandria_cairo  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_seat_alexandria_cairo
 	}
 }
 

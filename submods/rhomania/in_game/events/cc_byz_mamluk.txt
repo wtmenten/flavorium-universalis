@@ -6,12 +6,26 @@
 # confrontation with many surfaces rather than a ladder:
 #
 #   .1  .10 .11        the holy places, custody, and the road to escalation
-#   .2                 the eastern patriarchs
+#   .2                 Cairo takes note
 #   .3                 spice, grain and the Italians
 #   .4                 the frontier
-#   .5                 Cairo's own troubles (hidden, from on_monthly)
+#   .5                 Cairo's own troubles (from the situation's on_monthly)
+#   .14                the eastern sees once they are the emperor's
 #   .12 .13            the pentarchy seats
 #   .20                the ending
+#
+# WHO HOLDS WHAT, AND WHEN IT IS CHECKED. Every event below that has an opinion about who owns
+# Jerusalem, Antioch or Alexandria now tests it, through the triggers in
+# scripted_triggers/cc_byz_mamluk_triggers.txt. The thread previously assumed the 1337 map
+# forever: .1 asked an emperor holding Jerusalem whether to keep paying the sultan for the keys to
+# it, .10 told him the patriarchs he had annexed were the sultan's subjects, and .3 explained that
+# Cairo controlled a spice trade running through his own port. The delays are what made it show,
+# since .10 was scheduled twelve years ahead and .11 eight years after that.
+#
+# The consequence for the shape of the file: the chain is no longer strung through after blocks.
+# A gated event that declines to fire also declines to schedule its successor, which would end the
+# confrontation silently. .3, .10, .14 and .11 are all scheduled from the situation's on_start
+# instead, and .12 from its on_monthly, so each event's guard is independent of every other's.
 #
 # Scores:
 #   cc_byz_levant_pressure  -5..5  on Byzantium
@@ -26,7 +40,10 @@
 #
 # Memory variables (on Byzantium):
 #   cc_byz_mem_condominium       a negotiated sharing of the holy places was reached
-#   cc_byz_mem_patriarchs_backed the eastern patriarchs were protected at a cost
+#   cc_byz_mem_patriarchs_backed the eastern patriarchs answer to Constantinople. Written by .10
+#                                when they were protected at a cost, and by every path through
+#                                .14, where they are the emperor's subjects and the only question
+#                                left is on what terms.
 #   cc_byz_mem_patriarchs_sold   the eastern patriarchs were left to their own arrangements
 #   cc_byz_mem_pentarchy_war     phase B was entered
 #   cc_byz_mem_seat_jerusalem / _antioch / _alexandria   a pentarchy seat was taken
@@ -55,8 +72,13 @@ cc_byz_mamluk.1 = {
 	}
 	outcome = neutral
 
+	# JERUSALEM SPECIFICALLY, not the Levant generally. The whole event is the arrangement at the
+	# Holy Sepulchre: dues paid annually to Cairo for rights in a city the sultan holds. An emperor
+	# who already holds Jerusalem is not paying anyone for the keys to it, and one who is disputing
+	# custody with a Latin kingdom or a Cypriot garrison is not disputing it with Cairo.
 	trigger = {
 		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_jerusalem_under_cairo_trigger = yes
 	}
 
 	illustration_tags = {
@@ -125,12 +147,10 @@ cc_byz_mamluk.1 = {
 		}
 	}
 
-	after = {
-		hidden_effect = {
-			trigger_event_silently = { id = cc_byz_mamluk.3  years = 5 }
-			trigger_event_silently = { id = cc_byz_mamluk.10  years = 12 }
-		}
-	}
+	# NO after BLOCK. The chain used to be strung from here: .3 at five years, .10 at twelve. Now
+	# that this event can decline to fire, an after block would take the whole thread down with it.
+	# All four scheduled events moved to the situation's on_start, which runs unconditionally and
+	# gives the same timings. See the note there.
 }
 
 
@@ -210,8 +230,13 @@ cc_byz_mamluk.3 = {
 	}
 	outcome = negative
 
+	# ALEXANDRIA IS THE SUBJECT, so Alexandria is the test. The event's premise is that the spice
+	# reaches Europe through Cairo's hands and the emperor's only lever is the straits. An emperor
+	# who has taken Alexandria has the factories themselves, which is the eastern trade thread
+	# (events/cc_byz_east.txt) and not this one.
 	trigger = {
 		cc_byz_mamluk_chain_open_trigger = yes
+		cc_byz_alexandria_under_cairo_trigger = yes
 	}
 
 	illustration_tags = {
@@ -513,12 +538,32 @@ cc_byz_mamluk.5 = {
 
 #############################################
 # .10  The eastern patriarchs
+#
+# THE EVENT PLAYTESTING CAUGHT. "as byz i am getting cc_byz_mamluk.10 ... it should either be
+# modified or retargeted." Its first line is that the patriarchs of Antioch, Jerusalem and
+# Alexandria "are the sultan's subjects", and its whole argument is that the third fact is the one
+# that governs. It was scheduled twelve years ahead with no test of any kind, so it landed on an
+# emperor who had spent those twelve years making it false.
+#
+# Both halves of the report are implemented. MODIFIED: the trigger now requires that Cairo still
+# holds at least one of the three, and desc_partial narrates the case where some have been
+# recovered and some have not, which is the ordinary mid-campaign state and the one the event
+# read worst in. RETARGETED: when Cairo holds none of them, .14 fires instead, on the same
+# schedule, asking the question that actually arises when the sees are the emperor's own.
 #############################################
 cc_byz_mamluk.10 = {
 	type = country_event
 	title = cc_byz_mamluk.10.title
 	desc = {
 		first_valid = {
+			# THE MAP FIRST. A partial recovery outranks the union variant because it is a fact
+			# about where the letter came from rather than about what it says: an appeal from
+			# Alexandria while imperial troops garrison Antioch is a different letter, and the
+			# contrast is the point of it.
+			triggered_desc = {
+				trigger = { cc_byz_any_eastern_see_held_trigger = yes }
+				desc = cc_byz_mamluk.10.desc_partial
+			}
 			triggered_desc = {
 				trigger = {
 					has_variable = cc_byz_union_stage
@@ -533,6 +578,7 @@ cc_byz_mamluk.10 = {
 
 	trigger = {
 		cc_byz_mamluk_chain_open_trigger = yes
+		cc_byz_eastern_sees_under_cairo_trigger = yes
 		NOR = {
 			has_variable = cc_byz_mem_patriarchs_backed
 			has_variable = cc_byz_mem_patriarchs_sold
@@ -623,11 +669,149 @@ cc_byz_mamluk.10 = {
 	after = {
 		# Not offered. A patriarch who has been protected loudly, or abandoned quietly, makes
 		# his own arrangement with the sultan either way, and the palace hears afterwards.
+		#
+		# The .11 schedule that used to live here moved to the situation's on_start: this event can
+		# now decline to fire, and the hinge of the whole confrontation cannot depend on it.
 		hidden_effect = {
 			situation:cc_byz_mamluk_confrontation ?= {
 				change_variable = { name = cc_byz_mamluk_progress  add = 5 }
 			}
-			trigger_event_silently = { id = cc_byz_mamluk.11  years = 8 }
+		}
+	}
+}
+
+
+#############################################
+# .14  The sees in the emperor's hand
+#
+# .10 RETARGETED. Same slot, same twelve-year schedule, complementary trigger: .10 requires Cairo
+# to hold at least one eastern seat, this requires Cairo to hold none and the emperor to hold at
+# least one, so exactly one of the two can land and neither fires when all three sit in some third
+# power's hands.
+#
+# The question is genuinely a different one rather than the same one with the names changed. .10
+# is about protection: whether an emperor spends anything on co-religionists he cannot reach, and
+# whether saying so out loud gets them killed. Here he can reach them, and what he has acquired is
+# the appointment of three patriarchs whose sees have run themselves under Muslim rule for eight
+# centuries and have institutions of their own. The trap is the opposite one. .10 risks doing too
+# little from too far away; this risks doing too much from too close.
+#
+# Writes cc_byz_mem_patriarchs_backed on every path, which is not a moral judgement but a fact:
+# whatever the emperor decides here, nobody can say afterwards that the eastern sees were left to
+# the sultan. That closes .10 permanently, as .10 closes this.
+#############################################
+cc_byz_mamluk.14 = {
+	type = country_event
+	title = cc_byz_mamluk.14.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_union_stage
+					var:cc_byz_union_stage >= 2
+				}
+				desc = cc_byz_mamluk.14.desc_unionist
+			}
+			desc = cc_byz_mamluk.14.desc
+		}
+	}
+	outcome = neutral
+
+	# NOT cc_byz_mamluk_chain_open_trigger. That one refuses to fire during a war with Cairo, and
+	# the likeliest way to be holding these sees at all is to have just taken them off him. The
+	# exists test goes with it: the sees can perfectly well be the emperor's because the sultanate
+	# no longer exists, and that is the case this event most needs to cover.
+	trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		cc_byz_any_eastern_see_held_trigger = yes
+		NOT = { cc_byz_eastern_sees_under_cairo_trigger = yes }
+		NOR = {
+			has_variable = cc_byz_mem_patriarchs_backed
+			has_variable = cc_byz_mem_patriarchs_sold
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_init_levant_scores_effect = yes
+		set_variable = { name = cc_byz_mem_patriarchs_backed  value = yes }
+	}
+
+	# Appoint from Constantinople. The sees are imperial now and the patriarchs are imperial
+	# officials, which is tidy, defensible, and resented by everyone who lives there.
+	option = {
+		name = cc_byz_mamluk.14.a
+		ai_chance = { base = 35 }
+
+		add_prestige = prestige_mild_bonus
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		situation:cc_byz_mamluk_confrontation ?= {
+			change_variable = { name = cc_byz_levant_progress  add = 15 }
+		}
+	}
+
+	# Confirm the sitting patriarchs and leave the sees their customs. Costs nothing the treasury
+	# will miss and buys the one thing conquest cannot, which is the clergy on the ground.
+	option = {
+		name = cc_byz_mamluk.14.b
+		ai_chance = { base = 40 }
+
+		add_gold = -100
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		every_country = {
+			limit = {
+				religion = religion:orthodox
+				NOT = { this = root }
+			}
+			add_opinion = {
+				target = root
+				modifier = cc_byz_restored_the_east
+			}
+		}
+		situation:cc_byz_mamluk_confrontation ?= {
+			change_variable = { name = cc_byz_levant_progress  add = 20 }
+		}
+	}
+
+	# A synod, at which the sees keep their rites and the emperor keeps the appointments. Both of
+	# the above at once, which is why it takes a ruler who can hold a room.
+	option = {
+		name = cc_byz_mamluk.14.c
+		ai_chance = { base = 25 }
+		trigger = {
+			ruler ?= { dip >= 75 }
+		}
+
+		add_gold = -200
+		add_prestige = prestige_severe_bonus
+		change_societal_value = {
+			type = latinization_vs_hellenization
+			value = societal_value_move_to_right
+		}
+		add_estate_satisfaction = {
+			type = estate_type:clergy_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		situation:cc_byz_mamluk_confrontation ?= {
+			change_variable = { name = cc_byz_levant_progress  add = 25 }
 		}
 	}
 }
@@ -644,6 +828,15 @@ cc_byz_mamluk.11 = {
 	title = cc_byz_mamluk.11.title
 	desc = {
 		first_valid = {
+			# BEFORE THE CONDOMINIUM VARIANT. Both of the shipped descriptions close on the seats
+			# of Jerusalem, Antioch and Alexandria being three of the five "and no emperor since
+			# Heraclius has held them", which is a fine line to read to an emperor holding one of
+			# them and an absurd one otherwise. Where the recovery has already started, the
+			# decision point is a different decision.
+			triggered_desc = {
+				trigger = { cc_byz_any_eastern_see_held_trigger = yes }
+				desc = cc_byz_mamluk.11.desc_holding
+			}
 			triggered_desc = {
 				trigger = { has_variable = cc_byz_mem_condominium }
 				desc = cc_byz_mamluk.11.desc_condominium
@@ -676,6 +869,10 @@ cc_byz_mamluk.11 = {
 		trigger = {
 			has_variable = cc_byz_mem_condominium
 			var:cc_byz_levant_pressure <= 2
+			# A condominium is a sharing of custody in a city somebody else governs. There is
+			# nothing to share once the emperor holds Jerusalem, and signing a document conceding
+			# the sultan rights in it would be a worse outcome than the war, not a better one.
+			cc_byz_jerusalem_under_cairo_trigger = yes
 		}
 
 		situation:cc_byz_mamluk_confrontation ?= {
@@ -709,6 +906,10 @@ cc_byz_mamluk.11 = {
 		ai_chance = { base = 20 }
 		trigger = {
 			var:cc_byz_levant_pressure >= 2
+			# There has to be something left in Cairo's hands to go to war over. With all three
+			# eastern seats already taken, this option was a war for objectives the emperor had
+			# met, and .12 records them from the situation's monthly roll without it.
+			cc_byz_eastern_sees_under_cairo_trigger = yes
 		}
 
 		set_variable = { name = cc_byz_mem_pentarchy_war  value = yes }
@@ -724,7 +925,8 @@ cc_byz_mamluk.11 = {
 			}
 			unlock_casus_belli_effect = { type = cb_restore_roman_borders }
 		}
-		trigger_event_silently = { id = cc_byz_mamluk.12  years = 6 }
+		# No .12 schedule any more. Six years was a guess at how long a war takes; the situation's
+		# on_monthly now fires it the month a seat is actually taken, in this war or any other.
 	}
 }
 
@@ -753,16 +955,22 @@ cc_byz_mamluk.12 = {
 	outcome = positive
 
 	# NOT WAR-GATED, unlike the rest of the thread. The other events narrate a cold war and
-	# had to stop firing once it stopped being cold; this one records seats taken IN the
-	# Pentarchy War and would never fire at all behind that guard. Same for .13 below.
+	# had to stop firing once it stopped being cold; this one records seats taken IN a war and
+	# would never fire at all behind that guard. Same for .13 below.
+	#
+	# NOT PENTARCHY-WAR-GATED EITHER, any more. It carried has_variable = cc_byz_mem_pentarchy_war
+	# and was scheduled only from .11's war option, which meant the seats were recorded when a
+	# particular event chain took them and not when the player did. An emperor who took Antioch in
+	# an ordinary border war, or off the Renovatio mission line, held it on the map with no
+	# cc_byz_mem_seat_antioch, no add_pentarchy_modifier, and three mission tasks reading a
+	# variable nothing would ever write.
+	#
+	# The unrecorded-seat test replaces both the war gate and the owns list: it is the same
+	# ownership check the immediate below performs, hoisted, so the event cannot fire with nothing
+	# to say. The situation's on_monthly evaluates it every month and fires this when it passes.
 	trigger = {
 		has_societal_value = societal_value_type:latinization_vs_hellenization
-		has_variable = cc_byz_mem_pentarchy_war
-		OR = {
-			owns = location:jerusalem
-			owns = location:antioch
-			owns = location:alexandria
-		}
+		cc_byz_mamluk_unrecorded_seat_trigger = yes
 	}
 
 	illustration_tags = {
@@ -828,7 +1036,8 @@ cc_byz_mamluk.12 = {
 		clamp_variable = { name = cc_byz_levant_pressure  min = -5  max = 5 }
 		change_variable = { name = cc_byz_strain  add = 1 }
 		clamp_variable = { name = cc_byz_strain  min = 0  max = 10 }
-		trigger_event_silently = { id = cc_byz_mamluk.12  years = 10 }
+		# The ten-year re-fire is gone with the six-year one in .11. Whichever seat is taken next,
+		# the situation's monthly roll sees it that month.
 	}
 
 	after = {
@@ -903,6 +1112,16 @@ cc_byz_mamluk.20 = {
 			triggered_desc = {
 				trigger = { has_all_pentarchy = yes }
 				desc = cc_byz_mamluk.20.desc_pentarchy
+			}
+			# THE EASTERN SEES WITHOUT ROME. The commonest way for this confrontation to be won
+			# outright, and it had no ending of its own: it fell through to the condominium text
+			# (a document rather than a battle), or to desc_defeat, which tells an emperor
+			# garrisoning the Holy Sepulchre that the dues there have been raised against him.
+			# Ahead of the condominium check because an emperor can hold both a signed condominium
+			# and the city it covers, and the city is the larger fact.
+			triggered_desc = {
+				trigger = { cc_byz_levant_sites_held_trigger = yes }
+				desc = cc_byz_mamluk.20.desc_eastern_sees
 			}
 			triggered_desc = {
 				trigger = { has_variable = cc_byz_mem_condominium }

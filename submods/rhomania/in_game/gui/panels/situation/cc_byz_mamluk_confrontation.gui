@@ -375,10 +375,15 @@ situation_panel = {
 			# hits for GetLocation( and zero for IsSameCountry. GUI datafunctions are not
 			# script triggers and there is no owns-this-location form among them.
 			#
-			# cc_byz_mamluk_seat_sync_effect writes these three flags off the situation's
-			# on_monthly from a plain `owns = location:x` test, which is script and certainly
-			# works. A month of staleness after a conquest is not worth inventing a
-			# datafunction over.
+			# cc_byz_mamluk_seat_sync_effect writes these six flags off the situation's
+			# on_monthly from plain ownership tests, which are script and certainly work. A
+			# month of staleness after a conquest is not worth inventing a datafunction over.
+			#
+			# TWO FLAGS PER SEAT, THREE STATES. cc_byz_seat_x is the emperor holding it and
+			# cc_byz_seat_x_cairo is the sultan holding it; neither set means a third power
+			# does. The panel used to show only held / not held, which put "the sultan has
+			# it" and "a Latin kingdom has it" in the same box, in a situation whose whole
+			# subject is the difference between those.
 			hbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 8
@@ -395,8 +400,14 @@ situation_panel = {
 					}
 					text_single = {
 						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_red"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem_cairo').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_CAIRO"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
 						default_format = "#weak"
-						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem').IsSet)]"
+						visible = "[And(Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem').IsSet), Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_jerusalem_cairo').IsSet))]"
 						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
 					}
 				}
@@ -412,8 +423,14 @@ situation_panel = {
 					}
 					text_single = {
 						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_red"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch_cairo').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_CAIRO"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
 						default_format = "#weak"
-						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch').IsSet)]"
+						visible = "[And(Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch').IsSet), Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_antioch_cairo').IsSet))]"
 						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
 					}
 				}
@@ -429,8 +446,14 @@ situation_panel = {
 					}
 					text_single = {
 						parentanchor = hcenter  align = center  fontsize = 12
+						default_format = "#color_red"
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria_cairo').IsSet]"
+						text = "CC_BYZ_MAM_SEAT_CAIRO"
+					}
+					text_single = {
+						parentanchor = hcenter  align = center  fontsize = 12
 						default_format = "#weak"
-						visible = "[Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria').IsSet)]"
+						visible = "[And(Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria').IsSet), Not(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_seat_alexandria_cairo').IsSet))]"
 						text = "CC_BYZ_MAM_SEAT_NOT_HELD"
 					}
 				}
