@@ -158,10 +158,20 @@ cc_xp_can_be_trained = {
 # Character scope. Anyone at court not already spoken for, and young enough that grooming
 # them is an investment rather than a courtesy.
 #
-# The age ceiling lives HERE rather than in cc_xp.85's candidate ordering so that the
-# count, the allow block and the offered options can never disagree: cc_xp_num_sponsorable
-# reads this same trigger. A protege who ages past the ceiling keeps their place; the gate
-# is on being taken on, not on staying.
+# EVERY condition lives HERE rather than in cc_xp.85's candidate ordering, so the action's
+# allow block and the options it then offers can never disagree: both ask this one trigger.
+# A protege who ages past the ceiling, or whose estate is later shut out of the cabinet,
+# keeps their place. The gate is on being taken on, not on staying.
+# TAKES THE COUNTRY EXPLICITLY rather than reading root or prev.
+#
+# can_serve_in_cabinet_of needs a country, and the two callers do not agree on how to
+# reach one. In cc_xp.85 root is the country because it is the event's scope; inside
+# cc_xp_num_sponsorable's every_character it is not, and `prev` there resolves to the
+# character the iterator pushed rather than the country outside it. Vanilla warns about
+# exactly this in hre_action_values.txt:207. Passing the scope in removes the question.
+#
+#   cc_xp_can_be_sponsored = { COUNTRY = root }          from an event
+#   cc_xp_can_be_sponsored = { COUNTRY = scope:actor }   from an action's allow
 cc_xp_can_be_sponsored = {
 	is_alive = yes
 	is_adult = yes
@@ -169,6 +179,16 @@ cc_xp_can_be_sponsored = {
 	NOT = { in_cabinet = yes }
 	NOT = { has_variable = cc_protege }
 	NOT = { is_ruler = yes }
+
+	# There is no point grooming a successor the realm could never seat. This is the
+	# engine's own check, so it covers whatever the country currently forbids: women
+	# where the cabinet is closed to them, and burgher or peasant candidates where those
+	# estates are not admitted. Reimplementing it from the allow_/block_ modifiers would
+	# be a second copy of a rule the engine already owns, and would drift from it.
+	#
+	# It is evaluated as the rules stand today. A realm that later reforms to admit an
+	# estate can sponsor from it then; anyone excluded now simply is not offered.
+	can_serve_in_cabinet_of = $COUNTRY$
 }
 
 # Country scope. Three is the cap.

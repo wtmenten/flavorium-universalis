@@ -482,13 +482,12 @@ cc_xp_num_proteges = {
 # given a pupil. Both exist so an interaction's `allow` can state a threshold in the same
 # terms its selector uses, instead of asserting a bare existence check that passes while
 # the selector still finds nobody to offer.
-cc_xp_num_sponsorable = {
-	value = 0
-	every_character = {
-		limit = { cc_xp_can_be_sponsored = yes }
-		add = 1
-	}
-}
+# cc_xp_num_sponsorable was removed when cc_xp_can_be_sponsored started taking the
+# country as a parameter. A script value cannot be handed one: inside its own
+# every_character, `prev` resolves to the character the iterator pushed rather than to
+# the court outside it, which vanilla warns about in hre_action_values.txt:207. Its only
+# caller now asks any_character directly, so keeping this would have left a second copy
+# of the eligibility rule that no longer matched the real one.
 
 # Everyone the experience system tracks, for events that need two people who could
 # plausibly have met rather than one.

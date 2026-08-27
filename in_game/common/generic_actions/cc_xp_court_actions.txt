@@ -62,9 +62,14 @@ cc_xp_sponsor_protege = {
 		scope:actor = {
 			cc_xp_enabled = yes
 			cc_xp_has_protege_room = yes
+			# any_character rather than a count, because the count is not needed and a
+			# script value cannot be handed the country the eligibility check requires:
+			# inside its own every_character, `prev` resolves to the character rather
+			# than to the court. scope:actor is set for a generic action and is the
+			# court, so the same trigger the picker uses can be asked directly here.
 			custom_tooltip = {
 				text = cc_xp_tt_needs_candidate_protege
-				cc_xp_num_sponsorable >= 1
+				any_character = { cc_xp_can_be_sponsored = { COUNTRY = scope:actor } }
 			}
 		}
 	}
