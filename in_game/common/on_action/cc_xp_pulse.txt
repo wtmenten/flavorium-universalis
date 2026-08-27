@@ -390,9 +390,18 @@ on_royal_marriage = {
 	}
 }
 
-# root = country. A law or policy carried through is administrative work.
+# A law or policy carried through is administrative work.
+#
+# ROOT IS NOT ALWAYS A COUNTRY HERE, despite what the other milestone hooks in this file
+# can assume. Vanilla's own on_policy_changed effect opens with
+# `limit = { scope_type = country  root = { is_human = yes } }` (_hardcoded.txt:5566),
+# and that guard is not decoration: without it cc_xp_country_is_tracked reaches
+# is_ai / is_great_power / total_development in a scope that has none of them, and the
+# log fills with script system errors pointing at cc_xp_triggers.txt:46-48 every time a
+# policy changes anywhere in the world.
 cc_xp_milestone_policy = {
 	trigger = {
+		scope_type = country
 		cc_xp_country_is_tracked = yes
 		any_cabinet_character = { in_cabinet = yes }
 	}
