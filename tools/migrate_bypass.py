@@ -55,7 +55,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 EVENTS = REPO / "in_game" / "events"
-OUT_LOC = REPO / "in_game" / "localization" / "english" / "cc_xp_toward_l_english.yml"
+LOC = REPO / "in_game" / "localization" / "english"
+OUT_LOC = LOC / "cc_xp_toward_l_english.yml"
+OUT_AWARD_LOC = LOC / "cc_xp_award_l_english.yml"
+VALUES = REPO / "in_game" / "common" / "script_values" / "cc_xp_values.txt"
 
 MARKER = "cc_xp_toward_"
 
@@ -67,8 +70,64 @@ BAND = {
     3: "cc_xp_field_award_high",
 }
 
+TRACK_NAME = {"adm": "administrative", "dip": "diplomatic", "mil": "military"}
+
 GATE_RE = re.compile(r"cc_xp_(dispatch_ready|tier_at_least|level_at_least)")
 TRAIT_RE = re.compile(r"add_trait = trait:([a-zA-Z_0-9]+)")
+
+# The single-line form every gated rung option in the mod uses. Captured whole so the
+# fallback can negate it verbatim: rebuilding it from the parsed parts would drift the
+# moment somebody writes the gate differently.
+GATE_LINE_RE = re.compile(
+    r"^(?P<indent>\t+)(?P<gate>scope:(?P<scope>[a-zA-Z_0-9]+) = \{ "
+    r"cc_xp_dispatch_ready = \{ TRACK = (?P<track>adm|dip|mil)\s+TIER = (?P<tier>\d) \} \})"
+    r"[ \t]*$", re.M)
+
+
+def award_key(track: str, band: str) -> str:
+    """Loc key for the tooltip on an experience award."""
+    return "cc_xp_award_%s_%s" % (track, band.rsplit("_", 1)[-1])
+
+
+def wrap_award(indent: str, track: str, band: str, why: str) -> str:
+    """The experience award, with a tooltip that says what it grants.
+
+    WHY THE TOOLTIP IS NOT OPTIONAL. cc_xp_gain_* is three change_variable calls on
+    cc_xp_adm / cc_xp_total, and the engine renders a raw variable write as nothing a
+    player can read. Playtesting: "cc_cond.20 and cc_cond.24 are firing with only the
+    dismiss option ... im guessing they are giving xp or something but its not explained
+    in the button tooltip". Half of that report is the missing options below; this is the
+    other half, and it applies to every generated option, not only the new ones.
+
+    custom_tooltip with a body replaces the auto-generated text for everything inside it,
+    which is exactly the substitution wanted here: one readable line instead of three
+    unreadable ones. Block form from vanilla civil_war.txt:32.
+    """
+    return (f"{indent}# {why}\n"
+            f"{indent}custom_tooltip = {{\n"
+            f"{indent}\ttext = {award_key(track, band)}\n"
+            f"{indent}\tcc_xp_gain_{track} = {{ AMOUNT = {band} }}\n"
+            f"{indent}\tcc_xp_recompute = yes\n"
+            f"{indent}}}")
+
+
+def load_award_values() -> dict:
+    """The four band script values, read rather than hardcoded.
+
+    The tooltip loc states the number, so it has to come from the same place the effect
+    does. cc_xp_values.txt calls these "the only place the conversion's balance lives";
+    a retune there rewrites the loc on the next run instead of silently lying.
+    """
+    text = VALUES.read_text(encoding="utf-8-sig")
+    out = {}
+    for m in re.finditer(r"^(cc_xp_field_award_\w+)\s*=\s*\{\s*value\s*=\s*(\d+)\s*\}",
+                         text, re.M):
+        out[m.group(1)] = int(m.group(2))
+    missing = set(BAND.values()) - set(out)
+    if missing:
+        raise SystemExit("ERROR: could not read award values from cc_xp_values.txt: "
+                         + ", ".join(sorted(missing)))
+    return out
 
 
 def load_ladders():
@@ -157,6 +216,179 @@ def split_options(text: str, ladder: dict, report: list, filename: str):
     return "\n".join(out), touched, used_traits
 
 
+def add_gated_fallbacks(text: str, ladder: dict, report: list, filename: str):
+    """Give every tier-gated rung option a partner for the case where the tier is short.
+
+    THE BUG THIS CLOSES, reported from playtesting: "cc_cond.20 and cc_cond.24 are firing
+    with only the dismiss option".
+
+    The first pass deliberately leaves gated options alone, and the docstring at the top
+    of this file explains why: they demand the tier before granting the rung, so they are
+    not a bypass. That reasoning is still right, and it has a side effect nobody costed.
+    An option whose trigger fails is not greyed out, it is ABSENT, so a minister who has
+    not reached the tier removes the option from the event entirely. cc_cond.24's six
+    options were all gated and none of them were split, so a player whose selected
+    minister was below tier saw an event with one button on it that did nothing.
+
+    42 options across 9 events were in that state, and 20 of the 42 sit in .20 and .24.
+
+    THE FIX is a partner option rather than an is_ai split, because these two cases are
+    genuinely different outcomes and both are worth offering:
+
+        tier earned      the original option, unchanged, grants the trait
+        tier not earned  train toward it: experience in the gate's own track
+
+    The gate line is negated verbatim into the partner's trigger, so exactly one of the
+    pair is ever visible and the event has the same button count it always had. No is_ai
+    condition: an AI below the tier was getting nothing here either, and progress toward
+    the rung is strictly better for it than a dismissal.
+
+    THE AWARD FOLLOWS THE GATE, not the ladder. The gate says which track and tier the
+    option is asking for, so that is the track the experience goes into and the band it is
+    worth. Where the ladder disagrees with the gate the mismatch is reported rather than
+    silently resolved, since it means one of the two is wrong about the trait.
+
+    LADDER MEMBERSHIP IS NOT REQUIRED HERE, unlike in the first pass. 34 of the 42 grant a
+    trait that is not a rung at all: the tier gate on those is a seniority requirement for
+    an appointment, not a ladder position. A bypass tool has no reason to look at them and
+    that is why they were missed, but the player-facing failure is identical, and it is
+    where nearly all of it is (every option in .21, .22, .23 and .24 on this list is a
+    non-rung trait). The only difference is what the fallback means, which is carried in
+    the generated comment: a rung the ladder will eventually hand over on its own, against
+    standing the minister has to reach before the event can offer the post again.
+    """
+    lines = text.split("\n")
+    out: list[str] = []
+    i = 0
+    touched = 0
+    used_traits: set[str] = set()
+    cur_event = "?"
+
+    while i < len(lines):
+        m = re.match(r"^([a-zA-Z_0-9]+\.\d+) = \{", lines[i])
+        if m:
+            cur_event = m.group(1)
+
+        if re.match(r"^\toption = \{", lines[i]):
+            depth, body, j = 0, [], i
+            while j < len(lines):
+                depth += lines[j].count("{") - lines[j].count("}")
+                body.append(lines[j])
+                j += 1
+                if depth <= 0:
+                    break
+            block = "\n".join(body)
+
+            traits = sorted(set(TRAIT_RE.findall(block)))
+            gate = GATE_LINE_RE.search(block)
+            # is_ai = yes options are the AI half of an already-split pair and have a
+            # human partner already. MARKER means this IS a generated partner.
+            already = MARKER in block or "is_ai = yes" in block
+
+            if len(traits) == 1 and gate and not already:
+                trait = traits[0]
+                track, tier = gate.group("track"), int(gate.group("tier"))
+                band = BAND[tier]
+                if trait in ladder:
+                    l_track, l_rung = ladder[trait]
+                    if (l_track, l_rung) != (track, tier):
+                        SKIPPED.append((filename, cur_event, [trait],
+                                        f"gate says {track} tier {tier}, ladder says "
+                                        f"{l_track} rung {l_rung}; award follows the gate"))
+                    why = ("Ladder rung withheld: the ladder grants it once the tier is "
+                           "earned.")
+                else:
+                    why = ("Not a ladder rung. The tier is a standing requirement for the "
+                           "post, so this buys standing, not the post.")
+
+                out.extend(body)
+                out.append("")
+                out.extend(build_fallback_option(body, gate, trait, track, band, why))
+                out.append("")
+                touched += 1
+                used_traits.add(trait)
+                name_m = re.search(r"^\t\tname = ([A-Za-z_0-9.]+)", block, re.M)
+                report.append((filename, cur_event,
+                               name_m.group(1) if name_m else "?", trait, track, tier,
+                               band))
+                i = j
+                continue
+
+            out.extend(body)
+            i = j
+            continue
+
+        out.append(lines[i])
+        i += 1
+
+    return "\n".join(out), touched, used_traits
+
+
+def build_fallback_option(body: list[str], gate, trait: str, track: str,
+                          band: str, why: str) -> list[str]:
+    """The partner shown when the minister has not reached the gated tier."""
+    out: list[str] = []
+    for line in body:
+        if re.match(r"^\t\tname = ", line):
+            out.append(f"\t\tname = {MARKER}{trait}")
+            continue
+        # Negate the gate in place, so the partner keeps every other condition the
+        # original had (the societal-value test, an estate check, whatever it is).
+        gm = GATE_LINE_RE.match(line)
+        if gm:
+            out.append(f"{gm.group('indent')}NOT = {{ {gm.group('gate')} }}")
+            continue
+        out.append(line)
+
+    text = "\n".join(out)
+
+    text, n_line = re.subn(
+        r"^(\t+)add_trait = trait:%s[ \t]*$" % re.escape(trait),
+        lambda m: wrap_award(m.group(1), track, band, why), text, flags=re.M)
+    if n_line == 0:
+        # The inline form (`scope:x = { add_trait = trait:y }`) cannot carry a multi-line
+        # custom_tooltip, so it gets the award without one rather than a broken block.
+        text, n_inline = re.subn(
+            r"add_trait = trait:%s\b" % re.escape(trait),
+            f"cc_xp_gain_{track} = {{ AMOUNT = {band} }}  cc_xp_recompute = yes", text)
+        if n_inline == 0:
+            raise SystemExit(f"ERROR: could not rewrite the grant of {trait}; "
+                             f"the option's shape is not one this tool handles.")
+    return text.split("\n")
+
+
+def retooltip(text: str, filename: str, report: list):
+    """Put a readable tooltip on awards the earlier passes emitted without one.
+
+    The first pass shipped 22 generated options whose whole visible effect was three
+    change_variable writes, which render as nothing. Rewriting them in place keeps every
+    player-facing experience award saying the same thing, and it is idempotent: an award
+    already inside a custom_tooltip does not match.
+    """
+    pat = re.compile(
+        r"^(?P<indent>\t+)# Ladder rung withheld: the ladder grants it once the tier is "
+        r"earned\.\n"
+        r"(?P=indent)cc_xp_gain_(?P<track>adm|dip|mil) = \{ AMOUNT = "
+        r"(?P<band>cc_xp_field_award_\w+) \}\n"
+        r"(?P=indent)cc_xp_recompute = yes[ \t]*$", re.M)
+
+    n = 0
+    used: set = set()
+
+    def repl(m):
+        nonlocal n
+        n += 1
+        used.add((m.group("track"), m.group("band")))
+        return wrap_award(m.group("indent"), m.group("track"), m.group("band"),
+                          "Ladder rung withheld: the ladder grants it once the tier is "
+                          "earned.")
+
+    new = pat.sub(repl, text)
+    if n:
+        report.append((filename, n))
+    return new, n, used
+
+
 def inject_trigger(body: list[str], cond: str) -> list[str]:
     """Add `cond` to an option's trigger block, creating one if absent."""
     body = list(body)
@@ -196,11 +428,9 @@ def build_human_option(body: list[str], trait: str, track: str, rung: int) -> li
         # experience variables yet. cc_xp_recompute follows the award the same way the
         # training return events do (cc_xp_events.txt:238), so the level and tier move
         # immediately rather than on the next monthly tick.
-        indent = m.group(1)
-        return (f"{indent}# Ladder rung withheld: the ladder grants it once the tier is "
-                f"earned.\n"
-                f"{indent}cc_xp_gain_{track} = {{ AMOUNT = {BAND[rung]} }}\n"
-                f"{indent}cc_xp_recompute = yes")
+        return wrap_award(m.group(1), track, BAND[rung],
+                          "Ladder rung withheld: the ladder grants it once the tier is "
+                          "earned.")
 
     award = f"cc_xp_gain_{track} = {{ AMOUNT = {BAND[rung]} }}"
 
@@ -249,6 +479,24 @@ def emit_loc(traits: set[str]) -> str:
     return "".join(out)
 
 
+def emit_award_loc(pairs: set, values: dict) -> str:
+    """The tooltip on each experience award, one key per track and band."""
+    out = ["﻿", "l_english:\n\n",
+           " # GENERATED FILE. Do not edit by hand. python tools/migrate_bypass.py\n",
+           " #\n",
+           " # What a court-event option actually grants when the ladder rung is withheld.\n",
+           " # cc_xp_gain_* is three change_variable writes and the engine renders those as\n",
+           " # nothing, so without this the button had no readable effect at all.\n",
+           " #\n",
+           " # The numbers are read from cc_xp_values.txt at generation time. Retune the\n",
+           " # bands there and re-run; do not edit them here, where they would silently\n",
+           " # disagree with the effect.\n\n"]
+    for track, band in sorted(pairs):
+        out.append(" %s: \"Gains %d %s experience.\"\n"
+                   % (award_key(track, band), values[band], TRACK_NAME[track]))
+    return "".join(out)
+
+
 LADDER: dict = {}
 SKIPPED: list = []
 
@@ -260,46 +508,78 @@ def main() -> int:
     args = ap.parse_args()
 
     LADDER = load_ladders()
-    print(f"loaded {len(LADDER)} ladder rung traits")
+    values = load_award_values()
+    print(f"loaded {len(LADDER)} ladder rung traits, "
+          f"{len(values)} award bands from cc_xp_values.txt")
 
-    report: list = []
-    all_traits: set[str] = set()
+    split_report: list = []
+    gate_report: list = []
+    tip_report: list = []
     changes: list[tuple[Path, str]] = []
+    final: dict = {}
 
     for path in sorted(EVENTS.glob("*.txt")):
         if path.name.startswith("cc_xp_"):
             continue                                   # the XP system's own events
         text = path.read_text(encoding="utf-8-sig")
-        if not TRAIT_RE.search(text):
+        if not TRAIT_RE.search(text) and MARKER not in text:
             continue
-        new, n, traits = split_options(text, LADDER, report, path.name)
-        if n:
+        new, n_split, _ = split_options(text, LADDER, split_report, path.name)
+        new, n_gate, _ = add_gated_fallbacks(new, LADDER, gate_report, path.name)
+        new, n_tip, _ = retooltip(new, path.name, tip_report)
+        final[path] = new
+        if n_split + n_gate + n_tip:
             changes.append((path, new))
-            all_traits |= traits
 
-    if not report:
-        print("nothing to do: every ladder-rung option is already split or gated.")
-        return 0
+    if split_report:
+        print(f"\nUNGATED RUNGS SPLIT BY is_ai: {len(split_report)}\n")
+        print("%-30s %-14s %-14s %-26s %-5s %s" %
+              ("file", "event", "option", "trait", "rung", "award"))
+        for f, ev, oname, trait, track, rung, band in split_report:
+            print("%-30s %-14s %-14s %-26s %s%-4d %s" %
+                  (f.replace("cc_", "").replace("_events.txt", ""), ev,
+                   oname.split(".")[-1], trait, track, rung, band))
 
-    print(f"\n{len(report)} options in {len(changes)} files\n")
-    print("%-32s %-16s %-14s %-26s %-5s %s" %
-          ("file", "event", "option", "trait", "rung", "award"))
-    for f, ev, oname, trait, track, rung, band in report:
-        print("%-32s %-16s %-14s %-26s %s%-4d %s" %
-              (f.replace("cc_", "").replace("_events.txt", ""), ev,
-               oname.split(".")[-1], trait, track, rung, band))
+    if gate_report:
+        print(f"\nGATED RUNGS GIVEN A BELOW-TIER PARTNER: {len(gate_report)}\n")
+        print("%-30s %-14s %-16s %-26s %-5s %s" %
+              ("file", "event", "option", "trait", "gate", "award"))
+        for f, ev, oname, trait, track, tier, band in gate_report:
+            print("%-30s %-14s %-16s %-26s %s%-4d %s" %
+                  (f.replace("cc_", "").replace("_events.txt", ""), ev,
+                   oname.split(".")[-1], trait, track, tier, band))
+        per_event: dict = {}
+        for f, ev, *_ in gate_report:
+            per_event[ev] = per_event.get(ev, 0) + 1
+        print("\nby event: " + ", ".join(f"{k}: {v}"
+                                         for k, v in sorted(per_event.items())))
+
+    if tip_report:
+        print("\nAWARDS GIVEN A TOOLTIP: "
+              + ", ".join(f"{f} x{n}" for f, n in tip_report))
 
     if SKIPPED:
         print("\nLEFT ALONE (reported, not rewritten):")
         for f, ev, traits, why in SKIPPED:
-            print("  %-34s %-16s %s" % (f, ev, why))
+            print("  %-34s %-14s %s" % (f, ev, why))
             print("      " + " ".join(traits))
 
-    by_rung: dict = {}
-    for *_, rung, _b in report:
-        by_rung[rung] = by_rung.get(rung, 0) + 1
-    print("\nby rung: " + ", ".join(f"rung {k}: {v}" for k, v in sorted(by_rung.items())))
-    print(f"distinct traits needing loc: {len(all_traits)}")
+    if not changes:
+        print("\nnothing to do: every ladder-rung option is split, partnered "
+              "and tooltipped.")
+
+    # LOC IS EMITTED FROM THE FINAL STATE OF EVERY FILE, not from this run's changes.
+    # Deriving it from `changes` meant a second run, which by construction changes
+    # nothing, would regenerate both files from an empty set and delete every key in
+    # them. The generated files describe what the events currently say; that has to be
+    # read back off the events.
+    traits: set = set()
+    pairs: set = set()
+    for path, text in final.items():
+        traits |= set(re.findall(r"^\t\tname = %s(\w+)" % MARKER, text, re.M))
+        for t, b in re.findall(r"text = cc_xp_award_(adm|dip|mil)_(\w+)", text):
+            pairs.add((t, "cc_xp_field_award_" + b))
+    print(f"\nloc: {len(traits)} rung keys, {len(pairs)} award keys")
 
     if not args.apply:
         print("\ndry run, nothing written (pass --apply)")
@@ -308,8 +588,10 @@ def main() -> int:
     for path, new in changes:
         path.write_text(new, encoding="utf-8-sig", newline="")
         print(f"  rewrote {path.relative_to(REPO)}")
-    OUT_LOC.write_text(emit_loc(all_traits), encoding="utf-8")
+    OUT_LOC.write_text(emit_loc(traits), encoding="utf-8")
     print(f"  wrote   {OUT_LOC.relative_to(REPO)}")
+    OUT_AWARD_LOC.write_text(emit_award_loc(pairs, values), encoding="utf-8")
+    print(f"  wrote   {OUT_AWARD_LOC.relative_to(REPO)}")
     return 0
 
 

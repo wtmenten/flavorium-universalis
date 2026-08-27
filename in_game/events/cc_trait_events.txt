@@ -122,6 +122,27 @@ cc_traits.1 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_iron_integrator
+		trigger = {
+			NOT = { scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 3 } } }
+			scope:minister = {
+				adm > 66  mil > 66  dip > 66
+			}
+		}
+		scope:minister = {
+			set_variable = cc_integration_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			custom_tooltip = {
+				text = cc_xp_award_adm_high
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_high }
+				cc_xp_recompute = yes
+			}
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	# TIER 2, not TIER 3. Master and Iron both demanded the top of the administrative
 	# ladder (1200 adm experience), which put every non-negative outcome out of reach for
 	# most of a campaign and left the fumbling option below as the only grantable result.
@@ -143,6 +164,30 @@ cc_traits.1 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_master_integrator
+		trigger = {
+			NOT = { scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 2 } } }
+			scope:minister = {
+				adm > 66
+				dip > 66
+				mil < 66
+				mil > 33
+			}
+		}
+		scope:minister = {
+			set_variable = cc_integration_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			custom_tooltip = {
+				text = cc_xp_award_adm_mid
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_mid }
+				cc_xp_recompute = yes
+			}
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_traits.1.c
 		trigger = {
@@ -172,6 +217,42 @@ cc_traits.1 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_able_integrator
+		trigger = {
+			NOT = { scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 1 } } }
+			scope:minister = {
+				OR = {
+					OR = {
+						has_variable = cc_cond_30_done          # Completed an integration cabinet action
+						years_of_service_in_cabinet >= 5        # Long-service bypass
+					}
+					AND = {
+						OR = {
+							adm < 66
+							dip < 66
+						}
+						mil < 66
+					}
+				}
+				adm > 33
+				dip > 33
+				mil > 33
+			}
+		}
+		scope:minister = {
+			set_variable = cc_integration_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			custom_tooltip = {
+				text = cc_xp_award_adm_low
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	# THE FALLBACK. It used to require adm/dip/mil all above 33, which the event's own
 	# trigger contradicts: the trigger admits a minister with all three BELOW 33, and that
 	# minister then matched no option at all except the decline below. The weakest
@@ -209,8 +290,11 @@ cc_traits.1 = {
 		scope:minister = {
 			set_variable = cc_integration_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_entry }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_adm_entry
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_entry }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 		add_country_modifier = {
@@ -1368,8 +1452,11 @@ cc_traits.20 = {
 		scope:student = {
 			set_variable = cc_teach_20_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_mil_low
+				cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
@@ -1410,8 +1497,11 @@ cc_traits.20 = {
 		scope:student = {
 			set_variable = cc_teach_20_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_adm_low
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
@@ -1452,8 +1542,11 @@ cc_traits.20 = {
 		scope:student = {
 			set_variable = cc_teach_20_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_adm_low
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
@@ -1540,8 +1633,11 @@ cc_traits.21 = {
 		scope:learner = {
 			set_variable = cc_teach_21_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_adm_low
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
@@ -1570,8 +1666,11 @@ cc_traits.21 = {
 		scope:learner = {
 			set_variable = cc_teach_21_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_mil_low
+				cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
@@ -1600,8 +1699,11 @@ cc_traits.21 = {
 		scope:learner = {
 			set_variable = cc_teach_21_done
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
-			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
-			cc_xp_recompute = yes
+			custom_tooltip = {
+				text = cc_xp_award_adm_low
+				cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+			}
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
