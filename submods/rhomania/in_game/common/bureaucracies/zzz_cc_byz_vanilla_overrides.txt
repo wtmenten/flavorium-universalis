@@ -10,34 +10,42 @@
 # positive_modifier to alter its nested scale, which is why this file uses REPLACE:.
 #
 #
-# ENTRENCHMENT: ENGINE ON THE BOONS, EXTRA SOFTENING ON THE MALUSES
+# ENTRENCHMENT IS THE ENGINE'S JOB. scope:entrenchment DOES NOT EXIST HERE.
 #
 # The engine ALREADY multiplies both the positive and the negative modifier of every
 # bureaucracy by entrenchment by itself. See game_concept_bureaucracy_desc, "increasing the
 # power of both positive and negative modifiers", and the ADDITIONAL_MODIFIER_ENTRENCHMENT
 # line rendered under a bureaucracy tooltip as "Entrenchment +N%".
 #
-# An earlier revision of this file multiplied BOTH sides by scope:entrenchment on the mistaken
-# reading that because no bureaucracy SCRIPT reads scope:entrenchment, entrenchment must be an
-# inert timer. It is not. The scripting hook is for ADDITIONAL entrenchment-dependent
-# behaviour; the base scaling is automatic, and doing it again squares it. The boon side is
-# therefore left completely alone now.
+# TWO revisions of this file got entrenchment wrong, in opposite directions, and the history
+# is kept here because the second mistake looked exactly like a fix for the first.
 #
-# The MALUS side keeps one deliberate extra factor of entrenchment. The engine's linear
-# scaling still has a brand new unfunded office doing real harm, and it should not: nobody has
-# had time to build anything out of it yet. With the extra factor the penalty is quadratic
-# below full entrenchment and identical to vanilla at 100%:
+#   1. An early revision multiplied BOTH sides by scope:entrenchment, on the mistaken reading
+#      that because no bureaucracy SCRIPT reads it, entrenchment must be an inert timer. It is
+#      not; the base scaling is automatic and doing it again squares it.
 #
-#     entrenchment      20%     50%     80%    100%
-#     engine only      0.20    0.50    0.80    1.00
-#     with ours        0.04    0.25    0.64    1.00
+#   2. The correction left ONE deliberate extra factor on the malus side, to soften a brand
+#      new unfunded office. That looked reasonable and was still wrong, because
+#      scope:entrenchment is not actually pushed into these blocks at all. The readme in
+#      game/in_game/common/bureaucracies/ lists it alongside scope:maintenance, but NO vanilla
+#      bureaucracy uses it anywhere, and the engine says so plainly:
 #
+#        Undefined event target 'entrenchment'
+#        Value of wrong type in '...' Got value of type 'none'
+#
+#      The undefined read poisoned the whole enclosing `scale`, so every negative_modifier
+#      carrying the factor evaluated to none. The maluses were not being softened. They were
+#      not being applied.
+#
+# So the scale is vanilla's again: `value = 1  subtract = scope:maintenance`. scope:maintenance
+# IS real and vanilla relies on it 22 times in byz.txt. If a brand new office still feels too
+# punishing, the lever is the modifier VALUES in each negative_modifier body, not the scale.
 #
 # WHAT CHANGED, and nothing else. Vanilla text is otherwise untouched, so a patch can be
 # re-synced by diffing against byz.txt and re-applying these per entry:
 #
-#   1. negative_modifier scale: APPENDED a multiply by (entrenchment/100). Appended rather
-#      than replaced so vanilla's own scale logic survives intact.
+#   1. negative_modifier scale: UNCHANGED from vanilla. It once carried an entrenchment
+#      factor; see the note above for why that had to come out.
 #   2. negative_modifier body: a little noble power, universal to all eleven, since a starved
 #      office of any kind ends up serving somebody local.
 #   3. positive_modifier body: a small crown power cost. The positive SCALE is untouched.
@@ -143,12 +151,6 @@ REPLACE:nomos_empsychos_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_estate_satisfaction_decay = 0.025
 		global_nobles_estate_power = 0.03
@@ -221,12 +223,6 @@ REPLACE:honorary_titles_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_crown_estate_power = -0.3
 		global_nobles_estate_power = 0.03
@@ -300,12 +296,6 @@ REPLACE:court_eunuchs_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		stability_decay = 0.0025
 		global_nobles_estate_power = 0.03
@@ -380,12 +370,6 @@ REPLACE:ritualistic_court_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
 		global_nobles_estate_power = 0.03
@@ -485,12 +469,6 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		pop_join_rebel_threshold = 0.05
 		global_nobles_estate_power = 0.03
@@ -586,12 +564,6 @@ REPLACE:romanitas_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		diplomatic_reputation = -1
 		global_nobles_estate_power = 0.03
@@ -663,12 +635,6 @@ REPLACE:imperial_senate_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		monthly_legitimacy = -0.2
 		monthly_republican_tradition = -0.2
@@ -757,12 +723,6 @@ REPLACE:kephalai_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		estate_enrichment = 0.3
 		global_non_rural_monthly_prosperity = -0.003
@@ -861,12 +821,6 @@ REPLACE:magister_militum_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		monthly_legitimacy = -0.2
 		global_nobles_estate_power = 0.53
@@ -948,12 +902,6 @@ REPLACE:themata_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		levy_recovery_modifier = -0.2
 		global_nobles_estate_power = 0.53
@@ -1039,12 +987,6 @@ REPLACE:allelengyon_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BYZ_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_monthly_development = -0.0025
 		global_nobles_estate_power = 0.03

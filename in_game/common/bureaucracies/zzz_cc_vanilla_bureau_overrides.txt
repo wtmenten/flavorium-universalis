@@ -21,21 +21,24 @@
 # uses REPLACE:.
 #
 #
-# ENTRENCHMENT: ENGINE ON THE BOONS, EXTRA SOFTENING ON THE MALUSES
+# ENTRENCHMENT IS THE ENGINE'S JOB. scope:entrenchment DOES NOT EXIST HERE.
 #
 # The engine ALREADY multiplies both the positive and the negative modifier of every
 # bureaucracy by entrenchment. See game_concept_bureaucracy_desc, "increasing the power of both
 # positive and negative modifiers", and the "Entrenchment +N%" line under a bureaucracy
 # tooltip. Doing it again on the boon side would square it, so the boon side is left alone.
 #
-# The MALUS side keeps one deliberate extra factor. The engine's linear scaling still has a
-# brand new unfunded office doing real harm, and it should not: nobody has had time to build
-# anything out of it yet. With the extra factor the penalty is quadratic below full
-# entrenchment and identical to vanilla at 100%:
+# The malus side used to carry one deliberate extra factor of scope:entrenchment, to soften a
+# brand new unfunded office. That was wrong twice over. Squaring aside, the scope is not pushed
+# into these blocks at all: the readme in game/in_game/common/bureaucracies/ lists it next to
+# scope:maintenance, but no vanilla bureaucracy uses it anywhere and the engine reports
 #
-#     entrenchment      20%     50%     80%    100%
-#     engine only      0.20    0.50    0.80    1.00
-#     with ours        0.04    0.25    0.64    1.00
+#   Undefined event target 'entrenchment'
+#   Value of wrong type in '...' Got value of type 'none'
+#
+# The undefined read poisoned the enclosing `scale`, so every negative_modifier carrying the
+# factor evaluated to none and the maluses were not applying at all. The scale is vanilla's
+# again. scope:maintenance IS real; vanilla relies on it 20 times in generic.txt.
 #
 #
 # WHAT CHANGED, AND NOTHING ELSE. Vanilla text is otherwise untouched, so this re-syncs by
@@ -51,8 +54,8 @@
 #      variable. See the comment at each site for why it cannot be done any other way.
 #   3. positive_modifier body: a small crown power cost, since a funded office runs
 #      increasingly to its own standards. The positive SCALE is untouched.
-#   4. negative_modifier: APPENDED an entrenchment factor to the scale, plus a little noble
-#      power, universal to all fourteen.
+#   4. negative_modifier body: a little noble power, universal to all fourteen. The negative
+#      SCALE is untouched; it once carried an entrenchment factor, see the note above.
 #
 # ONE ARITHMETIC MERGE was needed, because vanilla already sets the same key in that block and
 # a repeated key inside one modifier block does not stack:
@@ -127,12 +130,6 @@ REPLACE:board_of_revenue_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		estate_enrichment = 0.1
 
@@ -200,12 +197,6 @@ REPLACE:privy_council_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		pop_join_rebel_threshold = 0.1
 
@@ -271,12 +262,6 @@ REPLACE:audit_bureau_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
 
@@ -345,12 +330,6 @@ REPLACE:colonial_office_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_migration_attraction = -0.2
 
@@ -418,12 +397,6 @@ REPLACE:admiralty_board_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		navy_maintenance_efficiency = -0.2
 
@@ -491,12 +464,6 @@ REPLACE:foreign_ministry_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		diplomatic_reputation = diplomatic_reputation_severe_penalty
 
@@ -564,12 +531,6 @@ REPLACE:trade_commission_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		burghers_estate_target_satisfaction = -0.2
 
@@ -638,12 +599,6 @@ REPLACE:war_council_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		land_morale_modifier = -0.1
 
@@ -711,12 +666,6 @@ REPLACE:ordnance_board_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		army_artillery_maintenance_cost_modifier = 0.2
 
@@ -784,12 +733,6 @@ REPLACE:commissariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		army_movement_speed = -0.1
 
@@ -865,12 +808,6 @@ REPLACE:central_secretariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		stability_cost_efficiency = -0.1
 		monthly_celestial_authority = -0.04
@@ -947,12 +884,6 @@ REPLACE:imperial_censorate_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_estate_power = 0.2
 		monthly_celestial_authority = -0.04
@@ -1045,12 +976,6 @@ REPLACE:six_boards_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		global_estate_power = 0.25
 		monthly_celestial_authority = -0.03
@@ -1126,12 +1051,6 @@ REPLACE:grand_secretariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
-
-			multiply = {
-				value = scope:entrenchment
-				divide = 100
-				desc = "CC_BUREAU_ENTRENCHMENT_SCALE"
-			}
 		}
 		monthly_legitimacy = -0.2
 		monthly_celestial_authority = -0.04
