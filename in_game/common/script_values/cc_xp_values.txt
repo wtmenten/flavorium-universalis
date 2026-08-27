@@ -157,6 +157,42 @@ cc_xp_field_award_high   = { value = 700 }
 
 
 ###############################################################################
+# 3d. PAYOFF SCALING
+#
+# Seventy-four court events read a minister's traits and pay out without ever asking
+# how senior that minister is: a level 1 minister and a level 10 one bought the same
+# synergy. This multiplies those payouts by the level of the minister the event is
+# actually about.
+#
+# WHY IT READS A COUNTRY VARIABLE. add_country_modifier evaluates `size` in COUNTRY
+# scope, and the events do not agree on what the minister is called: 34 save 'minister',
+# 8 'rehabilitated_minister', 8 a 'minister_a'/'minister_b' pair, and a long tail saves
+# things like 'military_minister' or 'muslim_partner'. cc_xp_publish_payoff_level takes
+# the scope name as a parameter and writes the level here, so one shared value serves
+# every event regardless of what its minister is called.
+#
+# CAPPED AT 2.5x DELIBERATELY. Level runs 1-10 and an uncapped linear scale would make
+# a mature court's synergies worth ten times a young one's, which turns flavour events
+# into the dominant income source. 2.5x is enough to feel like seniority matters without
+# that. Level 1 yields exactly 1.0, so nothing is ever weaker than it is today.
+###############################################################################
+
+cc_xp_payoff_scale = {
+	value = 1
+	if = {
+		limit = { has_variable = cc_xp_payoff_level }
+		add = {
+			value = var:cc_xp_payoff_level
+			subtract = 1
+			multiply = 0.1667
+		}
+	}
+	min = 1
+	max = 2.5
+}
+
+
+###############################################################################
 # 4. DERIVED HELPERS
 ###############################################################################
 

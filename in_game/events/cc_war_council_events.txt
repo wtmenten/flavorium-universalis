@@ -73,6 +73,7 @@ cc_wc.1 = {
 			}
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — standing_army_advocate or offensive_strategist: push for aggressive campaign
@@ -90,8 +91,9 @@ cc_wc.1 = {
 			modifier = cc_wc_offensive_surge
 			years = 4
 			mode = set_to_largest_and_extend
+			size = cc_xp_payoff_scale
 		}
-		add_stability = stability_weak_penalty
+		add_stability = { value = stability_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 
 	# Option B — defensive_commander: counsel patience and dig in
@@ -104,6 +106,7 @@ cc_wc.1 = {
 			modifier = cc_wc_defensive_posture
 			years = 4
 			mode = set_to_largest_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 
@@ -113,7 +116,7 @@ cc_wc.1 = {
 		trigger = {
 			scope:minister = { has_trait = hawk_minister }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 		set_variable = { name = cc_hawk_war_pledge value = yes months = 24 }
 	}
 
@@ -128,7 +131,7 @@ cc_wc.1 = {
 				NOT = { has_trait = hawk_minister }
 			}
 		}
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:minister = { add_mil = 1 }
 	}
 }
@@ -174,6 +177,7 @@ cc_wc.2 = {
 			}
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — efficiency_administrator: squeeze the population (manpower at cost of loyalty)
@@ -189,7 +193,7 @@ cc_wc.2 = {
 		}
 		add_gold = { value = monthly_income_trade_and_tax  multiply = 3  min = 60 }
 		add_estate_satisfaction = { type = estate_type:peasants_estate value = estate_satisfaction_mild_penalty }
-		add_stability = stability_weak_penalty
+		add_stability = { value = stability_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 
 	# Option B — prosperity_planner: take war loans (gold now, inflation later)
@@ -205,7 +209,7 @@ cc_wc.2 = {
 	# Option C — weather the shortage (always available)
 	option = {
 		name = cc_wc.2.c
-		add_stability = stability_weak_penalty
+		add_stability = { value = stability_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -244,6 +248,7 @@ cc_wc.3 = {
 			}
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — grant resources (costs gold, awards morale surge)
@@ -254,6 +259,7 @@ cc_wc.3 = {
 			modifier = cc_wc_offensive_surge
 			years = 3
 			mode = set_to_largest_and_extend
+			size = cc_xp_payoff_scale
 		}
 		scope:minister = { add_mil = 1 }
 	}
@@ -298,6 +304,7 @@ cc_wc.10 = {
 			limit = { has_trait = standing_army_advocate }
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — enact standing army reform (nobles displeasure, lasting discipline)
@@ -306,6 +313,7 @@ cc_wc.10 = {
 		add_country_modifier = {
 			modifier = cc_standing_army_reform
 			years = 15
+			size = cc_xp_payoff_scale
 		}
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
 		remove_variable = cc_military_reform_opportunity
@@ -342,6 +350,7 @@ cc_wc.11 = {
 			limit = { has_trait = commissariat_officer }
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — fund the commissariat reform
@@ -351,6 +360,7 @@ cc_wc.11 = {
 		add_country_modifier = {
 			modifier = cc_supply_reform
 			years = 15
+			size = cc_xp_payoff_scale
 		}
 		remove_variable = cc_military_reform_opportunity
 	}
@@ -386,6 +396,7 @@ cc_wc.12 = {
 			limit = { has_trait = siege_engineer }
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — invest in fortification doctrine
@@ -395,6 +406,7 @@ cc_wc.12 = {
 		add_country_modifier = {
 			modifier = cc_fortification_doctrine
 			years = 20
+			size = cc_xp_payoff_scale
 		}
 		remove_variable = cc_military_reform_opportunity
 	}
@@ -439,12 +451,13 @@ cc_wc.50 = {
 			limit = { has_trait = hawk_minister }
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Assert authority — the peace was necessary; the minister must accept it
 	option = {
 		name = cc_wc.50.a
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:minister = {
 			set_variable = { name = cc_minister_resentful value = yes }
 			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
@@ -455,18 +468,19 @@ cc_wc.50 = {
 	# Acknowledge the peace was unfortunate — offer the hawk symbolic concession
 	option = {
 		name = cc_wc.50.b
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 		scope:minister = { add_mil = 1 }
 	}
 
 	# Promise the next campaign — hawk stays loyal, but you accept an obligation
 	option = {
 		name = cc_wc.50.c
-		add_prestige = prestige_mild_penalty
+		add_prestige = { value = prestige_mild_penalty  multiply = cc_xp_payoff_scale }
 		add_country_modifier = {
 			modifier = cc_wc_offensive_surge
 			years = 5
 			mode = set_to_largest_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 }
@@ -579,12 +593,13 @@ cc_wc.20 = {
 			limit = { has_trait = outdated_general }
 			save_scope_as = minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Option A — formal council retirement (clear the trait; costs prestige)
 	option = {
 		name = cc_wc.20.a
-		add_prestige = prestige_mild_penalty
+		add_prestige = { value = prestige_mild_penalty  multiply = cc_xp_payoff_scale }
 		scope:minister = {
 			remove_trait = trait:outdated_general
 		}
@@ -593,6 +608,6 @@ cc_wc.20 = {
 	# Option B — let the old soldier serve out the campaign
 	option = {
 		name = cc_wc.20.b
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 	}
 }

@@ -726,3 +726,65 @@ cc_xp_take_protege = {
 	}
 	cc_xp_sync_slots = yes
 }
+
+
+###############################################################################
+# PAYOFF SCALING (event migration)
+#
+# Publishes the level of the minister a payoff event is about, so cc_xp_payoff_scale
+# can multiply that event's rewards by it. COUNTRY scope.
+#
+# Parameterised on the scope NAME because the seventy-four payoff events do not agree
+# on one: 34 save 'minister', 8 'rehabilitated_minister', 8 a 'minister_a'/'minister_b'
+# pair, and the tail saves 'military_minister', 'muslim_partner' and similar. Passing
+# the name in beats renaming scopes across seventeen files, and beats reading the
+# cabinet's best minister, which would credit the wrong person.
+#
+# Guarded on `exists` and on has_variable for the same reason every other reader here
+# is: an event option's effect is evaluated to build its tooltip before anything is
+# chosen, and a wrong-scope read in a script value does not abort, it logs and yields
+# none, which min/max then quietly turn into a plausible-looking number.
+###############################################################################
+
+cc_xp_publish_payoff_level = {
+	set_variable = { name = cc_xp_payoff_level  value = 1 }
+
+	if = {
+		limit = {
+			exists = scope:$SCOPE$
+			scope:$SCOPE$ = { has_variable = cc_level }
+		}
+		set_variable = {
+			name = cc_xp_payoff_level
+			value = scope:$SCOPE$.var:cc_level
+		}
+	}
+}
+
+# For the four payoff events that save no character at all (cc_trait_dispatch.1,
+# cc_legacy.2, cc_legend.2, cc_legend.4). Credits the most senior seated minister,
+# which is the closest honest answer when the event never identified one.
+cc_xp_publish_payoff_level_best = {
+	set_variable = { name = cc_xp_payoff_level  value = 1 }
+
+	every_cabinet_character = {
+		limit = {
+			in_cabinet = yes
+			is_alive = yes
+			has_variable = cc_level
+		}
+		save_scope_as = cc_xp_payoff_seen
+		root = {
+			if = {
+				limit = {
+					has_variable = cc_xp_payoff_level
+					var:cc_xp_payoff_level < scope:cc_xp_payoff_seen.var:cc_level
+				}
+				set_variable = {
+					name = cc_xp_payoff_level
+					value = scope:cc_xp_payoff_seen.var:cc_level
+				}
+			}
+		}
+	}
+}

@@ -44,13 +44,14 @@ cc_fac.1 = {
 			limit = { has_trait = noble_champion_of_court }
 			save_scope_as = noble_minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = noble_minister }
 	}
 
 	# Option A — Grant the privilege: nobles gain power, but treasury suffers
 	option = {
 		name = cc_fac.1.a
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_bonus }
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -3  min = -100 }
 	}
 
@@ -58,12 +59,12 @@ cc_fac.1 = {
 	option = {
 		name = cc_fac.1.b
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_mild_penalty }
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:noble_minister = {
 			set_variable = { name = cc_minister_resentful value = yes }
 			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
 		}
-		add_stability = stability_weak_penalty
+		add_stability = { value = stability_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 
 	# Option C — Compromise: grant partial concession, estates settle down
@@ -103,6 +104,7 @@ cc_fac.2 = {
 			limit = { has_trait = merchant_of_the_crown }
 			save_scope_as = merchant_minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = merchant_minister }
 	}
 
 	# Option A — Embrace the compact: treasury income, nobles resentful
@@ -111,14 +113,14 @@ cc_fac.2 = {
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = estate_satisfaction_weak_penalty }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = 4  min = 80 }
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 
 	# Option B — Reject the compact: burghers fume, stability holds
 	option = {
 		name = cc_fac.2.b
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_penalty }
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:merchant_minister = {
 			set_variable = { name = cc_minister_resentful value = yes }
 			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
@@ -163,6 +165,7 @@ cc_fac.3 = {
 			limit = { has_trait = court_prelate }
 			save_scope_as = clergy_minister
 		}
+		cc_xp_publish_payoff_level = { SCOPE = clergy_minister }
 	}
 
 	# Option A — Back the clergy: conversion push, burghers and peasants suffer
@@ -170,10 +173,11 @@ cc_fac.3 = {
 		name = cc_fac.3.a
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_weak_penalty }
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		add_country_modifier = {
 			modifier = cc_cabinet_pop_conversion
 			years = 8
+			size = cc_xp_payoff_scale
 		}
 	}
 
@@ -181,8 +185,8 @@ cc_fac.3 = {
 	option = {
 		name = cc_fac.3.b
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_penalty }
-		add_prestige = prestige_weak_bonus
-		add_stability = stability_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
+		add_stability = { value = stability_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:clergy_minister = {
 			set_variable = { name = cc_minister_resentful value = yes }
 			add_character_modifier = { modifier = cc_minister_slighted  years = 15  mode = add_and_extend }
@@ -196,6 +200,7 @@ cc_fac.3 = {
 		add_country_modifier = {
 			modifier = cc_cabinet_parliamentary_guidance
 			years = 5
+			size = cc_xp_payoff_scale
 		}
 	}
 }

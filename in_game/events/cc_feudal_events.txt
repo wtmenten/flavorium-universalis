@@ -368,6 +368,7 @@ cc_feudal.7 = {
 				save_scope_as = holy_war_target
 			}
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Catholics: call the actual crusade (single-nation crusade IO)
@@ -376,16 +377,16 @@ cc_feudal.7 = {
 		trigger = { religion = religion:catholic }
 		crusade_effect = { target = scope:holy_war_target }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.10 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Muslims: preparation modifier (cb_jihad is hardcoded, not player-triggerable)
 	option = {
 		name = cc_feudal.7.a
 		trigger = { religion.group = religion_group:muslim }
-		add_country_modifier = { modifier = cc_jihad_preparation years = 5 }
+		add_country_modifier = { modifier = cc_jihad_preparation years = 5  size = cc_xp_payoff_scale }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.10 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# All faiths: generic spiritual mandate preparation
@@ -395,16 +396,16 @@ cc_feudal.7 = {
 			NOT = { religion = religion:catholic }
 			NOT = { religion.group = religion_group:muslim }
 		}
-		add_country_modifier = { modifier = cc_spiritual_mandate years = 8 }
+		add_country_modifier = { modifier = cc_spiritual_mandate years = 8  size = cc_xp_payoff_scale }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Secular realpolitik — decline the call
 	option = {
 		name = cc_feudal.7.b
-		add_prestige = prestige_mild_bonus
-		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 3 }
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
+		add_country_modifier = { modifier = cc_synergy_court_of_learning years = 3  size = cc_xp_payoff_scale }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.08 }
 		remove_variable = cc_holy_war_called
 	}

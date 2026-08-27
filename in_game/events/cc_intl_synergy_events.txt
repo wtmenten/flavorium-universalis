@@ -62,24 +62,25 @@ cc_intl.1 = {
 		}
 		scope:target_nation = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Formal scholarly exchange — both courts benefit
 	option = {
 		name = cc_intl.1.a
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 12  size = cc_xp_payoff_scale }
 		scope:target_nation = {
-			add_country_modifier = { modifier = cc_intl_scholar_influx years = 12 }
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 12  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
 		add_opinion = { target = scope:target_nation modifier = cc_intl_scholarly_bond }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Invite their scholars exclusively — a one-way migration of talent
 	option = {
 		name = cc_intl.1.b
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  size = cc_xp_payoff_scale }
 		add_migration = {
 			from_location = scope:cc_intl_origin
 			to_location = scope:cc_intl_dest
@@ -90,7 +91,7 @@ cc_intl.1 = {
 			amount = 0.025
 		}
 		scope:target_nation = {
-			add_prestige = prestige_mild_bonus
+			add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
 	}
@@ -98,7 +99,7 @@ cc_intl.1 = {
 	# Decline — the court maintains its own intellectual independence
 	option = {
 		name = cc_intl.1.c
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -211,12 +212,13 @@ cc_intl.2 = {
 			save_scope_as = minister
 		}
 
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Open the court — scholars arrive and enrich the capital
 	option = {
 		name = cc_intl.2.a
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  mode = set_to_largest_and_extend }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  mode = set_to_largest_and_extend  size = cc_xp_payoff_scale }
 		if = {
 			limit = {
 				exists = scope:war_nation_province_1
@@ -268,7 +270,7 @@ cc_intl.2 = {
 		scope:war_nation = {
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Recruit selectively — fund targeted outreach for the best minds
@@ -342,7 +344,7 @@ cc_intl.2 = {
 	# Remain neutral — do not invite refugees, maintain diplomatic stability
 	option = {
 		name = cc_intl.2.c
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 		scope:war_nation = {
 			add_opinion = { modifier = denied_aid target = root scale = 1.5 }
 		}
@@ -390,29 +392,30 @@ cc_intl.3 = {
 			}
 			save_scope_as = rival_court
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Let the rivalry sharpen both courts — competitive innovation
 	option = {
 		name = cc_intl.3.a
-		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10 }
+		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10  size = cc_xp_payoff_scale }
 		scope:rival_court = {
-			add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10 }
+			add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 10  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_rival_court target = root }
 		}
 		add_opinion = { target = scope:rival_court modifier = cc_intl_rival_court }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Assert cultural preeminence — challenge their standing openly
 	option = {
 		name = cc_intl.3.b
-		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 12 }
+		add_country_modifier = { modifier = cc_intl_intellectual_rivalry years = 12  size = cc_xp_payoff_scale }
 		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 		scope:rival_court = {
 			add_opinion = { modifier = cc_intl_rival_court target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Propose a joint philosophical academy — costs gold, benefits both
@@ -423,13 +426,13 @@ cc_intl.3 = {
 			multiply = -1.50
 			min = -350
 		}
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  size = cc_xp_payoff_scale }
 		scope:rival_court = {
-			add_country_modifier = { modifier = cc_intl_scholar_influx years = 15 }
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 15  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
 		add_opinion = { target = scope:rival_court modifier = cc_intl_scholarly_bond }
-		add_prestige = prestige_severe_bonus
+		add_prestige = { value = prestige_severe_bonus  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -490,24 +493,25 @@ cc_intl.4 = {
 		}
 		scope:military_ally = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
+		cc_xp_publish_payoff_level = { SCOPE = military_minister }
 	}
 
 	# Share our doctrine — they improve, we gain prestige and noble goodwill
 	option = {
 		name = cc_intl.4.a
 		scope:military_ally = {
-			add_country_modifier = { modifier = cc_intl_military_exchange years = 10 }
+			add_country_modifier = { modifier = cc_intl_military_exchange years = 10  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_military_bond target = root }
 		}
 		add_opinion = { target = scope:military_ally modifier = cc_intl_military_bond }
 		add_estate_satisfaction = { type = estate_type:nobles_estate value = 0.05 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Request their veterans in exchange — migration of experienced soldiers to our service
 	option = {
 		name = cc_intl.4.b
-		add_country_modifier = { modifier = cc_intl_military_exchange years = 10 }
+		add_country_modifier = { modifier = cc_intl_military_exchange years = 10  size = cc_xp_payoff_scale }
 		add_migration = {
 			from_location = scope:cc_intl_origin
 			to_location = scope:cc_intl_dest
@@ -535,7 +539,7 @@ cc_intl.4 = {
 			min = 100
 		}
 		scope:military_ally = {
-			add_country_modifier = { modifier = cc_intl_military_exchange years = 8 }
+			add_country_modifier = { modifier = cc_intl_military_exchange years = 8  size = cc_xp_payoff_scale }
 		}
 	}
 }
@@ -595,12 +599,13 @@ cc_intl.5 = {
 		}
 		scope:steppe_neighbor = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Forge an alliance — nomadic cavalry enter your service; migration flourishes
 	option = {
 		name = cc_intl.5.a
-		add_country_modifier = { modifier = cc_intl_steppe_alliance years = 10 }
+		add_country_modifier = { modifier = cc_intl_steppe_alliance years = 10  size = cc_xp_payoff_scale }
 		add_migration = {
 			from_location = scope:cc_intl_origin
 			to_location = scope:cc_intl_dest
@@ -614,7 +619,7 @@ cc_intl.5 = {
 		scope:steppe_neighbor = {
 			add_opinion = { modifier = cc_intl_military_bond target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Demand tribute from the steppe lords
@@ -625,7 +630,7 @@ cc_intl.5 = {
 			multiply = 0.75
 			min = 200
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 		scope:steppe_neighbor = {
 			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
 			add_liberty_desire = liberty_desire_mild_plus
@@ -643,6 +648,7 @@ cc_intl.5 = {
 		add_country_modifier = {
 			modifier = cc_intl_steppe_alliance
 			years = 5
+			size = cc_xp_payoff_scale
 		}
 	}
 }
@@ -684,27 +690,28 @@ cc_intl.6 = {
 			limit = { religion.group = religion_group:muslim }
 			save_scope_as = muslim_partner
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Islamic solidarity — mutual antagonism reduction, diplomatic network strengthened
 	option = {
 		name = cc_intl.6.a
-		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12  size = cc_xp_payoff_scale }
 		scope:muslim_partner = {
-			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_religious_kinship target = root }
 		}
 		add_opinion = { target = scope:muslim_partner modifier = cc_intl_religious_kinship }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.05 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Trade network compact — the Islamic world's commercial links deepen
 	option = {
 		name = cc_intl.6.b
-		add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 10  size = cc_xp_payoff_scale }
 		scope:muslim_partner = {
-			add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+			add_country_modifier = { modifier = cc_intl_trade_compact years = 10  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_trade_partner target = root }
 		}
 		add_opinion = { target = scope:muslim_partner modifier = cc_intl_trade_partner }
@@ -717,10 +724,10 @@ cc_intl.6 = {
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
 		scope:muslim_partner = {
 			add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
-			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8  size = cc_xp_payoff_scale }
 		}
-		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
-		add_prestige = prestige_mild_bonus
+		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8  size = cc_xp_payoff_scale }
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -766,27 +773,28 @@ cc_intl.7 = {
 			}
 			save_scope_as = protestant_partner
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Religious brotherhood — war enthusiasm against Catholic powers, confessional solidarity
 	option = {
 		name = cc_intl.7.a
-		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+		add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8  size = cc_xp_payoff_scale }
 		scope:protestant_partner = {
-			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8 }
+			add_country_modifier = { modifier = cc_intl_religious_solidarity years = 8  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_religious_kinship target = root }
 		}
 		add_opinion = { target = scope:protestant_partner modifier = cc_intl_religious_kinship }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = 0.08 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Scholarly exchange — the Reformation produced extraordinary theological scholarship
 	option = {
 		name = cc_intl.7.b
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 8 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 8  size = cc_xp_payoff_scale }
 		scope:protestant_partner = {
-			add_country_modifier = { modifier = cc_intl_scholar_influx years = 8 }
+			add_country_modifier = { modifier = cc_intl_scholar_influx years = 8  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
 		add_opinion = { target = scope:protestant_partner modifier = cc_intl_scholarly_bond }
@@ -795,7 +803,7 @@ cc_intl.7 = {
 	# Maintain careful distance — the politics of confession are dangerous
 	option = {
 		name = cc_intl.7.c
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 		add_estate_satisfaction = { type = estate_type:clergy_estate value = -0.03 }
 	}
 }
@@ -837,12 +845,13 @@ cc_intl.8 = {
 		}
 		scope:pilgrimage_partner = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Host the great pilgrimage — pilgrims bring wealth, faith, and migrants
 	option = {
 		name = cc_intl.8.a
-		add_country_modifier = { modifier = cc_intl_pilgrimage_network years = 10 }
+		add_country_modifier = { modifier = cc_intl_pilgrimage_network years = 10  size = cc_xp_payoff_scale }
 		add_migration = {
 			from_location = scope:cc_intl_origin
 			to_location = scope:cc_intl_dest
@@ -856,7 +865,7 @@ cc_intl.8 = {
 		scope:pilgrimage_partner = {
 			add_opinion = { modifier = cc_intl_religious_kinship target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Send spiritual emissaries to their court — cultural influence, goodwill
@@ -873,9 +882,9 @@ cc_intl.8 = {
 	# Spiritual arbitration — neutral religious mediation between our courts
 	option = {
 		name = cc_intl.8.c
-		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8  size = cc_xp_payoff_scale }
 		scope:pilgrimage_partner = {
-			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+			add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_religious_kinship target = root }
 		}
 		add_opinion = { target = scope:pilgrimage_partner modifier = cc_intl_religious_kinship }
@@ -931,25 +940,26 @@ cc_intl.9 = {
 			save_scope_as = trade_partner
 			set_variable = { name = cc_intl_9_fired value = yes years = 12 }
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Joint trade venture — mutual trade power, burgher satisfaction, prosperity
 	option = {
 		name = cc_intl.9.a
-		add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 10  size = cc_xp_payoff_scale }
 		scope:trade_partner = {
-			add_country_modifier = { modifier = cc_intl_trade_compact years = 10 }
+			add_country_modifier = { modifier = cc_intl_trade_compact years = 10  size = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_trade_partner target = root }
 		}
 		add_opinion = { target = scope:trade_partner modifier = cc_intl_trade_partner }
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.08 }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Negotiate exclusive rights — you gain more, third parties resent it
 	option = {
 		name = cc_intl.9.b
-		add_country_modifier = { modifier = cc_intl_trade_compact years = 12 }
+		add_country_modifier = { modifier = cc_intl_trade_compact years = 12  size = cc_xp_payoff_scale }
 		add_estate_satisfaction = { type = estate_type:burghers_estate value = 0.05 }
 		scope:trade_partner = {
 			add_opinion = { modifier = cc_intl_trade_partner target = root }
@@ -966,8 +976,8 @@ cc_intl.9 = {
 	# Study their practices — modest intelligence and research value
 	option = {
 		name = cc_intl.9.c
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 6 }
-		add_prestige = prestige_weak_bonus
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 6  size = cc_xp_payoff_scale }
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -1007,18 +1017,19 @@ cc_intl.10 = {
 			}
 			save_scope_as = junior_state
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Extend diplomatic patronage — they enter our orbit willingly
 	option = {
 		name = cc_intl.10.a
-		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12  size = cc_xp_payoff_scale }
 		scope:junior_state = {
-			add_prestige = prestige_mild_bonus
+			add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
 		add_opinion = { target = scope:junior_state modifier = cc_diplomatic_favor }
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Extract a tributary arrangement — gold and prestige at their expense
@@ -1029,7 +1040,7 @@ cc_intl.10 = {
 			multiply = 0.75
 			min = 200
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 		scope:junior_state = {
 			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
 			add_liberty_desire = liberty_desire_mild_plus
@@ -1043,11 +1054,11 @@ cc_intl.10 = {
 			target = scope:junior_state
 			type = casus_belli:cb_border_war
 		}
-		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8 }
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 8  size = cc_xp_payoff_scale }
 		scope:junior_state = {
 			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 }
 
@@ -1099,16 +1110,17 @@ cc_intl.11 = {
 		}
 		scope:shadow_target = { capital = { save_scope_as = cc_intl_origin } }
 		capital = { save_scope_as = cc_intl_dest }
+		cc_xp_publish_payoff_level = { SCOPE = minister }
 	}
 
 	# Intelligence operation — build a spy network, reduce their hostility
 	option = {
 		name = cc_intl.11.a
-		add_country_modifier = { modifier = cc_intl_shadow_operations years = 8 }
+		add_country_modifier = { modifier = cc_intl_shadow_operations years = 8  size = cc_xp_payoff_scale }
 		scope:shadow_target = {
 			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Recruit their discontented nobles — migration of elite talent, weaken their base
@@ -1142,7 +1154,7 @@ cc_intl.11 = {
 			target = scope:shadow_target
 			type = casus_belli:cb_insulted_us
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 		scope:shadow_target = {
 			add_opinion = { modifier = cc_intl_diplomatic_pressure target = root }
 		}
@@ -1202,16 +1214,17 @@ cc_intl.12 = {
 			save_scope_as = tributary_state
 			set_variable = { name = cc_intl_12_fired value = yes years = 15 }
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	# Offer tributary relations — the celestial hierarchy is recognized
 	option = {
 		name = cc_intl.12.a
-		add_prestige = prestige_severe_bonus
-		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12 }
-		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 10 }
+		add_prestige = { value = prestige_severe_bonus  multiply = cc_xp_payoff_scale }
+		add_country_modifier = { modifier = cc_intl_diplomatic_compact years = 12  size = cc_xp_payoff_scale }
+		add_country_modifier = { modifier = cc_synergy_mandate_of_learning years = 10  size = cc_xp_payoff_scale }
 		scope:tributary_state = {
-			add_prestige = prestige_mild_bonus
+			add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 			add_opinion = { modifier = cc_intl_religious_kinship target = root }
 		}
 		add_opinion = { target = scope:tributary_state modifier = cc_diplomatic_favor }
@@ -1220,18 +1233,18 @@ cc_intl.12 = {
 	# Send a cultural mission — spread Confucian literacy and administrative practice
 	option = {
 		name = cc_intl.12.b
-		add_country_modifier = { modifier = cc_intl_scholar_influx years = 10 }
+		add_country_modifier = { modifier = cc_intl_scholar_influx years = 10  size = cc_xp_payoff_scale }
 		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 		scope:tributary_state = {
 			add_opinion = { modifier = cc_intl_scholarly_bond target = root }
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Assert celestial supremacy — prestige + CB for if they resist
 	option = {
 		name = cc_intl.12.c
-		add_prestige = prestige_severe_bonus
+		add_prestige = { value = prestige_severe_bonus  multiply = cc_xp_payoff_scale }
 		culture = { add_cultural_influence = cultural_influence_mild_bonus }
 		add_casus_belli = {
 			target = scope:tributary_state

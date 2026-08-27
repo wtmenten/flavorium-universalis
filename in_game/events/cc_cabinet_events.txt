@@ -178,6 +178,7 @@ cc_cabinet.5 = {
 				35 = { set_variable = { name = cc_5_outcome  value = 3 } }
 			}
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	after = {
@@ -189,11 +190,12 @@ cc_cabinet.5 = {
 	option = {
 		name = cc_cabinet.5.a
 		trigger = { var:cc_5_outcome = 1 }
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 		add_country_modifier = {
 			modifier = cc_cabinet_revoke_difficulty
 			years = 3
 			mode = add_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 
@@ -1378,6 +1380,7 @@ cc_cabinet.53 = {
 				10 = { set_variable = { name = cc_52_outcome value = 4 } }
 			}
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	after = {
@@ -1390,7 +1393,7 @@ cc_cabinet.53 = {
 		name = cc_cabinet.53.a
 		trigger = { var:cc_52_outcome = 1 }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = 0.20  min = 40 }
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Outcome 2: Diplomatic favour — minister opens doors with a neighbor
@@ -1404,7 +1407,7 @@ cc_cabinet.53 = {
 				add_opinion = { target = root modifier = cc_diplomatic_favor }
 			}
 		}
-		add_prestige = prestige_mild_bonus
+		add_prestige = { value = prestige_mild_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Outcome 3: Subtle influence — minister expands diplomatic reach
@@ -1415,6 +1418,7 @@ cc_cabinet.53 = {
 			modifier = cc_cabinet_diplomatic_influence
 			years = 8
 			mode = add_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 
@@ -1422,7 +1426,7 @@ cc_cabinet.53 = {
 	option = {
 		name = cc_cabinet.53.d
 		trigger = { var:cc_52_outcome = 4 }
-		add_prestige = prestige_mild_penalty
+		add_prestige = { value = prestige_mild_penalty  multiply = cc_xp_payoff_scale }
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_weak_penalty
@@ -1506,6 +1510,7 @@ cc_cabinet.54 = {
 				35 = { set_variable = { name = cc_52_outcome value = 3 } }
 			}
 		}
+		cc_xp_publish_payoff_level_best = yes
 	}
 
 	after = {
@@ -1529,7 +1534,7 @@ cc_cabinet.54 = {
 		else = {
 			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_bonus }
 		}
-		add_prestige = prestige_weak_bonus
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
 	}
 
 	# Outcome 2: Minister turns unrest to the crown's advantage
@@ -1541,6 +1546,7 @@ cc_cabinet.54 = {
 			modifier = cc_cabinet_ministerial_investment
 			years = 4
 			mode = set_to_largest_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 
@@ -1559,6 +1565,6 @@ cc_cabinet.54 = {
 		else = {
 			add_estate_satisfaction = { type = estate_type:clergy_estate value = estate_satisfaction_mild_penalty }
 		}
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 	}
 }

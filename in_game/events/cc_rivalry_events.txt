@@ -126,12 +126,13 @@ cc_rival.1 = {
 				save_scope_as = rival_b
 			}
 		}
+		cc_xp_publish_payoff_level = { SCOPE = rival_a }
 	}
 
 	# Option A — Side with rival_a (the harder-edged minister)
 	option = {
 		name = cc_rival.1.a
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_b = {
@@ -147,7 +148,7 @@ cc_rival.1 = {
 	# Option B — Side with rival_b (the more conciliatory minister)
 	option = {
 		name = cc_rival.1.b
-		add_prestige = prestige_weak_penalty
+		add_prestige = { value = prestige_weak_penalty  multiply = cc_xp_payoff_scale }
 		remove_country_modifier = court_tension
 		set_variable = { name = cc_court_rivalry value = 0 }
 		scope:rival_a = {
@@ -163,7 +164,7 @@ cc_rival.1 = {
 	# Option C — Broker a reconciliation (costs money and prestige but keeps both)
 	option = {
 		name = cc_rival.1.c
-		add_prestige = prestige_mild_penalty
+		add_prestige = { value = prestige_mild_penalty  multiply = cc_xp_payoff_scale }
 		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  min = -60 }
 		if = {
 			limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry > 1 }
