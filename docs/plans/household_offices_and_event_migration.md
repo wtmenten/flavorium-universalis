@@ -321,14 +321,48 @@ scaled by the holder's level through a single shared script value clamped to rou
 Migrated branches get `factor = 0` for `is_ai = no`, extending the pattern five branches
 already use at `factor = 0.3`. No event deletions, no save-migration risk.
 
-## Commit split
+## Commit split and status
 
-Offices first (steps 1-7 above), then:
+All four landed on master, each with its own tool that can be re-run and re-verified.
 
-1. Bypass closure plus off-ladder gating. Correctness work.
-2. Payoff tier-gating and reward scaling. Balance work.
+1. `d21d97f` **Household offices.** `tools/generate_offices.py`.
+2. `17e1617` **Bypass closure.** `tools/migrate_bypass.py`. 50 options split AI/human across
+   6 files, 38 generated loc keys, translated.
+3. `789307c` **Off-ladder gating.** `tools/migrate_offladder_gates.py`. 34 options gated,
+   16 at tier 1 and 18 at tier 2, across adm 24 / dip 6 / mil 4.
+4. `351e647` **Payoff scaling.** `tools/migrate_payoff_scaling.py`. 78 events, 214 payouts.
 
-Each gets its own in-game test pass.
+Each tool is idempotent and carries `--verify` or an equivalent dry run. None of it has
+been run in game.
+
+### What each tool deliberately does not touch
+
+Recorded here because these are the judgement calls, and a later contributor re-running a
+tool will otherwise assume the gaps are bugs.
+
+- **`create_character` blocks.** A newly built NPC arriving with a starting trait is not a
+  bypass; nothing is being handed to a minister the player developed.
+- **`cc_legacy.1`'s inheritance chain.** Its `if/else_if` passes on whichever trait a dying
+  elder held. That is a transfer inside the court, paid for with the elder. Both the bypass
+  tool and the gating tool exempt it, and both report rather than hide it. Collapsing the
+  chain into one award would also have destroyed it.
+- **Already-gated options.** Eight ladder-rung options carried a tier gate before any of
+  this. They are a shortcut past the one-year advance wait, not a way around the tier.
+- **`add_opinion` and `change_variable`.** The first carries its magnitude in the bias
+  definition; the second drives cooldowns and counters that would corrupt if multiplied.
+- **Block-form `add_gold`.** Already carries its own `multiply` with `min`/`max` clamps
+  calibrated against it, and is nearly always negative. Scaling would make a good court pay
+  more for the same thing.
+- **Hybrid grant-and-payout events** (`cc_synergy.1/.6/.24`). Handled by the bypass tool;
+  their decline options go unscaled.
+
+### Known consequence: careers are now bought
+
+Rung-0 grants were converted along with the rest, and `cc_xp.90/.91/.92` are reached only
+from the training return events. A court that never pays for training therefore gets no
+careers at all. Experience still accrues and banks, so a minister trained late climbs fast.
+If that reads badly in game, the one-line fix is to offer a career when an unladdered
+minister crosses tier 1 on the yearly pulse.
 
 ---
 
