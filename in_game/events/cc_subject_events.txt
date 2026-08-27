@@ -2259,6 +2259,7 @@ cc.162 = {
 	# Host a grand tournament — fund it, the realm's knights are honed and a champion emerges
 	option = {
 		name = cc.enclave.tournament.a
+		trigger = { is_ai = yes }
 		add_gold = { value = monthly_income_trade_and_tax multiply = -1 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_enclave_grand_tournament
@@ -2272,6 +2273,26 @@ cc.162 = {
 		add_prestige = prestige_mild_bonus
 		scope:enclave = { add_liberty_desire = liberty_desire_weak_minus }
 	}
+
+	option = {
+		name = cc_xp_toward_master_of_horse
+		trigger = { is_ai = no }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -1 max = -40 min = -500 }
+		add_country_modifier = {
+			modifier = cc_enclave_grand_tournament
+			years = 6
+			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			move_country = prev
+		}
+		add_prestige = prestige_mild_bonus
+		scope:enclave = { add_liberty_desire = liberty_desire_weak_minus }
+	}
+
 
 	# Decline to attend — the nobles take the snub poorly
 	option = {
@@ -2445,6 +2466,7 @@ cc.170 = {
 	option = {
 		name = cc.republic.1.b
 		trigger = {
+			is_ai = yes
 			any_cabinet_character = {
 				in_cabinet = yes
 				NOT = { has_trait_category = cabinet }
@@ -2462,6 +2484,31 @@ cc.170 = {
 			set_variable = { name = cc_republic_exchange_cooldown value = yes years = 4 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_learned_counselor
+		trigger = {
+			is_ai = no
+			any_cabinet_character = {
+				in_cabinet = yes
+				NOT = { has_trait_category = cabinet }
+			}
+		}
+		random_cabinet_character = {
+			limit = {
+				in_cabinet = yes
+				NOT = { has_trait_category = cabinet }
+			}
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+		}
+		add_prestige = prestige_weak_bonus
+		scope:republic = {
+			set_variable = { name = cc_republic_exchange_cooldown value = yes years = 4 }
+		}
+	}
+
 
 	# Decline the proposal
 	option = {
@@ -3697,6 +3744,7 @@ cc.211 = {
 	# Attend and sponsor the tournament — the count fields his own knights; a champion emerges
 	option = {
 		name = cc.palatinate.tournament.a
+		trigger = { is_ai = yes }
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
 		add_country_modifier = {
 			modifier = cc_palatinate_tournament
@@ -3708,6 +3756,24 @@ cc.211 = {
 			move_country = prev
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_master_of_horse
+		trigger = { is_ai = no }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.20 max = -40 min = -500 }
+		add_country_modifier = {
+			modifier = cc_palatinate_tournament
+			years = 4
+			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			move_country = prev
+		}
+	}
+
 
 	# Send a delegation — modest benefit at no cost
 	option = {
@@ -3984,6 +4050,7 @@ cc.165 = {
 	# A magnificent elevation ceremony — the count fields his finest knights
 	option = {
 		name = cc.palatinate.elevated.a
+		trigger = { is_ai = yes }
 		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -600 }
 		add_prestige = prestige_mild_bonus
 		add_country_modifier = {
@@ -3996,6 +4063,25 @@ cc.165 = {
 			move_country = PREV
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_master_of_horse
+		trigger = { is_ai = no }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -0.25 max = -50 min = -600 }
+		add_prestige = prestige_mild_bonus
+		add_country_modifier = {
+			modifier = cc_palatinate_dynastic_prestige
+			years = 10
+			mode = add_and_extend
+		}
+		scope:cc_noble_commander = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			move_country = PREV
+		}
+	}
+
 
 	# A dignified, modest ceremony — recognition without extravagance
 	option = {

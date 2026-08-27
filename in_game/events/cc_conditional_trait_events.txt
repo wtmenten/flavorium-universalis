@@ -192,6 +192,7 @@ cc_cond.1 = {
 	option = {
 		name = cc_cond.1.g
 		trigger = {
+			is_ai = yes
 			capital.development > 40
 			OR = {
 				current_age = age_3_discovery
@@ -207,6 +208,29 @@ cc_cond.1 = {
 			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_learned_courtier
+		trigger = {
+			is_ai = no
+			capital.development > 40
+			OR = {
+				current_age = age_3_discovery
+				current_age = age_4_reformation
+				current_age = age_5_absolutism
+				current_age = age_6_revolutions
+			}
+			NOT = { capital.development > 50 }
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+	}
+
 
 	option = {
 		name = cc_cond.1.h
@@ -232,6 +256,7 @@ cc_cond.1 = {
 	option = {
 		name = cc_cond.1.i
 		trigger = {
+			is_ai = yes
 			NOT = { capital.development > 40 }
 		}
 		scope:minister = {
@@ -247,6 +272,29 @@ cc_cond.1 = {
 			trigger_event_silently =  { id = cc_cond.101 days = 180 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_urban_planner
+		trigger = {
+			is_ai = no
+			NOT = { capital.development > 40 }
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_cond1_urban_initiative value = yes }
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+		if = {
+			limit = {
+				NOT = { scope:minister = { has_variable = cc_cond1_urban_initiative } }
+			}
+			trigger_event_silently =  { id = cc_cond.101 days = 180 }
+		}
+	}
+
 
 	option = {
 		name = cc_cond.1.j
@@ -270,6 +318,7 @@ cc_cond.1 = {
 	option = {
 		name = cc_cond.1.k
 		trigger = {
+			is_ai = yes
 			NOT = { capital.development > 40 }
 		}
 		scope:minister = {
@@ -285,6 +334,29 @@ cc_cond.1 = {
 			trigger_event_silently =  { id = cc_cond.101 days = 180 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_merchant_syndic
+		trigger = {
+			is_ai = no
+			NOT = { capital.development > 40 }
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_cond1_urban_initiative value = yes }
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
+		}
+		if = {
+			limit = {
+				NOT = { scope:minister = { has_variable = cc_cond1_urban_initiative } }
+			}
+			trigger_event_silently =  { id = cc_cond.101 days = 180 }
+		}
+	}
+
 
 	option = {
 		name = cc_cond.1.dismiss
@@ -505,13 +577,26 @@ cc_cond.20 = {
 	}
 	option = {
 		name = cc_cond.20.jurisprudence
-		trigger = { societal_value:mysticism_vs_jurisprudence > 50 }
+		trigger = { is_ai = yes  societal_value:mysticism_vs_jurisprudence > 50 }
 		scope:minister = {
 			add_trait = trait:legal_scholar
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_legal_scholar
+		trigger = { is_ai = no  societal_value:mysticism_vs_jurisprudence > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.20.dismiss
 		scope:minister = {
@@ -615,22 +700,48 @@ cc_cond.21 = {
 	}
 	option = {
 		name = cc_cond.21.centralized
-		trigger = { societal_value:centralization_vs_decentralization < -50 }
+		trigger = { is_ai = yes  societal_value:centralization_vs_decentralization < -50 }
 		scope:minister = {
 			add_trait = trait:efficiency_administrator
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_efficiency_administrator
+		trigger = { is_ai = no  societal_value:centralization_vs_decentralization < -50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.21.decentralized
-		trigger = { societal_value:centralization_vs_decentralization > 50 }
+		trigger = { is_ai = yes  societal_value:centralization_vs_decentralization > 50 }
 		scope:minister = {
 			add_trait = trait:regional_magnate
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_regional_magnate
+		trigger = { is_ai = no  societal_value:centralization_vs_decentralization > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.21.serfdom
 		trigger = { societal_value:serfdom_vs_free_subjects < -50 }
@@ -752,58 +863,136 @@ cc_cond.22 = {
 
 	option = {
 		name = cc_cond.22.quality
-		trigger = { societal_value:quality_vs_quantity < -50 }
+		trigger = { is_ai = yes  societal_value:quality_vs_quantity < -50 }
 		scope:minister = {
 			add_trait = trait:elite_trainer
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_elite_trainer
+		trigger = { is_ai = no  societal_value:quality_vs_quantity < -50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.quantity
-		trigger = { societal_value:quality_vs_quantity > 50 }
+		trigger = { is_ai = yes  societal_value:quality_vs_quantity > 50 }
 		scope:minister = {
 			add_trait = trait:mass_levy_commander
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_mass_levy_commander
+		trigger = { is_ai = no  societal_value:quality_vs_quantity > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.offensive
-		trigger = { societal_value:offensive_vs_defensive < -50 }
+		trigger = { is_ai = yes  societal_value:offensive_vs_defensive < -50 }
 		scope:minister = {
 			add_trait = trait:offensive_strategist
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_offensive_strategist
+		trigger = { is_ai = no  societal_value:offensive_vs_defensive < -50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.defensive
-		trigger = { societal_value:offensive_vs_defensive > 50 }
+		trigger = { is_ai = yes  societal_value:offensive_vs_defensive > 50 }
 		scope:minister = {
 			add_trait = trait:defensive_commander
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_defensive_commander
+		trigger = { is_ai = no  societal_value:offensive_vs_defensive > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.land
-		trigger = { societal_value:land_vs_naval < -50 }
+		trigger = { is_ai = yes  societal_value:land_vs_naval < -50 }
 		scope:minister = {
 			add_trait = trait:continental_marshal
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_continental_marshal
+		trigger = { is_ai = no  societal_value:land_vs_naval < -50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.naval
-		trigger = { societal_value:land_vs_naval > 50 }
+		trigger = { is_ai = yes  societal_value:land_vs_naval > 50 }
 		scope:minister = {
 			add_trait = trait:admiral_counselor
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_admiral_counselor
+		trigger = { is_ai = no  societal_value:land_vs_naval > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.22.opt_belligerent
 		trigger = { societal_value:belligerent_vs_conciliatory < -50 }
@@ -910,31 +1099,70 @@ cc_cond.23 = {
 	}
 	option = {
 		name = cc_cond.23.plutocracy
-		trigger = { societal_value:aristocracy_vs_plutocracy > 50 }
+		trigger = { is_ai = yes  societal_value:aristocracy_vs_plutocracy > 50 }
 		scope:minister = {
 			add_trait = trait:merchant_prince
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_merchant_prince
+		trigger = { is_ai = no  societal_value:aristocracy_vs_plutocracy > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.23.mercantilism
-		trigger = { societal_value:mercantilism_vs_free_trade < -50 }
+		trigger = { is_ai = yes  societal_value:mercantilism_vs_free_trade < -50 }
 		scope:minister = {
 			add_trait = trait:mercantilist_official
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_mercantilist_official
+		trigger = { is_ai = no  societal_value:mercantilism_vs_free_trade < -50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.23.free_trade
-		trigger = { societal_value:mercantilism_vs_free_trade > 50 }
+		trigger = { is_ai = yes  societal_value:mercantilism_vs_free_trade > 50 }
 		scope:minister = {
 			add_trait = trait:free_market_advocate
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_free_market_advocate
+		trigger = { is_ai = no  societal_value:mercantilism_vs_free_trade > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.23.capital_economy
 		trigger = { societal_value:capital_economy_vs_traditional_economy < -50 }
@@ -946,13 +1174,26 @@ cc_cond.23 = {
 	}
 	option = {
 		name = cc_cond.23.traditional_economy
-		trigger = { societal_value:capital_economy_vs_traditional_economy > 50 }
+		trigger = { is_ai = yes  societal_value:capital_economy_vs_traditional_economy > 50 }
 		scope:minister = {
 			add_trait = trait:estate_guardian
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_estate_guardian
+		trigger = { is_ai = no  societal_value:capital_economy_vs_traditional_economy > 50 }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
+		}
+	}
+
 	option = {
 		name = cc_cond.23.dismiss
 		scope:minister = {
@@ -1162,25 +1403,64 @@ cc_cond.3 = {
 
 	option = {
 		name = cc_cond.3.a
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:infantry_drillmaster
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_infantry_drillmaster
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.3.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:scout_captain
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_scout_captain
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.3.c
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:military_engineer
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_military_engineer
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.3.dismiss
 		scope:minister = {
@@ -1252,28 +1532,68 @@ cc_cond.6 = {
 
 	option = {
 		name = cc_cond.6.a
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:commissariat_officer
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_commissariat_officer
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.6.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:cavalry_marshal
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_cavalry_marshal
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.6.c
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:siege_engineer
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_siege_engineer
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.6.d
 		trigger = {
+			is_ai = yes
 			scope:minister ?= { mil > 80 }
 		}
 		scope:minister = {
@@ -1281,6 +1601,21 @@ cc_cond.6 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_supreme_commander
+		trigger = {
+			is_ai = no
+			scope:minister ?= { mil > 80 }
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.6.dismiss
 		scope:minister = {
@@ -1465,6 +1800,7 @@ cc_cond.4 = {
 	option = {
 		name = cc_cond.4.new_world
 		trigger = {
+			is_ai = yes
 			OR = {
 				capital.sub_continent = sub_continent:north_america
 				capital.sub_continent = sub_continent:south_america
@@ -1475,9 +1811,28 @@ cc_cond.4 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_new_world_pioneer
+		trigger = {
+			is_ai = no
+			OR = {
+				capital.sub_continent = sub_continent:north_america
+				capital.sub_continent = sub_continent:south_america
+			}
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.4.maritime
 		trigger = {
+			is_ai = yes
 			"estate_power(estate_type:burghers_estate)" >= 0.30
 		}
 		scope:minister = {
@@ -1485,6 +1840,21 @@ cc_cond.4 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_maritime_champion
+		trigger = {
+			is_ai = no
+			"estate_power(estate_type:burghers_estate)" >= 0.30
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.4.dismiss
 		scope:minister = {
@@ -1561,14 +1931,28 @@ cc_cond.5 = {
 	}
 	option = {
 		name = cc_cond.5.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:diplomatic_attache
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_diplomatic_attache
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.5.c
 		trigger = {
+			is_ai = yes
 			scope:minister ?= { dip > 66 }
 		}
 		scope:minister = {
@@ -1576,6 +1960,21 @@ cc_cond.5 = {
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_grand_chancellor
+		trigger = {
+			is_ai = no
+			scope:minister ?= { dip > 66 }
+		}
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 	option = {
 		name = cc_cond.5.dismiss
 		scope:minister = {
@@ -1670,13 +2069,26 @@ cc_cond.30 = {
 	# Seasoned Integrator — adm > 55 (premium)
 	option = {
 		name = cc_cond.30.a
-		trigger = { scope:minister = { adm > 55 } }
+		trigger = { is_ai = yes  scope:minister = { adm > 55 } }
 		scope:minister = {
 			set_variable = cc_cond_30_done
 			add_trait = trait:seasoned_integrator
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_seasoned_integrator
+		trigger = { is_ai = no  scope:minister = { adm > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_30_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Competent administrator — still valuable, random minor benefit
 	option = {
@@ -1772,13 +2184,26 @@ cc_cond.31 = {
 	# Frontier Administrator — dip > 55 (premium)
 	option = {
 		name = cc_cond.31.a
-		trigger = { scope:minister = { dip > 55 } }
+		trigger = { is_ai = yes  scope:minister = { dip > 55 } }
 		scope:minister = {
 			set_variable = cc_cond_31_done
 			add_trait = trait:frontier_administrator
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_frontier_administrator
+		trigger = { is_ai = no  scope:minister = { dip > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_31_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Competent handler — random minor colonial benefit
 	option = {
@@ -1869,13 +2294,26 @@ cc_cond.32 = {
 	# Development Patron — adm > 55 (premium)
 	option = {
 		name = cc_cond.32.a
-		trigger = { scope:minister = { adm > 55 } }
+		trigger = { is_ai = yes  scope:minister = { adm > 55 } }
 		scope:minister = {
 			set_variable = cc_cond_32_done
 			add_trait = trait:development_patron
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_development_patron
+		trigger = { is_ai = no  scope:minister = { adm > 55 } }
+		scope:minister = {
+			set_variable = cc_cond_32_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Routine oversight — small random development benefit
 	option = {
@@ -1954,13 +2392,26 @@ cc_cond.33 = {
 	# Espionage Director — dip > 60 (premium)
 	option = {
 		name = cc_cond.33.a
-		trigger = { scope:minister = { dip > 60 } }
+		trigger = { is_ai = yes  scope:minister = { dip > 60 } }
 		scope:minister = {
 			set_variable = cc_cond_33_done
 			add_trait = trait:espionage_director
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_espionage_director
+		trigger = { is_ai = no  scope:minister = { dip > 60 } }
+		scope:minister = {
+			set_variable = cc_cond_33_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Competent agent — small random intelligence benefit
 	option = {
@@ -2052,13 +2503,26 @@ cc_cond.34 = {
 	# Treasury Enforcer — adm > 60 (premium)
 	option = {
 		name = cc_cond.34.a
-		trigger = { scope:minister = { adm > 60 } }
+		trigger = { is_ai = yes  scope:minister = { adm > 60 } }
 		scope:minister = {
 			set_variable = cc_cond_34_done
 			add_trait = trait:treasury_enforcer
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_treasury_enforcer
+		trigger = { is_ai = no  scope:minister = { adm > 60 } }
+		scope:minister = {
+			set_variable = cc_cond_34_done
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_adm = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Competent inspector — small random fiscal benefit
 	option = {

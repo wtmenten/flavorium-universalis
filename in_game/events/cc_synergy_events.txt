@@ -53,11 +53,24 @@ cc_synergy.1 = {
 	# Promote the minister — grant supreme_commander
 	option = {
 		name = cc_synergy.1.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:supreme_commander
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_supreme_commander
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 
 	# Decline the synergy
 	option = {
@@ -332,11 +345,24 @@ cc_synergy.6 = {
 	# Promote minister to grand chancellor
 	option = {
 		name = cc_synergy.6.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			add_trait = trait:grand_chancellor
 			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_grand_chancellor
+		trigger = { is_ai = no }
+		scope:minister = {
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_high }
+			cc_xp_recompute = yes
+			set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+		}
+	}
+
 }
 
 # Eastern Pragmatist + Confucian Mandarin (east/se asia)
@@ -1296,6 +1322,7 @@ cc_synergy.24 = {
 	# Permanent artillery cost reduction via trait upgrade
 	option = {
 		name = cc_synergy.24.b
+		trigger = { is_ai = yes }
 		scope:minister = {
 			if = {
 				limit = { NOT = { has_trait = siege_engineer } }
@@ -1304,6 +1331,21 @@ cc_synergy.24 = {
 			}
 		}
 	}
+
+	option = {
+		name = cc_xp_toward_siege_engineer
+		trigger = { is_ai = no }
+		scope:minister = {
+			if = {
+				limit = { NOT = { has_trait = siege_engineer } }
+				# Ladder rung withheld: the ladder grants it once the tier is earned.
+				cc_xp_gain_mil = { AMOUNT = cc_xp_field_award_low }
+				cc_xp_recompute = yes
+				set_variable = { name = cc_recent_trait_assignment value = yes years = 2 }
+			}
+		}
+	}
+
 }
 
 # Efficiency Administrator + cc_governorate_reform + provincial_governorate subject

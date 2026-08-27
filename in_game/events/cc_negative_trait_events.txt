@@ -1518,10 +1518,24 @@ cc_neg.19 = {
 	# Channel the energy outward: reckless → provocateur
 	option = {
 		name = cc_neg.19.b
+		trigger = { is_ai = yes }
 		scope:rehabilitated_minister = {
 			remove_trait = trait:reckless_expander
 			add_trait = trait:provocateur
 		}
 		add_prestige = prestige_weak_bonus
 	}
+
+	option = {
+		name = cc_xp_toward_provocateur
+		trigger = { is_ai = no }
+		scope:rehabilitated_minister = {
+			remove_trait = trait:reckless_expander
+			# Ladder rung withheld: the ladder grants it once the tier is earned.
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_entry }
+			cc_xp_recompute = yes
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
 }
