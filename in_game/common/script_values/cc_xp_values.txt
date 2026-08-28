@@ -254,6 +254,25 @@ cc_xp_discreet_sale_price = {
 	multiply = cc_xp_art_culture_factor
 	multiply = cc_xp_art_wealth_factor
 
+	# Kept as its own factor rather than folded into the 0.7 above. That 0.7 is the
+	# discreet-sale discount and answers to vanilla's negotiated price; this is a separate
+	# balance decision about how much the whole route should pay. Folding them into 0.35
+	# would leave one number answering two questions.
+	multiply = 0.5
+
+	# Anything short of a genuinely good piece halves again. art_quality is the engine's
+	# own 0 to 100 measure, and 70 is the threshold vanilla itself treats as the mark of a
+	# desirable work in both sell_work_of_art.txt:124 and request_work_of_art_purchase.txt:111.
+	# Guarded on `exists` for the same reason the value's opening branch is: an option's
+	# effect is evaluated to build its tooltip before any work is chosen.
+	if = {
+		limit = {
+			exists = scope:cc_xp_sale_work
+			scope:cc_xp_sale_work = { art_quality < 70 }
+		}
+		multiply = 0.5
+	}
+
 	min = 25
 }
 

@@ -67,6 +67,7 @@ Flavorium Universalis enhances the vanilla EUV experience across multiple areas:
   * **NEW:** Parliamentary diplomacy for the Balance of Power. The Balancing Coalition can convene a **Balancing Congress** of its own (Pitt's subsidies, the Treaty of Chaumont, a Pragmatic Army command, a joint démarche, a partition treaty). A coalition victory founds the playable **Concert of Europe** , an elected great-power directorate that votes on its own doctrine, collective-security pacts, and standing-congress mediation.
   * **NEW:** A literacy rebalance. A global baseline change to pop literacy is paired with region-specific catch-up advances and per-estate library bonuses, so Western Europe, colonial powers, and East Asia develop education at different rates.
   * **NEW:** Frontier Governance, a lesser Frontier Governor for rural, road-less interior provinces. An advance and per-estate privileges help steppe, mountain, and Mandate-of-Heaven realms hold ground they cannot yet urbanize.
+  * **NEW:** Order against Magnates, a societal value for any realm with a bureaucracy. Four estate privileges decide whose people staff the offices, and each pushes the axis while it is held, so the drift is a standing choice rather than a one-off event.
 
   
 
@@ -700,6 +701,34 @@ Realms that push into terrain they cannot easily urbanize or road-connect have a
   * **Frontier Administration** advance: branch-independent, available in the Age of Renaissance. It unlocks the building and the four frontier estate privileges, and grants the first governor slot. The AI is biased toward adopting it in frontier-prone realms and historical cases (Muscovy, Novgorod, the Ottomans, and the Mandate holder).
   * **Frontier estate privileges:** each estate can specialize the lands around every frontier governor. They refresh yearly and expire if the governor or privilege is lost: **Governance** (nobles: an extra governor slot and tighter local control), **Missions** (clergy: faster conversion toward the state religion), **Markets** (burghers: market access and trade), and **Settlement** (peasants: migration attraction and pop promotion).
 
+  
+
+
+* * *
+
+  
+  
+
+
+### Order against Magnates
+
+  
+  
+The bureaucracy system shipped isolated: implemented once, funded on a slider, and touched by nothing else in the game. Every bureaucracy already declares which estates like and dislike it, so the estates had an opinion and no way to act on it. This is that way.  
+  
+**Order** is the fisc, the chancery and the appointed official. **Magnates** are land, levies, and the men whose grandfathers held them. It is available to any realm with a bureaucracy slot, and Byzantium keeps its own Taxis and Dynatoi version instead, because those name specific fourteenth-century parties.  
+  
+Four estate privileges take a different side of the same question, and the drift sits on the privilege rather than on an event, so you steer the axis for as long as you hold it:  
+  
+
+
+  * **Offices by Right** (nobles): posts go to the families, the families pay for them, and the crown discovers it has sold the machinery it governs with. Cheaper offices, weaker crown estate, pushes Magnates.
+  * **Examined Service** (burghers): the answer that actually built the modern state, and it is slow, unglamorous and resented by everyone with a name. Pushes Order.
+  * **Keepers of Record** (clergy): the offices that keep the records, which is the cheapest way to push Order.
+  * **Relief from Fees** (peasants): relief from what the offices charge, paid for by the crown.
+
+  
+Bureaucracy upkeep also now scales on economic base blended with tax base rather than a flat figure.  
   
 
 

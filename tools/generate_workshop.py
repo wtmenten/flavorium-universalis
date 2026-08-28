@@ -396,6 +396,18 @@ MODIFIER_DISPLAY: dict[str, tuple[str, str]] = {
     "global_clergy_estate_power":             ("clergy power",              "flat"),
     "global_peasants_estate_power":           ("peasant power",             "flat"),
     "cc_num_frontier_governors":              ("frontier governors",        "flat"),
+    # Bureau privileges (cc_bureau_privileges.txt), plus three noble-privilege keys that
+    # were silently dropped. Formats follow the engine's own metadata, not the value's
+    # look: global_monthly_literacy is already_percent so it must not be scaled again,
+    # and monthly_navy_tradition is neither percent nor already_percent.
+    "global_bureaucracy_maintenance_efficiency": ("bureaucracy upkeep",     "percent"),
+    "maintain_bureaucracy_price_cost_modifier": ("bureaucracy upkeep cost", "percent"),
+    "global_crown_estate_power":               ("crown estate power",       "percent"),
+    "stability_decay":                         ("stability decay",          "percent"),
+    "cultures_capacity_modifier":              ("cultures capacity",        "percent"),
+    "army_light_cavalry_power":                ("light cavalry power",      "percent"),
+    "global_monthly_literacy":                 ("literacy",                 "monthly"),
+    "monthly_navy_tradition":                  ("navy tradition",           "monthly"),
     "nobles_estate_target_satisfaction":      ("",                          "skip"),
     "burghers_estate_target_satisfaction":    ("",                          "skip"),
     "clergy_estate_target_satisfaction":      ("",                          "skip"),
@@ -780,7 +792,7 @@ def _load_privilege_data() -> dict[str, dict]:
     """Return {priv_id: {modifiers: [str], allow: [(k,v)]}} for all mod privileges."""
     priv_dir = MOD_ROOT / "in_game" / "common" / "estate_privileges"
     data: dict[str, dict] = {}
-    for fname in ["cc_nobles_privileges.txt", "cc_burghers_privileges.txt", "cc_clergy_privileges.txt", "cc_frontier_privileges.txt"]:
+    for fname in ["cc_nobles_privileges.txt", "cc_burghers_privileges.txt", "cc_clergy_privileges.txt", "cc_frontier_privileges.txt", "cc_bureau_privileges.txt"]:
         path = priv_dir / fname
         if not path.exists():
             continue
