@@ -57,7 +57,27 @@ template cabinet_card_header_content {
 				align = left
 			}
 
+			####################################################################
+			# FLAVORIUM: datacontext added. Vanilla omits it here and the omission
+			# is a live bug, not a stylistic difference.
+			#
+			# action_progress_tooltip resolves '<action>_action_progress_long_wordier',
+			# which contains [Cabinet.GetActionNumProgress]. A tooltip is evaluated
+			# detached from the widget tree, so it does not inherit the Cabinet that
+			# the surrounding vbox reads through its ancestor. Without the push below
+			# the game logs, every frame the cabinet tab is open:
+			#   New data types does not contain a 'Cabinet' data context
+			#   FetchData failed for 'Cabinet.GetActionNumProgress'
+			#
+			# Vanilla proves the pattern three lines down in this same template: the
+			# effective_skill_tooltip sits in an hbox that pushes datacontext =
+			# "[Cabinet]" for exactly this reason. This site just never got the same
+			# treatment. The vanilla card has the identical defect, so the flood is
+			# not ours; we only inherit it by redefining this template, and owning
+			# the template is what lets us fix it.
+			####################################################################
 			tooltipwidget = {
+				datacontext = "[Cabinet]"
 				using = action_progress_tooltip
 			}
 

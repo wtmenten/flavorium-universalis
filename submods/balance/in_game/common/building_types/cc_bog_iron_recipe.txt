@@ -1,0 +1,74 @@
+﻿############################################
+# Flavorium Universalis - Bog Iron Smelter Recipe
+#
+# goods/08_iron_eco_chain_fix.txt cuts iron from 3 to 0.88 and leaves coal at
+# its vanilla 2. bog_iron_smelter is the one common building that spends coal
+# to produce iron, so the price cut inverted it:
+#
+#   vanilla   0.3 iron * 3.00 = 0.900 revenue  vs  0.375 coal * 2 = 0.75  -> +0.150
+#   retuned   0.3 iron * 0.88 = 0.264 revenue  vs  0.375 coal * 2 = 0.75  -> -0.486
+#
+# A building that cannot clear its input cost never ramps employment, so bog
+# iron smelters sat at zero output. The coal input is cut to 0.1, which puts
+# the margin back above the vanilla ratio without touching the coal price:
+#
+#   fixed     0.3 iron * 0.88 = 0.264 revenue  vs  0.100 coal * 2 = 0.20  -> +0.064
+#
+# 0.1 was derived when iron sat at 0.8 (0.375 * 0.8/3), matching vanilla's
+# margin exactly. The later bump to 0.88 leaves it slightly more generous,
+# which is fine; scale it to 0.11 if you want the vanilla ratio back.
+#
+# The method is RENAMED to cc_bog_iron_maintenance. Two things forced that:
+#   - Reusing the name 'bog_iron_maintenance' in this block registers it a
+#     second time and the engine rejects it with "duplicated production method
+#     name 'bog_iron_maintenance' for bog_iron_smelter".
+#   - REPLACE: on it from common/production_methods/ does not resolve either.
+#     That folder is a separate database from the inline
+#     unique_production_methods blocks here, so the entry reads as non-existing.
+# The rename needs its own loc key, which is in
+# localization/<lang>/cc_bog_iron_l_<lang>.yml (vanilla's strings, copied).
+#
+# All other fields are identical to vanilla common_buildings.txt.
+# Re-check on every EU5 update.
+############################################
+
+REPLACE:bog_iron_smelter = {
+	audio_tier = 1
+	is_foreign = no
+	max_levels = rural_building_cap
+	startup_ramp_target = rural_startup_ramp_target
+	pop_type = laborers
+
+	employment_size = rural_peasant_produce_employment
+
+	rural_settlement = yes
+	town = yes
+	city = yes
+	megalopolis = yes
+
+
+	location_potential = {
+		OR = {
+			is_adjacent_to_lake = yes
+			topography = wetlands
+		}
+		NOT = {
+			raw_material = goods:iron
+		}
+	}
+
+	category = rgo_building_category
+
+	unique_production_methods = {
+		cc_bog_iron_maintenance = {
+			produced = iron
+			output = 0.3
+			coal = 0.1
+			debug_max_profit = rural_profit_margin
+			category = building_maintenance
+		}
+	}
+
+	build_time = rural_build_time
+	construction_demand = basic_construction_needs
+}

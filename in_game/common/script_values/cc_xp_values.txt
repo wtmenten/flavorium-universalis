@@ -470,10 +470,19 @@ cc_xp_num_examinable = {
 # Proteges currently sponsored. Counted live rather than kept in a running total, for the
 # reason the old cc_xp_has_protege_room comment gave: a protege who dies or is appointed
 # to the cabinet would otherwise burn a slot forever.
+#
+# Counting live only delivers that if the variable is actually gone, which took two
+# fixes. Appointment now clears it in cc_xp_on_assigned. Death does not clear it at all,
+# so the is_alive filter below is what stops a dead protege holding a slot; both sibling
+# iterators over this variable (cc_xp_yearly_protege, cc_xp_sync_proteges) already
+# filtered the dead out, and this one not doing so was the odd one out.
 cc_xp_num_proteges = {
 	value = 0
 	every_character = {
-		limit = { has_variable = cc_protege }
+		limit = {
+			has_variable = cc_protege
+			is_alive = yes
+		}
 		add = 1
 	}
 }

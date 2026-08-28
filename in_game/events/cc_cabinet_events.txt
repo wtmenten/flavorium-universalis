@@ -19,6 +19,14 @@ cc_cabinet.1 = {
 
 	trigger = {
 		has_ruler = yes
+		# THE SHARED IDLE-COURT FLOOR. cc_idle_cooldown is set on the MINISTER, so with a
+		# cabinet of any size there was always another one eligible and nothing throttled
+		# this event or cc_cabinet.2 at country level. The two are the same beat (an idle
+		# minister catches the ruler's ear) and were firing as a pair at roughly 8% a month.
+		#
+		# Eighteen months, on the country, shared by both. Same idea as the submod-wide floor
+		# in cc_byz_pulse.txt: it does not make either event rare, it stops them stacking.
+		NOT = { has_variable = cc_idle_court_cd }
 		any_cabinet_character = {
 			in_cabinet = yes
 			cc_minister_is_available = yes
@@ -27,6 +35,7 @@ cc_cabinet.1 = {
 	}
 
 	immediate = {
+		set_variable = { name = cc_idle_court_cd  value = yes  months = 18 }
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
@@ -95,11 +104,53 @@ cc_cabinet.1 = {
 }
 
 # "A Request for Funds"
-# A cabinet member petitions the crown for resources.
+#
+# A cabinet member petitions the crown for a NAMED PROJECT. Five of them, rolled per firing and
+# weighted toward whatever the petitioning minister is actually good at, so a soldier asks about
+# the muster rolls and a diplomat about the embassy.
+#
+#   1  the cadastral survey   adm   crown authority and the tax registers
+#   2  the academy            adm   research
+#   3  the muster rolls       mil   manpower
+#   4  the dockyard refit     mil   sailors
+#   5  the embassy            dip   legitimacy, reputation and the estates
+#
+# WHY IT IS RARER NOW. Playtesting: "reduce frequency of occurency. it currently feels like it
+# fires every time its off cooldown." It did. cc_idle_cooldown is set on the MINISTER, so a
+# cabinet of any size always had another eligible target and nothing throttled the event at
+# country level at all. At weight 8 in cc_cabinet_monthly_cabinet that is roughly 3.5% a month,
+# every month, forever.
+#
+# Two changes, and the second is the one that matters:
+#   weight 8 -> 3 in cc_cabinet_pulse.txt
+#   cc_funds_request_cd, six years, on the COUNTRY
+# Together that is roughly one petition a decade rather than one every three years with no floor.
+# cc_idle_court_cd (eighteen months, shared with cc_cabinet.1) stops the two idle-minister events
+# firing back to back.
+#
+# THE PETITIONER IS CARRIED BY SCOPE, not by a variable. scope:minister saved here is still
+# scope:minister in cc_cabinet.3 six months later: saved scopes persist through a delayed event,
+# which vanilla depends on in innovativeness_events.16 (saves a scope value, fires .17 at
+# months = { 4 6 }, and .17 reads it) and in institution_events.101 (fires .105 at days = 10;
+# .105 reads two saved character scopes in its TRIGGER and marries them). Both guard the read
+# with exists / ?=, which is worth copying and is the only part of this that needs care.
+#
+# COUNTRY VARIABLES, all cleared in cc_cabinet.3's after block:
+#   cc_funds_project    1-5, which project was asked for
+#   cc_funds_grant      0 granted outright, 1 granted under a comptroller, 2 privately financed
+#   cc_funds_skilled    the petitioner is strong in the project's own track
 cc_cabinet.2 = {
 	type = country_event
 	title = cc_cabinet.2.title
-	desc = cc_cabinet.2.desc
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { var:cc_funds_project = 1 }  desc = cc_cabinet.2.desc_survey }
+			triggered_desc = { trigger = { var:cc_funds_project = 2 }  desc = cc_cabinet.2.desc_academy }
+			triggered_desc = { trigger = { var:cc_funds_project = 3 }  desc = cc_cabinet.2.desc_muster }
+			triggered_desc = { trigger = { var:cc_funds_project = 4 }  desc = cc_cabinet.2.desc_dockyard }
+			desc = cc_cabinet.2.desc_embassy
+		}
+	}
 	outcome = neutral
 
 	illustration_tags = {
@@ -107,6 +158,8 @@ cc_cabinet.2 = {
 	}
 
 	trigger = {
+		NOT = { has_variable = cc_funds_request_cd }
+		NOT = { has_variable = cc_idle_court_cd }
 		any_cabinet_character = {
 			in_cabinet = yes
 			cc_minister_is_available = yes
@@ -116,6 +169,19 @@ cc_cabinet.2 = {
 	}
 
 	immediate = {
+		set_variable = { name = cc_funds_request_cd  value = yes  years = 6 }
+		set_variable = { name = cc_idle_court_cd     value = yes  months = 18 }
+
+		# CLEARED BEFORE THE ROLL, NOT AFTER IT. cc_funds_skilled is only ever WRITTEN on the
+		# competent branch below, so without this a capable petitioner six years ago leaves the
+		# flag standing and the next petition reads it: an incompetent minister rolling on the
+		# competent table because of who held the office last time.
+		#
+		# The rest are cleared in .3's after block, but a refusal never reaches .3, so they are
+		# cleared here too rather than left to be overwritten by luck.
+		remove_variable = cc_funds_skilled
+		remove_variable = cc_funds_outcome
+
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes
@@ -125,27 +191,148 @@ cc_cabinet.2 = {
 			save_scope_as = minister
 		}
 		scope:minister = { set_variable = { name = cc_idle_cooldown value = yes years = 2 } }
+		cc_xp_publish_payoff_level = { SCOPE = minister }
+
+		# WHICH PROJECT. Even weights tripled by the petitioner's own strength, so the roll is
+		# still capable of surprising (an administrator can ask about the fleet) while a cabinet
+		# of soldiers mostly petitions about soldiers. The modifier form is the one the balance
+		# of power events already use.
+		random_list = {
+			10 = {
+				modifier = { factor = 3  scope:minister ?= { adm >= 65 } }
+				set_variable = { name = cc_funds_project  value = 1 }
+			}
+			10 = {
+				modifier = { factor = 3  scope:minister ?= { adm >= 65 } }
+				set_variable = { name = cc_funds_project  value = 2 }
+			}
+			10 = {
+				modifier = { factor = 3  scope:minister ?= { mil >= 65 } }
+				set_variable = { name = cc_funds_project  value = 3 }
+			}
+			10 = {
+				# The fleet is asked about by realms that have one. A landlocked court
+				# petitioning for a dockyard refit reads as a bug even when it is a dice roll.
+				trigger = { any_owned_location = { is_coastal = yes } }
+				modifier = { factor = 3  scope:minister ?= { mil >= 65 } }
+				set_variable = { name = cc_funds_project  value = 4 }
+			}
+			10 = {
+				modifier = { factor = 3  scope:minister ?= { dip >= 65 } }
+				set_variable = { name = cc_funds_project  value = 5 }
+			}
+		}
+
+		# COMPETENCE RESOLVED HERE, NOT IN .3. The project and the minister are both known at
+		# this moment and neither survives to the follow-up on its own, so the question "is this
+		# person any good at the thing they are asking to do" is answered once and stored.
+		if = {
+			limit = {
+				OR = {
+					AND = {
+						var:cc_funds_project <= 2
+						scope:minister ?= { adm >= 65 }
+					}
+					AND = {
+						var:cc_funds_project >= 3
+						var:cc_funds_project <= 4
+						scope:minister ?= { mil >= 65 }
+					}
+					AND = {
+						var:cc_funds_project = 5
+						scope:minister ?= { dip >= 65 }
+					}
+				}
+			}
+			set_variable = { name = cc_funds_skilled  value = yes }
+		}
 	}
 
+	# Grant it outright. The widest outcome table in the event: the best result and the worst
+	# are both only reachable from here.
 	option = {
 		name = cc_cabinet.2.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_funds_grant  value = 0 }
 		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -300 max = -50 }
 		trigger_event_silently = { id = cc_cabinet.3 months = 6 }
 	}
 
+	# Grant it with a comptroller over the accounts. TRADES VARIANCE FOR SAFETY, which is the
+	# whole point of an audit: it very nearly removes the disaster and it removes most of the
+	# chance of the exceptional result too, because a project run past a clerk every fortnight
+	# is a project nobody is taking risks on.
+	#
+	# Costs crown authority rather than more money. The comptroller is a royal officer and
+	# seating one over a minister's books spends the same currency that seating him did.
 	option = {
 		name = cc_cabinet.2.b
+		ai_chance = { base = 30 }
+		trigger = {
+			OR = {
+				ruler ?= { adm >= 60 }
+				scope:minister ?= { adm >= 65 }
+			}
+		}
+
+		set_variable = { name = cc_funds_grant  value = 1 }
+		add_gold = { value = monthly_income_trade_and_tax multiply = -2 min = -300 max = -50 }
+		add_government_power = government_power_weak_penalty
+		trigger_event_silently = { id = cc_cabinet.3 months = 6 }
+	}
+
+	# Let the minister raise it privately. Costs the treasury nothing and the project is smaller
+	# for it, because a man spending his own credit spends less of it. The money comes from
+	# somewhere, and the somewhere acquires an interest in the office.
+	option = {
+		name = cc_cabinet.2.c
+		ai_chance = { base = 20 }
+		trigger = {
+			scope:minister ?= { dip >= 65 }
+		}
+
+		set_variable = { name = cc_funds_grant  value = 2 }
+		add_estate_satisfaction = {
+			type = estate_type:burghers_estate
+			value = estate_satisfaction_mild_bonus
+		}
+		add_country_modifier = {
+			modifier = cc_cabinet_revoke_difficulty
+			years = 8
+			mode = add_and_extend
+		}
+		scope:minister = {
+			cc_xp_gain_dip = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+		}
+		trigger_event_silently = { id = cc_cabinet.3 months = 6 }
+	}
+
+	# Refuse. Unchanged: hands off to cc_cabinet.5 the way it always did.
+	option = {
+		name = cc_cabinet.2.d
+		ai_chance = { base = 25 }
+
 		set_variable = { name = cc_2b_minister  value = scope:minister }
 		trigger_event_silently = { id = cc_cabinet.5  months = { 6 12 } }
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
 			value = estate_satisfaction_weak_penalty
 		}
+
+		# This path never reaches .3, so it does its own tidying. cc_funds_project in particular
+		# is what .3 gates on, and leaving it standing after a refusal is what would let a
+		# stale follow-up fire against a project nobody funded.
+		remove_variable = cc_funds_project
+		remove_variable = cc_funds_grant
+		remove_variable = cc_funds_skilled
 	}
 }
 
-# "The Minister Responds to Refusal" (silent follow-up to cc_cabinet.2 option B)
-# Pre-rolls one of three outcomes: grudging acceptance, quiet extraction, or political manoeuvring.
+
+# "The Minister Responds to Refusal" (silent follow-up to cc_cabinet.2 option D)
+# Restored: the reference at cc_cabinet.2.d survived a rework that dropped the body.
 cc_cabinet.5 = {
 	type = country_event
 	title = cc_cabinet.5.title
@@ -221,43 +408,255 @@ cc_cabinet.5 = {
 	}
 }
 
-# "The Minister Puts the Funds to Work" (silent follow-up to cc_cabinet.2 option A)
-# Resolves randomly.
+
+# "The Accounts Come In"
+#
+# The payoff for cc_cabinet.2. Five outcome tiers, rolled from one of four tables chosen by how
+# the money was given and whether the petitioner was any good at the thing:
+#
+#                        exceptional  good  ordinary  poor  disaster
+#   comptroller                    2    40        45    11         2
+#   privately financed             6    30        34    20        10
+#   granted, competent            10    32        33    18         7
+#   granted, not                   6    24        30    24        16
+#
+# The disaster survives the audit rather than being removed by it. A comptroller catches theft,
+# he does not stop a harbour silting up, and an option that made failure impossible would make
+# every other option a mistake.
+#
+# The desc is written per tier and not per project, because five tiers times five projects is
+# twenty-five descriptions of the same five sentences. The project is named in the petition six
+# months earlier and its consequences are in the option, which is where they are legible.
 cc_cabinet.3 = {
-	title = cc_cabinet.3.title
-	desc = cc_cabinet.3.desc
 	type = country_event
+	title = cc_cabinet.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { var:cc_funds_outcome = 1 }  desc = cc_cabinet.3.desc_exceptional }
+			triggered_desc = { trigger = { var:cc_funds_outcome = 2 }  desc = cc_cabinet.3.desc_good }
+			triggered_desc = { trigger = { var:cc_funds_outcome = 3 }  desc = cc_cabinet.3.desc_ordinary }
+			triggered_desc = { trigger = { var:cc_funds_outcome = 4 }  desc = cc_cabinet.3.desc_poor }
+			desc = cc_cabinet.3.desc_disaster
+		}
+	}
 	outcome = neutral
 
+	illustration_tags = {
+		10 = interior
+		10 = economy
+	}
+
+	# GUARDED, unlike before. This is only ever fired from .2, but a delayed event that lands
+	# after the variables were cleared by a previous run would read var:cc_funds_project as none
+	# and pick its way through the option triggers arriving at nothing.
+	trigger = {
+		has_variable = cc_funds_project
+	}
+
+	immediate = {
+		if = {
+			limit = { var:cc_funds_grant = 1 }
+			random_list = {
+				2  = { set_variable = { name = cc_funds_outcome  value = 1 } }
+				40 = { set_variable = { name = cc_funds_outcome  value = 2 } }
+				45 = { set_variable = { name = cc_funds_outcome  value = 3 } }
+				11 = { set_variable = { name = cc_funds_outcome  value = 4 } }
+				2  = { set_variable = { name = cc_funds_outcome  value = 5 } }
+			}
+		}
+		else_if = {
+			limit = { var:cc_funds_grant = 2 }
+			random_list = {
+				6  = { set_variable = { name = cc_funds_outcome  value = 1 } }
+				30 = { set_variable = { name = cc_funds_outcome  value = 2 } }
+				34 = { set_variable = { name = cc_funds_outcome  value = 3 } }
+				20 = { set_variable = { name = cc_funds_outcome  value = 4 } }
+				10 = { set_variable = { name = cc_funds_outcome  value = 5 } }
+			}
+		}
+		else_if = {
+			limit = { has_variable = cc_funds_skilled }
+			random_list = {
+				10 = { set_variable = { name = cc_funds_outcome  value = 1 } }
+				32 = { set_variable = { name = cc_funds_outcome  value = 2 } }
+				33 = { set_variable = { name = cc_funds_outcome  value = 3 } }
+				18 = { set_variable = { name = cc_funds_outcome  value = 4 } }
+				7  = { set_variable = { name = cc_funds_outcome  value = 5 } }
+			}
+		}
+		else = {
+			random_list = {
+				6  = { set_variable = { name = cc_funds_outcome  value = 1 } }
+				24 = { set_variable = { name = cc_funds_outcome  value = 2 } }
+				30 = { set_variable = { name = cc_funds_outcome  value = 3 } }
+				24 = { set_variable = { name = cc_funds_outcome  value = 4 } }
+				16 = { set_variable = { name = cc_funds_outcome  value = 5 } }
+			}
+		}
+
+		# Republished here rather than trusted from the petition, because cc_xp_payoff_level is
+		# one country variable and six months is long enough for another payoff event to have
+		# overwritten it with a different minister's level.
+		cc_xp_publish_payoff_level = { SCOPE = minister }
+	}
+
+	after = {
+		remove_variable = cc_funds_project
+		remove_variable = cc_funds_grant
+		remove_variable = cc_funds_skilled
+		remove_variable = cc_funds_outcome
+	}
+
+	# TIER 1. Exceptional. The lasting modifier at fifteen years plus an immediate return in the
+	# project's own currency, and the minister learns something worth a full band.
 	option = {
-		name = cc_cabinet.3.a
-		random_list = {
-			60 = {
-				add_prestige = prestige_mild_bonus
-				add_country_modifier = {
-					modifier = cc_cabinet_ministerial_investment
-					years = 5
-					mode = add_and_extend
-				}
-			}
-			40 = {
-				add_gold = {
-					value = monthly_income_trade_and_tax
-					multiply = {
-						value = { random_integer = { max = 200 } }
-						modulo = 11		# → 0–10
-						subtract = 5	# → -5–5
-						multiply = 0.50	# scale variance relative to base
-						divide = 10		# → -0.075–0.075
-						add = 0.50		# → 0.075–0.225
-					}
-					min = 100
-					max = 2000
-				}
-			}
+		name = cc_cabinet.3.a_exceptional
+		trigger = { var:cc_funds_outcome = 1 }
+
+		add_prestige = { value = prestige_severe_bonus  multiply = cc_xp_payoff_scale }
+		scope:minister ?= {
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_field_award_mid }
+			cc_xp_recompute = yes
+		}
+
+		if = {
+			limit = { var:cc_funds_project = 1 }
+			add_country_modifier = { modifier = cc_funds_survey  years = 15  mode = add_and_extend }
+			add_government_power = government_power_mild_bonus
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 2 }
+			add_country_modifier = { modifier = cc_funds_academy  years = 15  mode = add_and_extend }
+			add_research_progress = { value = research_progress  multiply = 0.15 }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 3 }
+			add_country_modifier = { modifier = cc_funds_muster  years = 15  mode = add_and_extend }
+			add_manpower = { value = monthly_manpower  multiply = 24 }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 4 }
+			add_country_modifier = { modifier = cc_funds_dockyard  years = 15  mode = add_and_extend }
+			add_sailors = { value = monthly_sailors  multiply = 24 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_funds_embassy  years = 15  mode = add_and_extend }
+			add_legitimacy = legitimacy_mild_bonus
+		}
+	}
+
+	# TIER 2. Good. Ten years and a smaller immediate return.
+	option = {
+		name = cc_cabinet.3.a_good
+		trigger = { var:cc_funds_outcome = 2 }
+
+		add_prestige = { value = prestige_weak_bonus  multiply = cc_xp_payoff_scale }
+		scope:minister ?= {
+			cc_xp_gain_dominant = { AMOUNT = cc_xp_field_award_low }
+			cc_xp_recompute = yes
+		}
+
+		if = {
+			limit = { var:cc_funds_project = 1 }
+			add_country_modifier = { modifier = cc_funds_survey  years = 10  mode = add_and_extend }
+			add_government_power = government_power_weak_bonus
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 2 }
+			add_country_modifier = { modifier = cc_funds_academy  years = 10  mode = add_and_extend }
+			add_research_progress = { value = research_progress  multiply = 0.06 }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 3 }
+			add_country_modifier = { modifier = cc_funds_muster  years = 10  mode = add_and_extend }
+			add_manpower = { value = monthly_manpower  multiply = 9 }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 4 }
+			add_country_modifier = { modifier = cc_funds_dockyard  years = 10  mode = add_and_extend }
+			add_sailors = { value = monthly_sailors  multiply = 9 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_funds_embassy  years = 10  mode = add_and_extend }
+			add_legitimacy = legitimacy_weak_bonus
+		}
+	}
+
+	# TIER 3. Ordinary, and the commonest result on every table. The thing was built and it works
+	# and nobody will write about it. Six years of the modifier, nothing immediate.
+	option = {
+		name = cc_cabinet.3.a_ordinary
+		trigger = { var:cc_funds_outcome = 3 }
+
+		if = {
+			limit = { var:cc_funds_project = 1 }
+			add_country_modifier = { modifier = cc_funds_survey  years = 6  mode = add_and_extend }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 2 }
+			add_country_modifier = { modifier = cc_funds_academy  years = 6  mode = add_and_extend }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 3 }
+			add_country_modifier = { modifier = cc_funds_muster  years = 6  mode = add_and_extend }
+		}
+		else_if = {
+			limit = { var:cc_funds_project = 4 }
+			add_country_modifier = { modifier = cc_funds_dockyard  years = 6  mode = add_and_extend }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_funds_embassy  years = 6  mode = add_and_extend }
+		}
+	}
+
+	# TIER 4. Poor. Not theft, just a project that came to nothing: the surveyors were obstructed,
+	# the timber was the wrong timber. Part of the outlay is recovered and that is all.
+	option = {
+		name = cc_cabinet.3.a_poor
+		trigger = { var:cc_funds_outcome = 4 }
+
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 0.4  min = 10  max = 80 }
+		add_prestige = prestige_weak_penalty
+	}
+
+	# TIER 5a. Disaster, prosecuted. Recovers part of the money and makes an enemy of a serving
+	# minister: cc_minister_resentful is what cc_cabinet_biyearly_resentful watches, so this
+	# hands the consequence to the rivalry thread rather than ending it here.
+	option = {
+		name = cc_cabinet.3.a_disaster_prosecute
+		trigger = { var:cc_funds_outcome = 5 }
+		ai_chance = { base = 50 }
+
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 0.8  min = 20  max = 160 }
+		add_prestige = prestige_weak_penalty
+		add_estate_satisfaction = {
+			type = estate_type:nobles_estate
+			value = estate_satisfaction_mild_penalty
+		}
+		scope:minister ?= {
+			set_variable = { name = cc_minister_resentful  value = yes }
+		}
+	}
+
+	# TIER 5b. Disaster, buried. No recovery, no quarrel, and a debased coinage that outlasts
+	# everyone who agreed to it. The scaling is on the modifier rather than the inflation, since
+	# add_inflation is permanent and a senior minister stealing more should not also mean the
+	# currency never recovers.
+	option = {
+		name = cc_cabinet.3.a_disaster_bury
+		trigger = { var:cc_funds_outcome = 5 }
+		ai_chance = { base = 50 }
+
+		add_inflation = inflation_weak_penalty
+		add_country_modifier = {
+			modifier = cc_funds_embezzled
+			years = 12
+			mode = add_and_extend
+			size = cc_xp_payoff_scale
 		}
 	}
 }
+
 
 # Age of Absolutism — "The Minister Advises on Parliamentary Affairs"
 cc_cabinet.4 = {

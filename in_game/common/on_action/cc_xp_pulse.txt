@@ -126,6 +126,18 @@ cc_xp_yearly_protege = {
 	}
 
 	effect = {
+		# Repair pass, for saves made before cc_xp_on_assigned learned to clear this.
+		# Anyone already seated keeps nothing from the sponsorship but the experience they
+		# earned under it, which is the same deal cc_xp_release_protege gives. Harmless
+		# once a save has been through it: after the first year there is nobody to find.
+		every_character = {
+			limit = {
+				has_variable = cc_protege
+				in_cabinet = yes
+			}
+			remove_variable = cc_protege
+		}
+
 		every_character = {
 			limit = {
 				has_variable = cc_protege
@@ -272,6 +284,20 @@ on_cabinet_removed = {
 
 # A new minister is initialised the moment they are seated rather than waiting for the
 # next monthly tick, so anything that inspects them in between reads real values.
+#
+# Seating a protege also ENDS their sponsorship. The point of grooming one is to have a
+# successor ready for a seat, so arriving in the seat is the goal being reached, not a
+# state to hold alongside it. Nothing removed cc_protege here before, and because the
+# seat can be filled by vanilla's own appointment interaction (which knows nothing about
+# this system) there was no other place it could have happened. A seated protege stayed
+# a protege forever, which meant three things at once:
+#   - they kept showing up in the court panel's protege list
+#   - they permanently held one of the three sponsorship slots, since
+#     cc_xp_num_proteges counts the variable rather than deriving the status
+#   - they drew XP twice a year, cc_xp_tenure_tick from cc_xp_yearly_tenure and
+#     cc_xp_protege_tick from cc_xp_yearly_protege
+# Clearing it here fixes all three, and has to happen before the resync below so the
+# panel is rebuilt from the corrected state.
 cc_xp_on_assigned = {
 	trigger = {
 		cc_xp_country_is_tracked = yes
@@ -279,6 +305,8 @@ cc_xp_on_assigned = {
 
 	effect = {
 		scope:target ?= {
+			remove_variable = cc_protege
+
 			cc_xp_init = yes
 			cc_xp_recompute = yes
 		}

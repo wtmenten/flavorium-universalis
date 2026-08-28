@@ -258,6 +258,28 @@ def add_gated_fallbacks(text: str, ladder: dict, report: list, filename: str):
     standing the minister has to reach before the event can offer the post again.
     """
     lines = text.split("\n")
+
+    # IDEMPOTENCY, and it needs its own pass. The partner is a SEPARATE option block, so the
+    # original gated option still looks exactly as it did before it was partnered: it carries no
+    # marker and no is_ai condition. Matching on the block alone therefore re-fires on every run
+    # and a second --apply would give every gated option a second partner.
+    #
+    # The precise test is whether this event already contains a marker option for this trait
+    # whose trigger carries a NEGATED gate. Testing for a marker option alone would be wrong:
+    # cc_cond.20 has a cc_xp_toward_legal_scholar from the is_ai split, and a gated option for
+    # the same trait in the same event would still need partnering.
+    partnered: set = set()
+    ev = "?"
+    for k, line in enumerate(lines):
+        m = re.match(r"^([a-zA-Z_0-9]+\.\d+) = \{", line)
+        if m:
+            ev = m.group(1)
+        m = re.match(r"^\t\tname = %s(\w+)" % MARKER, line)
+        if m:
+            window = "\n".join(lines[k:k + 12])
+            if re.search(r"NOT = \{ scope:\w+ = \{ cc_xp_dispatch_ready", window):
+                partnered.add((ev, m.group(1)))
+
     out: list[str] = []
     i = 0
     touched = 0
@@ -283,7 +305,8 @@ def add_gated_fallbacks(text: str, ladder: dict, report: list, filename: str):
             gate = GATE_LINE_RE.search(block)
             # is_ai = yes options are the AI half of an already-split pair and have a
             # human partner already. MARKER means this IS a generated partner.
-            already = MARKER in block or "is_ai = yes" in block
+            already = (MARKER in block or "is_ai = yes" in block
+                       or (len(traits) == 1 and (cur_event, traits[0]) in partnered))
 
             if len(traits) == 1 and gate and not already:
                 trait = traits[0]

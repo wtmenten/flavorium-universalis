@@ -1531,13 +1531,27 @@ crown_dependency = {
 	level = 2
 	annullment_favours_required = 20
 
+	# Only the hard unlock hides the type. `visible` is AND-ed with
+	# visible_through_diplomacy and visible_through_treaty (the readme calls both
+	# "additional to visible"), so anything placed here hides the subject type on every
+	# path at once and no tooltip anywhere can report why.
+	#
+	# has_royal_marriage_with used to sit here and did exactly that. It is now a stated
+	# requirement in enabled_through_diplomacy, waived on the union branch for the reason
+	# given there. The war path keeps its own copy of the check in
+	# cb_assert_crown_dependency, so that route is unchanged.
 	visible = {
 		has_advance = dynastic_governance_advance
-		# Must share ruler family
-		has_royal_marriage_with = scope:target
 	}
 	# ADM transactional path: convert a union member (fiefdom) to crown dependency
 	# Size cap eases by age. Uses cooldown to prevent rapid re-conversion.
+	#
+	# VISIBILITY IS DELIBERATELY WIDE. Everything that can fail for a reason the player
+	# could act on lives in enabled_through_diplomacy as a custom_tooltip instead, so the
+	# entry shows up greyed with a stated reason rather than vanishing. The size cap used
+	# to sit here, which meant the conversion was simply absent on any partner too large,
+	# and nothing told the player that shrinking the target or reaching a later age was
+	# the objective. Only the advance and the relationship itself gate visibility now.
 	visible_through_diplomacy = {
 		has_advance = dynastic_governance_advance
 		scope:target = {
@@ -1548,27 +1562,39 @@ crown_dependency = {
 				}
 				in_union_with = root
 			}
-		}
-		# scope:actor = {
-		# 	NOT = { has_variable = crown_dependency_cooldown }
-		# }
-		OR = {
-			AND = {
-				NOT = { current_age_or_later = { age = age_5_absolutism } }
-				scope:target = { num_locations < 10 }
+			# Every non-senior member qualifies, but never offer the conversion against
+			# our own senior partner. Guarded on `exists` so a plain subject with no
+			# union at all still passes rather than failing the scope link.
+			NOT = {
+				AND = {
+					exists = union
+					union = { country_is_senior_partner = { country = scope:target } }
+				}
 			}
-			AND = {
-				current_age_or_later = { age = age_5_absolutism }
-				NOT = { current_age_or_later = { age = age_6_revolutions } }
-				scope:target = { num_locations < 20 }
-			}
-			current_age_or_later = { age = age_6_revolutions }
 		}
 	}
 	enabled_through_diplomacy = {
 		custom_tooltip = {
 			text = crown_dependency_conversion_tt
 			root = { NOT = { has_variable = crown_dependency_cooldown } }
+		}
+		# Counted in provinces, not locations. num_locations counts the individual tiles
+		# a province is made of, so the old thresholds of 10 and 20 locations were a far
+		# tighter leash than they read as.
+		custom_tooltip = {
+			text = crown_dependency_size_cap_tt
+			OR = {
+				AND = {
+					NOT = { current_age_or_later = { age = age_5_absolutism } }
+					scope:target = { num_provinces < 30 }
+				}
+				AND = {
+					current_age_or_later = { age = age_5_absolutism }
+					NOT = { current_age_or_later = { age = age_6_revolutions } }
+					scope:target = { num_provinces < 50 }
+				}
+				current_age_or_later = { age = age_6_revolutions }
+			}
 		}
 		# A partnership only just settled cannot be flipped straight into a crown dependency.
 		# This is what lesser_partner_maturation is for; it mirrors junior_partner_maturation,
@@ -1577,9 +1603,21 @@ crown_dependency = {
 			text = lesser_partner_maturation_tt
 			scope:target = { NOT = { has_variable = lesser_partner_maturation } }
 		}
-		scope:target = { 
+		# The dynastic justification, required on the subject-type route and waived on the
+		# union route. A union member cannot hold a royal marriage with its own union: the
+		# shared ruler IS the dynastic tie, so has_royal_marriage_with can never pass on
+		# that branch. Requiring it unconditionally is what made the conversion
+		# unreachable for the union members it was written for.
+		custom_tooltip = {
+			text = crown_dependency_royal_marriage_tt
 			OR = {
-				in_union_with = root 
+				scope:target = { in_union_with = root }
+				has_royal_marriage_with = scope:target
+			}
+		}
+		scope:target = {
+			OR = {
+				in_union_with = root
 				is_subject_type = crown_dependency
 			}
 		}
@@ -1635,18 +1673,18 @@ crown_dependency = {
 	subject_pays = subject_pays_crown_dependency
 
 	overlord_modifier = {
-		monthly_prestige = 0.15
-		monthly_legitimacy = 0.1
+		monthly_prestige = 0.05
+		monthly_legitimacy = 0.05
 	}
 	subject_modifier = {
-		monthly_legitimacy = 0.2
+		monthly_legitimacy = 0.12
 	}
 
 	minimum_opinion_for_offer = 125
 	great_power_score_transfer = 0.3
 
 	diplo_chance_accept_subject = {
-		base = -72
+		base = -10
 		current_strength = 0.2
 		border_distance = -0.3
 		negative_opinion = -5
@@ -1667,7 +1705,7 @@ crown_dependency = {
 		different_government_type = -20
 		actor_at_war = -20
 		competing_power = -200
-		tax_base = -0.4
+		tax_base = -0.25
 		reject_subjugation_reasons = -0.75
 		accept_subjugation_reasons = 1
 	}
