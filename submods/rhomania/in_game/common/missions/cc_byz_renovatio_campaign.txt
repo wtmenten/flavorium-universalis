@@ -238,13 +238,19 @@ cc_byz_renovatio_campaign = {
 		}
 	}
 
+	# PROTECTED HARBOR, NOT A SHIPYARD. shipyard_advance is age 4 and nothing in vanilla or this
+	# submod builds one earlier (fate_of_the_phoenix.2 grants one free, but at Smyrna, and the
+	# expand_shipyards parliament issue requires the advance and picks its own location), so a
+	# shipyard requirement made this T0 root unreachable for three ages. protected_harbor_advance
+	# is age 2 and the building sits outside the dock -> dry_dock -> shipyard obsolescence chain,
+	# so it is never removed by a later upgrade and the task cannot un-complete.
 	cc_byz_task_arsenal = {
 		icon = cc_byz_mission_fleet
 		highlight = { scope:province = { this = location:constantinople } }
 		enabled = {
 			location:constantinople = {
 				owner ?= root
-				has_building_with_at_least_one_level = shipyard
+				has_building_with_at_least_one_level = protected_harbor
 			}
 		}
 		bypass = { NOT = { owns = location:constantinople } }
