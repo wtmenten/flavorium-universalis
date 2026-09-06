@@ -53,8 +53,10 @@ import re
 import sys
 from pathlib import Path
 
+from game_paths import game_root
+
 REPO = Path(__file__).resolve().parent.parent
-GAME = Path('f:/SteamLibrary/steamapps/common/Europa Universalis V/game')
+GAME = Path(game_root())
 ADVANCE_DIR = GAME / 'in_game' / 'common' / 'advances'
 MODTYPE_DIR = GAME / 'main_menu' / 'common' / 'modifier_type_definitions'
 

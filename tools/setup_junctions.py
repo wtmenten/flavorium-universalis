@@ -1,9 +1,17 @@
 """
-Create Windows directory junctions so EU5 can load submods directly from
-the mod/ folder while their source files live under submods/ in this repo.
+Create Windows directory junctions so EU5 can load this mod and its submods
+from the game's mod/ folder while the source files live in this repo.
 
 Run once after cloning, and again whenever a new submod is added:
     python tools/setup_junctions.py
+
+The mod folder is resolved in this order:
+    1. --mod-dir "<path>"
+    2. the EU5_MOD_DIR environment variable
+    3. the repo's parent, if it is itself named "mod" (repo cloned inside mod/)
+    4. <Documents>/Paradox Interactive/Europa Universalis V/mod, with Documents
+       read from the registry so a OneDrive-redirected Documents is found
+When the repo is not inside the mod folder, the main mod is junctioned too.
 """
 
 import json
@@ -12,9 +20,45 @@ import subprocess
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(SCRIPT_DIR)   # cabinets-and-choices/
-MOD_DIR = os.path.dirname(ROOT_DIR)      # mod/
+ROOT_DIR = os.path.dirname(SCRIPT_DIR)   # flavorium-universalis/
 SUBMODS_DIR = os.path.join(ROOT_DIR, "submods")
+
+EU5_USER_SUBPATH = os.path.join("Paradox Interactive", "Europa Universalis V", "mod")
+
+
+def documents_dir():
+    """The user's Documents folder, honouring a OneDrive/known-folder redirect."""
+    try:
+        import winreg
+
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders",
+        )
+        with key:
+            value, _ = winreg.QueryValueEx(key, "Personal")
+        return os.path.expandvars(value)
+    except Exception:
+        return os.path.join(os.path.expanduser("~"), "Documents")
+
+
+def resolve_mod_dir(argv):
+    if "--mod-dir" in argv:
+        i = argv.index("--mod-dir")
+        if i + 1 >= len(argv):
+            print("Error: --mod-dir needs a path argument.")
+            return None
+        return os.path.abspath(argv[i + 1])
+
+    env = os.environ.get("EU5_MOD_DIR")
+    if env:
+        return os.path.abspath(env)
+
+    parent = os.path.dirname(ROOT_DIR)
+    if os.path.basename(parent).lower() == "mod":
+        return parent
+
+    return os.path.join(documents_dir(), EU5_USER_SUBPATH)
 
 
 def load_submod_name(submod_dir):
@@ -84,22 +128,22 @@ def create_junction(link_path, target_path):
     return True
 
 
-def prune_stale_junctions(valid_names):
-    """Remove junctions in MOD_DIR that point into SUBMODS_DIR but whose name is
-    no longer a current submod name. This is what clears out renamed links (e.g.
-    old '1.3 Beta ...' names) after a submod is renamed. Only reparse points that
-    resolve inside this repo's submods/ tree are touched — real directories (like
-    cabinets-and-choices) and unrelated links are left alone."""
-    submods_root = normalize_path(SUBMODS_DIR)
+def prune_stale_junctions(mod_dir, valid_names):
+    """Remove junctions in mod_dir that point into this repo but whose name is no
+    longer a current mod name. This is what clears out renamed links (e.g. old
+    '1.3 Beta ...' names) after a submod is renamed. Only reparse points that
+    resolve inside this repo are touched — real directories and unrelated links
+    are left alone."""
+    repo_root = normalize_path(ROOT_DIR)
     removed = 0
-    for entry in sorted(os.listdir(MOD_DIR)):
-        link_path = os.path.join(MOD_DIR, entry)
+    for entry in sorted(os.listdir(mod_dir)):
+        link_path = os.path.join(mod_dir, entry)
         target = junction_target(link_path)
         if target is None:
             continue  # real directory or not a reparse point
         target_abs = normalize_path(target)
-        if target_abs != submods_root and not target_abs.startswith(submods_root + os.sep):
-            continue  # junction points somewhere outside submods/ — not ours
+        if target_abs != repo_root and not target_abs.startswith(repo_root + os.sep):
+            continue  # junction points outside this repo — not ours
         if entry in valid_names:
             continue  # matches a current submod name — keep
         print(f"  Pruning stale junction: {entry}")
@@ -112,7 +156,7 @@ def prune_stale_junctions(valid_names):
     return removed
 
 
-def main():
+def main(argv):
     if sys.platform != "win32":
         print("This script is Windows-only (uses mklink /J).")
         return 1
@@ -120,6 +164,17 @@ def main():
     if not os.path.isdir(SUBMODS_DIR):
         print(f"No submods/ directory found at {SUBMODS_DIR}.")
         return 0
+
+    mod_dir = resolve_mod_dir(argv)
+    if mod_dir is None:
+        return 1
+    if not os.path.isdir(mod_dir):
+        try:
+            os.makedirs(mod_dir)
+            print(f"Created mod folder: {mod_dir}")
+        except Exception as e:
+            print(f"Error: could not create mod folder {mod_dir}: {e}")
+            return 1
 
     folders = sorted(
         e for e in os.listdir(SUBMODS_DIR)
@@ -129,23 +184,29 @@ def main():
         print("No submod folders found.")
         return 0
 
-    print(f"Mod folder : {MOD_DIR}")
-    print(f"Submods    : {SUBMODS_DIR}")
+    print(f"Mod folder : {mod_dir}")
+    print(f"Repo       : {ROOT_DIR}")
     print()
 
     errors = 0
     valid_names = set()
-    for folder in folders:
-        submod_dir = os.path.join(SUBMODS_DIR, folder)
-        mod_name = load_submod_name(submod_dir)
+
+    # When the repo lives outside the mod folder, the main mod needs a link too.
+    repo_is_inside_mod_dir = normalize_path(os.path.dirname(ROOT_DIR)) == normalize_path(mod_dir)
+    link_dirs = [(ROOT_DIR, None)] if not repo_is_inside_mod_dir else []
+    link_dirs += [(os.path.join(SUBMODS_DIR, f), f) for f in folders]
+
+    for source_dir, folder in link_dirs:
+        mod_name = load_submod_name(source_dir)
         if mod_name is None:
             errors += 1
             continue
 
         valid_names.add(mod_name)
-        link_path = os.path.join(MOD_DIR, mod_name)
-        print(f"  {mod_name}  (submods/{folder})")
-        if create_junction(link_path, submod_dir):
+        link_path = os.path.join(mod_dir, mod_name)
+        where = f"submods/{folder}" if folder else "main mod"
+        print(f"  {mod_name}  ({where})")
+        if create_junction(link_path, source_dir):
             print(f"    {link_path}")
         else:
             errors += 1
@@ -156,7 +217,7 @@ def main():
     if errors:
         print(f"Skipping stale-junction prune ({errors} name error(s) above).")
     else:
-        pruned = prune_stale_junctions(valid_names)
+        pruned = prune_stale_junctions(mod_dir, valid_names)
         print(f"Pruned {pruned} stale junction(s).")
 
     print()
@@ -168,4 +229,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

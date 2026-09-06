@@ -166,10 +166,10 @@ python tools/translate.py -wp -cn -l french,german,spanish   # Steam page title/
 
 ## Development Environment
 
-- **Game files location**: `F:\SteamLibrary\steamapps\common\Europa Universalis V\game` — reference these when checking vanilla definitions, scripting syntax, or effect/trigger scopes.
+- **Game files location**: the EU5 install varies per workstation, so never hardcode it. Run `python tools/game_paths.py` to print the resolved path, or use `from game_paths import game_root` in a tool. The resolver checks `EU5_GAME_DIR`, then every Steam library in `libraryfolders.vdf`, then common install paths, and only accepts directories that exist. Reference these files when checking vanilla definitions, scripting syntax, or effect/trigger scopes.
 - **No build step**: Paradox mods are plain text files loaded directly by the game engine. There is no compilation, linting tool, or test runner.
 - **Testing**: Load the mod in-game via the EU V launcher. The game logs errors to `%USERPROFILE%\Documents\Paradox Interactive\Europa Universalis V\logs\`.
-- **Submod setup**: EU5 only loads mods from the top-level `mod/` folder. After cloning (or adding a new submod), run `python tools/setup_junctions.py` to create Windows directory junctions from `mod/<submod name>/` → `submods/<folder>/`. Safe to re-run.
+- **Submod setup**: EU5 only loads mods from the top-level `mod/` folder. After cloning (or adding a new submod), run `python tools/setup_junctions.py` to create Windows directory junctions from `mod/<mod name>/` into the repo. Safe to re-run. It finds the mod folder by checking `--mod-dir`, then `EU5_MOD_DIR`, then the repo's parent if that parent is named `mod`, and finally `<Documents>/Paradox Interactive/Europa Universalis V/mod` (Documents read from the registry, so a OneDrive-redirected Documents resolves correctly), creating it if absent. When the repo is not itself inside `mod/`, the main mod gets a junction too.
 
 ## Mod Structure
 
@@ -198,7 +198,7 @@ Paradox script files use the `.txt` extension and follow a Clausewitz scripting 
 
 ## Scripting Conventions
 
-EU V uses Clausewitz script. When writing traits, events, or decisions, follow the patterns found in the vanilla game files at `F:\SteamLibrary\steamapps\common\Europa Universalis V\game\`. Key scoping rules, trigger names, and effect names must match vanilla exactly — the engine gives no helpful errors for typos in script keys.
+EU V uses Clausewitz script. When writing traits, events, or decisions, follow the patterns found in the vanilla game files (see **Game files location** above for how to resolve the path). Key scoping rules, trigger names, and effect names must match vanilla exactly — the engine gives no helpful errors for typos in script keys.
 
 DO not get stuck looking for things in `game\common` directories when you should be looking in `game\in_game\common\` or `game\main_menu\common\` instead.
 

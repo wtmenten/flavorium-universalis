@@ -18,7 +18,7 @@ Always verify modifier names in vanilla before using them. Common pitfalls:
 - **`antagonism_taking_land_giving_modifier`** — valid country modifier (makes taking land generate more antagonism) ✓
 - **`num_naval_governors`** — valid in country_modifier blocks for estate privileges, advances, and government reforms ✓
 
-Quick verify command: `grep -r "modifier_name" "f:/SteamLibrary/steamapps/common/Europa Universalis V/game/main_menu/common/static_modifiers/" 2>/dev/null | head -5`
+Quick verify command: `python tools/vanilla_search.py modifier <modifier_name>` (it resolves the game install itself, so there is no path to keep up to date).
 
 ---
 

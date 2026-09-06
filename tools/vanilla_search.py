@@ -37,11 +37,13 @@ import os
 import re
 import sys
 
+from game_paths import game_root
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 
-GAME_ROOT = r"F:\SteamLibrary\steamapps\common\Europa Universalis V\game"
+GAME_ROOT = game_root()
 IN_GAME   = os.path.join(GAME_ROOT, "in_game")
 MAIN_MENU = os.path.join(GAME_ROOT, "main_menu")
 DLC_ROOT  = os.path.join(GAME_ROOT, "dlc")

@@ -15,9 +15,11 @@ import os
 import re
 import glob
 
+from game_paths import game_root
+
 # ---------------------------------------------------------------------------
 MOD_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME_DIR = r"F:\SteamLibrary\steamapps\common\Europa Universalis V\game"
+GAME_DIR = game_root()
 
 NAVY_DEMANDS = os.path.join(
     MOD_ROOT, "submods", "balance", "in_game", "common", "goods_demand", "99_cc_navy_demands.txt"

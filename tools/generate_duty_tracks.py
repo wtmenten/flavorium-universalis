@@ -25,8 +25,10 @@ import re
 import sys
 from pathlib import Path
 
+from game_paths import game_root
+
 REPO = Path(__file__).resolve().parent.parent
-VANILLA = Path(r"F:\SteamLibrary\steamapps\common\Europa Universalis V\game")
+VANILLA = Path(game_root())
 OUT = REPO / "in_game" / "common" / "scripted_effects" / "cc_xp_duty_tracks.txt"
 
 TRACKS = ("adm", "dip", "mil")

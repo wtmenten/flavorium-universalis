@@ -34,7 +34,10 @@ import os
 import re
 import sys
 
-VANILLA = 'f:/SteamLibrary/steamapps/common/Europa Universalis V/game/'
+from game_paths import game_root
+
+# Vanilla paths are joined by string concatenation below, so keep the trailing slash.
+VANILLA = game_root().replace('\\', '/') + '/'
 ENTRY = re.compile(
     r'^(?:REPLACE:|REPLACE_OR_CREATE:|INJECT:|TRY_REPLACE:|TRY_INJECT:)?([a-z0-9_]+)\s*=\s*\{', re.M)
 

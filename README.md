@@ -18,7 +18,7 @@ loading_screen/   loading screen graphics
 .metadata/        mod descriptor (metadata.json)
 ```
 
-Mirror vanilla's subfolder structure when adding new files. Game files are at `F:\SteamLibrary\steamapps\common\Europa Universalis V\game`.
+Mirror vanilla's subfolder structure when adding new files. The vanilla game files live in the EU5 install, whose location differs per machine; run `python tools/game_paths.py` to print it.
 
 ---
 
@@ -409,17 +409,37 @@ cp tools/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commi
 
 It re-stages **only files already staged for the current commit** that `fix_bom.py` modified. That restriction matters: `fix_bom.py` rewrites files across the whole mod, so a hook that re-stages everything dirty will sweep unrelated work into whatever commit happens to be running. If two people are working in the tree at once, that silently commits half of someone else's feature.
 
-### `tools/setup_junctions.py` — Submod junction setup (run once after cloning)
+### `tools/setup_junctions.py` — Mod/submod junction setup (run once after cloning)
 
-EU5 only loads mods from the top-level `mod/` folder. This script creates Windows directory junctions there so the game can find each submod while its files stay under `submods/` in the repo.
+EU5 only loads mods from the top-level `mod/` folder. This script creates Windows directory junctions there so the game can find each mod while its files stay in the repo.
 
 ```bash
 python tools/setup_junctions.py
+python tools/setup_junctions.py --mod-dir "D:/somewhere/else/mod"   # explicit target
 ```
 
-Run once after cloning, again whenever a new submod is added, and after **renaming** a submod (for example when promoting a `1.3 Beta ...` submod to its stable `Flavorium Universalis - ...` name). It reads the `name` field from each submod's `.metadata/metadata.json` and creates `mod/<name>/` → `submods/<folder>/`. Safe to re-run: up-to-date junctions are skipped.
+Run once after cloning, again whenever a new submod is added, and after **renaming** a submod (for example when promoting a `1.3 Beta ...` submod to its stable `Flavorium Universalis - ...` name). It reads the `name` field from each `.metadata/metadata.json` and creates `mod/<name>/` → the source folder. Safe to re-run: up-to-date junctions are skipped.
 
-The script also **prunes stale junctions**. After every submod name resolves cleanly, any junction directly under `mod/` that points into this repo's `submods/` tree but no longer matches a current submod `name` is removed. This is what clears out old links after a rename (the leftover `1.3 Beta ...` junctions from the beta line). Only reparse points resolving inside `submods/` are touched; real directories (like `cabinets-and-choices`) and unrelated links are left alone, and the prune is skipped entirely if any submod name failed to load, so a transient read error can never delete a still-valid link.
+**Finding the mod folder.** The script checks, in order: the `--mod-dir` argument, the `EU5_MOD_DIR` environment variable, the repo's parent directory if that parent is named `mod` (the layout where the repo is cloned directly inside the game's mod folder), and otherwise `<Documents>/Paradox Interactive/Europa Universalis V/mod`. Documents is read from the registry rather than assumed to be `%USERPROFILE%\Documents`, so a OneDrive-redirected Documents resolves correctly. The folder is created if it does not exist yet.
+
+**The main mod is linked too** when the repo is not itself inside the mod folder. If it is inside (the parent-named-`mod` case), the game already sees it directly and only the submods get junctions.
+
+The script also **prunes stale junctions**. After every mod name resolves cleanly, any junction directly under `mod/` that points into this repo but no longer matches a current `name` is removed. This is what clears out old links after a rename (the leftover `1.3 Beta ...` junctions from the beta line). Only reparse points resolving inside the repo are touched; real directories and unrelated links are left alone, and the prune is skipped entirely if any name failed to load, so a transient read error can never delete a still-valid link.
+
+### `tools/game_paths.py` — EU5 install locator
+
+Shared helper that finds the installed game files, so no tool has to hardcode a Steam path. Every tool that reads vanilla script imports it:
+
+```python
+from game_paths import game_root
+GAME_ROOT = game_root()      # .../Europa Universalis V/game
+```
+
+```bash
+python tools/game_paths.py   # print the resolved install, or list the libraries searched
+```
+
+It checks the `EU5_GAME_DIR` environment variable, then every Steam library listed in `steamapps/libraryfolders.vdf` (Steam's own location read from the registry), then a short list of common install paths. Only directories that actually exist are accepted: Steam keeps libraries on absent or removable drives listed in `libraryfolders.vdf` indefinitely, so a registered path is not evidence the files are there. If nothing is found, `game_root()` raises with instructions to set `EU5_GAME_DIR`.
 
 ### `tools/generate_workshop.py` — Workshop description generator
 

@@ -25,9 +25,12 @@ from pathlib import Path
 from itertools import product
 from collections import defaultdict
 
+from game_paths import game_root
+
 # -- paths -------------------------------------------------------------------
-MOD_ADVANCES_DIR  = Path(r"C:\Users\wtmen\OneDrive\Documents\Paradox Interactive\Europa Universalis V\mod\cabinets-and-choices\in_game\common\advances")
-GAME_ADVANCES_DIR = Path(r"F:\SteamLibrary\steamapps\common\Europa Universalis V\game\in_game\common\advances")
+REPO_ROOT         = Path(__file__).resolve().parent.parent
+MOD_ADVANCES_DIR  = REPO_ROOT / "in_game" / "common" / "advances"
+GAME_ADVANCES_DIR = Path(game_root()) / "in_game" / "common" / "advances"
 
 BRANCHES = ("adm", "dip", "mil")
 
