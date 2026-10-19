@@ -1,4 +1,4 @@
-######################################################################
+﻿######################################################################
 # Flavorium Universalis — cabinet card seniority badge
 #
 # Adds a small "lvl N" badge to each minister's card in the government view's cabinet
@@ -16,8 +16,8 @@
 # better against other UI mods: vanilla's card, and Glorp's replacement card, BOTH call
 # `using = cabinet_card_header_content`, so our version drops into whichever card wins.
 #
-# RE-SYNC ON EVERY EU5 UPDATE. Everything below except the block marked FLAVORIUM is a
-# verbatim copy of vanilla as of 1.2/1.3. Diff against cabinet_cards.gui after a patch.
+# RE-SYNC ON EVERY EU5 UPDATE. Everything below except the blocks marked FLAVORIUM is a
+# verbatim copy of vanilla as of 1.4.1. Diff against cabinet_cards.gui after a patch.
 #
 # KNOWN CONFLICT. Glorp UI (workshop 3601047146) redefines this same template in
 # glorpUI_cabinet_cards.gui. Load order decides which one wins; whoever loses simply
@@ -34,12 +34,14 @@ template cabinet_card_header_content {
 		margin_right = 10
 
 		widget = {
+			visible = "[Cabinet.IsActive]"
 			size = { 50 -1 }
 			allow_outside = yes
 			datacontext = "[Cabinet.GetAction]"
 			cabinet_action_power = {
 				visible = "[Cabinet.IsActive]"
 				parentanchor = left|vcenter
+				position = { -5 0 }
 				blockoverride cabinet_action_power_bg_size {
 					size = { 24 24 }
 				}
@@ -50,11 +52,18 @@ template cabinet_card_header_content {
 		}
 
 		vbox = {
+			layoutpolicy_horizontal = expanding
+
 			text_single = {
 				visible = "[Cabinet.IsActive]"
+				layoutpolicy_horizontal = expanding
+				size = { -1 25 }
+				autoresize = no
+				elide = right
+				alwaystransparent = yes
 				text = "[Cabinet.GetNameWithNoTooltip]"
 				default_format = "#yellow_titles"
-				align = left
+				align = left|nobaseline
 			}
 
 			####################################################################
@@ -81,16 +90,52 @@ template cabinet_card_header_content {
 				using = action_progress_tooltip
 			}
 
-			text_single = {
+
+			widget = {
 				visible = "[Not(Cabinet.IsActive)]"
-				text = "NO_CABINET_ACTION"
-				using = Font_Size_Medium
-				using = Font_Type_Flavor
-				align = nobaseline
+				layoutpolicy_horizontal = expanding
+				size = { -1 32 }
+
+				tooltipwidget = {
+					BasicFunctionalTooltip = {
+						blockoverride "tooltip_ui_action_block" {
+							TooltipFunctionalBlock = {
+								using = tooltip_left_click_template
+								blockoverride "action_left_text" {
+									text = "CABINET_ACTION_SIDEMENU"
+								}
+							}
+						}
+					}
+				}
+
+				background = {
+					using = color_black_texture
+					modify_texture = {
+						using = bg_mask_fade_horizontal_middle_texture
+						blend_mode = alphamultiply
+					}
+				}
+
+				background = {
+					using = color_red_texture
+					alpha = 0.5
+					modify_texture = {
+						using = bg_mask_fade_horizontal_middle_texture
+						blend_mode = alphamultiply
+					}
+				}
+
+				text_single = {
+					parentanchor = center
+					alwaystransparent = yes
+					text = "NO_CABINET_ACTION"
+					using = Font_Size_Medium
+					using = Font_Type_Flavor
+					align = nobaseline
+				}
 			}
 		}
-
-		expand = {}
 
 		####################################################################
 		# FLAVORIUM: seniority badge
