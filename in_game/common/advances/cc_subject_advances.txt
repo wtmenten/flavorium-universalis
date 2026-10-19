@@ -369,12 +369,10 @@ naval_administration_advance = {
 	for = dip
 	requires = naval_professionalism
 
+	# No gate on naval_charter_advance: since 1.4 the engine rejects has_advance in an
+	# advance's potential/allow, and that advance sits in age 3.
 	potential = {
 		cc_subject_types_available = yes
-		has_advance_available = naval_charter_advance
-	}
-	allow = {
-		has_advance = naval_charter_advance
 	}
 
 	unlock_government_reform = cc_naval_administration_reform
@@ -401,24 +399,12 @@ puppet_state_advance = {
 	icon = expansionism
 	requires = diplomatic_range_age_5
 	for = dip
-	
-	# potential = "could research the prerequisite", allow = "has researched it". Using
-	# has_advance_available in allow meant the prerequisite was never actually required: both
-	# prerequisites are early advances gated only on cc_subject_types_available, so they are
-	# available to nearly everyone and allow passed without either being taken. Cf.
-	# naval_administration_advance and military_march_advance, which already split it this way.
+
+	# Used to require shadow_diplomacy_advance or client_state_advance. Since 1.4 the engine
+	# rejects has_advance in an advance's potential/allow, and both sit in earlier ages, so
+	# they now only raise the AI weight below.
 	potential = {
 		cc_subject_types_available = yes
-		OR = {
-			has_advance_available = shadow_diplomacy_advance
-			has_advance_available = client_state_advance
-		}
-	}
-	allow = {
-		OR = {
-			has_advance = shadow_diplomacy_advance
-			has_advance = client_state_advance
-		}
 	}
 
 	unlock_subject_type = puppet_state
@@ -517,14 +503,12 @@ military_march_advance = {
 	requires = subject_loyalty_absolutism
 	for = mil
 
+	# The military_academy subject below stands in for military_academy_advance (age 4) and
+	# marcher_lords (age 2): since 1.4 the engine rejects has_advance in potential/allow.
 	potential = {
 		cc_subject_types_available = yes
-		has_advance_available = marcher_lords
-		has_advance_available = military_academy_advance
 	}
 	allow = {
-		has_advance = marcher_lords
-		has_advance = military_academy_advance
 		any_subject = { is_subject_type = military_academy }
 		OR = {
 			any_subject = { is_subject_type = elite_enclave }
@@ -593,10 +577,6 @@ federal_constitution_advance = {
 
 	potential = {
 		cc_subject_types_available = yes
-		has_advance = colonial_assembly_advance
-	}
-	allow = {
-		has_advance = colonial_assembly_advance
 	}
 
 	unlock_subject_type = imperial_council_member
@@ -646,10 +626,6 @@ false_federal_charter_advance = {
 
 	potential = {
 		cc_subject_types_available = yes
-		has_advance = imperial_trade_compact_advance
-	}
-	allow = {
-		has_advance = imperial_trade_compact_advance
 	}
 
 	unlock_subject_type = false_federal_member

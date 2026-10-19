@@ -41,20 +41,17 @@ cc_byz_renovatio_imperii = {
 
 # Running a province you cannot see from the palace. The exarchate sits a long way from
 # Constantinople and everything about it is slower than governing Thrace.
-# CROSS-AGE PREREQUISITE. This depends on cc_byz_renovatio_imperii, which sits in age 2,
-# and per docs/scripting-gotchas.md a plain `requires` across ages breaks. The documented
-# workaround is has_advance in both potential and allow, with requires pointing at an
-# advance inside this age instead.
+# Not gated on cc_byz_renovatio_imperii (age 2): a cross-age `requires` breaks, and since 1.4
+# the engine also rejects has_advance in an advance's potential/allow. The allow block repeats
+# Renovatio's own conditions instead, so in practice the same emperors qualify.
 cc_byz_exarchal_chancery = {
 	age = age_3_discovery
 	potential = {
 		has_dlc = "d008_fate_of_the_phoenix"
 		has_or_had_tag = BYZ
 		has_societal_value = societal_value_type:latinization_vs_hellenization
-		has_advance = cc_byz_renovatio_imperii
 	}
 	allow = {
-		has_advance = cc_byz_renovatio_imperii
 		societal_value:latinization_vs_hellenization > 25
 		custom_tooltip = {
 			text = cc_byz_capital_is_constantinople_tt

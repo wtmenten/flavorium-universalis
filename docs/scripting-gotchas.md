@@ -1,4 +1,4 @@
-# EU5 Scripting Gotchas & Verified Patterns
+﻿# EU5 Scripting Gotchas & Verified Patterns
 
 Lessons from sessions building traits, events, estate privileges, advances, buildings, and on_actions.
 
@@ -122,11 +122,7 @@ add_gold_to_estate = {
 
 - `unlock_estate_privilege = ep_privilege_name` — makes the privilege appear when the advance is taken
 - `unlock_government_reform = cc_reform_name` — makes a reform available after taking the advance
-- **Cross-age `requires` is broken**: `requires = other_advance` logs an error if the required advance is in a different age. Use `potential` + `allow` with `has_advance` instead:
-  ```
-  potential = { has_advance = naval_charter_advance }
-  allow    = { has_advance = naval_charter_advance }
-  ```
+- **No cross-age prerequisites at all (1.4+)**: `requires = other_advance` logs an error if the required advance is in a different age, and since 1.4 `has_advance` in an advance's `potential` or `allow` is rejected too (`advance_definition.cpp:1480 ... gates on has_advance in its allow or potential`). No vanilla advance does either. Point `requires` at an advance in the same age, gate on game state instead (e.g. `any_subject = { is_subject_type = X }` standing in for the advance that unlocked X), or drop the gate. `has_advance` inside `ai_weight` is still fine.
 - `has_advance = advance_key` — country trigger, checks if the advance has been researched
 - `has_advance_available = advance_key` — country trigger, checks researched OR available to research
 
@@ -631,7 +627,7 @@ Names that look obvious but are wrong, with verified replacements:
 | `has_culture_group = X` in country scope | `culture = { has_culture_group = X }` | requires culture scope even from country scope |
 | `has_custom_tag = foo` on characters | **does not exist** | trait `custom_tags = {}` values cannot be queried from triggers |
 | `target = scope_name` in `declare_war_with_cb` | `target = scope:scope_name` | must include `scope:` prefix |
-| `requires = advance_from_other_age` | `potential/allow = { has_advance = X }` | cross-age `requires` logs an error; gate with potential+allow instead |
+| `requires = advance_from_other_age` | same-age `requires`, or a game-state gate | cross-age `requires` logs an error, and since 1.4 so does `has_advance` in potential/allow |
 
 ### Scripted value naming patterns
 

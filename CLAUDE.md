@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -226,7 +226,7 @@ See [docs/scripting-gotchas.md](docs/scripting-gotchas.md) for verified patterns
 - **Situation panel art resolves by naming convention** (`main_menu/gfx/interface/illustrations/situation/<key>.dds`) through `GetSituationIllustration` in the default `situation_panel_image` block. Overriding that block with a gradient removes the only call site and the art never appears.
 - **`has_custom_tag`** does NOT exist as a trigger. Trait `custom_tags = {}` values cannot be queried from character triggers.
 - **Illustration tags**: the complete valid list is `interior`, `exterior`, `regular`, `angry`, `professional`, `happy`, `armed`, `trading`, `military`, `location`, `economy`, `bank`, `army`, `ages`, `institution`, `society`, `renaissance`, `goods` (eighteen; harvested from the `N = <tag>` entries in `loading_screen/gfx/illustrations/database/*.txt`, which is the authoritative source). `combat`, `fire`, `burghers`, `interior_peasant` and **`peasant`** are NOT valid. `peasant` was previously listed here as valid and is not: it cost five `unknown illustration tag` errors before anyone read the database rather than the note.
-- **Advance cross-age `requires`**: `requires = other_advance` breaks if the required advance is in a different age. Use `potential = { has_advance = X }` + `allow = { has_advance = X }` instead.
+- **Advances cannot depend on another age's advance (1.4+)**: cross-age `requires` breaks, and since 1.4 the engine also rejects `has_advance` in an advance's `potential`/`allow` (`advance_definition.cpp:1480`). Use a same-age `requires`, gate on game state (e.g. owning the subject type the earlier advance unlocked), or drop the gate. `has_advance` in `ai_weight` is fine.
 - **Bureaucracy `_impact_modifier` types**: each custom bureaucracy needs a `{name}_impact_modifier` entry in `main_menu/common/modifier_type_definitions/`. Pattern: `percent=yes  game_data={ category=country }`. See `game/main_menu/common/modifier_type_definitions/01_byz.txt`.
 - **`declare_war_with_cb` target**: must use `target = scope:X` with the `scope:` prefix, not bare `target = X`.
 - **Opinion modifiers**: `add_opinion_modifier` does NOT exist. Use `add_opinion = { target = X modifier = Y }`. The modifier must be defined in `common/biases/` first — "Unknown bias type" means it's missing. No `years` param; duration is set in the bias definition.
