@@ -19,7 +19,8 @@ cc_bond_underwrite = {
 		scope:subject = { has_variable = cc_bond_initialized }
 	}
 	is_valid = {
-		gold >= scope:subject.cc_bond_gift_cost
+		# Must match the charge in cc_bonds.300 (2x gift cost).
+		gold >= { value = scope:subject.cc_bond_gift_cost  multiply = 2 }
 		scope:subject = {
 			var:cc_bond_eco < 5
 			NOT = { has_variable = cc_bond_action_cd }
@@ -41,7 +42,8 @@ cc_bond_review = {
 		scope:subject = { has_variable = cc_bond_initialized }
 	}
 	is_valid = {
-		gold >= scope:subject.cc_bond_gift_cost
+		# Must match the charge in cc_bonds.301 (1.5x gift cost).
+		gold >= { value = scope:subject.cc_bond_gift_cost  multiply = 1.5 }
 		scope:subject = {
 			var:cc_bond_mil < 5
 			NOT = { has_variable = cc_bond_action_cd }
@@ -55,7 +57,7 @@ cc_bond_review = {
 	}
 }
 
-# Political — Confer a Charter of Privileges (prestige) -> cc_bonds.302
+# Political — Confer a Charter of Privileges (political influence) -> cc_bonds.302
 cc_bond_charter = {
 	saved_scopes = { subject }
 	is_shown = {
@@ -63,7 +65,7 @@ cc_bond_charter = {
 		scope:subject = { has_variable = cc_bond_initialized }
 	}
 	is_valid = {
-		prestige >= { value = prestige_mild_penalty  multiply = -1 }
+		political_influence >= 10
 		scope:subject = {
 			var:cc_bond_pol < 5
 			NOT = { has_variable = cc_bond_action_cd }
@@ -85,7 +87,8 @@ cc_bond_festival = {
 		scope:subject = { has_variable = cc_bond_initialized }
 	}
 	is_valid = {
-		gold >= scope:subject.cc_bond_gift_cost
+		# Must match the charge in cc_bonds.303 (1.5x gift cost).
+		gold >= { value = scope:subject.cc_bond_gift_cost  multiply = 1.5 }
 		scope:subject = {
 			var:cc_bond_cul < 5
 			NOT = { has_variable = cc_bond_action_cd }
@@ -99,7 +102,7 @@ cc_bond_festival = {
 	}
 }
 
-# Personal — Dispatch a Personal Envoy (gold + prestige) -> cc_bonds.304
+# Personal — Dispatch a Personal Envoy (gold; grants prestige) -> cc_bonds.304
 cc_bond_envoy = {
 	saved_scopes = { subject }
 	is_shown = {
