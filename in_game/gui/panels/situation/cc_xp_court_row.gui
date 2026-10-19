@@ -12,19 +12,21 @@
 # ShowCharacter(Character.Self)) and produces "No function for call ''" in the log.
 # To pass the current datacontext object, vanilla uses [X.MakeScope].
 #
-# THE ACTION BUTTONS use vanilla's character-interaction button pattern
-# (game/in_game/gui/government_lateralview.gui:4216): an `actor`, a `parameter` named
-# after the interaction's target_flag, and `left_click_and_hold_action` naming the
-# interaction. Supplying `recipient` here means the interaction's select_trigger is
-# already answered, so the button acts on THIS row's character with no picker step.
+# THE ACTION BUTTONS use vanilla 1.4's character-interaction button pattern
+# (game/in_game/gui/government_lateralview.gui, promote_to_head_of_cabinet): a
+# card_header_button_01 carrying a `scripted_action_tooltip` with the action_name, the
+# `actor`, and a `parameter` named after the interaction's target_flag, plus
+# enabled = "[PdxGuiWidget.IsUberButtonEnabled]". Supplying `recipient` here means the
+# interaction's select_trigger is already answered, so the button acts on THIS row's
+# character with no picker step.
 #
-# It is click-and-HOLD, not click. That is vanilla's convention for actions that spend
-# something, and left_click_and_hold_action is the only action field vanilla uses on
-# these buttons (53 usages, no other variant).
+# 1.4 REMOVED the 1.3 form (card_header_action_button_01 with a bare actor/parameter and
+# left_click_and_hold_action). Buttons written that way are dropped with
+# "'card_header_action_button_01' is not a valid widget/type/property".
 #
-# No tooltipwidget is supplied on the buttons: action_button_common_template already
-# attaches vanilla's action tooltip, which shows the cost, the cooldown, and the reason
-# the button is disabled. Writing our own would be strictly worse.
+# The tooltip is vanilla's action_tooltip_pop_out, which reads the UIAction that
+# scripted_action_tooltip supplies and shows the cost, the cooldown, and the reason the
+# button is disabled.
 ######################################################################
 
 # NOTE: this template declares its properties DIRECTLY, with no wrapping widget.
@@ -212,14 +214,20 @@ template cc_xp_court_row {
 				#
 				# Read the Service Record first: it is the only one always available, and it
 				# is what the rest of the row is a summary of.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_inspect_service_record"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_inspect_service_record" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -227,14 +235,20 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_train_adm"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_train_adm" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 80% 80% }
@@ -242,14 +256,20 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_train_dip"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_train_dip" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 80% 80% }
@@ -257,14 +277,20 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_train_mil"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_train_mil" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 80% 80% }
@@ -273,15 +299,21 @@ template cc_xp_court_row {
 				}
 
 				# Only while this minister is actually posted to a subject court.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Character.MakeScope.GetVariable('cc_xp_seconded').IsSet]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_recall_envoy"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_recall_envoy" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -290,15 +322,21 @@ template cc_xp_court_row {
 				}
 
 				# Proteges only: withdraw the crown's interest and free the slot.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Character.MakeScope.GetVariable('cc_protege').IsSet]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_release_protege"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_release_protege" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 75% 75% }
@@ -328,15 +366,21 @@ template cc_xp_court_row {
 				# LEFT: rare or one-time commitments. Founding a school, enrolling in one,
 				# binding a mentorship and taking a household office are all things a court
 				# does once for a given minister and then lives with.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_found_institution"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_found_institution" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -346,14 +390,20 @@ template cc_xp_court_row {
 
 				# Ministers and proteges alike. A protege enrolled in a school arrives in the
 				# cabinet already pointed at its ladders.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_enroll_in_school"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_enroll_in_school" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -361,15 +411,21 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_assign_mentor"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_assign_mentor" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -379,15 +435,21 @@ template cc_xp_court_row {
 
 				# Appoint to a household office. Seated ministers only: an office needs
 				# in_cabinet = yes, so a protege can never hold one.
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_office_appoint_to_household"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_office_appoint_to_household" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -400,15 +462,21 @@ template cc_xp_court_row {
 				# RIGHT: the repeatables. A soiree, an examination and a secondment can each be
 				# run again whenever the court can afford them.
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_host_soiree"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_host_soiree" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -416,15 +484,21 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_court_examination"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_court_examination" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }
@@ -432,15 +506,21 @@ template cc_xp_court_row {
 					}
 				}
 
-				card_header_action_button_01 = {
+				card_header_button_01 = {
 					size = { 22 22 }
 					visible = "[Not(Character.MakeScope.GetVariable('cc_protege').IsSet)]"
-					actor = "[Player]"
-					parameter = {
-						parameter_name = "recipient"
-						parameter_value = "[Character.MakeScope]"
+					scripted_action_tooltip = {
+						click_type = left
+						click_mode = single
+						action_name = "cc_xp_second_to_subject"
+						actor = "[Player]"
+						parameter = {
+							parameter_name = "recipient"
+							parameter_value = "[Character.MakeScope]"
+						}
 					}
-					left_click_and_hold_action = { action_name = "cc_xp_second_to_subject" }
+					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+					tooltipwidget = { using = action_tooltip_pop_out }
 					icon = {
 						parentanchor = center
 						size = { 78% 78% }

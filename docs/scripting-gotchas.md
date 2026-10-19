@@ -267,33 +267,39 @@ needs the same guard, because an unpicked character has no variables.
 
 ### Calling a character interaction from a GUI button
 
-Pattern from `government_lateralview.gui:4216`. `parameter_name` must match the
-interaction's `target_flag`; supplying it answers that `select_trigger` so the button
-acts directly with no picker step.
+Pattern from vanilla 1.4 `government_lateralview.gui` (`promote_to_head_of_cabinet`).
+`parameter_name` must match the interaction's `target_flag`; supplying it answers that
+`select_trigger` so the button acts directly with no picker step.
 
 ```
-card_header_action_button_01 = {
+card_header_button_01 = {
     size = { 24 24 }
-    actor = "[Player]"
-    parameter = {
-        parameter_name = "recipient"              # matches target_flag = recipient
-        parameter_value = "[Character.MakeScope]" # the current datacontext object
+    scripted_action_tooltip = {
+        click_type = left
+        click_mode = single                       # or confirm, for a confirmation popup
+        action_name = "my_interaction"
+        actor = "[Player]"
+        parameter = {
+            parameter_name = "recipient"              # matches target_flag = recipient
+            parameter_value = "[Character.MakeScope]" # the current datacontext object
+        }
     }
-    left_click_and_hold_action = { action_name = "my_interaction" }
+    enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+    tooltipwidget = { using = action_tooltip_pop_out }
     icon = { parentanchor = center  size = { 80% 80% }  texture = "..." }
 }
 ```
 
+- **1.4 removed the 1.3 form**: `card_header_action_button_01` with a bare `actor`/`parameter`
+  and `left_click_and_hold_action = { action_name = ... }`. No vanilla file uses
+  `left_click_and_hold_action` any more, and the type is gone, so such buttons are dropped
+  with `'card_header_action_button_01' is not a valid widget/type/property`.
 - `parameter_value` must be a getter chain that **yields an object**. `[X.Self]` is NOT
   valid standalone and logs `No function for call ''` plus `FetchData failed for ''`.
   `.Self` is only ever a function *argument* in vanilla (`ShowCharacter(Character.Self)`).
-  To pass the current datacontext object, use `[X.MakeScope]` — that is what vanilla does
-  for `Country`, `God`, `Location`, `Market`, `Omen`, `Siege` and `TownRights`.
-- `left_click_and_hold_action` is the **only** action field vanilla uses on these
-  (53 usages, no other variant). It is click-and-hold, not click.
-- Do **not** add a `tooltipwidget`: `action_button_common_template` already attaches
-  vanilla's action tooltip, which shows cost, cooldown, and why the button is disabled.
-- `visible` / `enabled` come from `UIAction` automatically.
+  To pass the current datacontext object, use `[X.MakeScope]`.
+- `action_tooltip_pop_out` reads the `UIAction` that `scripted_action_tooltip` supplies and
+  shows cost, cooldown, and why the button is disabled.
 
 ### A template must declare its properties directly, not wrap them in a `widget`
 
@@ -496,8 +502,8 @@ over either form.
 
 ## A GUI button CANNOT open an interaction's `select_trigger` picker
 
-This is the single most expensive thing in this file. A panel `action_button`
-(`left_click_and_hold_action = { action_name = "..." }`) does not launch the engine's target
+This is the single most expensive thing in this file. A panel action button
+(`scripted_action_tooltip = { action_name = "..." }`, or `left_click_and_hold_action` before 1.4) does not launch the engine's target
 selector. The engine evaluates the action against the parameters the button supplies, so any
 `target_flag` the button never supplies leaves the action unperformable: **the button renders
 permanently disabled and its tooltip shows only the parts that do not depend on a target**,
@@ -510,13 +516,18 @@ The rule, verified across every GUI call site in vanilla: **every GUI-invoked in
 exactly one distinct target flag, and the GUI always supplies it.**
 
 ```
-card_header_action_button_01 = {
-    actor = "[Player]"
-    parameter = {
-        parameter_name = "recipient"          # must match the interaction's target_flag
-        parameter_value = "[Character.MakeScope]"
+card_header_button_01 = {
+    scripted_action_tooltip = {
+        click_type = left
+        click_mode = single
+        action_name = "my_interaction"
+        actor = "[Player]"
+        parameter = {
+            parameter_name = "recipient"      # must match the interaction's target_flag
+            parameter_value = "[Character.MakeScope]"
+        }
     }
-    left_click_and_hold_action = { action_name = "my_interaction" }
+    enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 }
 ```
 
