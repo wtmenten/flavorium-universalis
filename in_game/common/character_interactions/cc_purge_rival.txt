@@ -4,12 +4,14 @@
 #
 # Available when the court_tension modifier is active on the country.
 # The ruler selects a cabinet minister to dismiss, removing the immediate
-# source of factional conflict. Costs prestige; triggers estate displeasure
+# source of factional conflict. Costs political influence; triggers estate displeasure
 # if the dismissed minister carries an estate affiliation trait (Family G).
 
 dismiss_rival_minister = {
 	on_own_nation = yes
 	message = yes
+
+	price = price:cc_dismiss_rival_minister_price
 
 	potential = {
 		scope:actor = {
@@ -48,7 +50,6 @@ dismiss_rival_minister = {
 
 	effect = {
 		scope:actor = {
-			add_prestige = prestige_mild_penalty
 			remove_country_modifier = court_tension
 			set_variable = { name = cc_court_rivalry value = 0 }
 		}

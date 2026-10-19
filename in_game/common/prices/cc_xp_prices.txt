@@ -11,10 +11,10 @@
 #
 # Available currencies are listed in the vanilla readme at
 # game/in_game/common/prices/readme.txt: gold, scaled_gold, prestige, stability,
-# government_power, manpower, sailors, war_exhaustion, inflation and the religious ones.
-# Note that legitimacy is NOT among them, which is why the political cost of elevating
-# an outsider is charged as government_power here and as estate satisfaction in the
-# interaction's own effect.
+# government_power, manpower, sailors, war_exhaustion, inflation and the religious ones,
+# plus political_influence since 1.4 (vanilla prices cabinet and advisor changes in it).
+# Legitimacy is NOT among them. Political cost goes in political_influence here, and any
+# estate cost goes in the interaction's own effect.
 ###############################################################################
 
 # Send a minister to be taught. The workhorse cost, paid repeatedly over a career.
@@ -27,7 +27,7 @@ cc_xp_training = {
 # Take an outsider into the crown's care as a protege. Gold plus the political capital
 # spent persuading the court that this person is worth the attention.
 #
-# The government_power component is deliberately token. Sponsoring is the entry point to
+# The political_influence component is deliberately token (vanilla hires an advisor for 10). Sponsoring is the entry point to
 # the whole grooming path, and a court is meant to keep two or three protegees running at
 # once, so a real political price here would gate the system rather than season it. The
 # ongoing cost is the training and mentorship each protege then needs.
@@ -39,7 +39,7 @@ cc_xp_training = {
 cc_xp_sponsor_protege = {
 	gold = 25
 	scaled_gold = 0.5
-	government_power = 2
+	political_influence = 5
 }
 
 # Put a senior minister's time at a junior's disposal. Cheap in coin: the real cost is
@@ -98,16 +98,28 @@ cc_xp_secondment = {
 # the office pays for itself through its own modifier, so the cost is the elevation
 # rather than an ongoing salary.
 #
-# The government_power component used to be 15, on the reasoning that it was the only
-# thing stopping a court filling all six slots the moment it could afford the gold. It
-# is not any more: cc_office_household_upkeep charges -2% court spending efficiency for
-# every post filled, so a full household runs at -12% and the brake is now ONGOING
-# rather than a toll at the door. Paying a heavy political price on top charged twice
-# for the same restraint.
+# The political component used to be 15 government power, on the reasoning that it was
+# the only thing stopping a court filling all six slots the moment it could afford the
+# gold. It is not any more: cc_office_household_upkeep charges -2% court spending
+# efficiency for every post filled, so a full household runs at -12% and the brake is now
+# ONGOING rather than a toll at the door. Paying a heavy political price on top charged
+# twice for the same restraint. Since 1.4 the political part is political_influence,
+# matching vanilla's cabinet and advisor prices, and the gold was halved to compensate.
 cc_office_appointment = {
-	gold = 70
-	scaled_gold = 1.0
-	min_scale = 50
-	government_power = 4
+	gold = 35
+	scaled_gold = 0.5
+	min_scale = 25
+	political_influence = 10
+}
+
+# Dismiss a minister to end court tension. Same as vanilla's replace_cabinet_member.
+cc_dismiss_rival_minister_price = {
+	political_influence = 20
+}
+
+# France forces a new ruler onto a disloyal appanage.
+cc_hyw_replace_appanage_ruler_price = {
+	political_influence = 20
+	government_power = 10
 }
 
