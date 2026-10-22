@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dev Diary: Factions | Flavorium Universalis</title>
+<style>
+:root{
+  --bg:#16181f;--panel-bg:#1e2029;--card-bg:#252830;--card-border:#32363f;
+  --hover-bg:#2d3040;
+  --adm:#5baee8;--dip:#5abf7a;--mil:#e07b54;--gold:#d4a843;--purple:#a07bdf;
+  --text:#cdd2de;--text-dim:#6a7085;--text-mid:#9099b0;
+  --radius:7px;--sidebar-w:230px;
+}
+/* ----- reset ----- */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.65}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4f5e}
+
+/* ----- sticky header ----- */
+.site-header{position:sticky;top:0;z-index:100;background:var(--panel-bg);border-bottom:1px solid var(--card-border)}
+.header-inner{display:flex;align-items:center;gap:10px;padding:0 18px;height:50px}
+.menu-btn{background:none;border:none;color:var(--text-mid);font-size:18px;line-height:1;padding:6px 8px;cursor:pointer;border-radius:4px;display:none;flex-shrink:0}
+.menu-btn:hover{color:var(--text);background:var(--hover-bg)}
+.mod-title{font-size:15px;font-weight:700;color:var(--gold);white-space:nowrap;letter-spacing:.01em}
+.ver-badge{font-size:10px;font-weight:700;background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.3);border-radius:3px;padding:2px 7px;white-space:nowrap}
+.hdr-spacer{flex:1}
+.planner-link{font-size:11px;color:var(--text-mid);text-decoration:none;padding:5px 12px;border:1px solid var(--card-border);border-radius:4px;white-space:nowrap;transition:color .12s,border-color .12s,background .12s}
+.planner-link:hover{color:var(--adm);border-color:var(--adm);background:rgba(91,174,232,.08)}
+
+/* ----- layout: sidebar + main ----- */
+.layout{display:flex;min-height:calc(100vh - 50px)}
+
+/* ----- sidebar ----- */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;background:var(--panel-bg);border-right:1px solid var(--card-border);padding:16px 0 40px}
+.sidebar-label{padding:10px 18px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim)}
+.nav-sec{margin-bottom:2px}
+.nav-h2{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 18px;font-size:12px;font-weight:600;color:var(--text-mid);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h2:hover{color:var(--text);background:var(--hover-bg)}
+.nav-h2.active{color:var(--text);background:var(--hover-bg)}
+.nav-h2-dot{width:7px;height:7px;border-radius:50%;background:var(--nav-color,var(--adm));flex-shrink:0;opacity:.55}
+.nav-h2.active .nav-h2-dot{opacity:1}
+.nav-sub{display:flex;flex-direction:column}
+.nav-h3{padding:4px 14px 4px 38px;font-size:11px;color:var(--text-dim);text-decoration:none;transition:color .1s,background .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-h3:hover{color:var(--text-mid);background:var(--hover-bg)}
+.nav-h3.active{color:var(--text-mid);background:var(--hover-bg)}
+/* section accent colors for nav dots */
+.nav-sec[data-sec="0"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="1"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="2"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="3"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="4"]  .nav-h2{--nav-color:var(--dip)}
+.nav-sec[data-sec="5"]  .nav-h2{--nav-color:var(--mil)}
+.nav-sec[data-sec="6"]  .nav-h2{--nav-color:var(--purple)}
+.nav-sec[data-sec="7"]  .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="8"]  .nav-h2{--nav-color:var(--gold)}
+.nav-sec[data-sec="9"]  .nav-h2{--nav-color:var(--adm)}
+.nav-sec[data-sec="10"] .nav-h2{--nav-color:var(--text-mid)}
+.nav-sec[data-sec="11"] .nav-h2{--nav-color:var(--mil)}
+
+/* ----- main content area ----- */
+.main{flex:1;min-width:0}
+.content{max-width:1080px;margin:0 auto;padding:36px 36px 100px}
+
+/* ----- hero h1 ----- */
+.content h1{font-size:32px;font-weight:800;color:var(--gold);line-height:1.15;margin-bottom:8px;letter-spacing:-.02em}
+.content h1::after{content:'';display:block;width:52px;height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-top:12px}
+
+/* ----- section h2: panel bar with accent underline rule ----- */
+.content h2{position:relative;font-size:19px;font-weight:700;margin-top:52px;margin-bottom:20px;padding:13px 18px 15px;background:var(--panel-bg);border:1px solid var(--card-border);border-radius:var(--radius);color:var(--text)}
+.content h2::after{content:'';position:absolute;left:18px;bottom:8px;width:34px;height:2px;border-radius:2px;background:var(--s-color,var(--text-mid))}
+.content h2[data-sec="0"] {--s-color:var(--gold)}
+.content h2[data-sec="1"] {--s-color:var(--adm)}
+.content h2[data-sec="2"] {--s-color:var(--gold)}
+.content h2[data-sec="3"] {--s-color:var(--adm)}
+.content h2[data-sec="4"] {--s-color:var(--dip)}
+.content h2[data-sec="5"] {--s-color:var(--mil)}
+.content h2[data-sec="6"] {--s-color:var(--purple)}
+.content h2[data-sec="7"] {--s-color:var(--text-mid)}
+.content h2[data-sec="8"] {--s-color:var(--gold)}
+.content h2[data-sec="9"] {--s-color:var(--adm)}
+.content h2[data-sec="10"]{--s-color:var(--text-mid)}
+.content h2[data-sec="11"]{--s-color:var(--mil)}
+
+/* ----- h3 sections: editorial style with accent underline rule ----- */
+.h3-group{margin:24px 0 28px}
+.h3-group h3{font-size:14px;font-weight:700;color:var(--g-color,var(--adm));margin-bottom:12px;margin-top:0;padding-bottom:8px;border-bottom:1px solid var(--card-border);position:relative}
+.h3-group h3::after{content:'';position:absolute;left:0;bottom:-1px;width:30px;height:2px;border-radius:2px;background:var(--g-color,var(--adm))}
+
+/* ----- Features section: 2-col grid tiles ----- */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0;align-items:start}
+.feat-grid .h3-group{margin:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px 18px}
+.feat-grid .h3-group h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+/* suppress bbcode <br> newline artifacts inside grid tiles */
+.feat-grid .h3-group br{display:none}
+
+/* ----- prose ----- */
+.content p{margin-bottom:10px}
+.content strong{color:var(--text);font-weight:600}
+.content em{color:var(--text-mid)}
+.content a{color:var(--adm);text-decoration:none}
+.content a:hover{text-decoration:underline}
+
+/* ----- lists ----- */
+.content ul,.content ol{margin:6px 0 10px 20px}
+.content li{margin-bottom:4px}
+.content ul ul,.content ol ul{margin-top:4px}
+
+/* ----- blockquote ----- */
+.content blockquote{margin:14px 0;padding:12px 18px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);font-size:14px;line-height:1.6}
+.content blockquote,.content blockquote p{color:var(--text-mid)}
+.content blockquote p:last-child{margin-bottom:0}
+
+/* ----- hr ----- */
+.content hr{border:none;height:1px;background:var(--card-border);margin:22px 0}
+
+/* ----- table ----- */
+.content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.content th{background:var(--hover-bg);color:var(--text);font-weight:600;font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--card-border)}
+.content td{padding:7px 12px;border:1px solid var(--card-border);vertical-align:top}
+.content tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+/* ----- NEW badge ----- */
+.new-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px 2px;border-radius:3px;background:rgba(90,191,122,.12);color:var(--dip);border:1px solid rgba(90,191,122,.28);margin-right:3px;vertical-align:middle;line-height:1.4}
+
+/* ----- anchor scroll offset: clear the sticky 50px header ----- */
+.content h1[id],.content h2[id],.content h3[id]{scroll-margin-top:66px}
+
+/* ----- suppress stray <br> after block tags (bbcode newline artifact) ----- */
+h1+br,h2+br,h3+br,hr+br,blockquote+br,table+br,ul+br,ol+br{display:none}
+
+/* ----- overlay (mobile sidebar) ----- */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:98}
+body.nav-open .sidebar-overlay{display:block}
+
+/* ----- mobile ----- */
+@media(max-width:768px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;top:50px;left:0;height:calc(100vh - 50px);z-index:99;transform:translateX(-100%);transition:transform .22s ease}
+  body.nav-open .sidebar{transform:translateX(0)}
+  .content{padding:22px 18px 80px}
+  .content h1{font-size:26px}
+  .content h2{font-size:17px;padding:10px 14px;margin-top:36px}
+  .feat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .content{padding:18px 14px 60px}
+}
+
+/* ----- dev diary figures ----- */
+.content figure{margin:18px 0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
+.content figure a{display:block}
+.content figure img{display:block;width:100%;height:auto}
+.content figcaption{padding:8px 14px;font-size:12.5px;color:var(--text-mid);border-top:1px solid var(--card-border)}
+.fig-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}
+.fig-row figure{margin:0}
+@media(max-width:680px){.fig-row{grid-template-columns:1fr}}
+/* ----- diary entry byline (per-diary pages) ----- */
+.diary-byline{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:-2px 0 18px}
+/* ----- dev diary index cards (landing page) ----- */
+.diary-index{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.diary-card{display:block;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px 20px 16px;text-decoration:none;color:inherit;transition:background .12s,border-color .12s,transform .12s}
+.diary-card:hover{background:var(--hover-bg);border-color:#3f4452;transform:translateY(-1px)}
+.diary-card .dc-date{color:var(--gold);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em}
+.diary-card .dc-title{color:var(--text);font-size:18px;font-weight:700;margin:5px 0 8px;padding-bottom:9px;position:relative}
+.diary-card .dc-title::after{content:'';position:absolute;left:0;bottom:0;width:32px;height:2px;border-radius:2px;background:var(--gold);transition:width .12s,background .12s}
+.diary-card:hover .dc-title::after{width:48px;background:var(--adm)}
+.diary-card .dc-blurb{color:var(--text-mid);font-size:14px;line-height:1.55}
+.diary-card .dc-more{display:inline-block;margin-top:9px;font-size:12px;color:var(--adm);font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <button class="menu-btn" id="menuBtn" title="Navigation">&#9776;</button>
+    <span class="mod-title">Flavorium Universalis</span>
+    <span class="ver-badge">Dev Diary</span>
+    <div class="hdr-spacer"></div>
+    <a class="planner-link" href="../index.html">&larr; Home</a>
+    <a class="planner-link" href="../dev-diaries.html">All Dev Diaries</a>
+    <a class="planner-link" href="../planner.html">Advance Planner &rarr;</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-label">Contents</div>
+  <div class="nav-sec" data-sec="0">
+    <a class="nav-h2" href="#four-parties-out-of-eleven"><span class="nav-h2-dot"></span>Four parties out of eleven</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="1">
+    <a class="nav-h2" href="#every-minister-belongs-to-a-party"><span class="nav-h2-dot"></span>Every minister belongs to a party</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="2">
+    <a class="nav-h2" href="#the-chamber"><span class="nav-h2-dot"></span>The chamber</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="3">
+    <a class="nav-h2" href="#satisfaction"><span class="nav-h2-dot"></span>Satisfaction</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="4">
+    <a class="nav-h2" href="#stacked-or-balanced"><span class="nav-h2-dot"></span>Stacked or balanced</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="5">
+    <a class="nav-h2" href="#agendas"><span class="nav-h2-dot"></span>Agendas</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="6">
+    <a class="nav-h2" href="#five-actions-and-an-election"><span class="nav-h2-dot"></span>Five actions and an election</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="7">
+    <a class="nav-h2" href="#parties-you-cannot-ignore"><span class="nav-h2-dot"></span>Parties you cannot ignore</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="8">
+    <a class="nav-h2" href="#liberal-thought"><span class="nav-h2-dot"></span>Liberal Thought</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="9">
+    <a class="nav-h2" href="#names"><span class="nav-h2-dot"></span>Names</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="10">
+    <a class="nav-h2" href="#keeping-it-quiet"><span class="nav-h2-dot"></span>Keeping it quiet</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="11">
+    <a class="nav-h2" href="#status"><span class="nav-h2-dot"></span>Status</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="main">
+    <article class="content" id="content">
+<h1 id="dev-diary-factions">Dev Diary: Factions</h1>
+<p class="diary-byline">October 22, 2026</p>
+<p><em>Published: 2026-10-22</em></p>
+<p><em>Four parties, the ministers who belong to them, and what they do when you ignore them.</em></p>
+<p><em>Dev Note: the cabinet already had rivalries, careers and estate capture, but nothing that tied a minister to anyone outside the room. Factions is a new submod that gives every realm worth simulating a set of political parties. They draw their strength from the estates, staff your cabinet, keep score of how they are treated, and cost political influence to manage. It is also built to stay quiet: nearly all of it runs without a popup, and the few events it does fire are budgeted.</em></p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_politics_panel.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_politics_panel.png" alt="The Factions panel: a chamber of party seats around four party cards, with the leading agenda above and the actions below">
+  </a>
+  <figcaption>The chamber: every seat and who holds it, the four parties with their leaders, and what the leading party wants.</figcaption>
+</figure>
+<hr>
+<h2 id="four-parties-out-of-eleven" data-sec="0">Four parties out of eleven</h2>
+<p>A realm has four parties at a time, chosen from eleven:</p>
+<ul><li><strong>Court Party:</strong> the crown's own people. Monarchies only.</li><li><strong>Aristocratic Faction:</strong> the nobility.</li><li><strong>Merchant Interest:</strong> the burghers and the trading houses.</li><li><strong>Clerical Party:</strong> the clergy.</li><li><strong>War Party:</strong> the officers. Strongest in tribes, hordes and realms at war.</li><li><strong>Agrarian Party:</strong> the peasantry.</li><li><strong>Reform Party:</strong> from the Renaissance on, for a better-run state. Not in tribes or hordes.</li><li><strong>Absolutist Party:</strong> from the Age of Absolutism, monarchies only.</li><li><strong>Regional Party:</strong> the provinces against the capital, in realms with several subjects or thirty provinces.</li><li><strong>Colonial Lobby:</strong> realms with colonial subjects.</li><li><strong>Liberal Party:</strong> only once Liberal Thought has spread far enough (see below).</li></ul>
+<p>Which four you get depends on your government, the age and the strength of your estates. A republic leans to the merchants and the reformers, a theocracy to the clergy, a horde to the officers and the nobility. Every fifteen to twenty-five years the line-up is reviewed. Each eligible party scores its estates' power plus those bonuses, the parties already in place get a head start, and the best four sit in the chamber. A party that survives keeps its standing; a new one starts from nothing.</p>
+<p>This is the zeitgeist part of the design. Nobody chooses to have an Absolutist Party in 1450, and nobody stops one appearing in 1650 if the crown is strong.</p>
+<hr>
+<h2 id="every-minister-belongs-to-a-party" data-sec="1">Every minister belongs to a party</h2>
+<p>When a minister takes a seat, they join a party. A cabinet trait that names a side decides it first: a royal absolutist sits with the absolutists if there are any and with the Court Party if not, and a merchant prince sits with the merchants. Failing that, the minister's estate decides. Anyone left over draws evenly among the parties you have.</p>
+<p>The party shows in the minister's modifiers. It matters because every minister brings their party <strong>2 appointed seats</strong> in the chamber, and because a party's mood follows its members into office. A minister whose party is pleased works 5% better. One whose party is angry works 20% worse, no matter how good they are.</p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_member_badge.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_member_badge.png" alt="A minister's modifier list showing their party membership and party mood">
+  </a>
+  <figcaption>A minister's party and their party's mood, in their modifiers.</figcaption>
+</figure>
+<hr>
+<h2 id="the-chamber" data-sec="2">The chamber</h2>
+<p>A party's strength is its seats in the chamber, and the seats come from the realm itself.</p>
+<p>Every location is worth seats by its rank: a megalopolis 3, a city 2, a town 1, and a rural settlement a fifth of one. Each location's seats are shared among the estates by how much power each holds there, and every party takes the seats of the estates behind it. So the cities fill the merchants' benches, the countryside the nobles' and the peasants', and a realm that builds towns changes its own politics.</p>
+<p>Those counts only set the proportions. The chamber itself grows with the realm, from 20 seats for a single province to at most 84 for an empire, so a thousand locations do not become a thousand seats. Every minister in the cabinet also brings their party 2 appointed seats, up to half the chamber; the rest are elected. A party's <strong>power</strong> is its share of the chamber.</p>
+<p>Each party also has a <strong>leader</strong>: its most senior minister. A party with nobody in the cabinet keeps its old leader while they live, and in your realm a new one steps forward if needed. A leader outside the cabinet is someone you can appoint.</p>
+<p>Seats matter on their own, whatever a party's mood. Every party with a tenth of the chamber or more grants its <strong>standing</strong>, scaled by its share: the merchants add trade efficiency and burgher power, the Court Party legitimacy and crown power, the reformers cabinet efficiency and political influence. A party below a tenth is <strong>marginalised</strong>, and the estate behind it settles for less. Select a party's card and the panel lists exactly what it is granting the realm and at what strength.</p>
+<p>The strongest party, if it holds 30% of the seats or more, leads the realm and slowly moves society its way: the merchants toward plutocracy, the clergy toward spiritualism, the reformers toward innovation, and so on.</p>
+<hr>
+<h2 id="satisfaction" data-sec="3">Satisfaction</h2>
+<p><strong>Satisfaction</strong> runs from -100 to 100 and is reviewed every two to four years, silently. Each review it moves halfway toward what the party expects, which is:</p>
+<ul><li>how its estate is doing (for the Court Party, how much power the crown holds; for the reformers and liberals, how far society leans their way)</li><li>+15 for one minister in the cabinet, +25 for two or more</li><li>-20 if it holds a fifth of the seats or more and has no minister at all</li></ul>
+<p>Above 30 a party is pleased and gives the realm a bonus. Below -20 it is discontented and gives a penalty, and below -50 it is angry. Each party has its own: an angry nobility costs you control of the countryside, angry merchants cost trade efficiency, an angry Court Party costs diplomatic reputation and political influence. Both scale with the party's seats and with how strongly it feels, so a dominant angry party hurts a great deal more than a small one.</p>
+<p>Parties tied to an estate also push that estate's parliament agendas when pleased and resist them when angry.</p>
+<hr>
+<h2 id="stacked-or-balanced" data-sec="4">Stacked or balanced</h2>
+<p>The cabinet itself now has a shape.</p>
+<p>A <strong>stacked</strong> cabinet, where one party holds more than half the cabinet, runs well: +5% cabinet efficiency, and the party that runs it gets a stronger bonus and moves society faster. Every other party expects less, though, and the court's rivalry score climbs.</p>
+<p>A <strong>balanced</strong> cabinet, where no party holds more than 40% of the cabinet and at least three are represented, is steadier. Stability is cheaper, bribes and attacks cost a quarter less, and no party's expectation falls below -20. In exchange the bonuses are weaker and society barely moves.</p>
+<p>Two opposed parties seated together, such as the nobility and the merchants or the clergy and the reformers, also feed the court's rivalry, which ties this into the existing rivalry events rather than adding new ones.</p>
+<hr>
+<h2 id="agendas" data-sec="5">Agendas</h2>
+<p>A party with a quarter of the seats or more sets an agenda every five to twelve years. The leading party's agenda is shown above the chamber, and every card shows its own. It tells you in one event and gives you six years. Each party has three possible agendas, and it never picks one you have already met: the nobility might want its satisfaction kept above 60%, two of its people in the cabinet, or a larger share of power. The War Party might simply want a war.</p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_agenda_event.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_agenda_event.png" alt="An agenda event announcing what a party wants">
+  </a>
+  <figcaption>An agenda. You can hear them out or refuse; refusing costs 15 satisfaction straight away.</figcaption>
+</figure>
+<p>Meet it and the party gains 30 satisfaction. Miss it and it loses 25. Either way the result is recorded in the panel rather than in another popup.</p>
+<hr>
+<h2 id="five-actions-and-an-election" data-sec="6">Five actions and an election</h2>
+<p>Select a party's card and five actions act on it.</p>
+<ul><li><strong>Bribe</strong> (20 political influence and some gold): +25 satisfaction at once. Once every two years per party.</li><li><strong>Attack</strong> (30 political influence): prosecute its leaders and close its clubs. Its elected seats fall by 40% for five years, it loses 30 satisfaction, and every party opposed to it gains 10. Needs the party to hold at least 10% of the seats. Once every five years.</li><li><strong>Ask a Favour</strong> (no price, needs satisfaction of 10 or more): the party lends you its people for five years. The merchants improve trade, the clergy raise religious influence, the officers stiffen morale, the reformers make the cabinet work better. It costs 15 satisfaction.</li><li><strong>Appoint the Leader</strong> (25 political influence): the party's leader takes a cabinet seat, an open one if there is one, otherwise that of the least senior minister from another party. The party gains the appointed seats that come with it.</li><li><strong>Concede the Agenda</strong> (40 political influence and gold): the agenda counts as met now. The party gains 30 satisfaction and every party opposed to it loses 10.</li></ul>
+<p>Above the chamber, <strong>Call an Election</strong> (20 political influence and some stability) counts the seats and reviews the parties at once instead of waiting. Once every ten years.</p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_action_tooltip.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_action_tooltip.png" alt="The tooltip of a party action showing its political influence cost">
+  </a>
+  <figcaption>Every action is priced in political influence, and the tooltip says why a button is disabled.</figcaption>
+</figure>
+<p>Political influence is the currency 1.4 already uses for appointments and policies, so managing your parties now competes with managing your cabinet and your laws for the same budget.</p>
+<hr>
+<h2 id="parties-you-cannot-ignore" data-sec="7">Parties you cannot ignore</h2>
+<p>Three parties have to be handled: the <strong>War Party</strong>, the <strong>Regional Party</strong> and the <strong>Liberal Party</strong>. If one of them is angry and holds a fifth of the seats or more, every review spent that way is a step toward open defiance:</p>
+<p>1. a warning, which shows on the party's card and as a modifier 2. unrest: rebel growth and lost control 3. the outcome</p>
+<p>The outcome depends on the party. The War Party attempts a <strong>coup</strong>, which is a disaster that stays until the officers are satisfied again or five years pass. The Liberal Party rises in an <strong>uprising</strong>, which works the same way. The Regional Party either raises a provincial league that takes about a fifth of your provinces into a civil war, or, if you have subjects, carries its grievance to them and they pull away. In each case you get a choice: concede, at a price, or fight it.</p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_escalation_warning.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_escalation_warning.png" alt="A party card in the Factions panel marked as escalating">
+  </a>
+  <figcaption>An escalating party. Two steps of warning come before anything lands.</figcaption>
+</figure>
+<p>There are two ways out before that. Placate the party until it is no longer angry, or attack it until it holds less than a fifth of the seats. Both step the escalation back down. Doing neither is a choice too.</p>
+<hr>
+<h2 id="liberal-thought" data-sec="8">Liberal Thought</h2>
+<p>From the Age of Absolutism, liberal ideas start to spread in your capital and your cities. Each city has its own level, which grows with literacy, the presence of the court, the Enlightenment and a liberal-leaning society, and falls while the Absolutist Party leads the realm. The Factions situation's map mode shows where it has taken hold.</p>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_liberal_thought_map.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_liberal_thought_map.png" alt="The Factions map mode shading cities by Liberal Thought">
+  </a>
+  <figcaption>Liberal Thought by city. The panel shows the average.</figcaption>
+</figure>
+<p>When the average passes 50, the Liberal Party forms and the next review brings it into the line-up. It wants a liberal society and term limits, and it is one of the three parties that will not stay quiet if ignored.</p>
+<p>While the Reform Party or the Liberal Party leads the realm, <strong>term limits</strong> apply: a minister who has served ten years steps down at the next review and cannot return for ten. Long-serving favourites become a liability to whoever relies on them.</p>
+<hr>
+<h2 id="names" data-sec="9">Names</h2>
+<p>Each party has a plain name, and some realms get the names their parties actually had:</p>
+<ul><li>the Hooks and the Cods in Holland</li><li>Guelphs and Ghibellines in early Italy</li><li>Hats and Caps in Sweden from the Age of Absolutism</li><li>Tories and Whigs, and the Court and Country parties, in Britain</li><li>the Reform Party is a Humanist Circle before the Reformation</li></ul>
+<figure>
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_hooks_and_cods.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_hooks_and_cods.png" alt="Holland's Factions panel listing the Hook Party and the Cod Party">
+  </a>
+  <figcaption>Holland, where the nobility and the towns had names for each other long before this mod.</figcaption>
+</figure>
+<hr>
+<h2 id="keeping-it-quiet" data-sec="10">Keeping it quiet</h2>
+<p>Every one of these little systems is tempting to announce, and a game full of them becomes a game of closing popups. So:</p>
+<ul><li>satisfaction, agenda results and the first two escalation steps appear only in the panel</li><li>new agendas, new parties and the Liberal Party's arrival share one budget of about two events a decade</li><li>the only character event, a minister crossing the floor, fires only for ministers currently in the cabinet and shares the cooldown of the existing rivalry events</li><li>the outcomes of escalation always fire, because by then you have had two warnings</li></ul>
+<p>Parties are simulated for you, for the great powers and for any realm with 100 or more development. Smaller AI realms have none, which keeps the cost down and keeps the system aimed at the realms that matter. A game rule turns it off entirely.</p>
+<hr>
+<h2 id="status" data-sec="11">Status</h2>
+<p>This is the first version, and it has not yet been played through. The numbers above are first guesses, and the Liberal Thought rate in particular will need tuning once it has been seen across a full game. Factions requires Flavorium Universalis, and with it loaded, the main mod's estate-capture events and balanced-court bonus give way to the party versions for the realms that have parties.</p>
+    </article>
+  </div>
+</div>
+
+<script>
+(function(){
+  // --- group h3 + following siblings into .h3-group, put Features ones in a .feat-grid ---
+  // Uses childNodes (not children) so that bare text nodes produced by bbcode are moved
+  // along with their surrounding element siblings and not stranded as orphans.
+  var PALETTE = ['--adm','--dip','--mil','--gold','--purple'];
+  var content = document.getElementById('content');
+  var nodes = Array.prototype.slice.call(content.childNodes); // includes text nodes
+  var inFeatures = false, currentGrid = null, currentGroup = null, ci = 0;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    // Text / comment nodes: absorb into current group if one is open
+    if (el.nodeType !== 1) {
+      if (currentGroup) currentGroup.appendChild(el);
+      continue;
+    }
+    var tag = el.tagName;
+    if (tag === 'H2') {
+      inFeatures = false;
+      currentGrid = null; currentGroup = null; ci = 0;
+    } else if (tag === 'H3') {
+      var color = 'var(' + PALETTE[ci++ % PALETTE.length] + ')';
+      currentGroup = document.createElement('div');
+      currentGroup.className = 'h3-group';
+      currentGroup.style.setProperty('--g-color', color);
+      if (inFeatures) {
+        if (!currentGrid) {
+          currentGrid = document.createElement('div');
+          currentGrid.className = 'feat-grid';
+          el.parentNode.insertBefore(currentGrid, el);
+        }
+        currentGrid.appendChild(currentGroup);
+      } else {
+        el.parentNode.insertBefore(currentGroup, el);
+      }
+      currentGroup.appendChild(el);
+    } else if (currentGroup) {
+      currentGroup.appendChild(el);
+    }
+  }
+})();
+
+(function(){
+  // --- scroll-spy: sidebar active links ---
+  var allLinks = document.querySelectorAll('.nav-h2, .nav-h3');
+  function activate(id) {
+    allLinks.forEach(function(l){ l.classList.remove('active'); });
+    var a = document.querySelector('[href="#' + id + '"]');
+    if (a) {
+      a.classList.add('active');
+      // also activate parent h2 when a h3 is active
+      if (a.classList.contains('nav-h3')) {
+        var sec = a.closest('.nav-sec');
+        if (sec) { var h2 = sec.querySelector('.nav-h2'); if (h2) h2.classList.add('active'); }
+      }
+      a.scrollIntoView({block:'nearest'});
+    }
+  }
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) activate(e.target.id); });
+  }, {rootMargin:'-6% 0px -78% 0px'});
+  document.querySelectorAll('.content h2[id], .content h3[id]').forEach(function(h){ obs.observe(h); });
+})();
+
+(function(){
+  // --- mobile sidebar toggle ---
+  var btn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('sidebarOverlay');
+  function close() { document.body.classList.remove('nav-open'); }
+  btn.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  overlay.addEventListener('click', close);
+  document.querySelectorAll('.nav-h2, .nav-h3').forEach(function(a){
+    a.addEventListener('click', function(){ if (window.innerWidth <= 768) close(); });
+  });
+})();
+</script>
+
+</body>
+</html>

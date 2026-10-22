@@ -386,9 +386,14 @@ cc_cabinet_biyearly_rivalry = {
 			}
 		}
 		else = {
-			# No opposing pair — rivalry decays
+			# No opposing pair — rivalry decays, unless the Factions submod fed it this
+			# window (cc_pty_rivalry_feed: stacked cabinet or opposed parties seated).
 			if = {
-				limit = { has_variable = cc_court_rivalry  var:cc_court_rivalry > 0 }
+				limit = {
+					NOT = { has_variable = cc_pty_rivalry_feed }
+					has_variable = cc_court_rivalry
+					var:cc_court_rivalry > 0
+				}
 				change_variable = { name = cc_court_rivalry add = -1 }
 			}
 		}
@@ -487,7 +492,12 @@ cc_cabinet_biyearly_cabal = {
 ###############################################################################
 
 # Estate capture event sweep — all three evaluated, one fires if condition met.
+# Skipped where the Factions submod runs parties (cc_pty_active): party stacking replaces
+# estate capture there. Untracked countries keep these events.
 cc_cabinet_biyearly_estate_faction = {
+	trigger = {
+		NOT = { has_variable = cc_pty_active }
+	}
 	random_events = {
 		3 = cc_fac.1    # The Nobles Demand
 		3 = cc_fac.2    # The Merchant Compact

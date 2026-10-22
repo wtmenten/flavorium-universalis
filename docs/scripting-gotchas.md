@@ -239,6 +239,60 @@ my_recompute = {
 The same applies to any write-then-read inside one effect, including
 `set_variable = { name = counter value = 0 }` followed by `var:counter` in a loop.
 
+It is not specific to interactions. A `generic_action` button and an event option build
+their tooltips the same way. The Factions submod's attack action recomputed party power on a
+scratch variable and logged `Invalid right side during comparison 'var:cc_pty_best'` every
+time the button was hovered.
+
+**`hidden_effect` does not stop this.** It hides the effect's text from the tooltip, but the
+engine still evaluates everything inside it while building the tooltip. Wrapping the attack in
+`hidden_effect` silenced nothing; the same error came back from the election button.
+
+What works is the guard above, applied at the entry point: set a marker, then run the body only
+if the marker exists. In the tooltip pass the write does not commit, so the body is skipped; on
+a real click it runs. Keep the whole thing in `hidden_effect` so the marker lines are not shown,
+and describe the effect in words:
+
+```
+effect = {
+    custom_tooltip = my_action_effect_tt
+    hidden_effect = {
+        set_variable = { name = my_exec value = yes }
+        if = {
+            limit = { has_variable = my_exec }
+            my_long_computation = yes
+        }
+        remove_variable = my_exec
+    }
+}
+```
+
+The Factions submod packages this as `cc_pty_run = { EFFECT = x }` and
+`cc_pty_run_slot = { EFFECT = x SLOT = n }` in `submods/factions/.../cc_pty_effects.txt`.
+
+### A texture cannot be chosen by script state; switch fixed textures by visibility
+
+Two ways of picking an icon from a script variable both rendered **nothing** in the Factions
+panel: the widgets were visible and drew no texture at all, not even the fallback.
+
+- `texture = "[Player.Custom('my_icon_key')]"`, with the custom loc returning a key whose
+  value is a `.dds` path.
+- `texture = "[Select_CString(EqualTo_CFixedPoint(Player.MakeScope.GetVariable('my_type').GetValue, '(CFixedPoint)1'), 'gfx/.../a.dds', ...)]"`.
+  Vanilla nests `Select_CString` for textures, but always on a plain boolean property
+  (`Character.IsRuler`), never on a variable comparison.
+
+What works is one icon per option, each with a fixed `texture` path and a `visible` condition.
+Variable comparisons in `visible` are reliable:
+
+```
+icon = { texture = "gfx/interface/icons/estates/crown_estate.dds"   visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('my_type').GetValue, '(CFixedPoint)1')]" }
+icon = { texture = "gfx/interface/icons/estates/nobles_estate.dds"  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('my_type').GetValue, '(CFixedPoint)2')]" }
+```
+
+For a grid, publish ranges from script so each icon needs only two comparisons:
+`tools/generate_factions.py` (`type_icons`) gives each of 84 seats one icon per party type,
+shown when `cc_pty_r<T>_lo < seat <= cc_pty_r<T>_hi`.
+
 ### A second `select_trigger` target must be guarded with `exists` in the effect
 
 The panel evaluates an interaction's `effect` block to build its tooltip **before any target
@@ -971,6 +1025,31 @@ before anything is chosen. Vanilla guards the identical read the same way
 
 Note the failure shape: a wrong-scope read in a script value does not abort the effect. It
 logs and yields `none`, which `min`/`max` then quietly turn into a plausible-looking number.
+
+### A scripted effect or trigger must be passed EXACTLY the parameters it uses
+
+Passing an argument the body never reads as `$NAME$` is a compile error, not a no-op:
+
+```
+[jomini_script_argument.cpp:180]: Compiling source for cc_pty_grant_favour failed for
+unknown arguments: SLOT, TYPE. At common/scripted_effects/cc_pty_effects.txt:1356
+```
+
+This bites generic dispatchers hardest. The Factions submod had one `cc_pty_with_type`
+that called `$EFFECT$ = { SLOT = .. TYPE = .. KEY = .. }` for every callee, and four of the
+five callees read only some of those, so all four failed to compile. The fix is one dispatcher
+per argument set (`cc_pty_with_type`, `_st`, `_tk`, `_sk`, `_k` in
+`tools/generate_factions.py`), with each callee paired with the one that forwards exactly what
+it reads. Do not pad a callee with a dummy `$PARAM$` use to make it accept more.
+
+The same error shows up as `PostValidate of effect 'X' returned false` when the call name is
+itself built from a parameter (`cc_pty_outcome_$KEY$ = { SLOT = $SLOT$ }` against three
+parameterless outcome effects). A parameterless effect is called with `= yes`.
+
+Check it mechanically after writing any parameterised effect:
+`python tools/check_script_args.py [submods/<name>]` compares every call, including computed
+names and calls reached through a `$EFFECT$` dispatcher, with the `$NAME$` tokens its
+definition uses, and exits 1 on a mismatch.
 
 ### Anything that OFFERS a trait must mirror that trait's `allow` block
 

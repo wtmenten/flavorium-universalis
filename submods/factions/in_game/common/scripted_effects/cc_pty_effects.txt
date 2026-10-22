@@ -1,0 +1,1895 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: scripted effects
+#
+# Country scope unless noted. Per-archetype dispatch (cc_pty_with_type and friends) is
+# generated into cc_pty_catalogue_effects.txt by tools/generate_factions.py.
+#
+# PER-SLOT COUNTRY VARIABLES (N = 1..4). A slot with no cc_pty_N_type is empty, and
+# nothing reads its other variables.
+#   cc_pty_N_type         archetype id
+#   cc_pty_N_eraw         raw elected-seat weight from the map (x0.6 while attacked)
+#   cc_pty_N_app / _elected / _seats   appointed, elected and total seats   (panel)
+#   cc_pty_N_cum          seats of slots 1..N together; cc_pty_N_start = slots 1..N-1
+#   cc_pty_r<T>_lo / _hi  seat range held by archetype T, for the seat grid (panel)
+#   cc_pty_N_power        share of the chamber's seats, 0..100           (panel)
+#   cc_pty_N_leader       the party leader (character)                   (panel)
+#   cc_pty_N_members      seated ministers of the party                  (panel)
+#   cc_pty_N_mood         estate mood this pass, -40..40
+#   cc_pty_N_sat          satisfaction, -100..100                        (panel)
+#   cc_pty_N_agenda       0 none, 1..3 which agenda                      (panel)
+#   cc_pty_N_agenda_due   timed: the agenda's deadline
+#   cc_pty_N_agenda_cd    timed: no new agenda until it lapses
+#   cc_pty_N_neglect      passes spent angry and powerful (must-placate parties)
+#   cc_pty_N_esc          escalation step 0..3                           (panel)
+#   cc_pty_N_outcome_cd   timed: no second outcome for twenty years
+#   cc_pty_N_suppressed   timed: attacked, strength x 0.6
+#   cc_pty_N_bribe_cd / _attack_cd / _favour_cd   timed action cooldowns
+#
+# OTHER COUNTRY VARIABLES
+#   cc_pty_active, cc_pty_sat_cd (timed), cc_pty_realign_cd (timed), cc_pty_popup_cd (timed)
+#   cc_pty_seat_total, cc_pty_es_<estate> (raw seats; set by cc_pty_count_seats)
+#   cc_pty_chamber (chamber size, 20..84), cc_pty_top_slot (agenda shown at the top)
+#   cc_pty_election_cd (timed)
+#   cc_pty_comp (0 mixed, 1 stacked, 2 balanced), cc_pty_cabinet_slot (the stacked party, 0 if none)
+#   cc_pty_dominant (slot of the strongest party, 0 if none has 30%)
+#   cc_pty_termlimits, cc_pty_liberal_thought, cc_pty_liberal_formed
+#   cc_pty_coup_armed / cc_pty_uprising_armed (read by the disasters)
+#   cc_pty_rivalry_feed (timed; stops the main mod's rivalry decay)
+#   cc_pty_event_slot / _type / _agenda, cc_pty_defect_from_type / _to_type (event loc)
+#   scratch: cc_pty_tmp, cc_pty_total, cc_pty_seats, cc_pty_best, cc_pty_best_type,
+#            cc_pty_best_slot, cc_pty_sc_T, cc_pty_picked_T
+#
+# CHARACTER VARIABLES
+#   cc_pty_aff (archetype id) plus a cc_pty_member_<key> badge modifier
+#   cc_pty_years (years seated), cc_pty_term_served
+#
+# change_variable/clamp_variable on an unset variable errors, so every slot variable is
+# set by cc_pty_init_slot before anything changes it.
+###############################################################################
+
+
+###############################################################################
+# LIFECYCLE
+###############################################################################
+
+cc_pty_init_country = {
+	set_variable = { name = cc_pty_active value = yes }
+	set_variable = { name = cc_pty_comp value = 0 }
+	set_variable = { name = cc_pty_dominant value = 0 }
+	set_variable = { name = cc_pty_cabinet_slot value = 0 }
+
+	# The first parties come from the same choice a realignment makes, so a country starts
+	# with parties that fit its government, age and estates.
+	cc_pty_realign = yes
+	remove_variable = cc_pty_realign_changed
+	cc_pty_count_seats = yes
+
+	save_scope_as = cc_pty_country
+	every_cabinet_character = {
+		limit = { NOT = { has_variable = cc_pty_aff } }
+		cc_pty_assign_affiliation = yes
+	}
+	cc_pty_recompute_all = yes
+	cc_pty_update_sat = { SLOT = 1 STEP = 1 }
+	cc_pty_update_sat = { SLOT = 2 STEP = 1 }
+	cc_pty_update_sat = { SLOT = 3 STEP = 1 }
+	cc_pty_update_sat = { SLOT = 4 STEP = 1 }
+
+	# Jittered first pass so tracked countries do not all recompute in the same year.
+	random_list = {
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 6 } }
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 12 } }
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 18 } }
+	}
+
+	# Leaders again a day later. At game start the player's country is not yet marked as a
+	# player, so cc_pty_update_leaders above generated no leaders for it.
+	trigger_event_silently = { id = cc_pty.6 days = 1 }
+}
+
+cc_pty_init_slot = {
+	set_variable = { name = cc_pty_$SLOT$_type value = $TYPE$ }
+	set_variable = { name = cc_pty_$SLOT$_eraw value = 1 }
+	set_variable = { name = cc_pty_$SLOT$_app value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_elected value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_seats value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_power value = 25 }
+	set_variable = { name = cc_pty_$SLOT$_members value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_mood value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sat value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_target value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_agenda value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_neglect value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_esc value = 0 }
+	# A new party settles in before it sets an agenda.
+	random_list = {
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 3 } }
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 5 } }
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 8 } }
+	}
+}
+
+# Empty a slot: its modifiers go with it, and its members lose their mood modifier.
+# Their affiliation stays; they are reassigned at the next pass (cc_pty_aff_active).
+cc_pty_vacate_slot = {
+	cc_pty_with_type_tk = { SLOT = $SLOT$ EFFECT = cc_pty_clear_type_effects }
+	remove_variable = cc_pty_$SLOT$_type
+	remove_variable = cc_pty_$SLOT$_eraw
+	remove_variable = cc_pty_$SLOT$_app
+	remove_variable = cc_pty_$SLOT$_elected
+	remove_variable = cc_pty_$SLOT$_seats
+	remove_variable = cc_pty_$SLOT$_leader
+	remove_variable = cc_pty_$SLOT$_needs_leader
+	remove_variable = cc_pty_$SLOT$_last
+	remove_variable = cc_pty_$SLOT$_power
+	remove_variable = cc_pty_$SLOT$_members
+	remove_variable = cc_pty_$SLOT$_mood
+	remove_variable = cc_pty_$SLOT$_sat
+	remove_variable = cc_pty_$SLOT$_target
+	remove_variable = cc_pty_$SLOT$_agenda
+	remove_variable = cc_pty_$SLOT$_agenda_due
+	remove_variable = cc_pty_$SLOT$_agenda_cd
+	remove_variable = cc_pty_$SLOT$_neglect
+	remove_variable = cc_pty_$SLOT$_esc
+	remove_variable = cc_pty_$SLOT$_outcome_cd
+	remove_variable = cc_pty_$SLOT$_suppressed
+	remove_variable = cc_pty_$SLOT$_bribe_cd
+	remove_variable = cc_pty_$SLOT$_attack_cd
+	remove_variable = cc_pty_$SLOT$_favour_cd
+	remove_variable = cc_pty_$SLOT$_favour_on
+	remove_variable = cc_pty_$SLOT$_standing
+	remove_variable = cc_pty_$SLOT$_mood_pct
+}
+
+# Called through cc_pty_with_type_tk, so TYPE and KEY are the departing archetype.
+cc_pty_clear_type_effects = {
+	cc_pty_clear_country_mood = { KEY = $KEY$ }
+	cc_pty_clear_standing = { KEY = $KEY$ }
+	if = {
+		limit = { has_country_modifier = cc_pty_push_$KEY$ }
+		remove_country_modifier = cc_pty_push_$KEY$
+	}
+	# All three sets: per-key removal would name modifiers that only exist for the
+	# must-placate archetypes. Any still due are reapplied at the next pass.
+	cc_pty_clear_escalation_mods = yes
+	every_cabinet_character = {
+		limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
+		cc_pty_clear_member_mood = yes
+	}
+}
+
+# A country that stops being tracked drops its parties and everything they applied.
+# Affiliations on characters are kept, so a country that grows back recovers them.
+cc_pty_teardown = {
+	cc_pty_vacate_slot = { SLOT = 1 }
+	cc_pty_vacate_slot = { SLOT = 2 }
+	cc_pty_vacate_slot = { SLOT = 3 }
+	cc_pty_vacate_slot = { SLOT = 4 }
+	cc_pty_clear_comp = yes
+	remove_variable = cc_pty_active
+	remove_variable = cc_pty_sat_cd
+	remove_variable = cc_pty_realign_cd
+	remove_variable = cc_pty_popup_cd
+	remove_variable = cc_pty_comp
+	remove_variable = cc_pty_cabinet_slot
+	remove_variable = cc_pty_dominant
+	remove_variable = cc_pty_termlimits
+	remove_variable = cc_pty_rivalry_feed
+	remove_variable = cc_pty_total
+	remove_variable = cc_pty_tmp
+	remove_variable = cc_pty_seats
+	remove_variable = cc_pty_seat_total
+	remove_variable = cc_pty_es_crown
+	remove_variable = cc_pty_es_nobles
+	remove_variable = cc_pty_es_burghers
+	remove_variable = cc_pty_es_clergy
+	remove_variable = cc_pty_es_peasants
+	remove_variable = cc_pty_chamber
+	remove_variable = cc_pty_top_slot
+	remove_variable = cc_pty_election_cd
+	remove_variable = cc_pty_1_cum
+	remove_variable = cc_pty_2_cum
+	remove_variable = cc_pty_3_cum
+	remove_variable = cc_pty_4_cum
+}
+
+
+###############################################################################
+# REALIGNMENT
+#
+# Every fifteen to twenty-five years the court's four parties are chosen again: every
+# archetype that is eligible here scores its base strength plus government and age
+# bonuses (cc_pty_realign_score_type_T), incumbents get +20, and the best four hold the
+# slots. Incumbents keep their slot and their satisfaction; a newcomer takes a vacated
+# slot and starts at zero.
+###############################################################################
+
+cc_pty_realign = {
+	save_scope_as = cc_pty_country
+	cc_pty_score_all = yes
+	cc_pty_pick_round = yes
+	cc_pty_pick_round = yes
+	cc_pty_pick_round = yes
+	cc_pty_pick_round = yes
+
+	cc_pty_vacate_if_unpicked = { SLOT = 1 }
+	cc_pty_vacate_if_unpicked = { SLOT = 2 }
+	cc_pty_vacate_if_unpicked = { SLOT = 3 }
+	cc_pty_vacate_if_unpicked = { SLOT = 4 }
+	cc_pty_place_new = yes
+
+	cc_pty_clear_realign_scratch = yes
+	remove_variable = cc_pty_best
+	remove_variable = cc_pty_best_type
+
+	random_list = {
+		1 = { set_variable = { name = cc_pty_realign_cd value = yes years = 15 } }
+		1 = { set_variable = { name = cc_pty_realign_cd value = yes years = 20 } }
+		1 = { set_variable = { name = cc_pty_realign_cd value = yes years = 25 } }
+	}
+}
+
+cc_pty_pick_round = {
+	set_variable = { name = cc_pty_best value = -999 }
+	set_variable = { name = cc_pty_best_type value = 0 }
+	cc_pty_consider_all = yes
+	cc_pty_mark_picked = yes
+}
+
+cc_pty_consider = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_pty_picked_$TYPE$ }
+			has_variable = cc_pty_sc_$TYPE$
+		}
+		if = {
+			limit = { var:cc_pty_sc_$TYPE$ > var:cc_pty_best }
+			set_variable = { name = cc_pty_best value = var:cc_pty_sc_$TYPE$ }
+			set_variable = { name = cc_pty_best_type value = $TYPE$ }
+		}
+	}
+}
+
+cc_pty_vacate_if_unpicked = {
+	if = {
+		limit = {
+			has_variable = cc_pty_$SLOT$_type
+			NOT = { cc_pty_slot_type_picked = { SLOT = $SLOT$ } }
+		}
+		cc_pty_vacate_slot = { SLOT = $SLOT$ }
+		set_variable = { name = cc_pty_realign_changed value = yes }
+	}
+}
+
+cc_pty_place_type = {
+	if = {
+		limit = { NOT = { has_variable = cc_pty_1_type } }
+		cc_pty_init_slot = { SLOT = 1 TYPE = $TYPE$ }
+	}
+	else_if = {
+		limit = { NOT = { has_variable = cc_pty_2_type } }
+		cc_pty_init_slot = { SLOT = 2 TYPE = $TYPE$ }
+	}
+	else_if = {
+		limit = { NOT = { has_variable = cc_pty_3_type } }
+		cc_pty_init_slot = { SLOT = 3 TYPE = $TYPE$ }
+	}
+	else_if = {
+		limit = { NOT = { has_variable = cc_pty_4_type } }
+		cc_pty_init_slot = { SLOT = 4 TYPE = $TYPE$ }
+	}
+	set_variable = { name = cc_pty_realign_changed value = yes }
+}
+
+
+###############################################################################
+# AFFILIATION (character scope)
+#
+# cc_pty_assign_affiliation is generated (trait, then estate, then an even draw).
+###############################################################################
+
+# Country scope, player realms. Give every adult at court a party, not only ministers, so
+# candidates show their party (badge modifier, in the character tooltip) before they are
+# appointed. Also reassigns anyone whose party left at a realignment. Not run for AI realms:
+# their ministers are affiliated when seated, and nobody inspects their courtiers.
+cc_pty_affiliate_court = {
+	if = {
+		limit = { is_ai = no }
+		save_scope_as = cc_pty_country
+		every_character = {
+			limit = {
+				is_adult = yes
+				OR = {
+					NOT = { has_variable = cc_pty_aff }
+					NOT = { cc_pty_aff_active = yes }
+				}
+			}
+			cc_pty_assign_affiliation = yes
+		}
+	}
+}
+
+cc_pty_join = {
+	cc_pty_clear_member_badge = yes
+	cc_pty_clear_member_mood = yes
+	set_variable = { name = cc_pty_aff value = $TYPE$ }
+	add_character_modifier = { modifier = cc_pty_member_$KEY$ years = -1 mode = replace }
+}
+
+
+###############################################################################
+# POWER: THE CHAMBER
+#
+# A party's power is its share of the chamber's seats.
+#
+# cc_pty_count_seats is the expensive part: one pass over owned locations storing the
+# total raw seats and each estate's share of them. It runs at reviews, realignments,
+# elections and setup, never on a cabinet change.
+#
+# cc_pty_recompute_all is cheap and runs on every cabinet change:
+#   1. chamber size N from the raw total (cc_pty_chamber_size, 20..84)
+#   2. appointed seats: 2 per seated minister, never more than half the chamber; if the
+#      cabinet would take more, every party's appointed seats are scaled down (floored)
+#   3. elected seats: the rest, shared by each party's raw seats (its estate weights,
+#      x0.6 while attacked), floored, with the remainder going to the largest party
+#   4. seats = appointed + elected, power = seats / N, and cumulative counts for the grid
+###############################################################################
+
+cc_pty_count_seats = {
+	set_variable = { name = cc_pty_seat_total value = cc_pty_seat_total_value }
+	if = {
+		limit = { var:cc_pty_seat_total < 1 }
+		set_variable = { name = cc_pty_seat_total value = 1 }
+	}
+	set_variable = { name = cc_pty_es_crown value = cc_pty_es_crown_value }
+	set_variable = { name = cc_pty_es_nobles value = cc_pty_es_nobles_value }
+	set_variable = { name = cc_pty_es_burghers value = cc_pty_es_burghers_value }
+	set_variable = { name = cc_pty_es_clergy value = cc_pty_es_clergy_value }
+	set_variable = { name = cc_pty_es_peasants value = cc_pty_es_peasants_value }
+}
+
+cc_pty_recompute_all = {
+	if = {
+		limit = { NOT = { has_variable = cc_pty_seat_total } }
+		cc_pty_count_seats = yes
+	}
+	set_variable = { name = cc_pty_chamber value = cc_pty_chamber_size }
+
+	cc_pty_with_type_st = { SLOT = 1 EFFECT = cc_pty_read_type }
+	cc_pty_with_type_st = { SLOT = 2 EFFECT = cc_pty_read_type }
+	cc_pty_with_type_st = { SLOT = 3 EFFECT = cc_pty_read_type }
+	cc_pty_with_type_st = { SLOT = 4 EFFECT = cc_pty_read_type }
+
+	# ---- Appointed seats ----
+	set_variable = { name = cc_pty_app_total value = 0 }
+	cc_pty_set_appointed = { SLOT = 1 }
+	cc_pty_set_appointed = { SLOT = 2 }
+	cc_pty_set_appointed = { SLOT = 3 }
+	cc_pty_set_appointed = { SLOT = 4 }
+	set_variable = { name = cc_pty_app_cap value = var:cc_pty_chamber }
+	change_variable = { name = cc_pty_app_cap multiply = 0.5 }
+	if = {
+		limit = { var:cc_pty_app_total > var:cc_pty_app_cap }
+		cc_pty_scale_appointed = { SLOT = 1 }
+		cc_pty_scale_appointed = { SLOT = 2 }
+		cc_pty_scale_appointed = { SLOT = 3 }
+		cc_pty_scale_appointed = { SLOT = 4 }
+		set_variable = { name = cc_pty_app_total value = 0 }
+		cc_pty_sum_appointed = { SLOT = 1 }
+		cc_pty_sum_appointed = { SLOT = 2 }
+		cc_pty_sum_appointed = { SLOT = 3 }
+		cc_pty_sum_appointed = { SLOT = 4 }
+	}
+
+	# ---- Elected seats ----
+	set_variable = { name = cc_pty_elected_pool value = var:cc_pty_chamber }
+	change_variable = { name = cc_pty_elected_pool subtract = var:cc_pty_app_total }
+	set_variable = { name = cc_pty_eraw_total value = 0 }
+	cc_pty_add_eraw = { SLOT = 1 }
+	cc_pty_add_eraw = { SLOT = 2 }
+	cc_pty_add_eraw = { SLOT = 3 }
+	cc_pty_add_eraw = { SLOT = 4 }
+	set_variable = { name = cc_pty_elected_sum value = 0 }
+	if = {
+		limit = { var:cc_pty_eraw_total > 0 }
+		cc_pty_set_elected = { SLOT = 1 }
+		cc_pty_set_elected = { SLOT = 2 }
+		cc_pty_set_elected = { SLOT = 3 }
+		cc_pty_set_elected = { SLOT = 4 }
+	}
+	# The seats lost to rounding go to the party with the most raw seats.
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_elected_pool }
+	change_variable = { name = cc_pty_tmp subtract = var:cc_pty_elected_sum }
+	set_variable = { name = cc_pty_best value = -1 }
+	set_variable = { name = cc_pty_best_slot value = 0 }
+	cc_pty_consider_largest = { SLOT = 1 }
+	cc_pty_consider_largest = { SLOT = 2 }
+	cc_pty_consider_largest = { SLOT = 3 }
+	cc_pty_consider_largest = { SLOT = 4 }
+	cc_pty_give_leftover = { SLOT = 1 }
+	cc_pty_give_leftover = { SLOT = 2 }
+	cc_pty_give_leftover = { SLOT = 3 }
+	cc_pty_give_leftover = { SLOT = 4 }
+	remove_variable = cc_pty_best
+	remove_variable = cc_pty_best_slot
+
+	# ---- Seats, power and the grid ----
+	cc_pty_finish_slot = { SLOT = 1 }
+	cc_pty_finish_slot = { SLOT = 2 }
+	cc_pty_finish_slot = { SLOT = 3 }
+	cc_pty_finish_slot = { SLOT = 4 }
+	set_variable = { name = cc_pty_1_cum value = 0 }
+	set_variable = { name = cc_pty_1_start value = 0 }
+	cc_pty_add_cum = { SLOT = 1 }
+	set_variable = { name = cc_pty_2_cum value = var:cc_pty_1_cum }
+	set_variable = { name = cc_pty_2_start value = var:cc_pty_1_cum }
+	cc_pty_add_cum = { SLOT = 2 }
+	set_variable = { name = cc_pty_3_cum value = var:cc_pty_2_cum }
+	set_variable = { name = cc_pty_3_start value = var:cc_pty_2_cum }
+	cc_pty_add_cum = { SLOT = 3 }
+	set_variable = { name = cc_pty_4_cum value = var:cc_pty_3_cum }
+	set_variable = { name = cc_pty_4_start value = var:cc_pty_3_cum }
+	cc_pty_add_cum = { SLOT = 4 }
+
+	# The grid draws seats by party TYPE, not by slot: a GUI texture cannot be chosen by
+	# script state (custom loc and Select_CString both failed to render), so every seat holds
+	# one fixed-texture icon per archetype, shown when that archetype's range covers it.
+	# cc_pty_r<T>_lo < seat <= cc_pty_r<T>_hi; both 0 for archetypes the court lacks.
+	cc_pty_clear_ranges = yes
+	cc_pty_with_type_st = { SLOT = 1 EFFECT = cc_pty_publish_range }
+	cc_pty_with_type_st = { SLOT = 2 EFFECT = cc_pty_publish_range }
+	cc_pty_with_type_st = { SLOT = 3 EFFECT = cc_pty_publish_range }
+	cc_pty_with_type_st = { SLOT = 4 EFFECT = cc_pty_publish_range }
+
+	cc_pty_find_dominant = yes
+	save_scope_as = cc_pty_country
+	cc_pty_compute_comp = yes
+	cc_pty_compute_target = { SLOT = 1 }
+	cc_pty_compute_target = { SLOT = 2 }
+	cc_pty_compute_target = { SLOT = 3 }
+	cc_pty_compute_target = { SLOT = 4 }
+	cc_pty_with_type_sk = { SLOT = 1 EFFECT = cc_pty_apply_standing }
+	cc_pty_with_type_sk = { SLOT = 2 EFFECT = cc_pty_apply_standing }
+	cc_pty_with_type_sk = { SLOT = 3 EFFECT = cc_pty_apply_standing }
+	cc_pty_with_type_sk = { SLOT = 4 EFFECT = cc_pty_apply_standing }
+	cc_pty_update_leaders = yes
+	cc_pty_publish_top_agenda = yes
+}
+
+cc_pty_read_type = {
+	set_variable = { name = cc_pty_$SLOT$_members value = cc_pty_members_type_$TYPE$ }
+	set_variable = { name = cc_pty_$SLOT$_mood value = cc_pty_mood_type_$TYPE$ }
+	set_variable = { name = cc_pty_$SLOT$_eraw value = cc_pty_seat_raw_type_$TYPE$ }
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_suppressed }
+		change_variable = { name = cc_pty_$SLOT$_eraw multiply = 0.6 }
+	}
+	clamp_variable = { name = cc_pty_$SLOT$_eraw min = 0.01 max = 100000 }
+}
+
+cc_pty_set_appointed = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_$SLOT$_app value = var:cc_pty_$SLOT$_members }
+		change_variable = { name = cc_pty_$SLOT$_app multiply = 2 }
+		change_variable = { name = cc_pty_app_total add = var:cc_pty_$SLOT$_app }
+	}
+}
+
+cc_pty_scale_appointed = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_$SLOT$_app value = cc_pty_app_scaled_slot_$SLOT$ }
+	}
+}
+
+cc_pty_sum_appointed = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		change_variable = { name = cc_pty_app_total add = var:cc_pty_$SLOT$_app }
+	}
+}
+
+cc_pty_add_eraw = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		change_variable = { name = cc_pty_eraw_total add = var:cc_pty_$SLOT$_eraw }
+	}
+}
+
+cc_pty_set_elected = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_$SLOT$_elected value = cc_pty_elected_slot_$SLOT$ }
+		change_variable = { name = cc_pty_elected_sum add = var:cc_pty_$SLOT$_elected }
+	}
+}
+
+cc_pty_consider_largest = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		if = {
+			limit = { var:cc_pty_$SLOT$_eraw > var:cc_pty_best }
+			set_variable = { name = cc_pty_best value = var:cc_pty_$SLOT$_eraw }
+			set_variable = { name = cc_pty_best_slot value = $SLOT$ }
+		}
+	}
+}
+
+cc_pty_give_leftover = {
+	if = {
+		limit = {
+			var:cc_pty_best_slot = $SLOT$
+			var:cc_pty_tmp > 0
+		}
+		change_variable = { name = cc_pty_$SLOT$_elected add = var:cc_pty_tmp }
+	}
+}
+
+cc_pty_finish_slot = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_$SLOT$_seats value = var:cc_pty_$SLOT$_app }
+		change_variable = { name = cc_pty_$SLOT$_seats add = var:cc_pty_$SLOT$_elected }
+		set_variable = { name = cc_pty_$SLOT$_power value = var:cc_pty_$SLOT$_seats }
+		change_variable = { name = cc_pty_$SLOT$_power multiply = 100 }
+		change_variable = { name = cc_pty_$SLOT$_power divide = var:cc_pty_chamber }
+	}
+}
+
+cc_pty_add_cum = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		change_variable = { name = cc_pty_$SLOT$_cum add = var:cc_pty_$SLOT$_seats }
+	}
+}
+
+# Called through cc_pty_with_type_st. Slot SLOT holds archetype TYPE.
+cc_pty_publish_range = {
+	set_variable = { name = cc_pty_r$TYPE$_lo value = var:cc_pty_$SLOT$_start }
+	set_variable = { name = cc_pty_r$TYPE$_hi value = var:cc_pty_$SLOT$_cum }
+}
+
+# Called through cc_pty_with_type_sk. Every party with 10% of the seats or more grants its
+# standing modifier, scaled by its share (size = share / 25%). Below 10% it is marginalised
+# instead. cc_pty_N_standing is the strength as a percentage, for the panel.
+cc_pty_apply_standing = {
+	cc_pty_clear_standing = { KEY = $KEY$ }
+	if = {
+		limit = { var:cc_pty_$SLOT$_power >= 10 }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_power }
+		change_variable = { name = cc_pty_tmp divide = 25 }
+		set_variable = { name = cc_pty_$SLOT$_standing value = var:cc_pty_$SLOT$_power }
+		change_variable = { name = cc_pty_$SLOT$_standing multiply = 4 }
+		add_country_modifier = {
+			modifier = cc_pty_standing_$KEY$
+			years = -1
+			mode = replace
+			size = var:cc_pty_tmp
+		}
+	}
+	else = {
+		set_variable = { name = cc_pty_$SLOT$_standing value = 0 }
+		add_country_modifier = { modifier = cc_pty_marginal_$KEY$ years = -1 mode = replace }
+	}
+}
+
+cc_pty_clear_standing = {
+	if = {
+		limit = { has_country_modifier = cc_pty_standing_$KEY$ }
+		remove_country_modifier = cc_pty_standing_$KEY$
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_marginal_$KEY$ }
+		remove_country_modifier = cc_pty_marginal_$KEY$
+	}
+}
+
+# The strongest party, if it holds 30% or more.
+cc_pty_find_dominant = {
+	set_variable = { name = cc_pty_dominant value = 0 }
+	set_variable = { name = cc_pty_best value = 29.99 }
+	cc_pty_consider_dominant = { SLOT = 1 }
+	cc_pty_consider_dominant = { SLOT = 2 }
+	cc_pty_consider_dominant = { SLOT = 3 }
+	cc_pty_consider_dominant = { SLOT = 4 }
+	remove_variable = cc_pty_best
+}
+
+cc_pty_consider_dominant = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		if = {
+			limit = { var:cc_pty_$SLOT$_power > var:cc_pty_best }
+			set_variable = { name = cc_pty_best value = var:cc_pty_$SLOT$_power }
+			set_variable = { name = cc_pty_dominant value = $SLOT$ }
+		}
+	}
+}
+
+# The agenda across the top of the panel: the leading party's, or failing that the
+# first party with one. cc_pty_top_slot = 0 when nobody has an agenda.
+cc_pty_publish_top_agenda = {
+	set_variable = { name = cc_pty_top_slot value = 0 }
+	cc_pty_consider_top = { SLOT = 4 }
+	cc_pty_consider_top = { SLOT = 3 }
+	cc_pty_consider_top = { SLOT = 2 }
+	cc_pty_consider_top = { SLOT = 1 }
+	cc_pty_prefer_dominant_top = { SLOT = 1 }
+	cc_pty_prefer_dominant_top = { SLOT = 2 }
+	cc_pty_prefer_dominant_top = { SLOT = 3 }
+	cc_pty_prefer_dominant_top = { SLOT = 4 }
+}
+
+cc_pty_consider_top = {
+	if = {
+		limit = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 } }
+		set_variable = { name = cc_pty_top_slot value = $SLOT$ }
+	}
+}
+
+cc_pty_prefer_dominant_top = {
+	if = {
+		limit = {
+			var:cc_pty_dominant = $SLOT$
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 }
+		}
+		set_variable = { name = cc_pty_top_slot value = $SLOT$ }
+	}
+}
+
+
+###############################################################################
+# LEADERS
+#
+# Each party's leader is its most senior minister (cc_pty_leader_score). A party with no
+# minister keeps its previous leader while they live and still belong to it. Otherwise,
+# in a player realm, a leader is generated outside the cabinet by the hidden event
+# cc_pty.5 (characters are created in an event's immediate block). AI realms get no
+# generated leaders, so they never accumulate characters.
+###############################################################################
+
+cc_pty_update_leaders = {
+	save_scope_as = cc_pty_country
+	cc_pty_update_leader = { SLOT = 1 }
+	cc_pty_update_leader = { SLOT = 2 }
+	cc_pty_update_leader = { SLOT = 3 }
+	cc_pty_update_leader = { SLOT = 4 }
+	if = {
+		limit = {
+			is_ai = no
+			OR = {
+				has_variable = cc_pty_1_needs_leader
+				has_variable = cc_pty_2_needs_leader
+				has_variable = cc_pty_3_needs_leader
+				has_variable = cc_pty_4_needs_leader
+			}
+		}
+		trigger_event_silently = { id = cc_pty.5 }
+	}
+}
+
+cc_pty_update_leader = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		if = {
+			limit = { any_cabinet_character = { cc_pty_member_of_slot = { SLOT = $SLOT$ } } }
+			ordered_cabinet_character = {
+				limit = { cc_pty_member_of_slot = { SLOT = $SLOT$ } }
+				order_by = cc_pty_leader_score
+				max = 1
+				check_range_bounds = no
+				save_scope_as = cc_pty_ldr
+			}
+			set_variable = { name = cc_pty_$SLOT$_leader value = scope:cc_pty_ldr }
+			remove_variable = cc_pty_$SLOT$_needs_leader
+		}
+		else_if = {
+			limit = { cc_pty_slot_leader_valid = { SLOT = $SLOT$ } }
+			remove_variable = cc_pty_$SLOT$_needs_leader
+		}
+		else = {
+			remove_variable = cc_pty_$SLOT$_leader
+			if = {
+				limit = { is_ai = no }
+				set_variable = { name = cc_pty_$SLOT$_needs_leader value = yes }
+			}
+		}
+	}
+}
+
+# Called from cc_pty.5 through cc_pty_create_leader_dispatch (generated), which supplies
+# the archetype and the estate its leaders come from.
+cc_pty_create_leader = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_needs_leader }
+		create_character = {
+			create_in_limbo = yes
+			estate = estate_type:$ESTATE$
+			culture = root.culture
+			religion = root.religion
+			age = { 30 55 }
+			save_scope_as = cc_pty_new_leader
+		}
+		scope:cc_pty_new_leader = {
+			move_country = root
+			cc_pty_join = { TYPE = $TYPE$ KEY = $KEY$ }
+			set_variable = { name = cc_pty_generated_leader value = yes }
+		}
+		set_variable = { name = cc_pty_$SLOT$_leader value = scope:cc_pty_new_leader }
+		remove_variable = cc_pty_$SLOT$_needs_leader
+	}
+}
+
+
+###############################################################################
+# CABINET COMPOSITION
+#
+#   stacked   one party holds more than half the seats (three seats or more)
+#   balanced  no party holds more than 40% and at least three parties are seated
+#   mixed     anything else
+###############################################################################
+
+cc_pty_compute_comp = {
+	set_variable = { name = cc_pty_seats value = 0 }
+	cc_pty_add_seats = { SLOT = 1 }
+	cc_pty_add_seats = { SLOT = 2 }
+	cc_pty_add_seats = { SLOT = 3 }
+	cc_pty_add_seats = { SLOT = 4 }
+
+	set_variable = { name = cc_pty_comp value = 0 }
+	set_variable = { name = cc_pty_cabinet_slot value = 0 }
+
+	if = {
+		limit = { var:cc_pty_seats >= 3 }
+
+		# Stacked?
+		cc_pty_check_stacked = { SLOT = 1 }
+		cc_pty_check_stacked = { SLOT = 2 }
+		cc_pty_check_stacked = { SLOT = 3 }
+		cc_pty_check_stacked = { SLOT = 4 }
+
+		# Balanced? Count seated parties and look for one above 40%.
+		if = {
+			limit = { var:cc_pty_comp = 0 }
+			set_variable = { name = cc_pty_best value = 0 }
+			set_variable = { name = cc_pty_best_type value = 0 }
+			cc_pty_check_balance = { SLOT = 1 }
+			cc_pty_check_balance = { SLOT = 2 }
+			cc_pty_check_balance = { SLOT = 3 }
+			cc_pty_check_balance = { SLOT = 4 }
+			if = {
+				limit = {
+					var:cc_pty_best >= 3
+					var:cc_pty_best_type = 0
+				}
+				set_variable = { name = cc_pty_comp value = 2 }
+			}
+			remove_variable = cc_pty_best
+			remove_variable = cc_pty_best_type
+		}
+	}
+
+	cc_pty_clear_comp = yes
+	if = {
+		limit = { var:cc_pty_comp = 1 }
+		add_country_modifier = { modifier = cc_pty_comp_stacked years = -1 mode = replace }
+	}
+	else_if = {
+		limit = { var:cc_pty_comp = 2 }
+		add_country_modifier = { modifier = cc_pty_comp_balanced years = -1 mode = replace }
+	}
+}
+
+cc_pty_add_seats = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		change_variable = { name = cc_pty_seats add = var:cc_pty_$SLOT$_members }
+	}
+}
+
+cc_pty_check_stacked = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_members }
+		change_variable = { name = cc_pty_tmp multiply = 2 }
+		if = {
+			limit = { var:cc_pty_tmp > var:cc_pty_seats }
+			set_variable = { name = cc_pty_comp value = 1 }
+			set_variable = { name = cc_pty_cabinet_slot value = $SLOT$ }
+		}
+	}
+}
+
+# cc_pty_best counts seated parties; cc_pty_best_type is set to 1 if any holds over 40%.
+cc_pty_check_balance = {
+	if = {
+		limit = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = members VALUE = 1 } }
+		change_variable = { name = cc_pty_best add = 1 }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_members }
+		change_variable = { name = cc_pty_tmp multiply = 5 }
+		change_variable = { name = cc_pty_tmp divide = 2 }
+		if = {
+			limit = { var:cc_pty_tmp > var:cc_pty_seats }
+			set_variable = { name = cc_pty_best_type value = 1 }
+		}
+	}
+}
+
+cc_pty_clear_comp = {
+	if = {
+		limit = { has_country_modifier = cc_pty_comp_stacked }
+		remove_country_modifier = cc_pty_comp_stacked
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_comp_balanced }
+		remove_country_modifier = cc_pty_comp_balanced
+	}
+}
+
+
+###############################################################################
+# SATISFACTION
+#
+# Target (cc_pty_compute_target, shown in the panel) = estate mood
+#   + 15 for one seated minister, + 25 for two or more
+#   - 20 with none, while holding 20% or more power
+#   + 15 if the head of the cabinet belongs to it, + 10 if the ruler does
+#   stacked cabinet: + 10 for the stacked party, - 10 for every other
+#   balanced cabinet: never below - 20
+# Satisfaction moves halfway to the target each pass.
+###############################################################################
+
+# Country scope, scope:cc_pty_country set. What the party in slot SLOT expects, stored as
+# cc_pty_N_target. Computed whenever seats are recomputed, so the panel shows it at once.
+cc_pty_compute_target = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_mood }
+
+		if = {
+			limit = { var:cc_pty_$SLOT$_members >= 2 }
+			change_variable = { name = cc_pty_tmp add = 25 }
+		}
+		else_if = {
+			limit = { var:cc_pty_$SLOT$_members >= 1 }
+			change_variable = { name = cc_pty_tmp add = 15 }
+		}
+		else_if = {
+			limit = { var:cc_pty_$SLOT$_power >= 20 }
+			change_variable = { name = cc_pty_tmp add = -20 }
+		}
+
+		# The head of the cabinet is one of theirs.
+		if = {
+			limit = {
+				any_cabinet_character = {
+					modifier:is_head_of_cabinet = yes
+					cc_pty_member_of_slot = { SLOT = $SLOT$ }
+				}
+			}
+			change_variable = { name = cc_pty_tmp add = 15 }
+		}
+
+		# The ruler is one of theirs.
+		if = {
+			limit = {
+				ruler ?= { cc_pty_member_of_slot = { SLOT = $SLOT$ } }
+			}
+			change_variable = { name = cc_pty_tmp add = 10 }
+		}
+
+		if = {
+			limit = { var:cc_pty_comp = 1 }
+			if = {
+				limit = { var:cc_pty_cabinet_slot = $SLOT$ }
+				change_variable = { name = cc_pty_tmp add = 10 }
+			}
+			else = {
+				change_variable = { name = cc_pty_tmp add = -10 }
+			}
+		}
+		else_if = {
+			limit = { var:cc_pty_comp = 2 }
+			clamp_variable = { name = cc_pty_tmp min = -20 max = 100 }
+		}
+
+		clamp_variable = { name = cc_pty_tmp min = -100 max = 100 }
+		set_variable = { name = cc_pty_$SLOT$_target value = var:cc_pty_tmp }
+	}
+}
+
+# Move satisfaction toward the target by STEP (0.5 at a review, 1 at setup).
+cc_pty_update_sat = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_target }
+		change_variable = { name = cc_pty_tmp subtract = var:cc_pty_$SLOT$_sat }
+		change_variable = { name = cc_pty_tmp multiply = $STEP$ }
+		change_variable = { name = cc_pty_$SLOT$_sat add = var:cc_pty_tmp }
+		clamp_variable = { name = cc_pty_$SLOT$_sat min = -100 max = 100 }
+	}
+}
+
+# Country scope, scope:cc_pty_country set, scope:target the character. A party reacts at
+# once to one of its own being seated (+10) or dismissed (-10); the rest waits for the review.
+cc_pty_bump_member_party = {
+	if = {
+		limit = { scope:target = { cc_pty_member_of_slot = { SLOT = 1 } } }
+		cc_pty_add_sat = { SLOT = 1 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { scope:target = { cc_pty_member_of_slot = { SLOT = 2 } } }
+		cc_pty_add_sat = { SLOT = 2 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { scope:target = { cc_pty_member_of_slot = { SLOT = 3 } } }
+		cc_pty_add_sat = { SLOT = 3 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { scope:target = { cc_pty_member_of_slot = { SLOT = 4 } } }
+		cc_pty_add_sat = { SLOT = 4 VALUE = $VALUE$ }
+	}
+}
+
+cc_pty_add_sat = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		change_variable = { name = cc_pty_$SLOT$_sat add = $VALUE$ }
+		clamp_variable = { name = cc_pty_$SLOT$_sat min = -100 max = 100 }
+	}
+}
+
+# Add VALUE satisfaction to the party of archetype TYPE, if the court has one.
+cc_pty_type_add_sat = {
+	if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 1 TYPE = $TYPE$ } }
+		cc_pty_add_sat = { SLOT = 1 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 2 TYPE = $TYPE$ } }
+		cc_pty_add_sat = { SLOT = 2 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 3 TYPE = $TYPE$ } }
+		cc_pty_add_sat = { SLOT = 3 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 4 TYPE = $TYPE$ } }
+		cc_pty_add_sat = { SLOT = 4 VALUE = $VALUE$ }
+	}
+}
+
+# Cut the party of archetype TYPE's strength for ten years.
+cc_pty_type_suppress = {
+	if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 1 TYPE = $TYPE$ } }
+		set_variable = { name = cc_pty_1_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 2 TYPE = $TYPE$ } }
+		set_variable = { name = cc_pty_2_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 3 TYPE = $TYPE$ } }
+		set_variable = { name = cc_pty_3_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = 4 TYPE = $TYPE$ } }
+		set_variable = { name = cc_pty_4_suppressed value = yes years = 10 }
+	}
+}
+
+
+###############################################################################
+# AGENDAS
+#
+# A party with 25% power or more sets an agenda when its cooldown lapses. At most one new
+# agenda per pass, and only while cc_pty_popup_cd is clear, which keeps announcements to
+# about two a decade. An agenda has six years. Met: +30 satisfaction. Missed: -25.
+# Either way the party waits five to twelve years before the next.
+###############################################################################
+
+cc_pty_resolve_agenda = {
+	if = {
+		limit = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 } }
+		if = {
+			limit = { cc_pty_agenda_met = { SLOT = $SLOT$ } }
+			cc_pty_add_sat = { SLOT = $SLOT$ VALUE = 30 }
+			set_variable = { name = cc_pty_$SLOT$_last value = 1 }
+			cc_pty_end_agenda = { SLOT = $SLOT$ }
+		}
+		else_if = {
+			limit = { NOT = { has_variable = cc_pty_$SLOT$_agenda_due } }
+			cc_pty_add_sat = { SLOT = $SLOT$ VALUE = -25 }
+			set_variable = { name = cc_pty_$SLOT$_last value = 2 }
+			cc_pty_end_agenda = { SLOT = $SLOT$ }
+		}
+	}
+}
+
+cc_pty_end_agenda = {
+	set_variable = { name = cc_pty_$SLOT$_agenda value = 0 }
+	remove_variable = cc_pty_$SLOT$_agenda_due
+	random_list = {
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 5 } }
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 8 } }
+		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 12 } }
+	}
+}
+
+# cc_pty.20 option b: the court refuses the agenda just announced (cc_pty_event_slot).
+cc_pty_refuse_agenda = {
+	if = {
+		limit = { var:cc_pty_event_slot = 1 }
+		cc_pty_add_sat = { SLOT = 1 VALUE = -15 }
+		cc_pty_end_agenda = { SLOT = 1 }
+	}
+	else_if = {
+		limit = { var:cc_pty_event_slot = 2 }
+		cc_pty_add_sat = { SLOT = 2 VALUE = -15 }
+		cc_pty_end_agenda = { SLOT = 2 }
+	}
+	else_if = {
+		limit = { var:cc_pty_event_slot = 3 }
+		cc_pty_add_sat = { SLOT = 3 VALUE = -15 }
+		cc_pty_end_agenda = { SLOT = 3 }
+	}
+	else_if = {
+		limit = { var:cc_pty_event_slot = 4 }
+		cc_pty_add_sat = { SLOT = 4 VALUE = -15 }
+		cc_pty_end_agenda = { SLOT = 4 }
+	}
+	save_scope_as = cc_pty_country
+	cc_pty_apply_all = yes
+}
+
+# Pick the strongest party that wants an agenda, and give it one.
+cc_pty_try_new_agenda = {
+	if = {
+		limit = { NOT = { has_variable = cc_pty_popup_cd } }
+		set_variable = { name = cc_pty_best value = 0 }
+		set_variable = { name = cc_pty_best_slot value = 0 }
+		cc_pty_consider_agenda = { SLOT = 1 }
+		cc_pty_consider_agenda = { SLOT = 2 }
+		cc_pty_consider_agenda = { SLOT = 3 }
+		cc_pty_consider_agenda = { SLOT = 4 }
+		if = {
+			limit = { var:cc_pty_best_slot = 1 }
+			cc_pty_start_agenda = { SLOT = 1 }
+		}
+		else_if = {
+			limit = { var:cc_pty_best_slot = 2 }
+			cc_pty_start_agenda = { SLOT = 2 }
+		}
+		else_if = {
+			limit = { var:cc_pty_best_slot = 3 }
+			cc_pty_start_agenda = { SLOT = 3 }
+		}
+		else_if = {
+			limit = { var:cc_pty_best_slot = 4 }
+			cc_pty_start_agenda = { SLOT = 4 }
+		}
+		remove_variable = cc_pty_best
+		remove_variable = cc_pty_best_slot
+	}
+}
+
+cc_pty_consider_agenda = {
+	if = {
+		limit = { cc_pty_slot_wants_agenda = { SLOT = $SLOT$ } }
+		if = {
+			limit = { var:cc_pty_$SLOT$_power > var:cc_pty_best }
+			set_variable = { name = cc_pty_best value = var:cc_pty_$SLOT$_power }
+			set_variable = { name = cc_pty_best_slot value = $SLOT$ }
+		}
+	}
+}
+
+# An agenda the party already meets is never chosen. If all three are met, it is content
+# and waits.
+cc_pty_start_agenda = {
+	if = {
+		limit = {
+			OR = {
+				NOT = { cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 1 } }
+				NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = members VALUE = 2 } }
+				NOT = { cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 3 } }
+			}
+		}
+		random_list = {
+			1 = {
+				trigger = { NOT = { cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 1 } } }
+				set_variable = { name = cc_pty_$SLOT$_agenda value = 1 }
+			}
+			1 = {
+				trigger = { NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = members VALUE = 2 } } }
+				set_variable = { name = cc_pty_$SLOT$_agenda value = 2 }
+			}
+			1 = {
+				trigger = { NOT = { cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 3 } } }
+				set_variable = { name = cc_pty_$SLOT$_agenda value = 3 }
+			}
+		}
+		set_variable = { name = cc_pty_$SLOT$_agenda_due value = yes years = 6 }
+		remove_variable = cc_pty_$SLOT$_last
+
+		set_variable = { name = cc_pty_event_slot value = $SLOT$ }
+		set_variable = { name = cc_pty_event_type value = var:cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_event_agenda value = var:cc_pty_$SLOT$_agenda }
+		set_variable = { name = cc_pty_popup_cd value = yes years = 5 }
+		if = {
+			limit = { is_ai = no }
+			trigger_event_non_silently = { id = cc_pty.20 }
+		}
+	}
+	else = {
+		set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 5 }
+	}
+}
+
+
+###############################################################################
+# CONSEQUENCES
+#
+#   above  30   pleased     goodwill modifier, members +5% efficiency
+#   -20 .. 30   content     nothing
+#   -50 ..-20   discontent  discontent modifier, members -10% efficiency
+#   below -50   angry       discontent modifier, members -20% efficiency
+#
+# Country modifiers are scaled with `size` = |satisfaction| x power / 1250, so a
+# quarter-share party at +/-50 applies its modifier at 1x, then by government
+# (cc_pty_gov_weight). Goodwill is x1.25 for a stacked cabinet's party and x0.75 under a
+# balanced cabinet: stacking concentrates the rewards, balance spreads them thin.
+###############################################################################
+
+cc_pty_apply_all = {
+	cc_pty_with_type = { SLOT = 1 EFFECT = cc_pty_apply_mood }
+	cc_pty_with_type = { SLOT = 2 EFFECT = cc_pty_apply_mood }
+	cc_pty_with_type = { SLOT = 3 EFFECT = cc_pty_apply_mood }
+	cc_pty_with_type = { SLOT = 4 EFFECT = cc_pty_apply_mood }
+	cc_pty_apply_push = yes
+}
+
+cc_pty_apply_slot = {
+	cc_pty_with_type = { SLOT = $SLOT$ EFFECT = cc_pty_apply_mood }
+}
+
+cc_pty_apply_mood = {
+	cc_pty_clear_country_mood = { KEY = $KEY$ }
+	set_variable = { name = cc_pty_$SLOT$_mood_pct value = 0 }
+
+	# ---- Country ----
+	if = {
+		limit = { var:cc_pty_$SLOT$_sat < -20 }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sat }
+		change_variable = { name = cc_pty_tmp multiply = -1 }
+		change_variable = { name = cc_pty_tmp multiply = var:cc_pty_$SLOT$_power }
+		change_variable = { name = cc_pty_tmp divide = 1250 }
+		change_variable = { name = cc_pty_tmp multiply = cc_pty_gov_weight }
+		set_variable = { name = cc_pty_$SLOT$_mood_pct value = var:cc_pty_tmp }
+		change_variable = { name = cc_pty_$SLOT$_mood_pct multiply = 100 }
+		add_country_modifier = {
+			modifier = cc_pty_discontent_$KEY$
+			years = -1
+			mode = replace
+			size = var:cc_pty_tmp
+		}
+	}
+	else_if = {
+		limit = { var:cc_pty_$SLOT$_sat > 30 }
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sat }
+		change_variable = { name = cc_pty_tmp multiply = var:cc_pty_$SLOT$_power }
+		change_variable = { name = cc_pty_tmp divide = 1250 }
+		change_variable = { name = cc_pty_tmp multiply = cc_pty_gov_weight }
+		if = {
+			limit = {
+				var:cc_pty_comp = 1
+				var:cc_pty_cabinet_slot = $SLOT$
+			}
+			change_variable = { name = cc_pty_tmp multiply = 1.25 }
+		}
+		else_if = {
+			limit = { var:cc_pty_comp = 2 }
+			change_variable = { name = cc_pty_tmp multiply = 0.75 }
+		}
+		set_variable = { name = cc_pty_$SLOT$_mood_pct value = var:cc_pty_tmp }
+		change_variable = { name = cc_pty_$SLOT$_mood_pct multiply = 100 }
+		add_country_modifier = {
+			modifier = cc_pty_goodwill_$KEY$
+			years = -1
+			mode = replace
+			size = var:cc_pty_tmp
+		}
+	}
+
+	# ---- Members ----
+	if = {
+		limit = { var:cc_pty_$SLOT$_sat < -50 }
+		every_cabinet_character = {
+			limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
+			cc_pty_set_member_mood = { MOOD = angry }
+		}
+	}
+	else_if = {
+		limit = { var:cc_pty_$SLOT$_sat < -20 }
+		every_cabinet_character = {
+			limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
+			cc_pty_set_member_mood = { MOOD = discontent }
+		}
+	}
+	else_if = {
+		limit = { var:cc_pty_$SLOT$_sat > 30 }
+		every_cabinet_character = {
+			limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
+			cc_pty_set_member_mood = { MOOD = content }
+		}
+	}
+	else = {
+		every_cabinet_character = {
+			limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
+			cc_pty_clear_member_mood = yes
+		}
+	}
+}
+
+cc_pty_clear_country_mood = {
+	if = {
+		limit = { has_country_modifier = cc_pty_discontent_$KEY$ }
+		remove_country_modifier = cc_pty_discontent_$KEY$
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_goodwill_$KEY$ }
+		remove_country_modifier = cc_pty_goodwill_$KEY$
+	}
+}
+
+# Character scope.
+cc_pty_set_member_mood = {
+	cc_pty_clear_member_mood = yes
+	add_character_modifier = { modifier = cc_pty_member_$MOOD$ years = -1 mode = replace }
+}
+
+cc_pty_clear_member_mood = {
+	if = {
+		limit = { has_character_modifier = cc_pty_member_content }
+		remove_character_modifier = cc_pty_member_content
+	}
+	if = {
+		limit = { has_character_modifier = cc_pty_member_discontent }
+		remove_character_modifier = cc_pty_member_discontent
+	}
+	if = {
+		limit = { has_character_modifier = cc_pty_member_angry }
+		remove_character_modifier = cc_pty_member_angry
+	}
+}
+
+# The dominant party moves society its way: x1.5 when it also holds a stacked cabinet,
+# x0.5 under a balanced one.
+cc_pty_apply_push = {
+	cc_pty_clear_push = yes
+	if = {
+		limit = { var:cc_pty_dominant = 1 }
+		cc_pty_with_type_sk = { SLOT = 1 EFFECT = cc_pty_add_push }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 2 }
+		cc_pty_with_type_sk = { SLOT = 2 EFFECT = cc_pty_add_push }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 3 }
+		cc_pty_with_type_sk = { SLOT = 3 EFFECT = cc_pty_add_push }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 4 }
+		cc_pty_with_type_sk = { SLOT = 4 EFFECT = cc_pty_add_push }
+	}
+}
+
+cc_pty_add_push = {
+	set_variable = { name = cc_pty_tmp value = 1 }
+	if = {
+		limit = {
+			var:cc_pty_comp = 1
+			var:cc_pty_cabinet_slot = $SLOT$
+		}
+		set_variable = { name = cc_pty_tmp value = 1.5 }
+	}
+	else_if = {
+		limit = { var:cc_pty_comp = 2 }
+		set_variable = { name = cc_pty_tmp value = 0.5 }
+	}
+	set_variable = { name = cc_pty_push_pct value = var:cc_pty_tmp }
+	change_variable = { name = cc_pty_push_pct multiply = 100 }
+	add_country_modifier = {
+		modifier = cc_pty_push_$KEY$
+		years = -1
+		mode = replace
+		size = var:cc_pty_tmp
+	}
+}
+
+
+###############################################################################
+# COURT RIVALRY
+#
+# Feeds the main mod's cc_court_rivalry score when the cabinet is stacked or when two
+# opposed parties both have ministers seated. While cc_pty_rivalry_feed is set the main
+# mod's biyearly decay skips this country (guard in cc_cabinet_pulse.txt).
+###############################################################################
+
+cc_pty_feed_rivalry = {
+	if = {
+		limit = {
+			OR = {
+				var:cc_pty_comp = 1
+				cc_pty_opposed_seated = yes
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = cc_court_rivalry } }
+			set_variable = { name = cc_court_rivalry value = 1 }
+		}
+		else_if = {
+			limit = { var:cc_court_rivalry < 5 }
+			change_variable = { name = cc_court_rivalry add = 1 }
+		}
+		if = {
+			limit = { var:cc_court_rivalry >= 3 }
+			add_country_modifier = { modifier = court_tension years = 3 mode = set_to_largest_and_extend }
+		}
+		set_variable = { name = cc_pty_rivalry_feed value = yes months = 30 }
+	}
+}
+
+
+###############################################################################
+# ESCALATION (must-placate parties: War Party, Regional Party, Liberal Party)
+#
+# Each pass a must-placate party spends angry (below -50) with 20% power or more adds a
+# step of neglect; any other pass takes one away.
+#   1  warning modifier
+#   2  unrest modifier (rebel growth, lost control)
+#   3  the outcome: a coup, a regional rising or a breakaway of subjects, or a liberal
+#      uprising. Then neglect resets, and that party cannot do it again for twenty years.
+# Each step is visible in the panel before the next lands.
+###############################################################################
+
+cc_pty_escalate = {
+	if = {
+		limit = { cc_pty_slot_escalates = { SLOT = $SLOT$ } }
+		if = {
+			limit = {
+				NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = sat VALUE = -50 } }
+				cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = power VALUE = 20 }
+			}
+			change_variable = { name = cc_pty_$SLOT$_neglect add = 1 }
+		}
+		else_if = {
+			limit = { var:cc_pty_$SLOT$_neglect > 0 }
+			change_variable = { name = cc_pty_$SLOT$_neglect add = -1 }
+		}
+		set_variable = { name = cc_pty_$SLOT$_esc value = var:cc_pty_$SLOT$_neglect }
+		clamp_variable = { name = cc_pty_$SLOT$_esc min = 0 max = 3 }
+		cc_pty_escalation_dispatch = { SLOT = $SLOT$ }
+	}
+}
+
+cc_pty_clear_escalation_mods = {
+	cc_pty_remove_esc_mods = { KEY = military }
+	cc_pty_remove_esc_mods = { KEY = regionalist }
+	cc_pty_remove_esc_mods = { KEY = liberal }
+}
+
+cc_pty_remove_esc_mods = {
+	if = {
+		limit = { has_country_modifier = cc_pty_esc_1_$KEY$ }
+		remove_country_modifier = cc_pty_esc_1_$KEY$
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_esc_2_$KEY$ }
+		remove_country_modifier = cc_pty_esc_2_$KEY$
+	}
+}
+
+# Called only for the must-placate archetypes (cc_pty_escalation_dispatch).
+cc_pty_apply_escalation = {
+	cc_pty_remove_esc_mods = { KEY = $KEY$ }
+	if = {
+		limit = { var:cc_pty_$SLOT$_esc >= 3 }
+		if = {
+			limit = { NOT = { has_variable = cc_pty_$SLOT$_outcome_cd } }
+			cc_pty_outcome_$KEY$ = yes
+			set_variable = { name = cc_pty_$SLOT$_outcome_cd value = yes years = 20 }
+			set_variable = { name = cc_pty_$SLOT$_neglect value = 0 }
+			set_variable = { name = cc_pty_$SLOT$_esc value = 0 }
+		}
+		else = {
+			add_country_modifier = { modifier = cc_pty_esc_2_$KEY$ years = -1 mode = replace }
+		}
+	}
+	else_if = {
+		limit = { var:cc_pty_$SLOT$_esc >= 2 }
+		add_country_modifier = { modifier = cc_pty_esc_2_$KEY$ years = -1 mode = replace }
+	}
+	else_if = {
+		limit = { var:cc_pty_$SLOT$_esc >= 1 }
+		add_country_modifier = { modifier = cc_pty_esc_1_$KEY$ years = -1 mode = replace }
+	}
+}
+
+# The War Party moves on the government: arms cc_pty_praetorian_coup, which starts within
+# a month and opens with cc_pty.40.
+cc_pty_outcome_military = {
+	set_variable = { name = cc_pty_coup_armed value = yes }
+}
+
+# The Liberal Party rises: arms cc_pty_liberal_uprising, which opens with cc_pty.42.
+cc_pty_outcome_liberal = {
+	set_variable = { name = cc_pty_uprising_armed value = yes }
+}
+
+# The provinces rise (cc_pty.41), or, where subjects carry the grievance, the subjects
+# pull away (cc_pty.43). The player chooses in the event; the AI rolls.
+cc_pty_outcome_regionalist = {
+	if = {
+		limit = { num_subjects >= 2 }
+		trigger_event_non_silently = { id = cc_pty.43 }
+	}
+	else = {
+		trigger_event_non_silently = { id = cc_pty.41 }
+	}
+}
+
+# Regional rising: a noble rebel faction takes a fifth of the provinces (never the
+# capital's) and starts a civil war. The same sequence vanilla uses for the Polish
+# confederation in events/DHE/flavor_plc.txt.
+cc_pty_start_regional_rising = {
+	create_rebel = {
+		category = estate
+		estate = nobles_estate
+		name = cc_pty_regional_rebels
+		save_scope_as = cc_pty_rebels
+	}
+	set_local_variable = { name = cc_pty_rebel_provinces value = num_provinces }
+	change_local_variable = { name = cc_pty_rebel_provinces multiply = 0.2 }
+	ordered_province = {
+		limit = {
+			NOT = { any_location_in_province = { is_capital = yes } }
+		}
+		max = local_var:cc_pty_rebel_provinces
+		every_location_in_province = {
+			every_pop = {
+				limit = { owner = root }
+				change_pop_allegiance = scope:cc_pty_rebels
+			}
+		}
+	}
+	scope:cc_pty_rebels = { start_civil_war = {} }
+}
+
+
+###############################################################################
+# TERM LIMITS
+#
+# In force while the dominant party is the Reform Party or the Liberal Party. A minister
+# who has served ten years leaves office at the next pass and cannot return for ten.
+###############################################################################
+
+cc_pty_update_termlimits = {
+	set_variable = { name = cc_pty_tmp value = 0 }
+	if = {
+		limit = { var:cc_pty_dominant = 1 cc_pty_slot_imposes_term_limits = { SLOT = 1 } }
+		set_variable = { name = cc_pty_tmp value = 1 }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 2 cc_pty_slot_imposes_term_limits = { SLOT = 2 } }
+		set_variable = { name = cc_pty_tmp value = 1 }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 3 cc_pty_slot_imposes_term_limits = { SLOT = 3 } }
+		set_variable = { name = cc_pty_tmp value = 1 }
+	}
+	else_if = {
+		limit = { var:cc_pty_dominant = 4 cc_pty_slot_imposes_term_limits = { SLOT = 4 } }
+		set_variable = { name = cc_pty_tmp value = 1 }
+	}
+
+	if = {
+		limit = {
+			var:cc_pty_tmp = 1
+			NOT = { has_variable = cc_pty_termlimits }
+		}
+		set_variable = { name = cc_pty_termlimits value = yes }
+		if = {
+			limit = { is_ai = no }
+			trigger_event_non_silently = { id = cc_pty.60 }
+		}
+	}
+	else_if = {
+		limit = {
+			var:cc_pty_tmp = 0
+			has_variable = cc_pty_termlimits
+		}
+		remove_variable = cc_pty_termlimits
+		if = {
+			limit = { is_ai = no }
+			trigger_event_non_silently = { id = cc_pty.61 }
+		}
+	}
+
+	if = {
+		limit = { has_variable = cc_pty_termlimits }
+		every_cabinet_character = {
+			limit = {
+				trigger_if = {
+					limit = { has_variable = cc_pty_years }
+					var:cc_pty_years >= 10
+				}
+				trigger_else = { always = no }
+			}
+			save_scope_as = cc_pty_term_ender
+			set_variable = { name = cc_pty_term_served value = yes }
+			add_character_modifier = { modifier = banned_from_cabinet years = 10 mode = replace }
+			scope:cc_pty_country = { remove_from_cabinet = scope:cc_pty_term_ender }
+		}
+	}
+}
+
+# Yearly, character scope.
+cc_pty_count_year = {
+	if = {
+		limit = { has_variable = cc_pty_years }
+		change_variable = { name = cc_pty_years add = 1 }
+	}
+	else = {
+		set_variable = { name = cc_pty_years value = 1 }
+	}
+}
+
+
+###############################################################################
+# LIBERAL THOUGHT
+#
+# From the age of absolutism, every pass grows cc_pty_lt in the capital and every city
+# (cc_pty_lt_growth), and the country gauge is their average. Past 50 the Liberal Party
+# forms: the next yearly update realigns at once and the Liberal Party is a strong
+# candidate (cc_pty.50).
+###############################################################################
+
+cc_pty_update_liberal_thought = {
+	if = {
+		limit = { current_age_or_later = { age = age_5_absolutism } }
+
+		every_owned_location = {
+			limit = {
+				OR = {
+					is_capital = yes
+					is_city = yes
+				}
+			}
+			if = {
+				limit = { NOT = { has_variable = cc_pty_lt } }
+				set_variable = { name = cc_pty_lt value = 0 }
+			}
+			change_variable = { name = cc_pty_lt add = cc_pty_lt_growth }
+			clamp_variable = { name = cc_pty_lt min = 0 max = 100 }
+		}
+
+		set_variable = { name = cc_pty_liberal_thought value = cc_pty_lt_sum }
+		if = {
+			limit = { cc_pty_lt_count > 0 }
+			change_variable = { name = cc_pty_liberal_thought divide = cc_pty_lt_count }
+		}
+		clamp_variable = { name = cc_pty_liberal_thought min = 0 max = 100 }
+
+		if = {
+			limit = {
+				var:cc_pty_liberal_thought >= 50
+				NOT = { has_variable = cc_pty_liberal_formed }
+			}
+			set_variable = { name = cc_pty_liberal_formed value = yes }
+			remove_variable = cc_pty_realign_cd
+			if = {
+				limit = { is_ai = no }
+				set_variable = { name = cc_pty_popup_cd value = yes years = 5 }
+				trigger_event_non_silently = { id = cc_pty.50 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# DEFECTION
+#
+# A minister whose party is angry may cross the floor to the strongest other party. One
+# roll per pass, 25%. For a player this is the personal event cc_pty.30, and it shares
+# the main mod's rivalry cooldown (cc_rival_event_cooldown) so the court's personal
+# events never stack. The AI simply defects.
+###############################################################################
+
+cc_pty_try_defection = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_rival_event_cooldown }
+			any_cabinet_character = { cc_pty_member_party_angry = yes }
+		}
+		random = {
+			chance = 25
+			random_cabinet_character = {
+				limit = { cc_pty_member_party_angry = yes }
+				save_scope_as = cc_pty_defector
+			}
+			cc_pty_pick_defection_target = yes
+			if = {
+				limit = { var:cc_pty_best_slot > 0 }
+				if = {
+					limit = { is_ai = no }
+					set_variable = { name = cc_rival_event_cooldown value = yes months = 30 }
+					trigger_event_non_silently = { id = cc_pty.30 }
+				}
+				else = {
+					scope:cc_pty_defector = { cc_pty_join_from_country_var = { VAR = cc_pty_defect_to_type } }
+				}
+			}
+			remove_variable = cc_pty_best
+			remove_variable = cc_pty_best_slot
+		}
+	}
+}
+
+# The strongest party the defector does not already belong to.
+cc_pty_pick_defection_target = {
+	set_variable = { name = cc_pty_best value = -1 }
+	set_variable = { name = cc_pty_best_slot value = 0 }
+	cc_pty_consider_defection = { SLOT = 1 }
+	cc_pty_consider_defection = { SLOT = 2 }
+	cc_pty_consider_defection = { SLOT = 3 }
+	cc_pty_consider_defection = { SLOT = 4 }
+	scope:cc_pty_defector = {
+		if = {
+			limit = { has_variable = cc_pty_aff }
+			scope:cc_pty_country = {
+				set_variable = { name = cc_pty_defect_from_type value = scope:cc_pty_defector.var:cc_pty_aff }
+			}
+		}
+	}
+}
+
+cc_pty_consider_defection = {
+	if = {
+		limit = {
+			has_variable = cc_pty_$SLOT$_type
+			NOT = { scope:cc_pty_defector = { cc_pty_member_of_slot = { SLOT = $SLOT$ } } }
+		}
+		if = {
+			limit = { var:cc_pty_$SLOT$_power > var:cc_pty_best }
+			set_variable = { name = cc_pty_best value = var:cc_pty_$SLOT$_power }
+			set_variable = { name = cc_pty_best_slot value = $SLOT$ }
+			set_variable = { name = cc_pty_defect_to_type value = var:cc_pty_$SLOT$_type }
+		}
+	}
+}
+
+
+###############################################################################
+# THE PASS
+#
+# Silent. Every two to four years per country (cc_pty_sat_cd), from the yearly pulse.
+###############################################################################
+
+cc_pty_sat_pass = {
+	save_scope_as = cc_pty_country
+	cc_pty_count_seats = yes
+
+	# Backfill ministers seated before the submod loaded, and reassign anyone whose
+	# party left at a realignment.
+	every_cabinet_character = {
+		limit = {
+			OR = {
+				NOT = { has_variable = cc_pty_aff }
+				NOT = { cc_pty_aff_active = yes }
+			}
+		}
+		cc_pty_assign_affiliation = yes
+	}
+
+	cc_pty_affiliate_court = yes
+	cc_pty_recompute_all = yes
+
+	cc_pty_update_sat = { SLOT = 1 STEP = 0.5 }
+	cc_pty_update_sat = { SLOT = 2 STEP = 0.5 }
+	cc_pty_update_sat = { SLOT = 3 STEP = 0.5 }
+	cc_pty_update_sat = { SLOT = 4 STEP = 0.5 }
+
+	cc_pty_resolve_agenda = { SLOT = 1 }
+	cc_pty_resolve_agenda = { SLOT = 2 }
+	cc_pty_resolve_agenda = { SLOT = 3 }
+	cc_pty_resolve_agenda = { SLOT = 4 }
+
+	cc_pty_apply_all = yes
+
+	cc_pty_escalate = { SLOT = 1 }
+	cc_pty_escalate = { SLOT = 2 }
+	cc_pty_escalate = { SLOT = 3 }
+	cc_pty_escalate = { SLOT = 4 }
+
+	cc_pty_feed_rivalry = yes
+	cc_pty_update_termlimits = yes
+	cc_pty_update_liberal_thought = yes
+	cc_pty_try_new_agenda = yes
+	cc_pty_try_defection = yes
+
+	random_list = {
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 24 } }
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 36 } }
+		1 = { set_variable = { name = cc_pty_sat_cd value = yes months = 48 } }
+	}
+}
+
+# Realignment from the yearly pulse. Announced to a player only if a party actually left
+# or arrived.
+cc_pty_realign_pass = {
+	cc_pty_count_seats = yes
+	cc_pty_realign = yes
+	save_scope_as = cc_pty_country
+	every_cabinet_character = {
+		limit = { NOT = { cc_pty_aff_active = yes } }
+		cc_pty_assign_affiliation = yes
+	}
+	cc_pty_recompute_all = yes
+	cc_pty_apply_all = yes
+	if = {
+		limit = { has_variable = cc_pty_realign_changed }
+		remove_variable = cc_pty_realign_changed
+		if = {
+			limit = { is_ai = no }
+			set_variable = { name = cc_pty_popup_cd value = yes years = 5 }
+			trigger_event_non_silently = { id = cc_pty.10 }
+		}
+	}
+}
+
+
+###############################################################################
+# ACTIONS
+###############################################################################
+
+# Buy a party's goodwill. Applied at once so the player sees what they paid for.
+cc_pty_bribe = {
+	cc_pty_add_sat = { SLOT = $SLOT$ VALUE = 25 }
+	set_variable = { name = cc_pty_$SLOT$_bribe_cd value = yes years = 2 }
+	cc_pty_apply_slot = { SLOT = $SLOT$ }
+}
+
+# Marginalise a party: elected seats x 0.6 for five years, satisfaction -30, and every party
+# opposed to it +10. Marginalising a must-placate party below 20% power also stops its
+# escalation, which is the other way out besides placating it.
+cc_pty_attack = {
+	set_variable = { name = cc_pty_$SLOT$_suppressed value = yes years = 5 }
+	set_variable = { name = cc_pty_$SLOT$_attack_cd value = yes years = 5 }
+	cc_pty_add_sat = { SLOT = $SLOT$ VALUE = -30 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 1 VALUE = 10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 2 VALUE = 10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 3 VALUE = 10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 4 VALUE = 10 }
+	save_scope_as = cc_pty_country
+	cc_pty_recompute_all = yes
+	cc_pty_apply_all = yes
+}
+
+# Every party opposed to slot SLOT gains VALUE satisfaction (negative to lose it).
+cc_pty_opposed_ripple = {
+	if = {
+		limit = { cc_pty_slots_opposed = { A = $SLOT$ B = $OTHER$ } }
+		cc_pty_add_sat = { SLOT = $OTHER$ VALUE = $VALUE$ }
+	}
+}
+
+# Call in a favour: the party's favour modifier for five years, at 15 satisfaction.
+cc_pty_favour = {
+	cc_pty_with_type_k = { SLOT = $SLOT$ EFFECT = cc_pty_grant_favour }
+	cc_pty_add_sat = { SLOT = $SLOT$ VALUE = -15 }
+	set_variable = { name = cc_pty_$SLOT$_favour_cd value = yes years = 5 }
+	set_variable = { name = cc_pty_$SLOT$_favour_on value = yes years = 5 }
+	cc_pty_apply_slot = { SLOT = $SLOT$ }
+}
+
+cc_pty_grant_favour = {
+	add_country_modifier = { modifier = cc_pty_favour_$KEY$ years = 5 mode = replace }
+}
+
+# Seat the party's leader in the cabinet: an open seat if there is one, otherwise the
+# seat of the least senior minister from another party.
+cc_pty_appoint = {
+	save_scope_as = cc_pty_country
+	var:cc_pty_$SLOT$_leader = { save_scope_as = cc_pty_appointee }
+	if = {
+		limit = { NOT = { any_cabinet = { NOT = { exists = cabinet_member } } } }
+		if = {
+			limit = { any_cabinet_character = { NOT = { cc_pty_member_of_slot = { SLOT = $SLOT$ } } } }
+			ordered_cabinet_character = {
+				limit = { NOT = { cc_pty_member_of_slot = { SLOT = $SLOT$ } } }
+				order_by = cc_pty_leader_score_inverse
+				max = 1
+				check_range_bounds = no
+				save_scope_as = cc_pty_displaced
+			}
+			remove_from_cabinet = scope:cc_pty_displaced
+		}
+	}
+	ordered_cabinet = {
+		limit = { NOT = { exists = cabinet_member } }
+		max = 1
+		check_range_bounds = no
+		add_to_cabinet = scope:cc_pty_appointee
+	}
+	cc_pty_recompute_all = yes
+	cc_pty_apply_all = yes
+}
+
+# Meet the party's agenda by decree: it counts as met now, and the parties opposed to it
+# resent the favour.
+cc_pty_concede = {
+	cc_pty_add_sat = { SLOT = $SLOT$ VALUE = 30 }
+	set_variable = { name = cc_pty_$SLOT$_last value = 1 }
+	cc_pty_end_agenda = { SLOT = $SLOT$ }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 1 VALUE = -10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 2 VALUE = -10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 3 VALUE = -10 }
+	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 4 VALUE = -10 }
+	save_scope_as = cc_pty_country
+	cc_pty_recompute_all = yes
+	cc_pty_apply_all = yes
+}
+
+# Call an election: recount the seats and run a realignment now. Ten-year cooldown.
+cc_pty_call_election = {
+	set_variable = { name = cc_pty_election_cd value = yes years = 10 }
+	cc_pty_realign_pass = yes
+}
+
+
+###############################################################################
+# TOOLTIP GUARD
+#
+# A button's or an option's effect is evaluated to build its tooltip, and hidden_effect
+# does NOT stop that: it only hides the text. In that pass variable writes do not commit,
+# so the party effects' scratch comparisons (var:cc_pty_best and friends) read unset
+# variables and log "Invalid right side during comparison".
+#
+# These wrappers set a marker and run the body only if the marker exists. On a real click
+# the write commits and the body runs; in the tooltip pass it does not, and the body is
+# skipped. Callers still wrap them in hidden_effect so the marker lines are not shown.
+###############################################################################
+
+cc_pty_run_slot = {
+	set_variable = { name = cc_pty_exec value = yes }
+	if = {
+		limit = { has_variable = cc_pty_exec }
+		$EFFECT$ = { SLOT = $SLOT$ }
+	}
+	remove_variable = cc_pty_exec
+}
+
+cc_pty_run = {
+	set_variable = { name = cc_pty_exec value = yes }
+	if = {
+		limit = { has_variable = cc_pty_exec }
+		$EFFECT$ = yes
+	}
+	remove_variable = cc_pty_exec
+}
+
+# cc_pty.30 option a. scope:cc_pty_defector and cc_pty_defect_to_type are set by the pass.
+cc_pty_accept_defection = {
+	scope:cc_pty_defector = {
+		cc_pty_join_from_country_var = { VAR = cc_pty_defect_to_type }
+	}
+	save_scope_as = cc_pty_country
+	cc_pty_recompute_all = yes
+}
+

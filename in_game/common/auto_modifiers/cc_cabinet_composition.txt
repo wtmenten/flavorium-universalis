@@ -159,6 +159,8 @@ balanced_court = {
 	requires_real = yes
 
 	potential_trigger = {
+		# Off where the Factions submod runs parties: its balanced cabinet replaces this.
+		NOT = { has_variable = cc_pty_active }
 		any_cabinet_character = { in_cabinet = yes }
 		# Not military-dominated
 		NOT = {
@@ -248,6 +250,7 @@ balanced_court = {
 # PILLAR 02 — ESTATE-CAPTURED CABINET AUTO-MODIFIERS
 # Fire when 2+ ministers share the same estate affiliation trait (Family G).
 # Use static modifiers from cc_event_modifiers.txt for display names and descs.
+# Off where the Factions submod runs parties (cc_pty_active); party stacking replaces them.
 ###############################################################################
 
 # The nobles dominate the cabinet — prestige and noble power surge, others suffer.
@@ -255,6 +258,7 @@ nobles_court_captured = {
 	requires_real = yes
 
 	potential_trigger = {
+		NOT = { has_variable = cc_pty_active }
 		any_cabinet_character = { has_trait = noble_champion_of_court count >= 2 }
 	}
 
@@ -270,6 +274,7 @@ burghers_court_captured = {
 	requires_real = yes
 
 	potential_trigger = {
+		NOT = { has_variable = cc_pty_active }
 		any_cabinet_character = { has_trait = merchant_of_the_crown count >= 2 }
 	}
 
@@ -285,6 +290,7 @@ clergy_court_captured = {
 	requires_real = yes
 
 	potential_trigger = {
+		NOT = { has_variable = cc_pty_active }
 		any_cabinet_character = { has_trait = court_prelate count >= 2 }
 	}
 

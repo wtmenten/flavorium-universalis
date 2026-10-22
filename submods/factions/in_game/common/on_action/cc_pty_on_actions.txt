@@ -1,0 +1,169 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: on_actions
+#
+# The ONLY file in this submod that names vanilla on_actions, and only through
+# `on_actions = { }` sub-lists, which merge with vanilla and with the main mod. A direct
+# `effect = { }` on any of these would replace whatever else hooks them.
+#
+# Nothing runs monthly. The yearly pulse does all the periodic work; the satisfaction pass
+# itself is throttled to every two to four years by cc_pty_sat_cd.
+###############################################################################
+
+on_game_start = {
+	on_actions = {
+		cc_pty_game_start
+	}
+}
+
+yearly_country_pulse = {
+	on_actions = {
+		cc_pty_yearly
+	}
+}
+
+on_cabinet_assigned = {
+	on_actions = {
+		cc_pty_on_assigned
+	}
+}
+
+on_cabinet_removed = {
+	on_actions = {
+		cc_pty_on_removed
+	}
+}
+
+on_character_moved_country = {
+	on_actions = {
+		cc_pty_on_moved_country
+	}
+}
+
+
+###############################################################################
+# GAME START (world scope)
+###############################################################################
+
+cc_pty_game_start = {
+	effect = {
+		every_country = {
+			limit = { cc_pty_country_is_tracked = yes }
+			cc_pty_init_country = yes
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY (root = country)
+#
+# Lazy init and teardown as countries move in and out of the tracked set, which also
+# arms existing saves the year after the submod is added. Realignment and the
+# satisfaction pass run when their cooldowns lapse.
+###############################################################################
+
+cc_pty_yearly = {
+	effect = {
+		if = {
+			limit = {
+				NOT = { has_variable = cc_pty_active }
+				cc_pty_country_is_tracked = yes
+			}
+			cc_pty_init_country = yes
+		}
+		else_if = {
+			limit = {
+				has_variable = cc_pty_active
+				NOT = { cc_pty_country_is_tracked = yes }
+			}
+			cc_pty_teardown = yes
+		}
+		else_if = {
+			limit = { has_variable = cc_pty_active }
+
+			# Tenure, for term limits.
+			every_cabinet_character = { cc_pty_count_year = yes }
+
+			# Leaders, and parties for the court: catches a leader who died, characters who
+			# came of age, and a realm that has just become a player's.
+			cc_pty_affiliate_court = yes
+			cc_pty_update_leaders = yes
+
+			# At most one heavy pass a year: realignment first, since it decides which
+			# parties the satisfaction pass is about.
+			if = {
+				limit = { NOT = { has_variable = cc_pty_realign_cd } }
+				cc_pty_realign_pass = yes
+			}
+			else_if = {
+				limit = { NOT = { has_variable = cc_pty_sat_cd } }
+				cc_pty_sat_pass = yes
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# CABINET LIFECYCLE (root = country, scope:target = the character)
+###############################################################################
+
+# Affiliate a new minister at once, so the panel's member counts are right before the next
+# pass. A minister who already has a party keeps it.
+cc_pty_on_assigned = {
+	trigger = {
+		has_variable = cc_pty_active
+	}
+	effect = {
+		save_scope_as = cc_pty_country
+		scope:target = {
+			if = {
+				limit = { NOT = { has_variable = cc_pty_aff } }
+				cc_pty_assign_affiliation = yes
+			}
+		}
+		cc_pty_bump_member_party = { VALUE = 10 }
+		cc_pty_recompute_all = yes
+	}
+}
+
+# A minister leaving office takes their party mood with them and their tenure resets;
+# the party badge stays.
+cc_pty_on_removed = {
+	trigger = {
+		has_variable = cc_pty_active
+	}
+	effect = {
+		save_scope_as = cc_pty_country
+		cc_pty_bump_member_party = { VALUE = -10 }
+		scope:target = {
+			cc_pty_clear_member_mood = yes
+			remove_variable = cc_pty_years
+		}
+		cc_pty_recompute_all = yes
+	}
+}
+
+
+###############################################################################
+# A CHARACTER JOINS A COUNTRY (root = character, scope:target = the new country)
+#
+# A newcomer to a player's court gets a party at once, so a candidate for office shows it
+# before being appointed.
+###############################################################################
+
+cc_pty_on_moved_country = {
+	trigger = {
+		is_adult = yes
+		NOT = { has_variable = cc_pty_aff }
+		scope:target ?= {
+			has_variable = cc_pty_active
+			is_ai = no
+		}
+	}
+	effect = {
+		scope:target = { save_scope_as = cc_pty_country }
+		cc_pty_assign_affiliation = yes
+	}
+}
+

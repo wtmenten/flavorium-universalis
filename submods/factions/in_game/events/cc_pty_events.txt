@@ -1,0 +1,432 @@
+﻿namespace = cc_pty
+
+###############################################################################
+# Flavorium Universalis - Factions: events
+#
+# The party system is meant to run quietly. Satisfaction, agenda results and the first
+# two escalation steps show only in the Factions panel. Popups:
+#
+#   cc_pty.5   Generate party leaders            hidden
+#   cc_pty.6   Leaders after setup               hidden
+#   cc_pty.10  New parties (realignment)          budgeted (cc_pty_popup_cd)
+#   cc_pty.20  A party sets an agenda             budgeted
+#   cc_pty.30  A minister considers defecting     shares cc_rival_event_cooldown
+#   cc_pty.40  The officers move (coup starts)    escalation outcome, always
+#   cc_pty.41  The provinces rise                 escalation outcome, always
+#   cc_pty.42  The liberal clubs rise             escalation outcome, always
+#   cc_pty.43  The subjects pull away             escalation outcome, always
+#   cc_pty.45  The coup ends
+#   cc_pty.46  The uprising ends
+#   cc_pty.50  The Liberal Party forms            budgeted
+#   cc_pty.60  Term limits adopted                rare (follows the dominant party)
+#   cc_pty.61  Term limits lifted                 rare
+#
+# Budgeted popups set cc_pty_popup_cd (five years), so they come to about two a decade.
+# Party names in loc come from customizable_localization/cc_pty_names.txt via
+# [ROOT.GetCountry.Custom('...')].
+#
+# Party effects that compare scratch variables run through cc_pty_run, inside hidden_effect,
+# with a custom_tooltip beside them. An option's effect is evaluated to build its tooltip,
+# hidden_effect included, without committing any variable writes; cc_pty_run skips the body
+# in that pass (see TOOLTIP GUARD in cc_pty_effects.txt).
+###############################################################################
+
+
+###############################################################################
+# cc_pty.5 - GENERATE PARTY LEADERS (hidden)
+#
+# Fired by cc_pty_update_leaders for a player realm when a party has no minister and no
+# living leader. Characters must be created in an event's immediate block.
+###############################################################################
+
+cc_pty.5 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		save_scope_as = cc_pty_country
+		cc_pty_create_leader_dispatch = { SLOT = 1 }
+		cc_pty_create_leader_dispatch = { SLOT = 2 }
+		cc_pty_create_leader_dispatch = { SLOT = 3 }
+		cc_pty_create_leader_dispatch = { SLOT = 4 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.6 - LEADERS AFTER SETUP (hidden)
+#
+# Fired a day after cc_pty_init_country, once the player's country is known to be a
+# player's, so its parties get leaders straight away instead of at the first cabinet change.
+###############################################################################
+
+cc_pty.6 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = { has_variable = cc_pty_active }
+			cc_pty_affiliate_court = yes
+			cc_pty_update_leaders = yes
+		}
+	}
+}
+
+
+###############################################################################
+# cc_pty.10 - NEW PARTIES
+###############################################################################
+
+cc_pty.10 = {
+	type = country_event
+	title = cc_pty.10.title
+	desc = cc_pty.10.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	option = {
+		name = cc_pty.10.a
+	}
+}
+
+
+###############################################################################
+# cc_pty.20 - A PARTY SETS AN AGENDA
+#
+# cc_pty_start_agenda sets cc_pty_event_slot / _type / _agenda before firing this.
+###############################################################################
+
+cc_pty.20 = {
+	type = country_event
+	title = cc_pty.20.title
+	desc = cc_pty.20.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	# Hear them out. The agenda stands; meet it within six years for +30 satisfaction.
+	option = {
+		name = cc_pty.20.a
+		custom_tooltip = cc_pty.20.a.tt
+		ai_chance = { base = 80 }
+	}
+
+	# Refuse outright: no agenda, and the party resents it.
+	option = {
+		name = cc_pty.20.b
+		custom_tooltip = cc_pty_tt_refuse_agenda
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_refuse_agenda } }
+		ai_chance = { base = 20 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.30 - A MINISTER CONSIDERS DEFECTING
+#
+# Saved before firing: scope:cc_pty_country, scope:cc_pty_defector, and the country
+# variables cc_pty_defect_from_type / cc_pty_defect_to_type for the party names.
+###############################################################################
+
+cc_pty.30 = {
+	type = country_event
+	title = cc_pty.30.title
+	desc = cc_pty.30.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	# Let them go.
+	option = {
+		name = cc_pty.30.a
+		custom_tooltip = cc_pty_tt_defect
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_accept_defection } }
+	}
+
+	# Keep them with a promise.
+	option = {
+		name = cc_pty.30.b
+		add_political_influence = political_influence_mild_penalty
+	}
+
+	# Dismiss them before they can embarrass the government.
+	option = {
+		name = cc_pty.30.c
+		remove_from_cabinet = scope:cc_pty_defector
+		scope:cc_pty_defector = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 15 mode = replace }
+		}
+	}
+}
+
+
+###############################################################################
+# cc_pty.40 - THE OFFICERS MOVE
+#
+# Opens cc_pty_praetorian_coup. The disaster ends once the War Party is placated
+# (satisfaction 0 or more), or after five years.
+###############################################################################
+
+cc_pty.40 = {
+	type = country_event
+	title = cc_pty.40.title
+	desc = cc_pty.40.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	# Give the officers what they want.
+	option = {
+		name = cc_pty.40.a
+		custom_tooltip = cc_pty_tt_military_concede
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 5 VALUE = 60 }
+		}
+		add_political_influence = political_influence_severe_penalty
+		ai_chance = { base = 50 }
+	}
+
+	# Break the conspiracy.
+	option = {
+		name = cc_pty.40.b
+		add_stability = stability_severe_penalty
+		custom_tooltip = cc_pty_tt_military_purge
+		hidden_effect = {
+			cc_pty_type_suppress = { TYPE = 5 }
+			cc_pty_type_add_sat = { TYPE = 5 VALUE = -20 }
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.41 - THE PROVINCES RISE
+###############################################################################
+
+cc_pty.41 = {
+	type = country_event
+	title = cc_pty.41.title
+	desc = cc_pty.41.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = location
+		10 = armed
+	}
+
+	# Refuse, and fight.
+	option = {
+		name = cc_pty.41.a
+		custom_tooltip = cc_pty.41.a.tt
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_start_regional_rising } }
+		ai_chance = { base = 40 }
+	}
+
+	# Concede autonomy to the provinces.
+	option = {
+		name = cc_pty.41.b
+		add_country_modifier = { modifier = cc_pty_regional_concession years = 10 mode = replace }
+		custom_tooltip = cc_pty_tt_regional_concede
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 9 VALUE = 50 }
+		}
+		ai_chance = { base = 60 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.42 - THE LIBERAL CLUBS RISE
+#
+# Opens cc_pty_liberal_uprising.
+###############################################################################
+
+cc_pty.42 = {
+	type = country_event
+	title = cc_pty.42.title
+	desc = cc_pty.42.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = society
+		10 = angry
+	}
+
+	# Concede reforms.
+	option = {
+		name = cc_pty.42.a
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_minor_move_to_right }
+		custom_tooltip = cc_pty_tt_liberal_concede
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = 60 }
+		}
+		add_political_influence = political_influence_mild_penalty
+		ai_chance = { base = 50 }
+	}
+
+	# Close the clubs and arrest the leaders.
+	option = {
+		name = cc_pty.42.b
+		add_stability = stability_severe_penalty
+		custom_tooltip = cc_pty_tt_liberal_purge
+		hidden_effect = {
+			cc_pty_type_suppress = { TYPE = 11 }
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = -20 }
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.43 - THE SUBJECTS PULL AWAY
+###############################################################################
+
+cc_pty.43 = {
+	type = country_event
+	title = cc_pty.43.title
+	desc = cc_pty.43.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = location
+		10 = angry
+	}
+
+	# Let them have their grievance.
+	option = {
+		name = cc_pty.43.a
+		every_subject = {
+			add_liberty_desire = liberty_desire_severe_plus
+		}
+		custom_tooltip = cc_pty_tt_regional_sat_30
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 9 VALUE = 30 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Buy their loyalty.
+	option = {
+		name = cc_pty.43.b
+		add_gold = cc_pty_subject_buyoff_cost
+		every_subject = {
+			add_liberty_desire = liberty_desire_mild_plus
+		}
+		custom_tooltip = cc_pty_tt_regional_sat_40
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 9 VALUE = 40 }
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+
+###############################################################################
+# cc_pty.45 / .46 - ENDINGS
+###############################################################################
+
+cc_pty.45 = {
+	type = country_event
+	title = cc_pty.45.title
+	desc = cc_pty.45.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = military
+		10 = regular
+	}
+
+	option = {
+		name = cc_pty.45.a
+	}
+}
+
+cc_pty.46 = {
+	type = country_event
+	title = cc_pty.46.title
+	desc = cc_pty.46.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = society
+		10 = regular
+	}
+
+	option = {
+		name = cc_pty.46.a
+	}
+}
+
+
+###############################################################################
+# cc_pty.50 - THE LIBERAL PARTY FORMS
+###############################################################################
+
+cc_pty.50 = {
+	type = country_event
+	title = cc_pty.50.title
+	desc = cc_pty.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = society
+		10 = renaissance
+	}
+
+	option = {
+		name = cc_pty.50.a
+	}
+}
+
+
+###############################################################################
+# cc_pty.60 / .61 - TERM LIMITS
+###############################################################################
+
+cc_pty.60 = {
+	type = country_event
+	title = cc_pty.60.title
+	desc = cc_pty.60.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	option = {
+		name = cc_pty.60.a
+	}
+}
+
+cc_pty.61 = {
+	type = country_event
+	title = cc_pty.61.title
+	desc = cc_pty.61.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_pty.61.a
+	}
+}

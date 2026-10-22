@@ -1,0 +1,63 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: static modifiers (hand-written)
+#
+# The per-archetype modifiers (member badges, goodwill, discontent, favour, push and the
+# escalation steps) are generated into cc_pty_catalogue_modifiers.txt by
+# tools/generate_factions.py.
+###############################################################################
+
+
+###############################################################################
+# MEMBER MOODS (character)
+#
+# Same band as the main mod's court modifiers (cc_character_modifiers.txt).
+###############################################################################
+
+cc_pty_member_content = {
+	game_data = { category = character }
+	character_cabinet_efficiency = 0.05
+}
+
+cc_pty_member_discontent = {
+	game_data = { category = character }
+	character_cabinet_efficiency = -0.10
+}
+
+cc_pty_member_angry = {
+	game_data = { category = character }
+	character_cabinet_efficiency = -0.20
+}
+
+
+###############################################################################
+# CABINET COMPOSITION (country)
+#
+# Stacked: one party runs the cabinet, and it shows in efficiency. The cost is in
+# satisfaction and rivalry (cc_pty_update_sat, cc_pty_feed_rivalry).
+# Balanced: steadier and cheaper to manage, with weaker party bonuses
+# (cc_pty_apply_mood) and a satisfaction floor.
+###############################################################################
+
+cc_pty_comp_stacked = {
+	game_data = { category = country }
+	country_cabinet_efficiency = 0.05
+}
+
+cc_pty_comp_balanced = {
+	game_data = { category = country }
+	stability_cost_efficiency = 0.05
+	cc_pty_bribe_cost_modifier = -0.25
+	cc_pty_attack_cost_modifier = -0.25
+}
+
+
+###############################################################################
+# OUTCOMES (country)
+###############################################################################
+
+# Granted to the provinces to end a regional rising without a war (cc_pty.41 option b).
+cc_pty_regional_concession = {
+	game_data = { category = country }
+	global_max_control = -0.05
+	global_monthly_control = -0.001
+}

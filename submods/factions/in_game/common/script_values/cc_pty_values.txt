@@ -1,0 +1,277 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: shared script values
+#
+# The per-archetype values (power, members, mood, realignment score) are generated into
+# cc_pty_catalogue_values.txt by tools/generate_factions.py.
+###############################################################################
+
+# Country scope. How hard party moods land, by government. Republics live by their
+# parties; theocracies and tribes are held together by other things.
+cc_pty_gov_weight = {
+	value = 1
+	if = {
+		limit = { government_type = government_type:republic }
+		value = 1.25
+	}
+	else_if = {
+		limit = {
+			OR = {
+				government_type = government_type:theocracy
+				government_type = government_type:tribe
+				government_type = government_type:steppe_horde
+			}
+		}
+		value = 0.75
+	}
+}
+
+# Country scope. Colonial subjects, for the Colonial Lobby.
+cc_pty_num_colonial_subjects = {
+	value = 0
+	every_subject = {
+		limit = { is_subject_type = colonial_nation }
+		add = 1
+	}
+}
+
+
+###############################################################################
+# LIBERAL THOUGHT
+#
+# Tracked per city (and the capital) as the location variable cc_pty_lt, 0..100, from
+# the age of absolutism on. The country gauge is the average over its tracked locations.
+###############################################################################
+
+# Location scope. Growth per satisfaction pass (two to four years).
+#   literacy      up to +6 at full literacy
+#   capital       +2: the court, the presses and the coffee houses
+#   enlightenment +3 once embraced
+#   society       +/-4 at full Liberalism or Absolutism
+#   an Absolutist government in power  -4
+cc_pty_lt_growth = {
+	value = average_location_literacy
+	multiply = 0.06
+	if = {
+		limit = { is_capital = yes }
+		add = 2
+	}
+	if = {
+		limit = { owner ?= { has_embraced_institution = institution:enlightenment } }
+		add = 3
+	}
+	if = {
+		limit = { exists = owner }
+		add = {
+			value = owner.societal_value:absolutism_vs_liberalism
+			multiply = 0.04
+		}
+	}
+	if = {
+		limit = { owner ?= { has_country_modifier = cc_pty_push_absolutist } }
+		add = -4
+	}
+}
+
+# Country scope. Sum and count of the tracked locations, for the average.
+cc_pty_lt_sum = {
+	value = 0
+	every_owned_location = {
+		limit = { has_variable = cc_pty_lt }
+		add = var:cc_pty_lt
+	}
+}
+
+cc_pty_lt_count = {
+	value = 0
+	every_owned_location = {
+		limit = { has_variable = cc_pty_lt }
+		add = 1
+	}
+}
+
+
+# Country scope. cc_pty.43 option b: a year of income to buy the subjects' loyalty.
+cc_pty_subject_buyoff_cost = {
+	value = monthly_income_total
+	multiply = -12
+	max = -50
+}
+
+
+###############################################################################
+# THE CHAMBER
+#
+# Seats are counted from the map. Every owned location carries raw seats by rank, and its
+# seats are shared among the estates by their local power there
+# (local_relative_estate_power). A party's raw seats are its estate weights applied to
+# those estate totals (cc_pty_seat_raw_type_T, generated).
+#
+# Raw seats only set PROPORTIONS. The chamber itself is capped: it grows with the realm
+# along a saturating curve from 20 to 84 seats (the size of the panel's seat grid), so a
+# one-province minor and a thousand-location empire both get a chamber that reads.
+###############################################################################
+
+# Location scope. Raw seats by rank.
+cc_pty_location_seats = {
+	value = 0.2
+	if = {
+		limit = { location_rank = location_rank:megalopolis }
+		value = 3
+	}
+	else_if = {
+		limit = { location_rank = location_rank:city }
+		value = 2
+	}
+	else_if = {
+		limit = { location_rank = location_rank:town }
+		value = 1
+	}
+}
+
+# Country scope. Raw seats across the realm, and each estate's share of them.
+cc_pty_seat_total_value = {
+	value = 0
+	every_owned_location = {
+		add = cc_pty_location_seats
+	}
+}
+
+cc_pty_es_crown_value = {
+	value = 0
+	every_owned_location = {
+		add = { value = cc_pty_location_seats multiply = "local_relative_estate_power(estate_type:crown_estate)" }
+	}
+}
+
+cc_pty_es_nobles_value = {
+	value = 0
+	every_owned_location = {
+		add = { value = cc_pty_location_seats multiply = "local_relative_estate_power(estate_type:nobles_estate)" }
+	}
+}
+
+cc_pty_es_burghers_value = {
+	value = 0
+	every_owned_location = {
+		add = { value = cc_pty_location_seats multiply = "local_relative_estate_power(estate_type:burghers_estate)" }
+	}
+}
+
+cc_pty_es_clergy_value = {
+	value = 0
+	every_owned_location = {
+		add = { value = cc_pty_location_seats multiply = "local_relative_estate_power(estate_type:clergy_estate)" }
+	}
+}
+
+cc_pty_es_peasants_value = {
+	value = 0
+	every_owned_location = {
+		add = { value = cc_pty_location_seats multiply = "local_relative_estate_power(estate_type:peasants_estate)" }
+	}
+}
+
+# Country scope. Chamber size: 20 + 64 x T / (T + 60) for T raw seats, rounded.
+#   T = 5 -> 25 seats, T = 60 -> 52, T = 300 -> 73, T = 1000 -> 80, never above 84.
+cc_pty_chamber_size = {
+	value = var:cc_pty_seat_total
+	divide = {
+		value = var:cc_pty_seat_total
+		add = 60
+	}
+	multiply = 64
+	add = 20
+	round = yes
+	min = 20
+	max = 84
+}
+
+# Character scope. Seniority for choosing a party leader (and, inverted, for choosing who
+# an appointed leader displaces): the main mod's cabinet experience level counts most,
+# then years in office.
+cc_pty_leader_score = {
+	value = 0
+	if = {
+		limit = { has_variable = cc_level }
+		add = { value = var:cc_level multiply = 10 }
+	}
+	if = {
+		limit = { has_variable = cc_pty_years }
+		add = var:cc_pty_years
+	}
+}
+
+# Character scope. The inverse, so ordered_* (which has no ascending option) can pick the
+# least senior.
+cc_pty_leader_score_inverse = {
+	value = 1000
+	subtract = cc_pty_leader_score
+}
+
+
+# Country scope. Per-slot rounding for the chamber (cc_pty_recompute_all). A script value
+# takes no parameters, so there is one per slot; all four are identical apart from N.
+
+# Appointed seats scaled to fit under the cap.
+cc_pty_app_scaled_slot_1 = {
+	value = var:cc_pty_1_app
+	multiply = var:cc_pty_app_cap
+	divide = var:cc_pty_app_total
+	floor = yes
+}
+
+# Elected seats: the slot's share of the elected pool by raw seats.
+cc_pty_elected_slot_1 = {
+	value = var:cc_pty_elected_pool
+	multiply = var:cc_pty_1_eraw
+	divide = var:cc_pty_eraw_total
+	floor = yes
+}
+
+# Appointed seats scaled to fit under the cap.
+cc_pty_app_scaled_slot_2 = {
+	value = var:cc_pty_2_app
+	multiply = var:cc_pty_app_cap
+	divide = var:cc_pty_app_total
+	floor = yes
+}
+
+# Elected seats: the slot's share of the elected pool by raw seats.
+cc_pty_elected_slot_2 = {
+	value = var:cc_pty_elected_pool
+	multiply = var:cc_pty_2_eraw
+	divide = var:cc_pty_eraw_total
+	floor = yes
+}
+
+# Appointed seats scaled to fit under the cap.
+cc_pty_app_scaled_slot_3 = {
+	value = var:cc_pty_3_app
+	multiply = var:cc_pty_app_cap
+	divide = var:cc_pty_app_total
+	floor = yes
+}
+
+# Elected seats: the slot's share of the elected pool by raw seats.
+cc_pty_elected_slot_3 = {
+	value = var:cc_pty_elected_pool
+	multiply = var:cc_pty_3_eraw
+	divide = var:cc_pty_eraw_total
+	floor = yes
+}
+
+# Appointed seats scaled to fit under the cap.
+cc_pty_app_scaled_slot_4 = {
+	value = var:cc_pty_4_app
+	multiply = var:cc_pty_app_cap
+	divide = var:cc_pty_app_total
+	floor = yes
+}
+
+# Elected seats: the slot's share of the elected pool by raw seats.
+cc_pty_elected_slot_4 = {
+	value = var:cc_pty_elected_pool
+	multiply = var:cc_pty_4_eraw
+	divide = var:cc_pty_eraw_total
+	floor = yes
+}

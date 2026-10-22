@@ -1,0 +1,90 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: disasters
+#
+# The last escalation step for two must-placate parties. Vanilla's coup_attempt and
+# revolution_disaster cannot be started from script (no start_disaster effect, and their
+# can_start reads conditions we do not control), so these are our own, armed by a
+# variable that cc_pty_outcome_military / cc_pty_outcome_liberal set. Spawn chance 1
+# means the disaster starts at the next monthly check once armed.
+#
+# Both end when the party is placated (satisfaction 0 or more), when it is gone, or
+# after five years.
+#
+# Scopes (common/disasters/readme.txt): root = country, scope:disaster = the disaster type.
+# Panels: in_game/gui/panels/disaster/<key>.gui. Art reuses vanilla's illustrations.
+###############################################################################
+
+cc_pty_praetorian_coup = {
+	image = "gfx/interface/illustrations/disaster/coup_attempt.dds"
+
+	monthly_spawn_chance = monthly_spawn_chance_unique
+
+	can_start = {
+		has_variable = cc_pty_coup_armed
+		in_civil_war = no
+	}
+
+	can_end = {
+		OR = {
+			NOT = { cc_pty_has_type = { TYPE = 5 } }
+			cc_pty_type_sat_ge = { TYPE = 5 VALUE = 0 }
+			had_disaster_for_years = {
+				disaster_type = scope:disaster
+				years >= 5
+			}
+		}
+	}
+
+	modifier = {
+		country_cabinet_efficiency = -0.15
+		global_crown_estate_power = -0.10
+		stability_cost_efficiency = -0.15
+		monthly_rebel_growth = 0.005
+	}
+
+	on_start = {
+		remove_variable = cc_pty_coup_armed
+		trigger_event_non_silently = { id = cc_pty.40 }
+	}
+
+	on_end = {
+		trigger_event_non_silently = { id = cc_pty.45 }
+	}
+}
+
+cc_pty_liberal_uprising = {
+	image = "gfx/interface/illustrations/disaster/revolution_disaster.dds"
+
+	monthly_spawn_chance = monthly_spawn_chance_unique
+
+	can_start = {
+		has_variable = cc_pty_uprising_armed
+		in_civil_war = no
+	}
+
+	can_end = {
+		OR = {
+			NOT = { cc_pty_has_type = { TYPE = 11 } }
+			cc_pty_type_sat_ge = { TYPE = 11 VALUE = 0 }
+			had_disaster_for_years = {
+				disaster_type = scope:disaster
+				years >= 5
+			}
+		}
+	}
+
+	modifier = {
+		monthly_rebel_growth = 0.01
+		country_cabinet_efficiency = -0.10
+		monthly_towards_liberalism = societal_value_minor_monthly_move
+	}
+
+	on_start = {
+		remove_variable = cc_pty_uprising_armed
+		trigger_event_non_silently = { id = cc_pty.42 }
+	}
+
+	on_end = {
+		trigger_event_non_silently = { id = cc_pty.46 }
+	}
+}

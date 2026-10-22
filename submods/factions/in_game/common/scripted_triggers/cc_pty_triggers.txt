@@ -1,0 +1,248 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: triggers
+#
+# ARCHETYPE IDS. A party slot holds an archetype as an integer, and so does a minister's
+# affiliation (cc_pty_aff), so a minister keeps their party when a realignment moves it to
+# another slot. The ids are defined in tools/generate_factions.py, which also writes the
+# per-archetype triggers in cc_pty_catalogue_triggers.txt. Saves hold the ids; never
+# renumber one.
+#
+#    1 royalist    2 aristocratic   3 mercantile   4 clerical    5 military
+#    6 agrarian    7 reformist      8 absolutist   9 regionalist 10 colonial
+#   11 liberal
+###############################################################################
+
+cc_pty_enabled = {
+	has_game_rule = cc_factions_on
+}
+
+# Does this country simulate parties? Same size gate as the main mod's
+# cc_xp_country_is_tracked (player, great power, or development 100+), but read from this
+# submod's own rule so parties work with cabinet experience switched off.
+cc_pty_country_is_tracked = {
+	cc_pty_enabled = yes
+	OR = {
+		is_ai = no
+		is_great_power = yes
+		total_development >= 100
+	}
+}
+
+# Character scope. Is this character affiliated with archetype TYPE?
+# trigger_if rather than a sibling has_variable: a sibling does not guard the var: read.
+cc_pty_is_member = {
+	trigger_if = {
+		limit = { has_variable = cc_pty_aff }
+		var:cc_pty_aff = $TYPE$
+	}
+	trigger_else = { always = no }
+}
+
+# Country scope. Does slot SLOT hold archetype TYPE?
+cc_pty_slot_is_type = {
+	trigger_if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		var:cc_pty_$SLOT$_type = $TYPE$
+	}
+	trigger_else = { always = no }
+}
+
+# Country scope. Does any slot hold archetype TYPE?
+cc_pty_has_type = {
+	OR = {
+		cc_pty_slot_is_type = { SLOT = 1 TYPE = $TYPE$ }
+		cc_pty_slot_is_type = { SLOT = 2 TYPE = $TYPE$ }
+		cc_pty_slot_is_type = { SLOT = 3 TYPE = $TYPE$ }
+		cc_pty_slot_is_type = { SLOT = 4 TYPE = $TYPE$ }
+	}
+}
+
+# Country scope. Is a slot variable at least VALUE? False while the slot is empty.
+cc_pty_slot_var_ge = {
+	trigger_if = {
+		limit = { has_variable = cc_pty_$SLOT$_$VAR$ }
+		var:cc_pty_$SLOT$_$VAR$ >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+# Country scope. Is the party of archetype TYPE at satisfaction VALUE or more?
+# False if the court has no such party.
+cc_pty_type_sat_ge = {
+	OR = {
+		AND = { cc_pty_slot_is_type = { SLOT = 1 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 1 VAR = sat VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 2 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 2 VAR = sat VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 3 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 3 VAR = sat VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 4 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 4 VAR = sat VALUE = $VALUE$ } }
+	}
+}
+
+# Country scope. Estate satisfaction at least VALUE; false if the realm lacks the estate.
+cc_pty_estate_sat_ge = {
+	trigger_if = {
+		limit = { any_estate = { estate_type = estate_type:$ESTATE$ } }
+		estate_satisfaction:$ESTATE$ >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+
+###############################################################################
+# ACTIONS
+#
+# Each requirement carries a custom_tooltip so a disabled button says why.
+###############################################################################
+
+cc_pty_can_bribe = {
+	has_variable = cc_pty_active
+	has_variable = cc_pty_$SLOT$_type
+	custom_tooltip = {
+		text = cc_pty_tt_bribe_cooldown
+		NOT = { has_variable = cc_pty_$SLOT$_bribe_cd }
+	}
+}
+
+cc_pty_can_attack = {
+	has_variable = cc_pty_active
+	has_variable = cc_pty_$SLOT$_type
+	custom_tooltip = {
+		text = cc_pty_tt_attack_cooldown
+		NOT = { has_variable = cc_pty_$SLOT$_attack_cd }
+	}
+	custom_tooltip = {
+		text = cc_pty_tt_attack_power
+		cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = power VALUE = 10 }
+	}
+}
+
+cc_pty_can_favour = {
+	has_variable = cc_pty_active
+	has_variable = cc_pty_$SLOT$_type
+	custom_tooltip = {
+		text = cc_pty_tt_favour_cooldown
+		NOT = { has_variable = cc_pty_$SLOT$_favour_cd }
+	}
+	custom_tooltip = {
+		text = cc_pty_tt_favour_sat
+		cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = sat VALUE = 10 }
+	}
+}
+
+
+###############################################################################
+# AGENDAS
+###############################################################################
+
+# Country scope. Has the party in slot SLOT met its current agenda?
+#   1  its archetype's first goal      2  two members seated      3  its second goal
+cc_pty_agenda_met = {
+	OR = {
+		AND = {
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 }
+			NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 2 } }
+			cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 1 }
+		}
+		AND = {
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 2 }
+			NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 3 } }
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = members VALUE = 2 }
+		}
+		AND = {
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 3 }
+			cc_pty_slot_agenda_type_met = { SLOT = $SLOT$ K = 3 }
+		}
+	}
+}
+
+# Country scope. May the party in slot SLOT set a new agenda? A significant party (25%+
+# power) with no agenda and none set recently.
+cc_pty_slot_wants_agenda = {
+	has_variable = cc_pty_$SLOT$_type
+	NOT = { cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 } }
+	NOT = { has_variable = cc_pty_$SLOT$_agenda_cd }
+	cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = power VALUE = 25 }
+}
+
+
+###############################################################################
+# COMPOSITION
+###############################################################################
+
+# Country scope. Do two opposed parties both have a minister seated?
+cc_pty_opposed_seated = {
+	OR = {
+		AND = { cc_pty_slots_opposed = { A = 1 B = 2 } cc_pty_slot_var_ge = { SLOT = 1 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 2 VAR = members VALUE = 1 } }
+		AND = { cc_pty_slots_opposed = { A = 1 B = 3 } cc_pty_slot_var_ge = { SLOT = 1 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 3 VAR = members VALUE = 1 } }
+		AND = { cc_pty_slots_opposed = { A = 1 B = 4 } cc_pty_slot_var_ge = { SLOT = 1 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 4 VAR = members VALUE = 1 } }
+		AND = { cc_pty_slots_opposed = { A = 2 B = 3 } cc_pty_slot_var_ge = { SLOT = 2 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 3 VAR = members VALUE = 1 } }
+		AND = { cc_pty_slots_opposed = { A = 2 B = 4 } cc_pty_slot_var_ge = { SLOT = 2 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 4 VAR = members VALUE = 1 } }
+		AND = { cc_pty_slots_opposed = { A = 3 B = 4 } cc_pty_slot_var_ge = { SLOT = 3 VAR = members VALUE = 1 } cc_pty_slot_var_ge = { SLOT = 4 VAR = members VALUE = 1 } }
+	}
+}
+
+# Character scope, scope:cc_pty_country set. Is this minister's party angry (below -50)?
+cc_pty_member_party_angry = {
+	OR = {
+		AND = { cc_pty_member_of_slot = { SLOT = 1 } scope:cc_pty_country = { NOT = { cc_pty_slot_var_ge = { SLOT = 1 VAR = sat VALUE = -50 } } } }
+		AND = { cc_pty_member_of_slot = { SLOT = 2 } scope:cc_pty_country = { NOT = { cc_pty_slot_var_ge = { SLOT = 2 VAR = sat VALUE = -50 } } } }
+		AND = { cc_pty_member_of_slot = { SLOT = 3 } scope:cc_pty_country = { NOT = { cc_pty_slot_var_ge = { SLOT = 3 VAR = sat VALUE = -50 } } } }
+		AND = { cc_pty_member_of_slot = { SLOT = 4 } scope:cc_pty_country = { NOT = { cc_pty_slot_var_ge = { SLOT = 4 VAR = sat VALUE = -50 } } } }
+	}
+}
+
+
+###############################################################################
+# LEADERS
+###############################################################################
+
+# Country scope. Is slot SLOT's recorded leader alive and still a member of that party?
+# COUNTRY is the court (scope:cc_pty_country from effects, scope:actor from actions).
+cc_pty_slot_leader_valid_in = {
+	trigger_if = {
+		limit = { has_variable = cc_pty_$SLOT$_leader }
+		var:cc_pty_$SLOT$_leader = {
+			is_alive = yes
+			cc_pty_member_of_slot_in = { SLOT = $SLOT$ COUNTRY = $COUNTRY$ }
+		}
+	}
+	trigger_else = { always = no }
+}
+
+cc_pty_slot_leader_valid = {
+	cc_pty_slot_leader_valid_in = { SLOT = $SLOT$ COUNTRY = scope:cc_pty_country }
+}
+
+# Action requirement; scope:actor is the court.
+cc_pty_can_appoint = {
+	has_variable = cc_pty_active
+	has_variable = cc_pty_$SLOT$_type
+	custom_tooltip = {
+		text = cc_pty_tt_appoint_leader
+		cc_pty_slot_leader_valid_in = { SLOT = $SLOT$ COUNTRY = scope:actor }
+	}
+	custom_tooltip = {
+		text = cc_pty_tt_appoint_not_seated
+		trigger_if = {
+			limit = { has_variable = cc_pty_$SLOT$_leader }
+			var:cc_pty_$SLOT$_leader = { in_cabinet = no }
+		}
+		trigger_else = { always = no }
+	}
+}
+
+cc_pty_can_concede = {
+	has_variable = cc_pty_active
+	has_variable = cc_pty_$SLOT$_type
+	custom_tooltip = {
+		text = cc_pty_tt_concede_agenda
+		cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = agenda VALUE = 1 }
+	}
+}
+
+cc_pty_can_call_election = {
+	has_variable = cc_pty_active
+	custom_tooltip = {
+		text = cc_pty_tt_election_cooldown
+		NOT = { has_variable = cc_pty_election_cd }
+	}
+}
