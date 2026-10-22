@@ -238,6 +238,10 @@ cc_xp_is_examinable = {
 }
 
 # Character scope. One mentorship at a time, and you cannot teach yourself.
+# Takes the country explicitly, for the reason given at cc_xp_can_be_sponsored:
+#
+#   cc_xp_can_be_mentored = { COUNTRY = root }          from an event
+#   cc_xp_can_be_mentored = { COUNTRY = scope:actor }   from an action's allow
 cc_xp_can_be_mentored = {
 	is_alive = yes
 	is_adult = yes
@@ -253,7 +257,14 @@ cc_xp_can_be_mentored = {
 		# Or a courtier of the crown estate, who need not be tracked yet. The mentorship
 		# effect initialises them, which is the cheapest way into the system for the
 		# large pool of people standing around the court that nothing else looks at.
-		has_estate = estate_type:crown_estate
+		#
+		# Only those the realm could actually seat. Mentoring someone who can never join
+		# the cabinet grooms a successor for nothing. Same engine check as
+		# cc_xp_can_be_sponsored, so it follows whatever the country currently forbids.
+		AND = {
+			has_estate = estate_type:crown_estate
+			can_serve_in_cabinet_of = $COUNTRY$
+		}
 	}
 	NOT = { has_variable = cc_xp_mentor_track }
 	NOT = { cc_xp_level_at_least = { LEVEL = 5 } }
