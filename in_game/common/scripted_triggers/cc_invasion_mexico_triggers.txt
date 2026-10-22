@@ -1,0 +1,43 @@
+﻿
+# Flavorium Universalis: Invasion of Mexico scripted triggers
+
+# Country scope. One of the three most populous native powers the situation stored in on_start
+# (ccim_native_1..3). These may not accept a colonizer's protectorate through cc_invasion_mexico.26.
+ccim_is_protected_native = {
+	situation:cc_invasion_mexico = {
+		situation_is_active = yes
+		OR = {
+			AND = {
+				has_variable = ccim_native_1
+				var:ccim_native_1 = prev
+			}
+			AND = {
+				has_variable = ccim_native_2
+				var:ccim_native_2 = prev
+			}
+			AND = {
+				has_variable = ccim_native_3
+				var:ccim_native_3 = prev
+			}
+		}
+	}
+}
+
+# Country scope. May hold ccim_conquistador_capitulations: an independent Christian colonizer
+# with Colonial Charters and presence in the theatre. Iberians that took vanilla's
+# conquistador_advance already have the unlock and are left out.
+ccim_can_hold_capitulations = {
+	is_subject = no
+	NOT = { is_capital_mesoamerica = yes }
+	NOT = { country_type = pop }
+	NOT = { country_type = building }
+	NOT = { country_type = army }
+	religion.group = religion_group:christian
+	has_advance = colonial_charters
+	NOT = { has_advance = conquistador_advance }
+	OR = {
+		has_presence_in = region:mesoamerica_region
+		has_presence_in = region:central_america_region
+		has_presence_in = region:caribbean_region
+	}
+}

@@ -1,0 +1,19 @@
+﻿
+# Flavorium Universalis: Invasion of Mexico script values
+
+# Country scope (the owner of a candidate conquistador target location).
+# Vanilla rejects any target whose potential army is at or above
+# conquistador_max_target_army_size (18). Every large Mesoamerican state is above that, so the
+# AI could never aim a conquistador at them and only the scripted Cortes event got through.
+# While the invasion runs, Mesoamerican targets are valid up to 60. Used by the
+# REPLACE:create_conquistador override in generic_actions/zzz_cc_conquistador_overrides.txt.
+ccim_conquistador_max_target_army_size = {
+	value = conquistador_max_target_army_size
+	if = {
+		limit = {
+			is_capital_mesoamerica = yes
+			situation:cc_invasion_mexico = { situation_is_active = yes }
+		}
+		value = 60
+	}
+}

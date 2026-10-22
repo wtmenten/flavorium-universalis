@@ -199,6 +199,23 @@ cc_invasion_mexico = {
 	}
 
 	on_monthly = {
+		# Capitulations of conquest: open vanilla conquistadors to Christian colonizers in the
+		# theatre (vanilla's conquistador_advance is Iberian-only). Revoked when no longer eligible.
+		every_country = {
+			limit = {
+				ccim_can_hold_capitulations = yes
+				NOT = { has_country_modifier = ccim_conquistador_capitulations }
+			}
+			add_country_modifier = { modifier = ccim_conquistador_capitulations months = -1 }
+		}
+		every_country = {
+			limit = {
+				has_country_modifier = ccim_conquistador_capitulations
+				NOT = { ccim_can_hold_capitulations = yes }
+			}
+			remove_country_modifier = ccim_conquistador_capitulations
+		}
+
 		# Monthly events for confederation members
 		every_country = {
 			limit = {
@@ -463,6 +480,10 @@ cc_invasion_mexico = {
 				has_presence_in = region:mesoamerica_region
 			}
 			trigger_event_non_silently = cc_invasion_mexico.36
+		}
+		every_country = {
+			limit = { has_country_modifier = ccim_conquistador_capitulations }
+			remove_country_modifier = ccim_conquistador_capitulations
 		}
 		# Remove situation variables to keep savefile clean
 		situation:cc_invasion_mexico = {

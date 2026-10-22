@@ -1,0 +1,37 @@
+﻿
+# Flavorium Universalis: conquistador_country override (Invasion of Mexico)
+#
+# Copy of vanilla in_game/common/government_reforms/country_specific.txt with one edit:
+# potential takes any Christian religion instead of religion:catholic. conquistador.1 gives the
+# new army country its overlord's religion, so without this a conquistador raised by a
+# Protestant or Orthodox power (unlocked by ccim_conquistador_capitulations) would spawn without
+# the reform: no auto-conquest, and conquistador.10 (become a colonial nation) never fires.
+# Re-check against vanilla on every EU5 update.
+
+REPLACE:conquistador_country = {
+	major = yes
+
+	potential = {
+		country_type = army
+		religion.group = religion_group:christian		# CC edit (vanilla: religion = religion:catholic)
+		capital ?= { continent = continent:america }
+	}
+	allow = {
+	}
+	locked = {
+		is_locked_mechanic = {
+			mechanic = government_reform
+			type = conquistador_country
+		}
+	}
+	country_modifier = {
+		auto_conquer_different_religion_at_war = yes
+		blocked_from_peace = yes
+		parliament_abolished = yes
+
+		damage_done_versus_heathens_modifier = 0.25
+		discipline = 0.10
+		land_morale_modifier = 0.15
+	}
+	years = 2
+}
