@@ -31,17 +31,17 @@ A realm has four parties at a time, chosen from eleven:
 - **Colonial Lobby:** realms with colonial subjects.
 - **Liberal Party:** only once Liberal Thought has spread far enough (see below).
 
-Which four you get depends on your government, the age and the strength of your estates. A republic leans to the merchants and the reformers, a theocracy to the clergy, a horde to the officers and the nobility. Every fifteen to twenty-five years the line-up is reviewed. Each eligible party scores its estates' power plus those bonuses, the parties already in place get a head start, and the best four sit in the chamber. A party that survives keeps its standing; a new one starts from nothing.
+Which four you get depends on your government, the age and the strength of your estates. A republic leans to the merchants and the reformers, a theocracy to the clergy, a horde to the officers and the nobility. Every fifteen to twenty-five years the line-up is reviewed. Each eligible party scores its estates' power plus those bonuses, the parties already in place get a head start, and the best four sit in the chamber. A party that survives keeps its satisfaction; a new one starts from nothing.
 
 This is the zeitgeist part of the design. Nobody chooses to have an Absolutist Party in 1450, and nobody stops one appearing in 1650 if the crown is strong.
 
 ---
 
-## Every minister belongs to a party
+## Everyone at court belongs to a party
 
-When a minister takes a seat, they join a party. A cabinet trait that names a side decides it first: a royal absolutist sits with the absolutists if there are any and with the Court Party if not, and a merchant prince sits with the merchants. Failing that, the minister's estate decides. Anyone left over draws evenly among the parties you have.
+Every adult at your court belongs to a party from the moment they arrive, so you know where a candidate stands before you appoint them. A cabinet trait that names a side decides it first: a royal absolutist sits with the absolutists if there are any and with the Court Party if not, and a merchant prince sits with the merchants. Failing that, the character's estate decides. Anyone left over draws evenly among the parties you have.
 
-The party shows in the minister's modifiers. It matters because every minister brings their party **2 appointed seats** in the chamber, and because a party's mood follows its members into office. A minister whose party is pleased works 5% better. One whose party is angry works 20% worse, no matter how good they are.
+The party shows on the character sheet as "Member of the …", and as the party's icon in every character picker, cabinet appointments included. It matters because every minister brings their party **2 appointed seats** in the chamber, and because a party's mood follows its members into office. A minister whose party is pleased works 5% better. One whose party is angry works 20% worse, no matter how good they are.
 
 <figure>
   <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_member_badge.png" target="_blank">
@@ -75,6 +75,9 @@ The strongest party, if it holds 30% of the seats or more, leads the realm and s
 - how its estate is doing (for the Court Party, how much power the crown holds; for the reformers and liberals, how far society leans their way)
 - +15 for one minister in the cabinet, +25 for two or more
 - -20 if it holds a fifth of the seats or more and has no minister at all
+- +15 if the head of the cabinet belongs to it, and +10 if the ruler does
+
+Each card shows where a party is heading: "10 -> 33" means satisfaction 10, expecting 33 at the next review. Parties start a game at their expectation rather than at zero, and they do not wait for a review to notice the cabinet: seating one of a party's ministers raises its satisfaction by 10 at once, and dismissing one lowers it by 10.
 
 Above 30 a party is pleased and gives the realm a bonus. Below -20 it is discontented and gives a penalty, and below -50 it is angry. Each party has its own: an angry nobility costs you control of the countryside, angry merchants cost trade efficiency, an angry Court Party costs diplomatic reputation and political influence. Both scale with the party's seats and with how strongly it feels, so a dominant angry party hurts a great deal more than a small one.
 
@@ -204,4 +207,4 @@ Parties are simulated for you, for the great powers and for any realm with 100 o
 
 ## Status
 
-This is the first version, and it has not yet been played through. The numbers above are first guesses, and the Liberal Thought rate in particular will need tuning once it has been seen across a full game. Factions requires Flavorium Universalis, and with it loaded, the main mod's estate-capture events and balanced-court bonus give way to the party versions for the realms that have parties.
+This is the first version, and it has not yet been played through. The numbers above are first guesses, and the Liberal Thought rate in particular will need tuning once it has been seen across a full game. Factions requires Flavorium Universalis, and with it loaded, the main mod's estate-capture events, court-captured modifiers and balanced-court bonus give way to the party versions for the realms that have parties.
