@@ -44,7 +44,9 @@
 # WHAT CHANGED, and nothing else. Vanilla text is otherwise untouched, so a patch can be
 # re-synced by diffing against byz.txt and re-applying these per entry:
 #
-#   1. negative_modifier scale: UNCHANGED from vanilla. It once carried an entrenchment
+#   1. negative_modifier scale: vanilla's, plus one APPENDED steward factor: when this
+#      bureau's cc_steward_<type> variable is set, multiply by cc_bureau_steward_malus_factor
+#      (main mod, script_values/cc_bureau_values.txt). It once also carried an entrenchment
 #      factor; see the note above for why that had to come out.
 #   2. negative_modifier body: a little noble power, universal to all eleven, since a starved
 #      office of any kind ends up serving somebody local.
@@ -151,6 +153,13 @@ REPLACE:nomos_empsychos_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_nomos_empsychos_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_estate_satisfaction_decay = 0.025
 		global_nobles_estate_power = 0.03
@@ -223,6 +232,13 @@ REPLACE:honorary_titles_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_honorary_titles_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_crown_estate_power = -0.3
 		global_nobles_estate_power = 0.03
@@ -296,6 +312,13 @@ REPLACE:court_eunuchs_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_court_eunuchs_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		stability_decay = 0.0025
 		global_nobles_estate_power = 0.03
@@ -370,6 +393,13 @@ REPLACE:ritualistic_court_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_ritualistic_court_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
 		global_nobles_estate_power = 0.03
@@ -469,6 +499,13 @@ REPLACE:sixty_books_of_the_basilika_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_sixty_books_of_the_basilika_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		pop_join_rebel_threshold = 0.05
 		global_nobles_estate_power = 0.03
@@ -564,6 +601,13 @@ REPLACE:romanitas_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_romanitas_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		diplomatic_reputation = -1
 		global_nobles_estate_power = 0.03
@@ -635,6 +679,13 @@ REPLACE:imperial_senate_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_imperial_senate_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		monthly_legitimacy = -0.2
 		monthly_republican_tradition = -0.2
@@ -723,6 +774,13 @@ REPLACE:kephalai_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_kephalai_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		estate_enrichment = 0.3
 		global_non_rural_monthly_prosperity = -0.003
@@ -821,6 +879,13 @@ REPLACE:magister_militum_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_magister_militum_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		monthly_legitimacy = -0.2
 		global_nobles_estate_power = 0.53
@@ -902,6 +967,13 @@ REPLACE:themata_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_themata_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		levy_recovery_modifier = -0.2
 		global_nobles_estate_power = 0.53
@@ -987,6 +1059,13 @@ REPLACE:allelengyon_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_allelengyon_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_monthly_development = -0.0025
 		global_nobles_estate_power = 0.03

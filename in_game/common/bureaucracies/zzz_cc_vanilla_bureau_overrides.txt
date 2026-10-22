@@ -9,7 +9,7 @@
 #
 # PATCH RISK, STATED PLAINLY. Any EU5 update touching generic.txt or china.txt diverges from
 # this file silently and nothing will tell you. Re-check on every game update by diffing
-# against those two files and re-applying the four edits listed below. That is the price of
+# against those two files and re-applying the five edits listed below. That is the price of
 # this feature and it was accepted knowingly.
 #
 #
@@ -42,7 +42,7 @@
 #
 #
 # WHAT CHANGED, AND NOTHING ELSE. Vanilla text is otherwise untouched, so this re-syncs by
-# diffing and re-applying these four per entry:
+# diffing and re-applying these five per entry:
 #
 #   1. on_maintenance_changed firing cc_bureau.60 on a cut to <= 0.25. Vanilla leaves this hook
 #      undeclared on all fourteen. THE HOOK IS DELIBERATELY UNGUARDED HERE: fourteen entries
@@ -54,8 +54,11 @@
 #      variable. See the comment at each site for why it cannot be done any other way.
 #   3. positive_modifier body: a small crown power cost, since a funded office runs
 #      increasingly to its own standards. The positive SCALE is untouched.
-#   4. negative_modifier body: a little noble power, universal to all fourteen. The negative
-#      SCALE is untouched; it once carried an entrenchment factor, see the note above.
+#   4. negative_modifier body: a little noble power, universal to all fourteen.
+#   5. negative_modifier scale: APPENDED a steward factor. When this bureau's
+#      cc_steward_<type> variable is set the scale is multiplied by
+#      cc_bureau_steward_malus_factor, which follows the minister's efficiency. The scale
+#      otherwise stays vanilla's; it once carried an entrenchment factor, see the note above.
 #
 # ONE ARITHMETIC MERGE was needed, because vanilla already sets the same key in that block and
 # a repeated key inside one modifier block does not stack:
@@ -130,6 +133,13 @@ REPLACE:board_of_revenue_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_board_of_revenue_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		estate_enrichment = 0.1
 
@@ -197,6 +207,13 @@ REPLACE:privy_council_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_privy_council_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		pop_join_rebel_threshold = 0.1
 
@@ -262,6 +279,13 @@ REPLACE:audit_bureau_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_audit_bureau_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_estate_target_satisfaction = medium_permanent_target_satisfaction_penalty
 
@@ -330,6 +354,13 @@ REPLACE:colonial_office_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_colonial_office_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_migration_attraction = -0.2
 
@@ -397,6 +428,13 @@ REPLACE:admiralty_board_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_admiralty_board_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		navy_maintenance_efficiency = -0.2
 
@@ -464,6 +502,13 @@ REPLACE:foreign_ministry_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_foreign_ministry_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		diplomatic_reputation = diplomatic_reputation_severe_penalty
 
@@ -531,6 +576,13 @@ REPLACE:trade_commission_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_trade_commission_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		burghers_estate_target_satisfaction = -0.2
 
@@ -599,6 +651,13 @@ REPLACE:war_council_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_war_council_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		land_morale_modifier = -0.1
 
@@ -666,6 +725,13 @@ REPLACE:ordnance_board_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_ordnance_board_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		army_artillery_maintenance_cost_modifier = 0.2
 
@@ -733,6 +799,13 @@ REPLACE:commissariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_commissariat_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		army_movement_speed = -0.1
 
@@ -808,6 +881,13 @@ REPLACE:central_secretariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_central_secretariat_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		stability_cost_efficiency = -0.1
 		monthly_celestial_authority = -0.04
@@ -884,6 +964,13 @@ REPLACE:imperial_censorate_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_imperial_censorate_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_estate_power = 0.2
 		monthly_celestial_authority = -0.04
@@ -976,6 +1063,13 @@ REPLACE:six_boards_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_six_boards_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		global_estate_power = 0.25
 		monthly_celestial_authority = -0.03
@@ -1051,6 +1145,13 @@ REPLACE:grand_secretariat_bureaucracy = {
 		scale = {
 			value = 1
 			subtract = scope:maintenance
+
+			# STEWARD. A minister in charge of this office softens what starving it does,
+			# scaled by his ability through the duty. See cc_bureau_steward_malus_factor.
+			if = {
+				limit = { has_variable = cc_steward_grand_secretariat_bureaucracy }
+				multiply = cc_bureau_steward_malus_factor
+			}
 		}
 		monthly_legitimacy = -0.2
 		monthly_celestial_authority = -0.04

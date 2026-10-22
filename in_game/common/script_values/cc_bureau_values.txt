@@ -133,6 +133,36 @@ cc_bureau_steward_discount = {
 	value = 0.75
 }
 
+# How much a steward softens his own bureau's malus. Multiplies that bureau's negative_modifier
+# scale, so it only matters when the office is underfunded.
+#
+# THE REDUCTION IS A MODIFIER, NOT A NUMBER WRITTEN HERE. cc_duty_bureau_steward grants
+# cc_steward_malus_reduction through its country_modifier, and the engine multiplies every
+# cabinet action modifier by 1 + (effective ability + cabinet efficiency) * 0.005
+# (CABINET_ACTION_SKILL_MODIFIER). Reading it back with modifier: is what makes the reduction
+# follow the minister's efficiency live, with no snapshot to refresh when he improves or the
+# cabinet changes. Base 0.25 there, before the engine's ability scaling.
+#
+# THE FLOOR. Never more than half the malus removed, so a starved office still hurts.
+#
+# THE IMPACT OFFSET. The steward also grants a +15% <type>_impact_modifier
+# (cc_steward_impact_* in static_modifiers). That type is described as how much the bureau
+# "affects the country", and in game it scales BOTH sides (verified on the bureau tooltip), so
+# on its own it makes a stewarded bureau's malus 15% WORSE. Dividing by 1.15 here cancels that
+# on the negative side only, so the boon keeps its +15% and the malus gets the full reduction.
+# Keep this in step with the impact value in static_modifiers/cc_bureau_steward_impact.txt.
+cc_bureau_steward_impact_offset = {
+	value = 1
+	divide = 1.15
+}
+
+cc_bureau_steward_malus_factor = {
+	value = 1
+	subtract = modifier:cc_steward_malus_reduction
+	min = 0.5
+	multiply = cc_bureau_steward_impact_offset
+}
+
 
 ###############################################################################
 # WHAT BUREAUCRACY UPKEEP SCALES WITH
