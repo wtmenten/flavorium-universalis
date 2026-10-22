@@ -401,6 +401,7 @@ MODIFIER_DISPLAY: dict[str, tuple[str, str]] = {
     # look: global_monthly_literacy is already_percent so it must not be scaled again,
     # and monthly_navy_tradition is neither percent nor already_percent.
     "global_bureaucracy_maintenance_efficiency": ("bureaucracy upkeep",     "percent"),
+    "global_max_bureaucracy_slots":           ("bureaucracy slots",         "flat"),
     "maintain_bureaucracy_price_cost_modifier": ("bureaucracy upkeep cost", "percent"),
     "global_crown_estate_power":               ("crown estate power",       "percent"),
     "stability_decay":                         ("stability decay",          "percent"),
@@ -691,7 +692,7 @@ def gen_advances(loc: dict[str, str]) -> str:
     advance_dir = MOD_ROOT / "in_game" / "common" / "advances"
 
     by_age: dict[str, list[tuple[str, list]]] = {}
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt", "cc_bureau_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue
@@ -833,7 +834,7 @@ def gen_privileges_reforms(loc: dict[str, str]) -> str:
     privileges: list[tuple[str, str, str]] = []   # (name, from_adv, priv_id)
     reforms: list[tuple[str, str, str, str]] = []  # (name, desc, from_adv, reform_id)
 
-    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt"]:
+    for fname in ["cc_subject_advances.txt", "cc_late_era_advances.txt", "cc_literacy_advances.txt", "cc_diplomacy_advances.txt", "cc_frontier_advances.txt", "cc_bureau_advances.txt"]:
         path = advance_dir / fname
         if not path.exists():
             continue

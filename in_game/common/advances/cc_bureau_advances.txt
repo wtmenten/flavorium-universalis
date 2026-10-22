@@ -1,0 +1,51 @@
+﻿# Early bureaus: two advances that bring the generic bureaucracies forward from Confessionalism.
+#
+# Vanilla gates all ten generic bureaus on has_embraced_institution = confessionalism and hands
+# most countries their first slot with generic_bureaucracy_4_advance, so the system arrives in
+# age 4 for nearly everyone. These advances split it across three ages:
+#
+#   age 2  cc_chancery_offices_advance   Board of Revenue, Privy Council, Audit Bureau, +1 slot
+#   age 3  cc_offices_of_state_advance   Trade Commission, Colonial Office, Foreign Ministry,
+#                                        Admiralty Board. No slot.
+#   age 4  Confessionalism, unchanged    War Council, Ordnance Board, Commissariat
+#
+# THE ADVANCES CARRY NO UNLOCK KEY. There is no unlock_bureaucracy; each bureau's potential in
+# zzz_cc_vanilla_bureau_overrides.txt reads has_advance on these names, OR'd with the vanilla
+# Confessionalism gate so the old route still works. Renaming an advance here means renaming
+# it there too, or the bureau silently goes back to Confessionalism only.
+#
+# THE SLOT IS ADDITIVE. Vanilla's age 4 slot still comes later, so a late-game country ends up
+# with one more slot than vanilla. The age 3 advance adds none: the Renaissance slot covers the
+# gap until age 4.
+#
+# PLACEMENT. Both sit on the admin line, beside the government_size advance of their age.
+# chancery_records would have been the natural parent in age 2, but it declares
+# allow_children = no, so this is its sibling instead.
+
+############################
+# Age of Renaissance (Age 2)
+############################
+
+cc_chancery_offices_advance = {
+	age = age_2_renaissance
+	icon = library_advance
+	for = adm
+	requires = government_size_renaissance
+
+	global_max_bureaucracy_slots = 1
+
+	ai_weight = { add = 5 }
+}
+
+############################
+# Age of Discovery (Age 3)
+############################
+
+cc_offices_of_state_advance = {
+	age = age_3_discovery
+	icon = smooth_administration
+	for = adm
+	requires = government_size_discovery
+
+	ai_weight = { add = 5 }
+}
