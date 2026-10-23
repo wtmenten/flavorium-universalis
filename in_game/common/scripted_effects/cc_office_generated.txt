@@ -29,6 +29,9 @@ cc_office_appoint = {
 		set_variable = { name = cc_office_held_$OFFICE$  value = yes }
 	}
 
+	# Tenure starts now. Read by the office's scale value and published for the panel.
+	set_variable = { name = cc_office_$OFFICE$_since  value = current_year }
+
 	cc_office_publish_levels = yes
 }
 
@@ -52,6 +55,10 @@ cc_office_vacate = {
 	if = {
 		limit = { has_variable = cc_office_$OFFICE$_level }
 		remove_variable = cc_office_$OFFICE$_level
+	}
+	if = {
+		limit = { has_variable = cc_office_$OFFICE$_since }
+		remove_variable = cc_office_$OFFICE$_since
 	}
 }
 
@@ -839,6 +846,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_seneschal_open
 	}
 	if = {
+		limit = { has_variable = cc_office_seneschal_filled }
+		set_variable = { name = cc_office_seneschal_scale_var  value = cc_office_seneschal_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_seneschal_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_seneschal_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_seneschal_tenure
+			value = { value = current_year  subtract = var:cc_office_seneschal_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_seneschal_scale_var
+		remove_variable = cc_office_seneschal_tenure
+	}
+	if = {
+		limit = {
+			cc_office_seneschal_exists = yes
+			can_research_advance = chancery_records
+		}
+		set_variable = { name = cc_office_seneschal_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_seneschal_retiring }
+	if = {
 		limit = {
 			cc_office_master_of_coin_vacant = yes
 		}
@@ -848,6 +880,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_master_of_coin_open }
 		remove_variable = cc_office_master_of_coin_open
 	}
+	if = {
+		limit = { has_variable = cc_office_master_of_coin_filled }
+		set_variable = { name = cc_office_master_of_coin_scale_var  value = cc_office_master_of_coin_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_coin_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_coin_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_coin_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_coin_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_coin_scale_var
+		remove_variable = cc_office_master_of_coin_tenure
+	}
+	if = {
+		limit = {
+			cc_office_master_of_coin_exists = yes
+			can_research_advance = standardized_coins
+		}
+		set_variable = { name = cc_office_master_of_coin_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_coin_retiring }
 	if = {
 		limit = {
 			cc_office_herald_of_arms_vacant = yes
@@ -859,6 +916,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_herald_of_arms_open
 	}
 	if = {
+		limit = { has_variable = cc_office_herald_of_arms_filled }
+		set_variable = { name = cc_office_herald_of_arms_scale_var  value = cc_office_herald_of_arms_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_herald_of_arms_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_herald_of_arms_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_herald_of_arms_tenure
+			value = { value = current_year  subtract = var:cc_office_herald_of_arms_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_herald_of_arms_scale_var
+		remove_variable = cc_office_herald_of_arms_tenure
+	}
+	if = {
+		limit = {
+			cc_office_herald_of_arms_exists = yes
+			can_research_advance = diplomatic_training
+		}
+		set_variable = { name = cc_office_herald_of_arms_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_herald_of_arms_retiring }
+	if = {
 		limit = {
 			cc_office_marshal_of_the_court_vacant = yes
 		}
@@ -868,6 +950,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_marshal_of_the_court_open }
 		remove_variable = cc_office_marshal_of_the_court_open
 	}
+	if = {
+		limit = { has_variable = cc_office_marshal_of_the_court_filled }
+		set_variable = { name = cc_office_marshal_of_the_court_scale_var  value = cc_office_marshal_of_the_court_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_marshal_of_the_court_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_marshal_of_the_court_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_marshal_of_the_court_tenure
+			value = { value = current_year  subtract = var:cc_office_marshal_of_the_court_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_marshal_of_the_court_scale_var
+		remove_variable = cc_office_marshal_of_the_court_tenure
+	}
+	if = {
+		limit = {
+			cc_office_marshal_of_the_court_exists = yes
+			can_research_advance = absolutist_court
+		}
+		set_variable = { name = cc_office_marshal_of_the_court_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_marshal_of_the_court_retiring }
 	if = {
 		limit = {
 			cc_office_clerk_of_the_signet_vacant = yes
@@ -879,6 +986,40 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_clerk_of_the_signet_open
 	}
 	if = {
+		limit = { has_variable = cc_office_clerk_of_the_signet_filled }
+		set_variable = { name = cc_office_clerk_of_the_signet_scale_var  value = cc_office_clerk_of_the_signet_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_clerk_of_the_signet_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_clerk_of_the_signet_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_clerk_of_the_signet_tenure
+			value = { value = current_year  subtract = var:cc_office_clerk_of_the_signet_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_clerk_of_the_signet_scale_var
+		remove_variable = cc_office_clerk_of_the_signet_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = educated_bureaucrats }
+			can_research_advance = educated_bureaucrats
+			NOT = { has_advance = chancery_records }
+		}
+		set_variable = { name = cc_office_clerk_of_the_signet_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_clerk_of_the_signet_soon }
+	if = {
+		limit = {
+			cc_office_clerk_of_the_signet_exists = yes
+			can_research_advance = chancery_records
+		}
+		set_variable = { name = cc_office_clerk_of_the_signet_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_clerk_of_the_signet_retiring }
+	if = {
 		limit = {
 			cc_office_keeper_of_the_wardrobe_vacant = yes
 		}
@@ -888,6 +1029,40 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_keeper_of_the_wardrobe_open }
 		remove_variable = cc_office_keeper_of_the_wardrobe_open
 	}
+	if = {
+		limit = { has_variable = cc_office_keeper_of_the_wardrobe_filled }
+		set_variable = { name = cc_office_keeper_of_the_wardrobe_scale_var  value = cc_office_keeper_of_the_wardrobe_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_keeper_of_the_wardrobe_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_keeper_of_the_wardrobe_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_keeper_of_the_wardrobe_tenure
+			value = { value = current_year  subtract = var:cc_office_keeper_of_the_wardrobe_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_keeper_of_the_wardrobe_scale_var
+		remove_variable = cc_office_keeper_of_the_wardrobe_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = non_inheritable_offices }
+			can_research_advance = non_inheritable_offices
+			NOT = { has_advance = absolutist_court }
+		}
+		set_variable = { name = cc_office_keeper_of_the_wardrobe_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_keeper_of_the_wardrobe_soon }
+	if = {
+		limit = {
+			cc_office_keeper_of_the_wardrobe_exists = yes
+			can_research_advance = absolutist_court
+		}
+		set_variable = { name = cc_office_keeper_of_the_wardrobe_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_keeper_of_the_wardrobe_retiring }
 	if = {
 		limit = {
 			cc_office_chancellor_of_the_rolls_vacant = yes
@@ -899,6 +1074,40 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_chancellor_of_the_rolls_open
 	}
 	if = {
+		limit = { has_variable = cc_office_chancellor_of_the_rolls_filled }
+		set_variable = { name = cc_office_chancellor_of_the_rolls_scale_var  value = cc_office_chancellor_of_the_rolls_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_chancellor_of_the_rolls_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_chancellor_of_the_rolls_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_chancellor_of_the_rolls_tenure
+			value = { value = current_year  subtract = var:cc_office_chancellor_of_the_rolls_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_chancellor_of_the_rolls_scale_var
+		remove_variable = cc_office_chancellor_of_the_rolls_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = chancery_records }
+			can_research_advance = chancery_records
+			NOT = { has_advance = modern_bureaucracy }
+		}
+		set_variable = { name = cc_office_chancellor_of_the_rolls_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_chancellor_of_the_rolls_soon }
+	if = {
+		limit = {
+			cc_office_chancellor_of_the_rolls_exists = yes
+			can_research_advance = modern_bureaucracy
+		}
+		set_variable = { name = cc_office_chancellor_of_the_rolls_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_chancellor_of_the_rolls_retiring }
+	if = {
 		limit = {
 			cc_office_master_of_the_mint_vacant = yes
 		}
@@ -908,6 +1117,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_master_of_the_mint_open }
 		remove_variable = cc_office_master_of_the_mint_open
 	}
+	if = {
+		limit = { has_variable = cc_office_master_of_the_mint_filled }
+		set_variable = { name = cc_office_master_of_the_mint_scale_var  value = cc_office_master_of_the_mint_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_the_mint_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_the_mint_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_the_mint_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_the_mint_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_the_mint_scale_var
+		remove_variable = cc_office_master_of_the_mint_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = standardized_coins }
+			can_research_advance = standardized_coins
+		}
+		set_variable = { name = cc_office_master_of_the_mint_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_the_mint_soon }
 	if = {
 		limit = {
 			cc_office_court_chamberlain_vacant = yes
@@ -919,6 +1153,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_court_chamberlain_open
 	}
 	if = {
+		limit = { has_variable = cc_office_court_chamberlain_filled }
+		set_variable = { name = cc_office_court_chamberlain_scale_var  value = cc_office_court_chamberlain_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_court_chamberlain_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_court_chamberlain_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_court_chamberlain_tenure
+			value = { value = current_year  subtract = var:cc_office_court_chamberlain_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_court_chamberlain_scale_var
+		remove_variable = cc_office_court_chamberlain_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = regulate_court_procedures }
+			can_research_advance = regulate_court_procedures
+		}
+		set_variable = { name = cc_office_court_chamberlain_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_court_chamberlain_soon }
+	if = {
 		limit = {
 			cc_office_master_of_protocol_vacant = yes
 		}
@@ -928,6 +1187,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_master_of_protocol_open }
 		remove_variable = cc_office_master_of_protocol_open
 	}
+	if = {
+		limit = { has_variable = cc_office_master_of_protocol_filled }
+		set_variable = { name = cc_office_master_of_protocol_scale_var  value = cc_office_master_of_protocol_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_protocol_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_protocol_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_protocol_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_protocol_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_protocol_scale_var
+		remove_variable = cc_office_master_of_protocol_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = diplomatic_training }
+			can_research_advance = diplomatic_training
+		}
+		set_variable = { name = cc_office_master_of_protocol_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_protocol_soon }
 	if = {
 		limit = {
 			cc_office_intendant_vacant = yes
@@ -939,6 +1223,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_intendant_open
 	}
 	if = {
+		limit = { has_variable = cc_office_intendant_filled }
+		set_variable = { name = cc_office_intendant_scale_var  value = cc_office_intendant_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_intendant_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_intendant_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_intendant_tenure
+			value = { value = current_year  subtract = var:cc_office_intendant_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_intendant_scale_var
+		remove_variable = cc_office_intendant_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = absolutist_court }
+			can_research_advance = absolutist_court
+		}
+		set_variable = { name = cc_office_intendant_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_intendant_soon }
+	if = {
 		limit = {
 			cc_office_permanent_secretary_vacant = yes
 		}
@@ -948,6 +1257,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_permanent_secretary_open }
 		remove_variable = cc_office_permanent_secretary_open
 	}
+	if = {
+		limit = { has_variable = cc_office_permanent_secretary_filled }
+		set_variable = { name = cc_office_permanent_secretary_scale_var  value = cc_office_permanent_secretary_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_permanent_secretary_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_permanent_secretary_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_permanent_secretary_tenure
+			value = { value = current_year  subtract = var:cc_office_permanent_secretary_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_permanent_secretary_scale_var
+		remove_variable = cc_office_permanent_secretary_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = modern_bureaucracy }
+			can_research_advance = modern_bureaucracy
+		}
+		set_variable = { name = cc_office_permanent_secretary_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_permanent_secretary_soon }
 	if = {
 		limit = {
 			cc_office_director_of_public_instruction_vacant = yes
@@ -959,6 +1293,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_director_of_public_instruction_open
 	}
 	if = {
+		limit = { has_variable = cc_office_director_of_public_instruction_filled }
+		set_variable = { name = cc_office_director_of_public_instruction_scale_var  value = cc_office_director_of_public_instruction_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_director_of_public_instruction_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_director_of_public_instruction_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_director_of_public_instruction_tenure
+			value = { value = current_year  subtract = var:cc_office_director_of_public_instruction_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_director_of_public_instruction_scale_var
+		remove_variable = cc_office_director_of_public_instruction_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = enlightened_court }
+			can_research_advance = enlightened_court
+		}
+		set_variable = { name = cc_office_director_of_public_instruction_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_director_of_public_instruction_soon }
+	if = {
 		limit = {
 			cc_office_court_chaplain_vacant = yes
 		}
@@ -967,6 +1326,23 @@ cc_office_publish_roster = {
 	else_if = {
 		limit = { has_variable = cc_office_court_chaplain_open }
 		remove_variable = cc_office_court_chaplain_open
+	}
+	if = {
+		limit = { has_variable = cc_office_court_chaplain_filled }
+		set_variable = { name = cc_office_court_chaplain_scale_var  value = cc_office_court_chaplain_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_court_chaplain_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_court_chaplain_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_court_chaplain_tenure
+			value = { value = current_year  subtract = var:cc_office_court_chaplain_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_court_chaplain_scale_var
+		remove_variable = cc_office_court_chaplain_tenure
 	}
 	if = {
 		limit = {
@@ -979,6 +1355,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_court_astrologer_open
 	}
 	if = {
+		limit = { has_variable = cc_office_court_astrologer_filled }
+		set_variable = { name = cc_office_court_astrologer_scale_var  value = cc_office_court_astrologer_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_court_astrologer_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_court_astrologer_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_court_astrologer_tenure
+			value = { value = current_year  subtract = var:cc_office_court_astrologer_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_court_astrologer_scale_var
+		remove_variable = cc_office_court_astrologer_tenure
+	}
+	if = {
+		limit = {
+			cc_office_court_astrologer_exists = yes
+			can_research_advance = enlightened_court
+		}
+		set_variable = { name = cc_office_court_astrologer_retiring  value = yes }
+	}
+	else = { remove_variable = cc_office_court_astrologer_retiring }
+	if = {
 		limit = {
 			cc_office_grand_inquisitor_vacant = yes
 		}
@@ -988,6 +1389,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_grand_inquisitor_open }
 		remove_variable = cc_office_grand_inquisitor_open
 	}
+	if = {
+		limit = { has_variable = cc_office_grand_inquisitor_filled }
+		set_variable = { name = cc_office_grand_inquisitor_scale_var  value = cc_office_grand_inquisitor_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_grand_inquisitor_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_grand_inquisitor_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_grand_inquisitor_tenure
+			value = { value = current_year  subtract = var:cc_office_grand_inquisitor_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_grand_inquisitor_scale_var
+		remove_variable = cc_office_grand_inquisitor_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = inquisition_advance }
+			can_research_advance = inquisition_advance
+		}
+		set_variable = { name = cc_office_grand_inquisitor_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_grand_inquisitor_soon }
 	if = {
 		limit = {
 			cc_office_ecclesiarch_vacant = yes
@@ -999,6 +1425,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_ecclesiarch_open
 	}
 	if = {
+		limit = { has_variable = cc_office_ecclesiarch_filled }
+		set_variable = { name = cc_office_ecclesiarch_scale_var  value = cc_office_ecclesiarch_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_ecclesiarch_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_ecclesiarch_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_ecclesiarch_tenure
+			value = { value = current_year  subtract = var:cc_office_ecclesiarch_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_ecclesiarch_scale_var
+		remove_variable = cc_office_ecclesiarch_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = church_guidance }
+			can_research_advance = church_guidance
+		}
+		set_variable = { name = cc_office_ecclesiarch_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_ecclesiarch_soon }
+	if = {
 		limit = {
 			cc_office_qadi_of_the_court_vacant = yes
 		}
@@ -1008,6 +1459,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_qadi_of_the_court_open }
 		remove_variable = cc_office_qadi_of_the_court_open
 	}
+	if = {
+		limit = { has_variable = cc_office_qadi_of_the_court_filled }
+		set_variable = { name = cc_office_qadi_of_the_court_scale_var  value = cc_office_qadi_of_the_court_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_qadi_of_the_court_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_qadi_of_the_court_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_qadi_of_the_court_tenure
+			value = { value = current_year  subtract = var:cc_office_qadi_of_the_court_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_qadi_of_the_court_scale_var
+		remove_variable = cc_office_qadi_of_the_court_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = islamic_courts }
+			can_research_advance = islamic_courts
+		}
+		set_variable = { name = cc_office_qadi_of_the_court_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_qadi_of_the_court_soon }
 	if = {
 		limit = {
 			cc_office_court_ulema_vacant = yes
@@ -1019,6 +1495,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_court_ulema_open
 	}
 	if = {
+		limit = { has_variable = cc_office_court_ulema_filled }
+		set_variable = { name = cc_office_court_ulema_scale_var  value = cc_office_court_ulema_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_court_ulema_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_court_ulema_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_court_ulema_tenure
+			value = { value = current_year  subtract = var:cc_office_court_ulema_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_court_ulema_scale_var
+		remove_variable = cc_office_court_ulema_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = islamic_schoolars }
+			can_research_advance = islamic_schoolars
+		}
+		set_variable = { name = cc_office_court_ulema_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_court_ulema_soon }
+	if = {
 		limit = {
 			cc_office_court_pandit_vacant = yes
 		}
@@ -1028,6 +1529,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_court_pandit_open }
 		remove_variable = cc_office_court_pandit_open
 	}
+	if = {
+		limit = { has_variable = cc_office_court_pandit_filled }
+		set_variable = { name = cc_office_court_pandit_scale_var  value = cc_office_court_pandit_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_court_pandit_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_court_pandit_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_court_pandit_tenure
+			value = { value = current_year  subtract = var:cc_office_court_pandit_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_court_pandit_scale_var
+		remove_variable = cc_office_court_pandit_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = astika_schools }
+			can_research_advance = astika_schools
+		}
+		set_variable = { name = cc_office_court_pandit_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_court_pandit_soon }
 	if = {
 		limit = {
 			cc_office_sangha_preceptor_vacant = yes
@@ -1039,6 +1565,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_sangha_preceptor_open
 	}
 	if = {
+		limit = { has_variable = cc_office_sangha_preceptor_filled }
+		set_variable = { name = cc_office_sangha_preceptor_scale_var  value = cc_office_sangha_preceptor_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_sangha_preceptor_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_sangha_preceptor_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_sangha_preceptor_tenure
+			value = { value = current_year  subtract = var:cc_office_sangha_preceptor_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_sangha_preceptor_scale_var
+		remove_variable = cc_office_sangha_preceptor_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = buddhist_universities }
+			can_research_advance = buddhist_universities
+		}
+		set_variable = { name = cc_office_sangha_preceptor_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_sangha_preceptor_soon }
+	if = {
 		limit = {
 			cc_office_consistory_superintendent_vacant = yes
 		}
@@ -1048,6 +1599,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_consistory_superintendent_open }
 		remove_variable = cc_office_consistory_superintendent_open
 	}
+	if = {
+		limit = { has_variable = cc_office_consistory_superintendent_filled }
+		set_variable = { name = cc_office_consistory_superintendent_scale_var  value = cc_office_consistory_superintendent_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_consistory_superintendent_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_consistory_superintendent_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_consistory_superintendent_tenure
+			value = { value = current_year  subtract = var:cc_office_consistory_superintendent_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_consistory_superintendent_scale_var
+		remove_variable = cc_office_consistory_superintendent_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = protestant_administration_tax }
+			can_research_advance = protestant_administration_tax
+		}
+		set_variable = { name = cc_office_consistory_superintendent_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_consistory_superintendent_soon }
 	if = {
 		limit = {
 			cc_office_confessional_overseer_vacant = yes
@@ -1059,6 +1635,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_confessional_overseer_open
 	}
 	if = {
+		limit = { has_variable = cc_office_confessional_overseer_filled }
+		set_variable = { name = cc_office_confessional_overseer_scale_var  value = cc_office_confessional_overseer_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_confessional_overseer_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_confessional_overseer_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_confessional_overseer_tenure
+			value = { value = current_year  subtract = var:cc_office_confessional_overseer_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_confessional_overseer_scale_var
+		remove_variable = cc_office_confessional_overseer_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = confessional_court }
+			can_research_advance = confessional_court
+		}
+		set_variable = { name = cc_office_confessional_overseer_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_confessional_overseer_soon }
+	if = {
 		limit = {
 			cc_office_steward_of_the_demesne_vacant = yes
 		}
@@ -1068,6 +1669,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_steward_of_the_demesne_open }
 		remove_variable = cc_office_steward_of_the_demesne_open
 	}
+	if = {
+		limit = { has_variable = cc_office_steward_of_the_demesne_filled }
+		set_variable = { name = cc_office_steward_of_the_demesne_scale_var  value = cc_office_steward_of_the_demesne_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_steward_of_the_demesne_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_steward_of_the_demesne_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_steward_of_the_demesne_tenure
+			value = { value = current_year  subtract = var:cc_office_steward_of_the_demesne_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_steward_of_the_demesne_scale_var
+		remove_variable = cc_office_steward_of_the_demesne_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = local_nobility }
+			can_research_advance = local_nobility
+		}
+		set_variable = { name = cc_office_steward_of_the_demesne_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_steward_of_the_demesne_soon }
 	if = {
 		limit = {
 			cc_office_constable_vacant = yes
@@ -1079,6 +1705,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_constable_open
 	}
 	if = {
+		limit = { has_variable = cc_office_constable_filled }
+		set_variable = { name = cc_office_constable_scale_var  value = cc_office_constable_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_constable_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_constable_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_constable_tenure
+			value = { value = current_year  subtract = var:cc_office_constable_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_constable_scale_var
+		remove_variable = cc_office_constable_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = noble_officers }
+			can_research_advance = noble_officers
+		}
+		set_variable = { name = cc_office_constable_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_constable_soon }
+	if = {
 		limit = {
 			cc_office_consul_of_merchants_vacant = yes
 		}
@@ -1088,6 +1739,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_consul_of_merchants_open }
 		remove_variable = cc_office_consul_of_merchants_open
 	}
+	if = {
+		limit = { has_variable = cc_office_consul_of_merchants_filled }
+		set_variable = { name = cc_office_consul_of_merchants_scale_var  value = cc_office_consul_of_merchants_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_consul_of_merchants_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_consul_of_merchants_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_consul_of_merchants_tenure
+			value = { value = current_year  subtract = var:cc_office_consul_of_merchants_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_consul_of_merchants_scale_var
+		remove_variable = cc_office_consul_of_merchants_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = free_merchants }
+			can_research_advance = free_merchants
+		}
+		set_variable = { name = cc_office_consul_of_merchants_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_consul_of_merchants_soon }
 	if = {
 		limit = {
 			cc_office_chancellor_of_the_see_vacant = yes
@@ -1099,6 +1775,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_chancellor_of_the_see_open
 	}
 	if = {
+		limit = { has_variable = cc_office_chancellor_of_the_see_filled }
+		set_variable = { name = cc_office_chancellor_of_the_see_scale_var  value = cc_office_chancellor_of_the_see_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_chancellor_of_the_see_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_chancellor_of_the_see_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_chancellor_of_the_see_tenure
+			value = { value = current_year  subtract = var:cc_office_chancellor_of_the_see_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_chancellor_of_the_see_scale_var
+		remove_variable = cc_office_chancellor_of_the_see_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = state_of_clerics }
+			can_research_advance = state_of_clerics
+		}
+		set_variable = { name = cc_office_chancellor_of_the_see_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_chancellor_of_the_see_soon }
+	if = {
 		limit = {
 			cc_office_keeper_of_the_kurultai_vacant = yes
 		}
@@ -1108,6 +1809,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_keeper_of_the_kurultai_open }
 		remove_variable = cc_office_keeper_of_the_kurultai_open
 	}
+	if = {
+		limit = { has_variable = cc_office_keeper_of_the_kurultai_filled }
+		set_variable = { name = cc_office_keeper_of_the_kurultai_scale_var  value = cc_office_keeper_of_the_kurultai_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_keeper_of_the_kurultai_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_keeper_of_the_kurultai_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_keeper_of_the_kurultai_tenure
+			value = { value = current_year  subtract = var:cc_office_keeper_of_the_kurultai_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_keeper_of_the_kurultai_scale_var
+		remove_variable = cc_office_keeper_of_the_kurultai_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = kurultai_advance }
+			can_research_advance = kurultai_advance
+		}
+		set_variable = { name = cc_office_keeper_of_the_kurultai_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_keeper_of_the_kurultai_soon }
 	if = {
 		limit = {
 			cc_office_master_of_the_yam_vacant = yes
@@ -1119,6 +1845,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_master_of_the_yam_open
 	}
 	if = {
+		limit = { has_variable = cc_office_master_of_the_yam_filled }
+		set_variable = { name = cc_office_master_of_the_yam_scale_var  value = cc_office_master_of_the_yam_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_the_yam_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_the_yam_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_the_yam_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_the_yam_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_the_yam_scale_var
+		remove_variable = cc_office_master_of_the_yam_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = yams_of_the_great_khan }
+			can_research_advance = yams_of_the_great_khan
+		}
+		set_variable = { name = cc_office_master_of_the_yam_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_the_yam_soon }
+	if = {
 		limit = {
 			cc_office_phanariote_secretary_vacant = yes
 		}
@@ -1128,6 +1879,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_phanariote_secretary_open }
 		remove_variable = cc_office_phanariote_secretary_open
 	}
+	if = {
+		limit = { has_variable = cc_office_phanariote_secretary_filled }
+		set_variable = { name = cc_office_phanariote_secretary_scale_var  value = cc_office_phanariote_secretary_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_phanariote_secretary_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_phanariote_secretary_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_phanariote_secretary_tenure
+			value = { value = current_year  subtract = var:cc_office_phanariote_secretary_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_phanariote_secretary_scale_var
+		remove_variable = cc_office_phanariote_secretary_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = greek_group_the_phanariote_network_advance }
+			can_research_advance = greek_group_the_phanariote_network_advance
+		}
+		set_variable = { name = cc_office_phanariote_secretary_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_phanariote_secretary_soon }
 	if = {
 		limit = {
 			cc_office_hansa_factor_vacant = yes
@@ -1139,6 +1915,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_hansa_factor_open
 	}
 	if = {
+		limit = { has_variable = cc_office_hansa_factor_filled }
+		set_variable = { name = cc_office_hansa_factor_scale_var  value = cc_office_hansa_factor_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_hansa_factor_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_hansa_factor_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_hansa_factor_tenure
+			value = { value = current_year  subtract = var:cc_office_hansa_factor_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_hansa_factor_scale_var
+		remove_variable = cc_office_hansa_factor_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = north_german_hanseatic_traditions }
+			can_research_advance = north_german_hanseatic_traditions
+		}
+		set_variable = { name = cc_office_hansa_factor_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_hansa_factor_soon }
+	if = {
 		limit = {
 			cc_office_postelnic_vacant = yes
 		}
@@ -1148,6 +1949,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_postelnic_open }
 		remove_variable = cc_office_postelnic_open
 	}
+	if = {
+		limit = { has_variable = cc_office_postelnic_filled }
+		set_variable = { name = cc_office_postelnic_scale_var  value = cc_office_postelnic_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_postelnic_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_postelnic_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_postelnic_tenure
+			value = { value = current_year  subtract = var:cc_office_postelnic_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_postelnic_scale_var
+		remove_variable = cc_office_postelnic_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = romanian_the_postelnic_bureaucracy }
+			can_research_advance = romanian_the_postelnic_bureaucracy
+		}
+		set_variable = { name = cc_office_postelnic_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_postelnic_soon }
 	if = {
 		limit = {
 			cc_office_voivode_of_the_court_vacant = yes
@@ -1159,6 +1985,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_voivode_of_the_court_open
 	}
 	if = {
+		limit = { has_variable = cc_office_voivode_of_the_court_filled }
+		set_variable = { name = cc_office_voivode_of_the_court_scale_var  value = cc_office_voivode_of_the_court_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_voivode_of_the_court_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_voivode_of_the_court_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_voivode_of_the_court_tenure
+			value = { value = current_year  subtract = var:cc_office_voivode_of_the_court_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_voivode_of_the_court_scale_var
+		remove_variable = cc_office_voivode_of_the_court_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = voivode_advance }
+			can_research_advance = voivode_advance
+		}
+		set_variable = { name = cc_office_voivode_of_the_court_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_voivode_of_the_court_soon }
+	if = {
 		limit = {
 			cc_office_herald_of_the_table_of_ranks_vacant = yes
 		}
@@ -1168,6 +2019,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_herald_of_the_table_of_ranks_open }
 		remove_variable = cc_office_herald_of_the_table_of_ranks_open
 	}
+	if = {
+		limit = { has_variable = cc_office_herald_of_the_table_of_ranks_filled }
+		set_variable = { name = cc_office_herald_of_the_table_of_ranks_scale_var  value = cc_office_herald_of_the_table_of_ranks_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_herald_of_the_table_of_ranks_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_herald_of_the_table_of_ranks_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_herald_of_the_table_of_ranks_tenure
+			value = { value = current_year  subtract = var:cc_office_herald_of_the_table_of_ranks_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_herald_of_the_table_of_ranks_scale_var
+		remove_variable = cc_office_herald_of_the_table_of_ranks_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = table_of_ranks }
+			can_research_advance = table_of_ranks
+		}
+		set_variable = { name = cc_office_herald_of_the_table_of_ranks_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_herald_of_the_table_of_ranks_soon }
 	if = {
 		limit = {
 			cc_office_state_inquisitor_vacant = yes
@@ -1179,6 +2055,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_state_inquisitor_open
 	}
 	if = {
+		limit = { has_variable = cc_office_state_inquisitor_filled }
+		set_variable = { name = cc_office_state_inquisitor_scale_var  value = cc_office_state_inquisitor_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_state_inquisitor_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_state_inquisitor_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_state_inquisitor_tenure
+			value = { value = current_year  subtract = var:cc_office_state_inquisitor_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_state_inquisitor_scale_var
+		remove_variable = cc_office_state_inquisitor_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = ven_state_inquisition }
+			can_research_advance = ven_state_inquisition
+		}
+		set_variable = { name = cc_office_state_inquisitor_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_state_inquisitor_soon }
+	if = {
 		limit = {
 			cc_office_priori_of_the_council_vacant = yes
 		}
@@ -1188,6 +2089,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_priori_of_the_council_open }
 		remove_variable = cc_office_priori_of_the_council_open
 	}
+	if = {
+		limit = { has_variable = cc_office_priori_of_the_council_filled }
+		set_variable = { name = cc_office_priori_of_the_council_scale_var  value = cc_office_priori_of_the_council_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_priori_of_the_council_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_priori_of_the_council_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_priori_of_the_council_tenure
+			value = { value = current_year  subtract = var:cc_office_priori_of_the_council_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_priori_of_the_council_scale_var
+		remove_variable = cc_office_priori_of_the_council_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = sie_council_priori }
+			can_research_advance = sie_council_priori
+		}
+		set_variable = { name = cc_office_priori_of_the_council_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_priori_of_the_council_soon }
 	if = {
 		limit = {
 			cc_office_jokamachi_warden_vacant = yes
@@ -1199,6 +2125,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_jokamachi_warden_open
 	}
 	if = {
+		limit = { has_variable = cc_office_jokamachi_warden_filled }
+		set_variable = { name = cc_office_jokamachi_warden_scale_var  value = cc_office_jokamachi_warden_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_jokamachi_warden_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_jokamachi_warden_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_jokamachi_warden_tenure
+			value = { value = current_year  subtract = var:cc_office_jokamachi_warden_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_jokamachi_warden_scale_var
+		remove_variable = cc_office_jokamachi_warden_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = jap_jokamachi }
+			can_research_advance = jap_jokamachi
+		}
+		set_variable = { name = cc_office_jokamachi_warden_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_jokamachi_warden_soon }
+	if = {
 		limit = {
 			cc_office_master_of_siege_works_vacant = yes
 		}
@@ -1208,6 +2159,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_master_of_siege_works_open }
 		remove_variable = cc_office_master_of_siege_works_open
 	}
+	if = {
+		limit = { has_variable = cc_office_master_of_siege_works_filled }
+		set_variable = { name = cc_office_master_of_siege_works_scale_var  value = cc_office_master_of_siege_works_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_siege_works_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_siege_works_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_siege_works_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_siege_works_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_siege_works_scale_var
+		remove_variable = cc_office_master_of_siege_works_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = chinese_siege_engineers }
+			can_research_advance = chinese_siege_engineers
+		}
+		set_variable = { name = cc_office_master_of_siege_works_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_siege_works_soon }
 	if = {
 		limit = {
 			cc_office_keeper_of_the_wampum_vacant = yes
@@ -1219,6 +2195,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_keeper_of_the_wampum_open
 	}
 	if = {
+		limit = { has_variable = cc_office_keeper_of_the_wampum_filled }
+		set_variable = { name = cc_office_keeper_of_the_wampum_scale_var  value = cc_office_keeper_of_the_wampum_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_keeper_of_the_wampum_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_keeper_of_the_wampum_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_keeper_of_the_wampum_tenure
+			value = { value = current_year  subtract = var:cc_office_keeper_of_the_wampum_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_keeper_of_the_wampum_scale_var
+		remove_variable = cc_office_keeper_of_the_wampum_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = wampum }
+			can_research_advance = wampum
+		}
+		set_variable = { name = cc_office_keeper_of_the_wampum_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_keeper_of_the_wampum_soon }
+	if = {
 		limit = {
 			cc_office_speaker_of_the_elders_vacant = yes
 		}
@@ -1228,6 +2229,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_speaker_of_the_elders_open }
 		remove_variable = cc_office_speaker_of_the_elders_open
 	}
+	if = {
+		limit = { has_variable = cc_office_speaker_of_the_elders_filled }
+		set_variable = { name = cc_office_speaker_of_the_elders_scale_var  value = cc_office_speaker_of_the_elders_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_speaker_of_the_elders_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_speaker_of_the_elders_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_speaker_of_the_elders_tenure
+			value = { value = current_year  subtract = var:cc_office_speaker_of_the_elders_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_speaker_of_the_elders_scale_var
+		remove_variable = cc_office_speaker_of_the_elders_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = council_of_elders }
+			can_research_advance = council_of_elders
+		}
+		set_variable = { name = cc_office_speaker_of_the_elders_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_speaker_of_the_elders_soon }
 	if = {
 		limit = {
 			cc_office_keeper_of_regnal_chronicles_vacant = yes
@@ -1239,6 +2265,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_keeper_of_regnal_chronicles_open
 	}
 	if = {
+		limit = { has_variable = cc_office_keeper_of_regnal_chronicles_filled }
+		set_variable = { name = cc_office_keeper_of_regnal_chronicles_scale_var  value = cc_office_keeper_of_regnal_chronicles_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_keeper_of_regnal_chronicles_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_keeper_of_regnal_chronicles_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_keeper_of_regnal_chronicles_tenure
+			value = { value = current_year  subtract = var:cc_office_keeper_of_regnal_chronicles_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_keeper_of_regnal_chronicles_scale_var
+		remove_variable = cc_office_keeper_of_regnal_chronicles_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = regnal_chronicles }
+			can_research_advance = regnal_chronicles
+		}
+		set_variable = { name = cc_office_keeper_of_regnal_chronicles_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_keeper_of_regnal_chronicles_soon }
+	if = {
 		limit = {
 			cc_office_master_of_the_silk_road_vacant = yes
 		}
@@ -1249,6 +2300,31 @@ cc_office_publish_roster = {
 		remove_variable = cc_office_master_of_the_silk_road_open
 	}
 	if = {
+		limit = { has_variable = cc_office_master_of_the_silk_road_filled }
+		set_variable = { name = cc_office_master_of_the_silk_road_scale_var  value = cc_office_master_of_the_silk_road_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_the_silk_road_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_the_silk_road_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_the_silk_road_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_the_silk_road_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_the_silk_road_scale_var
+		remove_variable = cc_office_master_of_the_silk_road_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = silk_road }
+			can_research_advance = silk_road
+		}
+		set_variable = { name = cc_office_master_of_the_silk_road_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_the_silk_road_soon }
+	if = {
 		limit = {
 			cc_office_master_of_ceremonies_vacant = yes
 		}
@@ -1258,6 +2334,31 @@ cc_office_publish_roster = {
 		limit = { has_variable = cc_office_master_of_ceremonies_open }
 		remove_variable = cc_office_master_of_ceremonies_open
 	}
+	if = {
+		limit = { has_variable = cc_office_master_of_ceremonies_filled }
+		set_variable = { name = cc_office_master_of_ceremonies_scale_var  value = cc_office_master_of_ceremonies_scale }
+		if = {
+			limit = { NOT = { has_variable = cc_office_master_of_ceremonies_since } }
+			# Held since before tenure existed: count from now.
+			set_variable = { name = cc_office_master_of_ceremonies_since  value = current_year }
+		}
+		set_variable = {
+			name = cc_office_master_of_ceremonies_tenure
+			value = { value = current_year  subtract = var:cc_office_master_of_ceremonies_since  min = 0 }
+		}
+	}
+	else = {
+		remove_variable = cc_office_master_of_ceremonies_scale_var
+		remove_variable = cc_office_master_of_ceremonies_tenure
+	}
+	if = {
+		limit = {
+			NOT = { has_advance = courtly_competition }
+			can_research_advance = courtly_competition
+		}
+		set_variable = { name = cc_office_master_of_ceremonies_soon  value = yes }
+	}
+	else = { remove_variable = cc_office_master_of_ceremonies_soon }
 
 	# The panel prints a count against the cap. GUI reads variables, not
 	# script values, so the count has to be materialised here.
@@ -1525,5 +2626,3242 @@ cc_office_backfill = {
 			save_scope_as = office_holder
 		}
 		cc_office_appoint = { OFFICE = court_astrologer }
+	}
+}
+
+# APPOINTING FROM THE HOUSEHOLD TAB. Each office's Appoint button flags it with
+# cc_office_panel_<key> and fires cc_office.3, whose options are the
+# most senior ministers eligible for THAT office. A panel button cannot hand an
+# action a character, so the candidates are offered as options instead, the same
+# shape as Take On a Protege and Sell a Work. These resolve the flagged office.
+
+cc_office_panel_clear = {
+	remove_variable = cc_office_panel_seneschal
+	remove_variable = cc_office_panel_master_of_coin
+	remove_variable = cc_office_panel_herald_of_arms
+	remove_variable = cc_office_panel_marshal_of_the_court
+	remove_variable = cc_office_panel_clerk_of_the_signet
+	remove_variable = cc_office_panel_keeper_of_the_wardrobe
+	remove_variable = cc_office_panel_chancellor_of_the_rolls
+	remove_variable = cc_office_panel_master_of_the_mint
+	remove_variable = cc_office_panel_court_chamberlain
+	remove_variable = cc_office_panel_master_of_protocol
+	remove_variable = cc_office_panel_intendant
+	remove_variable = cc_office_panel_permanent_secretary
+	remove_variable = cc_office_panel_director_of_public_instruction
+	remove_variable = cc_office_panel_court_chaplain
+	remove_variable = cc_office_panel_court_astrologer
+	remove_variable = cc_office_panel_grand_inquisitor
+	remove_variable = cc_office_panel_ecclesiarch
+	remove_variable = cc_office_panel_qadi_of_the_court
+	remove_variable = cc_office_panel_court_ulema
+	remove_variable = cc_office_panel_court_pandit
+	remove_variable = cc_office_panel_sangha_preceptor
+	remove_variable = cc_office_panel_consistory_superintendent
+	remove_variable = cc_office_panel_confessional_overseer
+	remove_variable = cc_office_panel_steward_of_the_demesne
+	remove_variable = cc_office_panel_constable
+	remove_variable = cc_office_panel_consul_of_merchants
+	remove_variable = cc_office_panel_chancellor_of_the_see
+	remove_variable = cc_office_panel_keeper_of_the_kurultai
+	remove_variable = cc_office_panel_master_of_the_yam
+	remove_variable = cc_office_panel_phanariote_secretary
+	remove_variable = cc_office_panel_hansa_factor
+	remove_variable = cc_office_panel_postelnic
+	remove_variable = cc_office_panel_voivode_of_the_court
+	remove_variable = cc_office_panel_herald_of_the_table_of_ranks
+	remove_variable = cc_office_panel_state_inquisitor
+	remove_variable = cc_office_panel_priori_of_the_council
+	remove_variable = cc_office_panel_jokamachi_warden
+	remove_variable = cc_office_panel_master_of_siege_works
+	remove_variable = cc_office_panel_keeper_of_the_wampum
+	remove_variable = cc_office_panel_speaker_of_the_elders
+	remove_variable = cc_office_panel_keeper_of_regnal_chronicles
+	remove_variable = cc_office_panel_master_of_the_silk_road
+	remove_variable = cc_office_panel_master_of_ceremonies
+}
+
+# Saves up to 4 candidates as scope:cc_office_cand_1..N, most senior first.
+cc_office_panel_save_candidates = {
+	clear_saved_scope = cc_office_cand_1
+	clear_saved_scope = cc_office_cand_2
+	clear_saved_scope = cc_office_cand_3
+	clear_saved_scope = cc_office_cand_4
+	if = {
+		limit = { has_variable = cc_office_panel_seneschal }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_coin }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_arms }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_marshal_of_the_court }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_clerk_of_the_signet }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wardrobe }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_rolls }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_mint }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chamberlain }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_protocol }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_intendant }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_permanent_secretary }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_director_of_public_instruction }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chaplain }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_astrologer }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_grand_inquisitor }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_ecclesiarch }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_qadi_of_the_court }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_ulema }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_pandit }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_sangha_preceptor }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consistory_superintendent }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_confessional_overseer }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_steward_of_the_demesne }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_constable }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consul_of_merchants }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_see }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_kurultai }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_yam }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_phanariote_secretary }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_hansa_factor }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_postelnic }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_voivode_of_the_court }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_the_table_of_ranks }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_state_inquisitor }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_priori_of_the_council }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_jokamachi_warden }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_siege_works }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wampum }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_speaker_of_the_elders }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_regnal_chronicles }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_silk_road }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_ceremonies }
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_1
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_2
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 2
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_3
+		}
+		ordered_cabinet_character = {
+			limit = {
+				cc_office_can_be_appointed = yes
+				cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+			}
+			order_by = cc_xp_order_seniority
+			position = 3
+			check_range_bounds = no
+			save_scope_as = cc_office_cand_4
+		}
+	}
+}
+
+# Shows what the flagged office does, on each candidate option.
+cc_office_panel_tooltip = {
+	if = {
+		limit = { has_variable = cc_office_panel_seneschal }
+		custom_tooltip = { text = cc_office_seneschal_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_coin }
+		custom_tooltip = { text = cc_office_master_of_coin_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_arms }
+		custom_tooltip = { text = cc_office_herald_of_arms_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_marshal_of_the_court }
+		custom_tooltip = { text = cc_office_marshal_of_the_court_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_clerk_of_the_signet }
+		custom_tooltip = { text = cc_office_clerk_of_the_signet_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wardrobe }
+		custom_tooltip = { text = cc_office_keeper_of_the_wardrobe_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_rolls }
+		custom_tooltip = { text = cc_office_chancellor_of_the_rolls_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_mint }
+		custom_tooltip = { text = cc_office_master_of_the_mint_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chamberlain }
+		custom_tooltip = { text = cc_office_court_chamberlain_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_protocol }
+		custom_tooltip = { text = cc_office_master_of_protocol_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_intendant }
+		custom_tooltip = { text = cc_office_intendant_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_permanent_secretary }
+		custom_tooltip = { text = cc_office_permanent_secretary_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_director_of_public_instruction }
+		custom_tooltip = { text = cc_office_director_of_public_instruction_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chaplain }
+		custom_tooltip = { text = cc_office_court_chaplain_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_astrologer }
+		custom_tooltip = { text = cc_office_court_astrologer_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_grand_inquisitor }
+		custom_tooltip = { text = cc_office_grand_inquisitor_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_ecclesiarch }
+		custom_tooltip = { text = cc_office_ecclesiarch_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_qadi_of_the_court }
+		custom_tooltip = { text = cc_office_qadi_of_the_court_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_ulema }
+		custom_tooltip = { text = cc_office_court_ulema_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_pandit }
+		custom_tooltip = { text = cc_office_court_pandit_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_sangha_preceptor }
+		custom_tooltip = { text = cc_office_sangha_preceptor_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consistory_superintendent }
+		custom_tooltip = { text = cc_office_consistory_superintendent_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_confessional_overseer }
+		custom_tooltip = { text = cc_office_confessional_overseer_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_steward_of_the_demesne }
+		custom_tooltip = { text = cc_office_steward_of_the_demesne_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_constable }
+		custom_tooltip = { text = cc_office_constable_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consul_of_merchants }
+		custom_tooltip = { text = cc_office_consul_of_merchants_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_see }
+		custom_tooltip = { text = cc_office_chancellor_of_the_see_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_kurultai }
+		custom_tooltip = { text = cc_office_keeper_of_the_kurultai_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_yam }
+		custom_tooltip = { text = cc_office_master_of_the_yam_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_phanariote_secretary }
+		custom_tooltip = { text = cc_office_phanariote_secretary_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_hansa_factor }
+		custom_tooltip = { text = cc_office_hansa_factor_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_postelnic }
+		custom_tooltip = { text = cc_office_postelnic_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_voivode_of_the_court }
+		custom_tooltip = { text = cc_office_voivode_of_the_court_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_the_table_of_ranks }
+		custom_tooltip = { text = cc_office_herald_of_the_table_of_ranks_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_state_inquisitor }
+		custom_tooltip = { text = cc_office_state_inquisitor_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_priori_of_the_council }
+		custom_tooltip = { text = cc_office_priori_of_the_council_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_jokamachi_warden }
+		custom_tooltip = { text = cc_office_jokamachi_warden_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_siege_works }
+		custom_tooltip = { text = cc_office_master_of_siege_works_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wampum }
+		custom_tooltip = { text = cc_office_keeper_of_the_wampum_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_speaker_of_the_elders }
+		custom_tooltip = { text = cc_office_speaker_of_the_elders_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_regnal_chronicles }
+		custom_tooltip = { text = cc_office_keeper_of_regnal_chronicles_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_silk_road }
+		custom_tooltip = { text = cc_office_master_of_the_silk_road_tt }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_ceremonies }
+		custom_tooltip = { text = cc_office_master_of_ceremonies_tt }
+	}
+}
+
+# Appoints $WHO$ to the flagged office.
+cc_office_panel_appoint = {
+	$WHO$ = { save_scope_as = office_holder }
+	if = {
+		limit = { has_variable = cc_office_panel_seneschal }
+		cc_office_appoint = { OFFICE = seneschal }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_coin }
+		cc_office_appoint = { OFFICE = master_of_coin }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_arms }
+		cc_office_appoint = { OFFICE = herald_of_arms }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_marshal_of_the_court }
+		cc_office_appoint = { OFFICE = marshal_of_the_court }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_clerk_of_the_signet }
+		cc_office_appoint = { OFFICE = clerk_of_the_signet }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wardrobe }
+		cc_office_appoint = { OFFICE = keeper_of_the_wardrobe }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_rolls }
+		cc_office_appoint = { OFFICE = chancellor_of_the_rolls }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_mint }
+		cc_office_appoint = { OFFICE = master_of_the_mint }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chamberlain }
+		cc_office_appoint = { OFFICE = court_chamberlain }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_protocol }
+		cc_office_appoint = { OFFICE = master_of_protocol }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_intendant }
+		cc_office_appoint = { OFFICE = intendant }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_permanent_secretary }
+		cc_office_appoint = { OFFICE = permanent_secretary }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_director_of_public_instruction }
+		cc_office_appoint = { OFFICE = director_of_public_instruction }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_chaplain }
+		cc_office_appoint = { OFFICE = court_chaplain }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_astrologer }
+		cc_office_appoint = { OFFICE = court_astrologer }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_grand_inquisitor }
+		cc_office_appoint = { OFFICE = grand_inquisitor }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_ecclesiarch }
+		cc_office_appoint = { OFFICE = ecclesiarch }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_qadi_of_the_court }
+		cc_office_appoint = { OFFICE = qadi_of_the_court }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_ulema }
+		cc_office_appoint = { OFFICE = court_ulema }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_court_pandit }
+		cc_office_appoint = { OFFICE = court_pandit }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_sangha_preceptor }
+		cc_office_appoint = { OFFICE = sangha_preceptor }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consistory_superintendent }
+		cc_office_appoint = { OFFICE = consistory_superintendent }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_confessional_overseer }
+		cc_office_appoint = { OFFICE = confessional_overseer }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_steward_of_the_demesne }
+		cc_office_appoint = { OFFICE = steward_of_the_demesne }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_constable }
+		cc_office_appoint = { OFFICE = constable }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_consul_of_merchants }
+		cc_office_appoint = { OFFICE = consul_of_merchants }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_chancellor_of_the_see }
+		cc_office_appoint = { OFFICE = chancellor_of_the_see }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_kurultai }
+		cc_office_appoint = { OFFICE = keeper_of_the_kurultai }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_yam }
+		cc_office_appoint = { OFFICE = master_of_the_yam }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_phanariote_secretary }
+		cc_office_appoint = { OFFICE = phanariote_secretary }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_hansa_factor }
+		cc_office_appoint = { OFFICE = hansa_factor }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_postelnic }
+		cc_office_appoint = { OFFICE = postelnic }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_voivode_of_the_court }
+		cc_office_appoint = { OFFICE = voivode_of_the_court }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_herald_of_the_table_of_ranks }
+		cc_office_appoint = { OFFICE = herald_of_the_table_of_ranks }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_state_inquisitor }
+		cc_office_appoint = { OFFICE = state_inquisitor }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_priori_of_the_council }
+		cc_office_appoint = { OFFICE = priori_of_the_council }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_jokamachi_warden }
+		cc_office_appoint = { OFFICE = jokamachi_warden }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_siege_works }
+		cc_office_appoint = { OFFICE = master_of_siege_works }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_the_wampum }
+		cc_office_appoint = { OFFICE = keeper_of_the_wampum }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_speaker_of_the_elders }
+		cc_office_appoint = { OFFICE = speaker_of_the_elders }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_keeper_of_regnal_chronicles }
+		cc_office_appoint = { OFFICE = keeper_of_regnal_chronicles }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_the_silk_road }
+		cc_office_appoint = { OFFICE = master_of_the_silk_road }
+	}
+	else_if = {
+		limit = { has_variable = cc_office_panel_master_of_ceremonies }
+		cc_office_appoint = { OFFICE = master_of_ceremonies }
+	}
+	hidden_effect = {
+		cc_office_panel_clear = yes
+		cc_office_publish_roster = yes
+	}
+}
+
+# ---- Office events ----
+# Yearly. Picks one filled office at random and raises one of its family's two
+# events. The office is flagged cc_office_evt_<key> for the event to find.
+cc_office_roll_event = {
+	if = {
+		limit = {
+			is_ai = no
+			NOT = { has_variable = cc_office_event_cd }
+			any_cabinet_character = { cc_office_holds_any = yes }
+		}
+		random = {
+			chance = 30
+			set_variable = { name = cc_office_event_cd  value = yes  years = 3 }
+			random_list = {
+				1 = {
+					trigger = { has_variable = cc_office_seneschal_filled }
+					set_variable = { name = cc_office_evt_seneschal  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_coin_filled }
+					set_variable = { name = cc_office_evt_master_of_coin  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_herald_of_arms_filled }
+					set_variable = { name = cc_office_evt_herald_of_arms  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_marshal_of_the_court_filled }
+					set_variable = { name = cc_office_evt_marshal_of_the_court  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_clerk_of_the_signet_filled }
+					set_variable = { name = cc_office_evt_clerk_of_the_signet  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_keeper_of_the_wardrobe_filled }
+					set_variable = { name = cc_office_evt_keeper_of_the_wardrobe  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_chancellor_of_the_rolls_filled }
+					set_variable = { name = cc_office_evt_chancellor_of_the_rolls  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_the_mint_filled }
+					set_variable = { name = cc_office_evt_master_of_the_mint  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_court_chamberlain_filled }
+					set_variable = { name = cc_office_evt_court_chamberlain  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_protocol_filled }
+					set_variable = { name = cc_office_evt_master_of_protocol  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_intendant_filled }
+					set_variable = { name = cc_office_evt_intendant  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_permanent_secretary_filled }
+					set_variable = { name = cc_office_evt_permanent_secretary  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_director_of_public_instruction_filled }
+					set_variable = { name = cc_office_evt_director_of_public_instruction  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.10 }
+						1 = { trigger_event_non_silently = cc_office.11 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_court_chaplain_filled }
+					set_variable = { name = cc_office_evt_court_chaplain  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_court_astrologer_filled }
+					set_variable = { name = cc_office_evt_court_astrologer  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_grand_inquisitor_filled }
+					set_variable = { name = cc_office_evt_grand_inquisitor  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_ecclesiarch_filled }
+					set_variable = { name = cc_office_evt_ecclesiarch  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_qadi_of_the_court_filled }
+					set_variable = { name = cc_office_evt_qadi_of_the_court  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_court_ulema_filled }
+					set_variable = { name = cc_office_evt_court_ulema  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_court_pandit_filled }
+					set_variable = { name = cc_office_evt_court_pandit  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_sangha_preceptor_filled }
+					set_variable = { name = cc_office_evt_sangha_preceptor  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_consistory_superintendent_filled }
+					set_variable = { name = cc_office_evt_consistory_superintendent  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_confessional_overseer_filled }
+					set_variable = { name = cc_office_evt_confessional_overseer  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.12 }
+						1 = { trigger_event_non_silently = cc_office.13 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_steward_of_the_demesne_filled }
+					set_variable = { name = cc_office_evt_steward_of_the_demesne  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_constable_filled }
+					set_variable = { name = cc_office_evt_constable  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_consul_of_merchants_filled }
+					set_variable = { name = cc_office_evt_consul_of_merchants  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_chancellor_of_the_see_filled }
+					set_variable = { name = cc_office_evt_chancellor_of_the_see  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_keeper_of_the_kurultai_filled }
+					set_variable = { name = cc_office_evt_keeper_of_the_kurultai  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_the_yam_filled }
+					set_variable = { name = cc_office_evt_master_of_the_yam  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.14 }
+						1 = { trigger_event_non_silently = cc_office.15 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_phanariote_secretary_filled }
+					set_variable = { name = cc_office_evt_phanariote_secretary  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_hansa_factor_filled }
+					set_variable = { name = cc_office_evt_hansa_factor  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_postelnic_filled }
+					set_variable = { name = cc_office_evt_postelnic  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_voivode_of_the_court_filled }
+					set_variable = { name = cc_office_evt_voivode_of_the_court  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_herald_of_the_table_of_ranks_filled }
+					set_variable = { name = cc_office_evt_herald_of_the_table_of_ranks  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_state_inquisitor_filled }
+					set_variable = { name = cc_office_evt_state_inquisitor  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_priori_of_the_council_filled }
+					set_variable = { name = cc_office_evt_priori_of_the_council  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_jokamachi_warden_filled }
+					set_variable = { name = cc_office_evt_jokamachi_warden  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_siege_works_filled }
+					set_variable = { name = cc_office_evt_master_of_siege_works  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.16 }
+						1 = { trigger_event_non_silently = cc_office.17 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_keeper_of_the_wampum_filled }
+					set_variable = { name = cc_office_evt_keeper_of_the_wampum  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.18 }
+						1 = { trigger_event_non_silently = cc_office.19 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_speaker_of_the_elders_filled }
+					set_variable = { name = cc_office_evt_speaker_of_the_elders  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.18 }
+						1 = { trigger_event_non_silently = cc_office.19 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_keeper_of_regnal_chronicles_filled }
+					set_variable = { name = cc_office_evt_keeper_of_regnal_chronicles  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.18 }
+						1 = { trigger_event_non_silently = cc_office.19 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_the_silk_road_filled }
+					set_variable = { name = cc_office_evt_master_of_the_silk_road  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.18 }
+						1 = { trigger_event_non_silently = cc_office.19 }
+					}
+				}
+				1 = {
+					trigger = { has_variable = cc_office_master_of_ceremonies_filled }
+					set_variable = { name = cc_office_evt_master_of_ceremonies  value = yes  months = 2 }
+					random_list = {
+						1 = { trigger_event_non_silently = cc_office.18 }
+						1 = { trigger_event_non_silently = cc_office.19 }
+					}
+				}
+			}
+		}
+	}
+}
+
+# In an office event's immediate: save the flagged office's holder and tenure.
+cc_office_take_event = {
+	clear_saved_scope = cc_office_evt_holder
+	set_variable = { name = cc_office_evt_tenure  value = 0 }
+	if = {
+		limit = { has_variable = cc_office_evt_seneschal }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_seneschal }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_seneschal_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_seneschal_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_coin }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_coin }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_coin_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_coin_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_herald_of_arms }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_herald_of_arms }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_herald_of_arms_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_herald_of_arms_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_marshal_of_the_court }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_marshal_of_the_court }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_marshal_of_the_court_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_marshal_of_the_court_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_clerk_of_the_signet }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_clerk_of_the_signet }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_clerk_of_the_signet_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_clerk_of_the_signet_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_keeper_of_the_wardrobe }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_keeper_of_the_wardrobe }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_keeper_of_the_wardrobe_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_keeper_of_the_wardrobe_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_chancellor_of_the_rolls }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_chancellor_of_the_rolls }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_chancellor_of_the_rolls_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_chancellor_of_the_rolls_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_the_mint }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_the_mint }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_the_mint_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_the_mint_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_court_chamberlain }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_court_chamberlain }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_court_chamberlain_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_court_chamberlain_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_protocol }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_protocol }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_protocol_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_protocol_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_intendant }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_intendant }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_intendant_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_intendant_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_permanent_secretary }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_permanent_secretary }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_permanent_secretary_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_permanent_secretary_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_director_of_public_instruction }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_director_of_public_instruction }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_director_of_public_instruction_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_director_of_public_instruction_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_court_chaplain }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_court_chaplain }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_court_chaplain_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_court_chaplain_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_court_astrologer }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_court_astrologer }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_court_astrologer_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_court_astrologer_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_grand_inquisitor }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_grand_inquisitor }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_grand_inquisitor_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_grand_inquisitor_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_ecclesiarch }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_ecclesiarch }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_ecclesiarch_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_ecclesiarch_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_qadi_of_the_court }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_qadi_of_the_court }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_qadi_of_the_court_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_qadi_of_the_court_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_court_ulema }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_court_ulema }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_court_ulema_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_court_ulema_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_court_pandit }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_court_pandit }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_court_pandit_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_court_pandit_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_sangha_preceptor }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_sangha_preceptor }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_sangha_preceptor_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_sangha_preceptor_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_consistory_superintendent }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_consistory_superintendent }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_consistory_superintendent_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_consistory_superintendent_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_confessional_overseer }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_confessional_overseer }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_confessional_overseer_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_confessional_overseer_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_steward_of_the_demesne }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_steward_of_the_demesne }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_steward_of_the_demesne_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_steward_of_the_demesne_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_constable }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_constable }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_constable_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_constable_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_consul_of_merchants }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_consul_of_merchants }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_consul_of_merchants_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_consul_of_merchants_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_chancellor_of_the_see }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_chancellor_of_the_see }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_chancellor_of_the_see_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_chancellor_of_the_see_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_keeper_of_the_kurultai }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_keeper_of_the_kurultai }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_keeper_of_the_kurultai_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_keeper_of_the_kurultai_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_the_yam }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_the_yam }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_the_yam_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_the_yam_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_phanariote_secretary }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_phanariote_secretary }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_phanariote_secretary_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_phanariote_secretary_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_hansa_factor }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_hansa_factor }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_hansa_factor_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_hansa_factor_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_postelnic }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_postelnic }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_postelnic_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_postelnic_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_voivode_of_the_court }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_voivode_of_the_court }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_voivode_of_the_court_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_voivode_of_the_court_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_herald_of_the_table_of_ranks }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_herald_of_the_table_of_ranks }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_herald_of_the_table_of_ranks_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_herald_of_the_table_of_ranks_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_state_inquisitor }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_state_inquisitor }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_state_inquisitor_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_state_inquisitor_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_priori_of_the_council }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_priori_of_the_council }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_priori_of_the_council_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_priori_of_the_council_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_jokamachi_warden }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_jokamachi_warden }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_jokamachi_warden_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_jokamachi_warden_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_siege_works }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_siege_works }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_siege_works_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_siege_works_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_keeper_of_the_wampum }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_keeper_of_the_wampum }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_keeper_of_the_wampum_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_keeper_of_the_wampum_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_speaker_of_the_elders }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_speaker_of_the_elders }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_speaker_of_the_elders_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_speaker_of_the_elders_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_keeper_of_regnal_chronicles }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_keeper_of_regnal_chronicles }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_keeper_of_regnal_chronicles_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_keeper_of_regnal_chronicles_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_the_silk_road }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_the_silk_road }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_the_silk_road_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_the_silk_road_since  min = 0 }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = cc_office_evt_master_of_ceremonies }
+		every_cabinet_character = {
+			limit = { has_variable = cc_office_held_master_of_ceremonies }
+			save_scope_as = cc_office_evt_holder
+		}
+		if = {
+			limit = { has_variable = cc_office_master_of_ceremonies_since }
+			set_variable = {
+				name = cc_office_evt_tenure
+				value = { value = current_year  subtract = var:cc_office_master_of_ceremonies_since  min = 0 }
+			}
+		}
 	}
 }

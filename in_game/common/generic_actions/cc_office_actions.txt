@@ -1,0 +1,3363 @@
+﻿# GENERATED FILE. Do not edit by hand.
+#   python tools/generate_offices.py
+#
+# Household offices. See the docstring in the generator for why offices are
+# auto_modifiers keyed on country variables rather than traits.
+#
+# Household tab card buttons. Appoint fires cc_office.3 with the most
+# senior eligible ministers as options; Dismiss vacates the post.
+
+# Seneschal
+cc_office_seneschal_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_seneschal_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_seneschal_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_seneschal_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_seneschal_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_seneschal  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_seneschal_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_seneschal_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_seneschal_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = seneschal }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of Coin
+cc_office_master_of_coin_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_coin_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_coin_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_coin_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_coin_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_coin  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_coin_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_coin_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_coin_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_coin }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Herald of Arms
+cc_office_herald_of_arms_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_herald_of_arms_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_herald_of_arms_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_herald_of_arms_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_herald_of_arms_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_herald_of_arms  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_herald_of_arms_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_herald_of_arms_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_herald_of_arms_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = herald_of_arms }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Marshal of the Court
+cc_office_marshal_of_the_court_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_marshal_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_marshal_of_the_court_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_marshal_of_the_court_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = mil  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_marshal_of_the_court_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_marshal_of_the_court  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_marshal_of_the_court_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_marshal_of_the_court_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_marshal_of_the_court_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = marshal_of_the_court }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Clerk of the Signet
+cc_office_clerk_of_the_signet_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_clerk_of_the_signet_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_clerk_of_the_signet_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_clerk_of_the_signet_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_clerk_of_the_signet_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_clerk_of_the_signet  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_clerk_of_the_signet_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_clerk_of_the_signet_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_clerk_of_the_signet_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = clerk_of_the_signet }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Keeper of the Wardrobe
+cc_office_keeper_of_the_wardrobe_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_wardrobe_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_keeper_of_the_wardrobe_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_keeper_of_the_wardrobe_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_keeper_of_the_wardrobe_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_keeper_of_the_wardrobe  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_wardrobe_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_keeper_of_the_wardrobe_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_keeper_of_the_wardrobe_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = keeper_of_the_wardrobe }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Chancellor of the Rolls
+cc_office_chancellor_of_the_rolls_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_chancellor_of_the_rolls_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_chancellor_of_the_rolls_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_chancellor_of_the_rolls_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_chancellor_of_the_rolls_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_chancellor_of_the_rolls  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_chancellor_of_the_rolls_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_chancellor_of_the_rolls_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_chancellor_of_the_rolls_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = chancellor_of_the_rolls }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of the Mint
+cc_office_master_of_the_mint_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_mint_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_the_mint_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_the_mint_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_the_mint_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_the_mint  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_mint_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_the_mint_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_the_mint_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_the_mint }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Court Chamberlain
+cc_office_court_chamberlain_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_chamberlain_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_court_chamberlain_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_court_chamberlain_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_court_chamberlain_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_court_chamberlain  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_chamberlain_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_court_chamberlain_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_court_chamberlain_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = court_chamberlain }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of Protocol
+cc_office_master_of_protocol_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_protocol_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_protocol_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_protocol_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_protocol_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_protocol  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_protocol_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_protocol_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_protocol_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_protocol }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Intendant of the Household
+cc_office_intendant_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_intendant_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_intendant_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_intendant_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_intendant_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_intendant  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_intendant_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_intendant_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_intendant_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = intendant }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Permanent Secretary
+cc_office_permanent_secretary_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_permanent_secretary_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_permanent_secretary_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_permanent_secretary_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_permanent_secretary_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_permanent_secretary  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_permanent_secretary_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_permanent_secretary_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_permanent_secretary_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = permanent_secretary }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Director of Public Instruction
+cc_office_director_of_public_instruction_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_director_of_public_instruction_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_director_of_public_instruction_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_director_of_public_instruction_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_director_of_public_instruction_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_director_of_public_instruction  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_director_of_public_instruction_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_director_of_public_instruction_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_director_of_public_instruction_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = director_of_public_instruction }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Court Chaplain
+cc_office_court_chaplain_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_chaplain_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_court_chaplain_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_court_chaplain_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_court_chaplain_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_court_chaplain  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_chaplain_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_court_chaplain_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_court_chaplain_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = court_chaplain }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Court Astrologer
+cc_office_court_astrologer_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_astrologer_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_court_astrologer_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_court_astrologer_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_court_astrologer_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_court_astrologer  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_astrologer_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_court_astrologer_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_court_astrologer_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = court_astrologer }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Grand Inquisitor
+cc_office_grand_inquisitor_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_grand_inquisitor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_grand_inquisitor_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_grand_inquisitor_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_grand_inquisitor_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_grand_inquisitor  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_grand_inquisitor_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_grand_inquisitor_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_grand_inquisitor_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = grand_inquisitor }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Ecclesiarch of the Court
+cc_office_ecclesiarch_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_ecclesiarch_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_ecclesiarch_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_ecclesiarch_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_ecclesiarch_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_ecclesiarch  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_ecclesiarch_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_ecclesiarch_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_ecclesiarch_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = ecclesiarch }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Qadi of the Court
+cc_office_qadi_of_the_court_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_qadi_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_qadi_of_the_court_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_qadi_of_the_court_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_qadi_of_the_court_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_qadi_of_the_court  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_qadi_of_the_court_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_qadi_of_the_court_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_qadi_of_the_court_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = qadi_of_the_court }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Court Ulema
+cc_office_court_ulema_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_ulema_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_court_ulema_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_court_ulema_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_court_ulema_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_court_ulema  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_ulema_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_court_ulema_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_court_ulema_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = court_ulema }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Court Pandit
+cc_office_court_pandit_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_pandit_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_court_pandit_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_court_pandit_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_court_pandit_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_court_pandit  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_pandit_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_court_pandit_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_court_pandit_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = court_pandit }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Sangha Preceptor
+cc_office_sangha_preceptor_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_sangha_preceptor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_sangha_preceptor_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_sangha_preceptor_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_sangha_preceptor_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_sangha_preceptor  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_sangha_preceptor_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_sangha_preceptor_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_sangha_preceptor_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = sangha_preceptor }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Consistory Superintendent
+cc_office_consistory_superintendent_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_consistory_superintendent_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_consistory_superintendent_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_consistory_superintendent_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_consistory_superintendent_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_consistory_superintendent  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_consistory_superintendent_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_consistory_superintendent_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_consistory_superintendent_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = consistory_superintendent }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Overseer of the Confession
+cc_office_confessional_overseer_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_confessional_overseer_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_confessional_overseer_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_confessional_overseer_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_confessional_overseer_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_confessional_overseer  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_confessional_overseer_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_confessional_overseer_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_confessional_overseer_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = confessional_overseer }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Steward of the Demesne
+cc_office_steward_of_the_demesne_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_steward_of_the_demesne_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_steward_of_the_demesne_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_steward_of_the_demesne_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_steward_of_the_demesne_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_steward_of_the_demesne  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_steward_of_the_demesne_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_steward_of_the_demesne_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_steward_of_the_demesne_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = steward_of_the_demesne }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Constable
+cc_office_constable_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_constable_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_constable_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_constable_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_constable_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_constable  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_constable_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_constable_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_constable_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = constable }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Consul of Merchants
+cc_office_consul_of_merchants_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_consul_of_merchants_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_consul_of_merchants_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_consul_of_merchants_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_consul_of_merchants_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_consul_of_merchants  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_consul_of_merchants_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_consul_of_merchants_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_consul_of_merchants_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = consul_of_merchants }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Chancellor of the See
+cc_office_chancellor_of_the_see_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_chancellor_of_the_see_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_chancellor_of_the_see_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_chancellor_of_the_see_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_chancellor_of_the_see_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_chancellor_of_the_see  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_chancellor_of_the_see_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_chancellor_of_the_see_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_chancellor_of_the_see_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = chancellor_of_the_see }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Keeper of the Kurultai
+cc_office_keeper_of_the_kurultai_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_kurultai_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_keeper_of_the_kurultai_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_keeper_of_the_kurultai_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_keeper_of_the_kurultai_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_keeper_of_the_kurultai  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_kurultai_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_keeper_of_the_kurultai_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_keeper_of_the_kurultai_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = keeper_of_the_kurultai }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of the Yam
+cc_office_master_of_the_yam_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_yam_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_the_yam_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_the_yam_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_the_yam_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_the_yam  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_yam_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_the_yam_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_the_yam_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_the_yam }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Phanariote Secretary
+cc_office_phanariote_secretary_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_phanariote_secretary_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_phanariote_secretary_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_phanariote_secretary_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_phanariote_secretary_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_phanariote_secretary  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_phanariote_secretary_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_phanariote_secretary_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_phanariote_secretary_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = phanariote_secretary }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Hansa Factor
+cc_office_hansa_factor_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_hansa_factor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_hansa_factor_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_hansa_factor_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_hansa_factor_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_hansa_factor  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_hansa_factor_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_hansa_factor_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_hansa_factor_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = hansa_factor }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Postelnic
+cc_office_postelnic_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_postelnic_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_postelnic_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_postelnic_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_postelnic_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_postelnic  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_postelnic_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_postelnic_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_postelnic_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = postelnic }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Voivode of the Court
+cc_office_voivode_of_the_court_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_voivode_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_voivode_of_the_court_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_voivode_of_the_court_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_voivode_of_the_court_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_voivode_of_the_court  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_voivode_of_the_court_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_voivode_of_the_court_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_voivode_of_the_court_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = voivode_of_the_court }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Herald of the Table of Ranks
+cc_office_herald_of_the_table_of_ranks_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_herald_of_the_table_of_ranks_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_herald_of_the_table_of_ranks_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_herald_of_the_table_of_ranks_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_herald_of_the_table_of_ranks_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_herald_of_the_table_of_ranks  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_herald_of_the_table_of_ranks_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_herald_of_the_table_of_ranks_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_herald_of_the_table_of_ranks_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = herald_of_the_table_of_ranks }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# State Inquisitor
+cc_office_state_inquisitor_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_state_inquisitor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_state_inquisitor_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_state_inquisitor_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 3 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_state_inquisitor_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_state_inquisitor  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_state_inquisitor_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_state_inquisitor_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_state_inquisitor_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = state_inquisitor }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Priore of the Council
+cc_office_priori_of_the_council_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_priori_of_the_council_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_priori_of_the_council_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_priori_of_the_council_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_priori_of_the_council_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_priori_of_the_council  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_priori_of_the_council_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_priori_of_the_council_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_priori_of_the_council_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = priori_of_the_council }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Warden of the Castle Town
+cc_office_jokamachi_warden_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_jokamachi_warden_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_jokamachi_warden_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_jokamachi_warden_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_jokamachi_warden_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_jokamachi_warden  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_jokamachi_warden_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_jokamachi_warden_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_jokamachi_warden_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = jokamachi_warden }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of Siege Works
+cc_office_master_of_siege_works_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_siege_works_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_siege_works_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_siege_works_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = mil  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_siege_works_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_siege_works  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_siege_works_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_siege_works_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_siege_works_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_siege_works }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Keeper of the Wampum
+cc_office_keeper_of_the_wampum_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_wampum_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_keeper_of_the_wampum_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_keeper_of_the_wampum_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_keeper_of_the_wampum_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_keeper_of_the_wampum  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_wampum_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_keeper_of_the_wampum_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_keeper_of_the_wampum_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = keeper_of_the_wampum }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Speaker of the Elders
+cc_office_speaker_of_the_elders_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_speaker_of_the_elders_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_speaker_of_the_elders_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_speaker_of_the_elders_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_speaker_of_the_elders_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_speaker_of_the_elders  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_speaker_of_the_elders_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_speaker_of_the_elders_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_speaker_of_the_elders_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = speaker_of_the_elders }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Keeper of the Chronicles
+cc_office_keeper_of_regnal_chronicles_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_regnal_chronicles_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_keeper_of_regnal_chronicles_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_keeper_of_regnal_chronicles_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = adm  TIER = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_keeper_of_regnal_chronicles_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_keeper_of_regnal_chronicles  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_regnal_chronicles_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_keeper_of_regnal_chronicles_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_keeper_of_regnal_chronicles_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = keeper_of_regnal_chronicles }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of the Road
+cc_office_master_of_the_silk_road_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_silk_road_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_the_silk_road_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_the_silk_road_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_the_silk_road_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_the_silk_road  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_silk_road_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_the_silk_road_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_the_silk_road_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_the_silk_road }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+# Master of Ceremonies
+cc_office_master_of_ceremonies_appoint = {
+	type = owncountry
+	price = price:cc_office_appointment
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_ceremonies_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			cc_office_master_of_ceremonies_vacant = yes
+			custom_tooltip = {
+				text = cc_office_tt_room
+				cc_office_filled_count < cc_office_slot_cap
+			}
+			custom_tooltip = {
+				text = cc_office_master_of_ceremonies_tt_candidate
+				any_cabinet_character = {
+					cc_office_can_be_appointed = yes
+					cc_xp_tier_at_least = { TRACK = dip  TIER = 2 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_master_of_ceremonies_tt }
+			hidden_effect = {
+				cc_office_panel_clear = yes
+				set_variable = { name = cc_office_panel_master_of_ceremonies  value = yes  months = 1 }
+			}
+			trigger_event_silently = { id = cc_office.3 }
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_ceremonies_dismiss = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			has_variable = cc_office_master_of_ceremonies_filled
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			has_variable = cc_office_master_of_ceremonies_filled
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			custom_tooltip = { text = cc_office_tt_dismiss }
+			hidden_effect = {
+				cc_office_vacate = { OFFICE = master_of_ceremonies }
+				cc_office_publish_roster = yes
+			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+

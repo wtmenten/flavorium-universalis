@@ -690,3 +690,968 @@ cc_office.2 = {
 		name = cc_office.2.a
 	}
 }
+
+# The Household tab's Appoint button on one office: whom to name.
+# root = country. The office is flagged cc_office_panel_<key>.
+cc_office.3 = {
+	type = country_event
+	title = cc_office.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { NOT = { exists = scope:cc_office_cand_1 } }
+				desc = cc_office.3.desc_none
+			}
+			desc = cc_office.3.desc
+		}
+	}
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+	}
+
+	immediate = {
+		cc_office_panel_save_candidates = yes
+		cc_xp_dedupe_picks = { P = cc_office_cand }
+	}
+
+	option = {
+		name = cc_office.3.cand_1
+		trigger = { exists = scope:cc_office_cand_1 }
+		cc_office_panel_tooltip = yes
+		cc_office_panel_appoint = { WHO = scope:cc_office_cand_1 }
+	}
+	option = {
+		name = cc_office.3.cand_2
+		trigger = { exists = scope:cc_office_cand_2 }
+		cc_office_panel_tooltip = yes
+		cc_office_panel_appoint = { WHO = scope:cc_office_cand_2 }
+	}
+	option = {
+		name = cc_office.3.cand_3
+		trigger = { exists = scope:cc_office_cand_3 }
+		cc_office_panel_tooltip = yes
+		cc_office_panel_appoint = { WHO = scope:cc_office_cand_3 }
+	}
+	option = {
+		name = cc_office.3.cand_4
+		trigger = { exists = scope:cc_office_cand_4 }
+		cc_office_panel_tooltip = yes
+		cc_office_panel_appoint = { WHO = scope:cc_office_cand_4 }
+	}
+	option = {
+		name = cc_office.3.none
+		hidden_effect = { cc_office_panel_clear = yes }
+	}
+}
+
+
+###############################################################################
+# OFFICE EVENTS (generated from FAMILY_EVENTS). Fired by cc_office_roll_event.
+###############################################################################
+
+# The Household Accounts (core)
+cc_office.10 = {
+	type = country_event
+	title = cc_office.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_seneschal }
+				desc = cc_office_evt_line_seneschal
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_coin }
+				desc = cc_office_evt_line_master_of_coin
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_herald_of_arms }
+				desc = cc_office_evt_line_herald_of_arms
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_marshal_of_the_court }
+				desc = cc_office_evt_line_marshal_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_clerk_of_the_signet }
+				desc = cc_office_evt_line_clerk_of_the_signet
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_wardrobe }
+				desc = cc_office_evt_line_keeper_of_the_wardrobe
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_chancellor_of_the_rolls }
+				desc = cc_office_evt_line_chancellor_of_the_rolls
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_mint }
+				desc = cc_office_evt_line_master_of_the_mint
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_chamberlain }
+				desc = cc_office_evt_line_court_chamberlain
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_protocol }
+				desc = cc_office_evt_line_master_of_protocol
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_intendant }
+				desc = cc_office_evt_line_intendant
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_permanent_secretary }
+				desc = cc_office_evt_line_permanent_secretary
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_director_of_public_instruction }
+				desc = cc_office_evt_line_director_of_public_instruction
+			}
+		}
+		desc = cc_office.10.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_seneschal
+			has_variable = cc_office_evt_master_of_coin
+			has_variable = cc_office_evt_herald_of_arms
+			has_variable = cc_office_evt_marshal_of_the_court
+			has_variable = cc_office_evt_clerk_of_the_signet
+			has_variable = cc_office_evt_keeper_of_the_wardrobe
+			has_variable = cc_office_evt_chancellor_of_the_rolls
+			has_variable = cc_office_evt_master_of_the_mint
+			has_variable = cc_office_evt_court_chamberlain
+			has_variable = cc_office_evt_master_of_protocol
+			has_variable = cc_office_evt_intendant
+			has_variable = cc_office_evt_permanent_secretary
+			has_variable = cc_office_evt_director_of_public_instruction
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.10.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 2  min = 10 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 15 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.10.b
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 1  min = 5 }
+	}
+	option = {
+		name = cc_office.10.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_senior
+				scope:cc_office_evt_holder ?= { cc_xp_level_at_least = { LEVEL = 5 } }
+			}
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 2  min = 10 }
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 25 } cc_xp_recompute = yes }
+	}
+}
+
+# A Quarrel over Precedence (core)
+cc_office.11 = {
+	type = country_event
+	title = cc_office.11.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_seneschal }
+				desc = cc_office_evt_line_seneschal
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_coin }
+				desc = cc_office_evt_line_master_of_coin
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_herald_of_arms }
+				desc = cc_office_evt_line_herald_of_arms
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_marshal_of_the_court }
+				desc = cc_office_evt_line_marshal_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_clerk_of_the_signet }
+				desc = cc_office_evt_line_clerk_of_the_signet
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_wardrobe }
+				desc = cc_office_evt_line_keeper_of_the_wardrobe
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_chancellor_of_the_rolls }
+				desc = cc_office_evt_line_chancellor_of_the_rolls
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_mint }
+				desc = cc_office_evt_line_master_of_the_mint
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_chamberlain }
+				desc = cc_office_evt_line_court_chamberlain
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_protocol }
+				desc = cc_office_evt_line_master_of_protocol
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_intendant }
+				desc = cc_office_evt_line_intendant
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_permanent_secretary }
+				desc = cc_office_evt_line_permanent_secretary
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_director_of_public_instruction }
+				desc = cc_office_evt_line_director_of_public_instruction
+			}
+		}
+		desc = cc_office.11.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_seneschal
+			has_variable = cc_office_evt_master_of_coin
+			has_variable = cc_office_evt_herald_of_arms
+			has_variable = cc_office_evt_marshal_of_the_court
+			has_variable = cc_office_evt_clerk_of_the_signet
+			has_variable = cc_office_evt_keeper_of_the_wardrobe
+			has_variable = cc_office_evt_chancellor_of_the_rolls
+			has_variable = cc_office_evt_master_of_the_mint
+			has_variable = cc_office_evt_court_chamberlain
+			has_variable = cc_office_evt_master_of_protocol
+			has_variable = cc_office_evt_intendant
+			has_variable = cc_office_evt_permanent_secretary
+			has_variable = cc_office_evt_director_of_public_instruction
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.11.a
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.11.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		add_prestige = prestige_weak_penalty
+	}
+	option = {
+		name = cc_office.11.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_tenure
+				var:cc_office_evt_tenure >= 5
+			}
+		}
+		add_prestige = prestige_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+}
+
+# A Sermon at Court (religion)
+cc_office.12 = {
+	type = country_event
+	title = cc_office.12.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_chaplain }
+				desc = cc_office_evt_line_court_chaplain
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_astrologer }
+				desc = cc_office_evt_line_court_astrologer
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_grand_inquisitor }
+				desc = cc_office_evt_line_grand_inquisitor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_ecclesiarch }
+				desc = cc_office_evt_line_ecclesiarch
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_qadi_of_the_court }
+				desc = cc_office_evt_line_qadi_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_ulema }
+				desc = cc_office_evt_line_court_ulema
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_pandit }
+				desc = cc_office_evt_line_court_pandit
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_sangha_preceptor }
+				desc = cc_office_evt_line_sangha_preceptor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_consistory_superintendent }
+				desc = cc_office_evt_line_consistory_superintendent
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_confessional_overseer }
+				desc = cc_office_evt_line_confessional_overseer
+			}
+		}
+		desc = cc_office.12.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_court_chaplain
+			has_variable = cc_office_evt_court_astrologer
+			has_variable = cc_office_evt_grand_inquisitor
+			has_variable = cc_office_evt_ecclesiarch
+			has_variable = cc_office_evt_qadi_of_the_court
+			has_variable = cc_office_evt_court_ulema
+			has_variable = cc_office_evt_court_pandit
+			has_variable = cc_office_evt_sangha_preceptor
+			has_variable = cc_office_evt_consistory_superintendent
+			has_variable = cc_office_evt_confessional_overseer
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.12.a
+		add_religious_influence = religious_influence_mild_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.12.b
+		add_stability = stability_weak_bonus
+	}
+	option = {
+		name = cc_office.12.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_senior
+				scope:cc_office_evt_holder ?= { cc_xp_level_at_least = { LEVEL = 5 } }
+			}
+		}
+		add_religious_influence = religious_influence_mild_bonus
+		add_stability = stability_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 20 } cc_xp_recompute = yes }
+	}
+}
+
+# A Matter of Conscience (religion)
+cc_office.13 = {
+	type = country_event
+	title = cc_office.13.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_chaplain }
+				desc = cc_office_evt_line_court_chaplain
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_astrologer }
+				desc = cc_office_evt_line_court_astrologer
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_grand_inquisitor }
+				desc = cc_office_evt_line_grand_inquisitor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_ecclesiarch }
+				desc = cc_office_evt_line_ecclesiarch
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_qadi_of_the_court }
+				desc = cc_office_evt_line_qadi_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_ulema }
+				desc = cc_office_evt_line_court_ulema
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_court_pandit }
+				desc = cc_office_evt_line_court_pandit
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_sangha_preceptor }
+				desc = cc_office_evt_line_sangha_preceptor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_consistory_superintendent }
+				desc = cc_office_evt_line_consistory_superintendent
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_confessional_overseer }
+				desc = cc_office_evt_line_confessional_overseer
+			}
+		}
+		desc = cc_office.13.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_court_chaplain
+			has_variable = cc_office_evt_court_astrologer
+			has_variable = cc_office_evt_grand_inquisitor
+			has_variable = cc_office_evt_ecclesiarch
+			has_variable = cc_office_evt_qadi_of_the_court
+			has_variable = cc_office_evt_court_ulema
+			has_variable = cc_office_evt_court_pandit
+			has_variable = cc_office_evt_sangha_preceptor
+			has_variable = cc_office_evt_consistory_superintendent
+			has_variable = cc_office_evt_confessional_overseer
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.13.a
+		add_political_influence = political_influence_weak_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+	}
+	option = {
+		name = cc_office.13.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		add_political_influence = political_influence_weak_penalty
+	}
+	option = {
+		name = cc_office.13.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_tenure
+				var:cc_office_evt_tenure >= 5
+			}
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		add_stability = stability_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 15 } cc_xp_recompute = yes }
+	}
+}
+
+# Petitions Pile Up (government)
+cc_office.14 = {
+	type = country_event
+	title = cc_office.14.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_steward_of_the_demesne }
+				desc = cc_office_evt_line_steward_of_the_demesne
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_constable }
+				desc = cc_office_evt_line_constable
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_consul_of_merchants }
+				desc = cc_office_evt_line_consul_of_merchants
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_chancellor_of_the_see }
+				desc = cc_office_evt_line_chancellor_of_the_see
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_kurultai }
+				desc = cc_office_evt_line_keeper_of_the_kurultai
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_yam }
+				desc = cc_office_evt_line_master_of_the_yam
+			}
+		}
+		desc = cc_office.14.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_steward_of_the_demesne
+			has_variable = cc_office_evt_constable
+			has_variable = cc_office_evt_consul_of_merchants
+			has_variable = cc_office_evt_chancellor_of_the_see
+			has_variable = cc_office_evt_keeper_of_the_kurultai
+			has_variable = cc_office_evt_master_of_the_yam
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.14.a
+		add_political_influence = political_influence_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 15 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.14.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+	}
+	option = {
+		name = cc_office.14.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_senior
+				scope:cc_office_evt_holder ?= { cc_xp_level_at_least = { LEVEL = 5 } }
+			}
+		}
+		add_political_influence = political_influence_mild_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 20 } cc_xp_recompute = yes }
+	}
+}
+
+# An Inspection of the Offices (government)
+cc_office.15 = {
+	type = country_event
+	title = cc_office.15.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_steward_of_the_demesne }
+				desc = cc_office_evt_line_steward_of_the_demesne
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_constable }
+				desc = cc_office_evt_line_constable
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_consul_of_merchants }
+				desc = cc_office_evt_line_consul_of_merchants
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_chancellor_of_the_see }
+				desc = cc_office_evt_line_chancellor_of_the_see
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_kurultai }
+				desc = cc_office_evt_line_keeper_of_the_kurultai
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_yam }
+				desc = cc_office_evt_line_master_of_the_yam
+			}
+		}
+		desc = cc_office.15.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_steward_of_the_demesne
+			has_variable = cc_office_evt_constable
+			has_variable = cc_office_evt_consul_of_merchants
+			has_variable = cc_office_evt_chancellor_of_the_see
+			has_variable = cc_office_evt_keeper_of_the_kurultai
+			has_variable = cc_office_evt_master_of_the_yam
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.15.a
+		add_stability = stability_weak_bonus
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.15.b
+		add_political_influence = political_influence_weak_bonus
+	}
+	option = {
+		name = cc_office.15.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_tenure
+				var:cc_office_evt_tenure >= 5
+			}
+		}
+		add_stability = stability_weak_bonus
+		add_political_influence = political_influence_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 15 } cc_xp_recompute = yes }
+	}
+}
+
+# A Festival at Court (culture)
+cc_office.16 = {
+	type = country_event
+	title = cc_office.16.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_phanariote_secretary }
+				desc = cc_office_evt_line_phanariote_secretary
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_hansa_factor }
+				desc = cc_office_evt_line_hansa_factor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_postelnic }
+				desc = cc_office_evt_line_postelnic
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_voivode_of_the_court }
+				desc = cc_office_evt_line_voivode_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_herald_of_the_table_of_ranks }
+				desc = cc_office_evt_line_herald_of_the_table_of_ranks
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_state_inquisitor }
+				desc = cc_office_evt_line_state_inquisitor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_priori_of_the_council }
+				desc = cc_office_evt_line_priori_of_the_council
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_jokamachi_warden }
+				desc = cc_office_evt_line_jokamachi_warden
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_siege_works }
+				desc = cc_office_evt_line_master_of_siege_works
+			}
+		}
+		desc = cc_office.16.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_phanariote_secretary
+			has_variable = cc_office_evt_hansa_factor
+			has_variable = cc_office_evt_postelnic
+			has_variable = cc_office_evt_voivode_of_the_court
+			has_variable = cc_office_evt_herald_of_the_table_of_ranks
+			has_variable = cc_office_evt_state_inquisitor
+			has_variable = cc_office_evt_priori_of_the_council
+			has_variable = cc_office_evt_jokamachi_warden
+			has_variable = cc_office_evt_master_of_siege_works
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.16.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -10 }
+		add_prestige = prestige_mild_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.16.b
+		add_prestige = prestige_weak_bonus
+	}
+	option = {
+		name = cc_office.16.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_senior
+				scope:cc_office_evt_holder ?= { cc_xp_level_at_least = { LEVEL = 5 } }
+			}
+		}
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  max = -5 }
+		add_prestige = prestige_mild_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 20 } cc_xp_recompute = yes }
+	}
+}
+
+# A Foreign Fashion (culture)
+cc_office.17 = {
+	type = country_event
+	title = cc_office.17.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_phanariote_secretary }
+				desc = cc_office_evt_line_phanariote_secretary
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_hansa_factor }
+				desc = cc_office_evt_line_hansa_factor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_postelnic }
+				desc = cc_office_evt_line_postelnic
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_voivode_of_the_court }
+				desc = cc_office_evt_line_voivode_of_the_court
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_herald_of_the_table_of_ranks }
+				desc = cc_office_evt_line_herald_of_the_table_of_ranks
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_state_inquisitor }
+				desc = cc_office_evt_line_state_inquisitor
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_priori_of_the_council }
+				desc = cc_office_evt_line_priori_of_the_council
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_jokamachi_warden }
+				desc = cc_office_evt_line_jokamachi_warden
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_siege_works }
+				desc = cc_office_evt_line_master_of_siege_works
+			}
+		}
+		desc = cc_office.17.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_phanariote_secretary
+			has_variable = cc_office_evt_hansa_factor
+			has_variable = cc_office_evt_postelnic
+			has_variable = cc_office_evt_voivode_of_the_court
+			has_variable = cc_office_evt_herald_of_the_table_of_ranks
+			has_variable = cc_office_evt_state_inquisitor
+			has_variable = cc_office_evt_priori_of_the_council
+			has_variable = cc_office_evt_jokamachi_warden
+			has_variable = cc_office_evt_master_of_siege_works
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.17.a
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+	}
+	option = {
+		name = cc_office.17.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		add_prestige = prestige_weak_penalty
+	}
+	option = {
+		name = cc_office.17.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_tenure
+				var:cc_office_evt_tenure >= 5
+			}
+		}
+		add_prestige = prestige_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 25 } cc_xp_recompute = yes }
+	}
+}
+
+# News from the Frontier (region)
+cc_office.18 = {
+	type = country_event
+	title = cc_office.18.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_wampum }
+				desc = cc_office_evt_line_keeper_of_the_wampum
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_speaker_of_the_elders }
+				desc = cc_office_evt_line_speaker_of_the_elders
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_regnal_chronicles }
+				desc = cc_office_evt_line_keeper_of_regnal_chronicles
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_silk_road }
+				desc = cc_office_evt_line_master_of_the_silk_road
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_ceremonies }
+				desc = cc_office_evt_line_master_of_ceremonies
+			}
+		}
+		desc = cc_office.18.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_keeper_of_the_wampum
+			has_variable = cc_office_evt_speaker_of_the_elders
+			has_variable = cc_office_evt_keeper_of_regnal_chronicles
+			has_variable = cc_office_evt_master_of_the_silk_road
+			has_variable = cc_office_evt_master_of_ceremonies
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.18.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  max = -5 }
+		add_stability = stability_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 10 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.18.b
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 5 } cc_xp_recompute = yes }
+	}
+	option = {
+		name = cc_office.18.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_senior
+				scope:cc_office_evt_holder ?= { cc_xp_level_at_least = { LEVEL = 5 } }
+			}
+		}
+		add_stability = stability_weak_bonus
+		add_political_influence = political_influence_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 20 } cc_xp_recompute = yes }
+	}
+}
+
+# The Provincial Notables (region)
+cc_office.19 = {
+	type = country_event
+	title = cc_office.19.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_the_wampum }
+				desc = cc_office_evt_line_keeper_of_the_wampum
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_speaker_of_the_elders }
+				desc = cc_office_evt_line_speaker_of_the_elders
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_keeper_of_regnal_chronicles }
+				desc = cc_office_evt_line_keeper_of_regnal_chronicles
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_the_silk_road }
+				desc = cc_office_evt_line_master_of_the_silk_road
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_office_evt_master_of_ceremonies }
+				desc = cc_office_evt_line_master_of_ceremonies
+			}
+		}
+		desc = cc_office.19.desc
+	}
+	outcome = neutral
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_office_evt_keeper_of_the_wampum
+			has_variable = cc_office_evt_speaker_of_the_elders
+			has_variable = cc_office_evt_keeper_of_regnal_chronicles
+			has_variable = cc_office_evt_master_of_the_silk_road
+			has_variable = cc_office_evt_master_of_ceremonies
+		}
+	}
+
+	immediate = {
+		cc_office_take_event = yes
+	}
+
+	option = {
+		name = cc_office.19.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  max = -5 }
+		add_political_influence = political_influence_weak_bonus
+	}
+	option = {
+		name = cc_office.19.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+	}
+	option = {
+		name = cc_office.19.c
+		trigger = {
+			custom_tooltip = {
+				text = cc_office_evt_tt_tenure
+				var:cc_office_evt_tenure >= 5
+			}
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		add_political_influence = political_influence_weak_bonus
+		scope:cc_office_evt_holder ?= { cc_xp_gain_dominant = { AMOUNT = 15 } cc_xp_recompute = yes }
+	}
+}
+

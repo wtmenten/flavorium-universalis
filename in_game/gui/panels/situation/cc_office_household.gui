@@ -2,858 +2,3209 @@
 # GENERATED FILE. Do not edit by hand.
 #   python tools/generate_offices.py
 #
-# The Household tab of the Court Ledger.
+# The Household tab of the Court Ledger: one card per office, in a two-column grid.
 #
-# WHY THIS IS ONE BLOCK PER OFFICE RATHER THAN SIX GENERIC SLOTS. Schools use six
-# sequential slot variables because there are only three of them and they are
-# interchangeable. Offices are not: which posts exist depends on what the realm has
-# researched, so a generic slot would still need a number-to-name mapping in GUI, which
-# is the same 43 visibility checks with an extra indirection on top.
+# WHY ONE BLOCK PER OFFICE RATHER THAN GENERIC SLOTS. Which posts exist depends on what the
+# realm has researched, so a generic slot would still need a number-to-name mapping in GUI,
+# which is the same 43 visibility checks with an extra indirection on top.
 #
-# WHY IT NEEDS cc_office_<key>_open. GUI can dereference a character held in a variable,
-# but it cannot ask whether a named advance has been researched: IsResearched exists only
-# on an AdvanceItem from the advances screen's datamodel, and there is no by-key lookup.
-# cc_office_publish_roster pushes the answer out as country variables the panel tests with
-# IsSet.
+# WHY IT NEEDS PUBLISHED VARIABLES. GUI cannot ask whether a named advance has been
+# researched (IsResearched exists only on the advances screen's own datamodel) and cannot
+# read a script value. cc_office_publish_roster pushes out, per office: _open (vacant),
+# _soon (its advance can be researched now), _retiring (the advance that ends it can be
+# researched now), and for a held office _scale_var and _tenure.
+#
+# THE GRID is a flowcontainer with wrap_count = 2 and ignoreinvisible = yes, which reflows
+# the visible cards into two columns and skips the hidden ones (vanilla: game_rules.gui).
 #
 # Properties in a template are declared at top level, not wrapped in a widget:
 # `using = <template>` merges a template's contents into the widget it is used on, and an
 # extra layer collapses to zero size and takes its children's mouse input with it.
-# See docs/scripting-gotchas.md.
 ######################################################################
 
-# One office and the minister holding it. Expects that minister as its Character
-# datacontext, which is what cc_office_<key>_holder holds.
-template cc_office_row {
-	layoutpolicy_horizontal = expanding
-	size = { -1 46 }
+# A held office. Expects its holder as the Character datacontext (cc_office_<key>_holder).
+template cc_office_held_card {
+	size = { 230 214 }
 	background = { using = color_whiteish_texture  alpha = 0.10 }
 
-	hbox = {
+	vbox = {
 		layoutpolicy_horizontal = expanding
 		layoutpolicy_vertical = expanding
-		margin = { 6 3 }
-		spacing = 6
+		margin = { 8 6 }
+		spacing = 3
 
-		portrait_standard_head_framed_button = {
-			size = { 34 38 }
-			onclick = "[ShowCharacter(Character.Self)]"
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 4
+			text_single = {
+				fontsize = 14
+				align = left|nobaseline
+				block "office_name" {}
+			}
+			expand = {}
+			block "office_retiring" {}
+		}
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 10
+			default_format = "#weak"
+			align = left|nobaseline
+			block "office_family" {}
 		}
 
-		vbox = {
+		hbox = {
 			layoutpolicy_horizontal = expanding
-			spacing = 0
-
-			hbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 5
-				text_single = {
-					fontsize = 13
-					align = left|nobaseline
-					block "office_name" {}
-				}
-				expand = {}
+			spacing = 6
+			portrait_standard_head_framed_button = {
+				size = { 38 44 }
+				onclick = "[ShowCharacter(Character.Self)]"
 			}
-
-			hbox = {
+			vbox = {
 				layoutpolicy_horizontal = expanding
-				spacing = 4
-
+				text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+				text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_OFFICE_CARD_SENIORITY" }
 				text_single = {
-					fontsize = 11
-					align = left|nobaseline
-					text = "[Character.GetShortNameWithNoTooltip]"
-				}
-
-				text_single = {
+					layoutpolicy_horizontal = expanding
 					fontsize = 10
 					default_format = "#weak"
 					align = left|nobaseline
-					text = "CC_OFFICE_SENIORITY"
+					block "office_tenure" {}
 				}
-				text_single = {
-					fontsize = 11
-					align = left|nobaseline
-					raw_text = "[FixedPointToInt(Character.MakeScope.GetVariable('cc_level').GetValue)]"
-				}
-
-				expand = {}
 			}
+		}
+
+		# Effects at the strength this holder gives them.
+		text_multi = {
+			layoutpolicy_horizontal = expanding
+			autoresize = yes
+			multiline = yes
+			max_width = 212
+			fontsize = 11
+			block "office_effects" {}
+		}
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 10
+			default_format = "#weak"
+			align = left|nobaseline
+			block "office_scale" {}
+		}
+
+		expand = {}
+
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			expand = {}
+			block "office_button" {}
 		}
 	}
 }
 
 # An office the realm has but nobody holds.
-template cc_office_open_slot {
-	layoutpolicy_horizontal = expanding
-	size = { -1 40 }
+template cc_office_open_card {
+	size = { 230 168 }
 	background = { using = color_black_texture  alpha = 0.18 }
-
-	hbox = {
-		layoutpolicy_horizontal = expanding
-		layoutpolicy_vertical = expanding
-		margin = { 8 3 }
-		spacing = 8
-
-		widget = {
-			size = { 34 32 }
-			background = { using = color_whiteish_texture  alpha = 0.06 }
-		}
-
-		vbox = {
-			layoutpolicy_horizontal = expanding
-			spacing = 0
-
-			text_single = {
-				layoutpolicy_horizontal = expanding
-				fontsize = 12
-				default_format = "#weak"
-				align = left|nobaseline
-				block "office_name" {}
-			}
-
-			text_single = {
-				layoutpolicy_horizontal = expanding
-				fontsize = 10
-				default_format = "#weak"
-				align = left|nobaseline
-				block "office_requirement" {}
-			}
-		}
-	}
-}
-
-template cc_office_household_content {
-	layoutpolicy_horizontal = expanding
-	layoutpolicy_vertical = expanding
 
 	vbox = {
 		layoutpolicy_horizontal = expanding
 		layoutpolicy_vertical = expanding
-		using = bg_secondary_inner_alt
-		margin = { 10 8 }
-		spacing = 6
+		margin = { 8 6 }
+		spacing = 3
 
-		# ---- Summary ----
 		hbox = {
 			layoutpolicy_horizontal = expanding
 			spacing = 4
-			text_single = { fontsize = 12  default_format = "#weak"  text = "CC_OFFICE_FILLED_LABEL" }
 			text_single = {
-				fontsize = 15
-				raw_text = "[FixedPointToInt(Player.MakeScope.GetVariable('cc_office_filled_var').GetValue)]/6"
+				fontsize = 14
+				default_format = "#weak"
+				align = left|nobaseline
+				block "office_name" {}
 			}
 			expand = {}
+			block "office_retiring" {}
+		}
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 10
+			default_format = "#weak"
+			align = left|nobaseline
+			block "office_family" {}
 		}
 
+		# Base effects, as a seniority 1 holder would give them.
 		text_multi = {
 			layoutpolicy_horizontal = expanding
 			autoresize = yes
 			multiline = yes
-			max_width = 330
+			max_width = 212
 			fontsize = 11
+			block "office_effects" {}
+		}
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 10
 			default_format = "#weak"
-			text = "CC_OFFICE_TAB_NOTE"
+			align = left|nobaseline
+			block "office_requirement" {}
 		}
 
-		# ---- Posts held ----
-		text_single = { fontsize = 12  text = "CC_OFFICE_HELD_HEADER" }
+		expand = {}
 
-		# Seneschal
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_seneschal_tt"
-			blockoverride "office_name" { text = "cc_office_seneschal" }
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			expand = {}
+			block "office_button" {}
 		}
-		# Master of Coin
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_coin_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_coin" }
-		}
-		# Herald of Arms
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_herald_of_arms_tt"
-			blockoverride "office_name" { text = "cc_office_herald_of_arms" }
-		}
-		# Marshal of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_marshal_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
-		}
-		# Clerk of the Signet
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_clerk_of_the_signet_tt"
-			blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
-		}
-		# Keeper of the Wardrobe
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_keeper_of_the_wardrobe_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
-		}
-		# Chancellor of the Rolls
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_chancellor_of_the_rolls_tt"
-			blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
-		}
-		# Master of the Mint
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_the_mint_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
-		}
-		# Court Chamberlain
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_court_chamberlain_tt"
-			blockoverride "office_name" { text = "cc_office_court_chamberlain" }
-		}
-		# Master of Protocol
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_protocol_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_protocol" }
-		}
-		# Intendant of the Household
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_intendant_tt"
-			blockoverride "office_name" { text = "cc_office_intendant" }
-		}
-		# Permanent Secretary
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_permanent_secretary_tt"
-			blockoverride "office_name" { text = "cc_office_permanent_secretary" }
-		}
-		# Director of Public Instruction
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_director_of_public_instruction_tt"
-			blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
-		}
-		# Court Chaplain
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_court_chaplain_tt"
-			blockoverride "office_name" { text = "cc_office_court_chaplain" }
-		}
-		# Court Astrologer
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_court_astrologer_tt"
-			blockoverride "office_name" { text = "cc_office_court_astrologer" }
-		}
-		# Grand Inquisitor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_grand_inquisitor_tt"
-			blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
-		}
-		# Ecclesiarch of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_ecclesiarch_tt"
-			blockoverride "office_name" { text = "cc_office_ecclesiarch" }
-		}
-		# Qadi of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_qadi_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
-		}
-		# Court Ulema
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_court_ulema_tt"
-			blockoverride "office_name" { text = "cc_office_court_ulema" }
-		}
-		# Court Pandit
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_court_pandit_tt"
-			blockoverride "office_name" { text = "cc_office_court_pandit" }
-		}
-		# Sangha Preceptor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_sangha_preceptor_tt"
-			blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
-		}
-		# Consistory Superintendent
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_consistory_superintendent_tt"
-			blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
-		}
-		# Overseer of the Confession
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_confessional_overseer_tt"
-			blockoverride "office_name" { text = "cc_office_confessional_overseer" }
-		}
-		# Steward of the Demesne
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_steward_of_the_demesne_tt"
-			blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
-		}
-		# Constable
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_constable_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_constable_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_constable_tt"
-			blockoverride "office_name" { text = "cc_office_constable" }
-		}
-		# Consul of Merchants
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_consul_of_merchants_tt"
-			blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
-		}
-		# Chancellor of the See
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_chancellor_of_the_see_tt"
-			blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
-		}
-		# Keeper of the Kurultai
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_keeper_of_the_kurultai_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
-		}
-		# Master of the Yam
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_the_yam_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
-		}
-		# Phanariote Secretary
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_phanariote_secretary_tt"
-			blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
-		}
-		# Hansa Factor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_hansa_factor_tt"
-			blockoverride "office_name" { text = "cc_office_hansa_factor" }
-		}
-		# Postelnic
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_postelnic_tt"
-			blockoverride "office_name" { text = "cc_office_postelnic" }
-		}
-		# Voivode of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_voivode_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
-		}
-		# Herald of the Table of Ranks
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_herald_of_the_table_of_ranks_tt"
-			blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
-		}
-		# State Inquisitor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_state_inquisitor_tt"
-			blockoverride "office_name" { text = "cc_office_state_inquisitor" }
-		}
-		# Priore of the Council
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_priori_of_the_council_tt"
-			blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
-		}
-		# Warden of the Castle Town
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_jokamachi_warden_tt"
-			blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
-		}
-		# Master of Siege Works
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_siege_works_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
-		}
-		# Keeper of the Wampum
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_keeper_of_the_wampum_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
-		}
-		# Speaker of the Elders
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_speaker_of_the_elders_tt"
-			blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
-		}
-		# Keeper of the Chronicles
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_keeper_of_regnal_chronicles_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
-		}
-		# Master of the Road
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_the_silk_road_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
-		}
-		# Master of Ceremonies
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').IsSet]"
-			datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').GetCharacter]"
-			using = cc_office_row
-			tooltip = "cc_office_master_of_ceremonies_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
-		}
+	}
+}
 
-		# ---- Posts standing open ----
-		text_single = { fontsize = 12  text = "CC_OFFICE_OPEN_HEADER" }
+# An office this realm can open by researching one advance now.
+template cc_office_locked_card {
+	size = { 230 58 }
+	background = { using = color_black_texture  alpha = 0.12 }
 
-		# Seneschal
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_seneschal_tt"
-			blockoverride "office_name" { text = "cc_office_seneschal" }
-			blockoverride "office_requirement" { text = "cc_office_seneschal_req" }
+	vbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 8 5 }
+		spacing = 1
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 12
+			default_format = "#weak"
+			align = left|nobaseline
+			block "office_name" {}
 		}
-		# Master of Coin
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_coin_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_coin" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_coin_req" }
+		text_single = {
+			layoutpolicy_horizontal = expanding
+			fontsize = 10
+			default_format = "#weak"
+			align = left|nobaseline
+			block "office_opens" {}
 		}
-		# Herald of Arms
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_herald_of_arms_tt"
-			blockoverride "office_name" { text = "cc_office_herald_of_arms" }
-			blockoverride "office_requirement" { text = "cc_office_herald_of_arms_req" }
-		}
-		# Marshal of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_marshal_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
-			blockoverride "office_requirement" { text = "cc_office_marshal_of_the_court_req" }
-		}
-		# Clerk of the Signet
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_clerk_of_the_signet_tt"
-			blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
-			blockoverride "office_requirement" { text = "cc_office_clerk_of_the_signet_req" }
-		}
-		# Keeper of the Wardrobe
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_keeper_of_the_wardrobe_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
-			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wardrobe_req" }
-		}
-		# Chancellor of the Rolls
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_chancellor_of_the_rolls_tt"
-			blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
-			blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_rolls_req" }
-		}
-		# Master of the Mint
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_the_mint_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_the_mint_req" }
-		}
-		# Court Chamberlain
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_court_chamberlain_tt"
-			blockoverride "office_name" { text = "cc_office_court_chamberlain" }
-			blockoverride "office_requirement" { text = "cc_office_court_chamberlain_req" }
-		}
-		# Master of Protocol
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_protocol_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_protocol" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_protocol_req" }
-		}
-		# Intendant of the Household
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_intendant_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_intendant_tt"
-			blockoverride "office_name" { text = "cc_office_intendant" }
-			blockoverride "office_requirement" { text = "cc_office_intendant_req" }
-		}
-		# Permanent Secretary
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_permanent_secretary_tt"
-			blockoverride "office_name" { text = "cc_office_permanent_secretary" }
-			blockoverride "office_requirement" { text = "cc_office_permanent_secretary_req" }
-		}
-		# Director of Public Instruction
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_director_of_public_instruction_tt"
-			blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
-			blockoverride "office_requirement" { text = "cc_office_director_of_public_instruction_req" }
-		}
-		# Court Chaplain
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_court_chaplain_tt"
-			blockoverride "office_name" { text = "cc_office_court_chaplain" }
-			blockoverride "office_requirement" { text = "cc_office_court_chaplain_req" }
-		}
-		# Court Astrologer
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_court_astrologer_tt"
-			blockoverride "office_name" { text = "cc_office_court_astrologer" }
-			blockoverride "office_requirement" { text = "cc_office_court_astrologer_req" }
-		}
-		# Grand Inquisitor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_grand_inquisitor_tt"
-			blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
-			blockoverride "office_requirement" { text = "cc_office_grand_inquisitor_req" }
-		}
-		# Ecclesiarch of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_ecclesiarch_tt"
-			blockoverride "office_name" { text = "cc_office_ecclesiarch" }
-			blockoverride "office_requirement" { text = "cc_office_ecclesiarch_req" }
-		}
-		# Qadi of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_qadi_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
-			blockoverride "office_requirement" { text = "cc_office_qadi_of_the_court_req" }
-		}
-		# Court Ulema
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_court_ulema_tt"
-			blockoverride "office_name" { text = "cc_office_court_ulema" }
-			blockoverride "office_requirement" { text = "cc_office_court_ulema_req" }
-		}
-		# Court Pandit
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_court_pandit_tt"
-			blockoverride "office_name" { text = "cc_office_court_pandit" }
-			blockoverride "office_requirement" { text = "cc_office_court_pandit_req" }
-		}
-		# Sangha Preceptor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_sangha_preceptor_tt"
-			blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
-			blockoverride "office_requirement" { text = "cc_office_sangha_preceptor_req" }
-		}
-		# Consistory Superintendent
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_consistory_superintendent_tt"
-			blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
-			blockoverride "office_requirement" { text = "cc_office_consistory_superintendent_req" }
-		}
-		# Overseer of the Confession
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_confessional_overseer_tt"
-			blockoverride "office_name" { text = "cc_office_confessional_overseer" }
-			blockoverride "office_requirement" { text = "cc_office_confessional_overseer_req" }
-		}
-		# Steward of the Demesne
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_steward_of_the_demesne_tt"
-			blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
-			blockoverride "office_requirement" { text = "cc_office_steward_of_the_demesne_req" }
-		}
-		# Constable
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_constable_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_constable_tt"
-			blockoverride "office_name" { text = "cc_office_constable" }
-			blockoverride "office_requirement" { text = "cc_office_constable_req" }
-		}
-		# Consul of Merchants
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_consul_of_merchants_tt"
-			blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
-			blockoverride "office_requirement" { text = "cc_office_consul_of_merchants_req" }
-		}
-		# Chancellor of the See
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_chancellor_of_the_see_tt"
-			blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
-			blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_see_req" }
-		}
-		# Keeper of the Kurultai
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_keeper_of_the_kurultai_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
-			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_kurultai_req" }
-		}
-		# Master of the Yam
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_the_yam_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_the_yam_req" }
-		}
-		# Phanariote Secretary
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_phanariote_secretary_tt"
-			blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
-			blockoverride "office_requirement" { text = "cc_office_phanariote_secretary_req" }
-		}
-		# Hansa Factor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_hansa_factor_tt"
-			blockoverride "office_name" { text = "cc_office_hansa_factor" }
-			blockoverride "office_requirement" { text = "cc_office_hansa_factor_req" }
-		}
-		# Postelnic
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_postelnic_tt"
-			blockoverride "office_name" { text = "cc_office_postelnic" }
-			blockoverride "office_requirement" { text = "cc_office_postelnic_req" }
-		}
-		# Voivode of the Court
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_voivode_of_the_court_tt"
-			blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
-			blockoverride "office_requirement" { text = "cc_office_voivode_of_the_court_req" }
-		}
-		# Herald of the Table of Ranks
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_herald_of_the_table_of_ranks_tt"
-			blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
-			blockoverride "office_requirement" { text = "cc_office_herald_of_the_table_of_ranks_req" }
-		}
-		# State Inquisitor
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_state_inquisitor_tt"
-			blockoverride "office_name" { text = "cc_office_state_inquisitor" }
-			blockoverride "office_requirement" { text = "cc_office_state_inquisitor_req" }
-		}
-		# Priore of the Council
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_priori_of_the_council_tt"
-			blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
-			blockoverride "office_requirement" { text = "cc_office_priori_of_the_council_req" }
-		}
-		# Warden of the Castle Town
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_jokamachi_warden_tt"
-			blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
-			blockoverride "office_requirement" { text = "cc_office_jokamachi_warden_req" }
-		}
-		# Master of Siege Works
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_siege_works_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_siege_works_req" }
-		}
-		# Keeper of the Wampum
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_keeper_of_the_wampum_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
-			blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wampum_req" }
-		}
-		# Speaker of the Elders
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_speaker_of_the_elders_tt"
-			blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
-			blockoverride "office_requirement" { text = "cc_office_speaker_of_the_elders_req" }
-		}
-		# Keeper of the Chronicles
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_keeper_of_regnal_chronicles_tt"
-			blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
-			blockoverride "office_requirement" { text = "cc_office_keeper_of_regnal_chronicles_req" }
-		}
-		# Master of the Road
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_the_silk_road_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_the_silk_road_req" }
-		}
-		# Master of Ceremonies
-		widget = {
-			visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_open').IsSet]"
-			using = cc_office_open_slot
-			tooltip = "cc_office_master_of_ceremonies_tt"
-			blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
-			blockoverride "office_requirement" { text = "cc_office_master_of_ceremonies_req" }
-		}
-
-		# Keeps content at the TOP. Without it a vbox with an expanding
-		# vertical policy spreads its children down the whole panel.
 		expand = {}
 	}
+}
+
+template cc_office_household_content {
+	using = layoutpolicy_expanding
+	scrollbarpolicy_horizontal = always_off
+	autoresizeviewport = yes
+	viewportwidget = {
+		widget = {
+			scissor = yes
+		}
+	}
+	scrollbar_vertical = {
+		using = Scrollbar_Vertical
+	}
+		scrollwidget = {
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				using = bg_secondary_inner_alt
+				margin = { 10 8 }
+				spacing = 6
+
+				# ---- Summary ----
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 4
+					text_single = { fontsize = 12  default_format = "#weak"  text = "CC_OFFICE_FILLED_LABEL" }
+					text_single = {
+						fontsize = 15
+						raw_text = "[FixedPointToInt(Player.MakeScope.GetVariable('cc_office_filled_var').GetValue)]/6"
+						tooltip = "CC_OFFICE_FILLED_TT"
+					}
+					expand = {}
+				}
+
+				text_multi = {
+					layoutpolicy_horizontal = expanding
+					autoresize = yes
+					multiline = yes
+					max_width = 460
+					fontsize = 11
+					default_format = "#weak"
+					text = "CC_OFFICE_TAB_NOTE"
+				}
+
+				# ---- CC_OFFICE_HELD_HEADER ----
+				text_single = { fontsize = 12  margin_top = 4  text = "CC_OFFICE_HELD_HEADER" }
+				flowcontainer = {
+					direction = horizontal
+					wrap_count = 2
+					ignoreinvisible = yes
+					spacing = 6
+
+					# Seneschal
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_seneschal_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_seneschal_tt"
+						blockoverride "office_name" { text = "cc_office_seneschal" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_seneschal_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_seneschal_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_seneschal_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_seneschal_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_seneschal_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of Coin
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_coin_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_coin" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_coin_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_coin_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_coin_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_master_of_coin_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_coin_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Herald of Arms
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_herald_of_arms_tt"
+						blockoverride "office_name" { text = "cc_office_herald_of_arms" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_herald_of_arms_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_herald_of_arms_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_herald_of_arms_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_herald_of_arms_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_herald_of_arms_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Marshal of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_marshal_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_marshal_of_the_court_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_marshal_of_the_court_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_marshal_of_the_court_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_marshal_of_the_court_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_marshal_of_the_court_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Clerk of the Signet
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_clerk_of_the_signet_tt"
+						blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_clerk_of_the_signet_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_clerk_of_the_signet_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_clerk_of_the_signet_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_clerk_of_the_signet_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_clerk_of_the_signet_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Keeper of the Wardrobe
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_keeper_of_the_wardrobe_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_wardrobe_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wardrobe_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_keeper_of_the_wardrobe_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_keeper_of_the_wardrobe_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_wardrobe_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Chancellor of the Rolls
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_chancellor_of_the_rolls_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_chancellor_of_the_rolls_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_rolls_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_chancellor_of_the_rolls_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_chancellor_of_the_rolls_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_chancellor_of_the_rolls_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of the Mint
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_the_mint_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_the_mint_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_mint_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_the_mint_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_mint_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Court Chamberlain
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_court_chamberlain_tt"
+						blockoverride "office_name" { text = "cc_office_court_chamberlain" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_court_chamberlain_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_court_chamberlain_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_court_chamberlain_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_chamberlain_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of Protocol
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_protocol_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_protocol" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_protocol_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_protocol_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_protocol_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_protocol_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Intendant of the Household
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_intendant_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_intendant_tt"
+						blockoverride "office_name" { text = "cc_office_intendant" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_intendant_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_intendant_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_intendant_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_intendant_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Permanent Secretary
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_permanent_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_permanent_secretary" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_permanent_secretary_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_permanent_secretary_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_permanent_secretary_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_permanent_secretary_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Director of Public Instruction
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_director_of_public_instruction_tt"
+						blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_tenure" { text = "cc_office_director_of_public_instruction_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_director_of_public_instruction_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_director_of_public_instruction_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_director_of_public_instruction_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Court Chaplain
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_court_chaplain_tt"
+						blockoverride "office_name" { text = "cc_office_court_chaplain" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_court_chaplain_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_court_chaplain_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_court_chaplain_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_chaplain_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Court Astrologer
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_court_astrologer_tt"
+						blockoverride "office_name" { text = "cc_office_court_astrologer" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_court_astrologer_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_court_astrologer_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_court_astrologer_scale_line" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_court_astrologer_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_astrologer_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Grand Inquisitor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_grand_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_grand_inquisitor_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_grand_inquisitor_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_grand_inquisitor_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_grand_inquisitor_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Ecclesiarch of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_ecclesiarch_tt"
+						blockoverride "office_name" { text = "cc_office_ecclesiarch" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_ecclesiarch_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_ecclesiarch_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_ecclesiarch_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_ecclesiarch_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Qadi of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_qadi_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_qadi_of_the_court_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_qadi_of_the_court_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_qadi_of_the_court_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_qadi_of_the_court_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Court Ulema
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_court_ulema_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_court_ulema_tt"
+						blockoverride "office_name" { text = "cc_office_court_ulema" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_court_ulema_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_court_ulema_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_court_ulema_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_ulema_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Court Pandit
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_court_pandit_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_court_pandit_tt"
+						blockoverride "office_name" { text = "cc_office_court_pandit" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_court_pandit_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_court_pandit_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_court_pandit_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_pandit_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Sangha Preceptor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_sangha_preceptor_tt"
+						blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_sangha_preceptor_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_sangha_preceptor_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_sangha_preceptor_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_sangha_preceptor_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Consistory Superintendent
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_consistory_superintendent_tt"
+						blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_consistory_superintendent_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_consistory_superintendent_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_consistory_superintendent_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_consistory_superintendent_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Overseer of the Confession
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_confessional_overseer_tt"
+						blockoverride "office_name" { text = "cc_office_confessional_overseer" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_tenure" { text = "cc_office_confessional_overseer_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_confessional_overseer_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_confessional_overseer_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_confessional_overseer_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Steward of the Demesne
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_steward_of_the_demesne_tt"
+						blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_steward_of_the_demesne_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_steward_of_the_demesne_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_steward_of_the_demesne_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_steward_of_the_demesne_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Constable
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_constable_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_constable_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_constable_tt"
+						blockoverride "office_name" { text = "cc_office_constable" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_constable_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_constable_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_constable_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_constable_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Consul of Merchants
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_consul_of_merchants_tt"
+						blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_consul_of_merchants_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_consul_of_merchants_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_consul_of_merchants_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_consul_of_merchants_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Chancellor of the See
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_chancellor_of_the_see_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_chancellor_of_the_see_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_see_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_chancellor_of_the_see_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_chancellor_of_the_see_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Keeper of the Kurultai
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_keeper_of_the_kurultai_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_kurultai_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_kurultai_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_keeper_of_the_kurultai_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_kurultai_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of the Yam
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_the_yam_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_the_yam_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_yam_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_the_yam_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_yam_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Phanariote Secretary
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_phanariote_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_phanariote_secretary_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_phanariote_secretary_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_phanariote_secretary_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_phanariote_secretary_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Hansa Factor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_hansa_factor_tt"
+						blockoverride "office_name" { text = "cc_office_hansa_factor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_hansa_factor_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_hansa_factor_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_hansa_factor_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_hansa_factor_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Postelnic
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_postelnic_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_postelnic_tt"
+						blockoverride "office_name" { text = "cc_office_postelnic" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_postelnic_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_postelnic_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_postelnic_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_postelnic_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Voivode of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_voivode_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_voivode_of_the_court_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_voivode_of_the_court_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_voivode_of_the_court_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_voivode_of_the_court_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Herald of the Table of Ranks
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_herald_of_the_table_of_ranks_tt"
+						blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_herald_of_the_table_of_ranks_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_herald_of_the_table_of_ranks_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_herald_of_the_table_of_ranks_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_herald_of_the_table_of_ranks_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# State Inquisitor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_state_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_state_inquisitor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_state_inquisitor_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_state_inquisitor_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_state_inquisitor_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_state_inquisitor_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Priore of the Council
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_priori_of_the_council_tt"
+						blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_priori_of_the_council_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_priori_of_the_council_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_priori_of_the_council_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_priori_of_the_council_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Warden of the Castle Town
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_jokamachi_warden_tt"
+						blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_jokamachi_warden_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_jokamachi_warden_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_jokamachi_warden_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_jokamachi_warden_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of Siege Works
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_siege_works_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_siege_works_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_siege_works_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_siege_works_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_siege_works_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Keeper of the Wampum
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_keeper_of_the_wampum_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_wampum_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wampum_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_keeper_of_the_wampum_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_wampum_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Speaker of the Elders
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_speaker_of_the_elders_tt"
+						blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_tenure" { text = "cc_office_speaker_of_the_elders_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_speaker_of_the_elders_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_speaker_of_the_elders_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_speaker_of_the_elders_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Keeper of the Chronicles
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_keeper_of_regnal_chronicles_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_tenure" { text = "cc_office_keeper_of_regnal_chronicles_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_regnal_chronicles_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_keeper_of_regnal_chronicles_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_regnal_chronicles_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of the Road
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_the_silk_road_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_the_silk_road_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_silk_road_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_the_silk_road_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_silk_road_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+					# Master of Ceremonies
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').IsSet]"
+						datacontext = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_holder').GetCharacter]"
+						using = cc_office_held_card
+						tooltip = "cc_office_master_of_ceremonies_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_tenure" { text = "cc_office_master_of_ceremonies_tenure_line" }
+						blockoverride "office_effects" { text = "cc_office_master_of_ceremonies_fx_held" }
+						blockoverride "office_scale" { text = "cc_office_master_of_ceremonies_scale_line" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_ceremonies_dismiss"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_DISMISS"
+								}
+							}
+						}
+					}
+				}
+
+				# ---- CC_OFFICE_OPEN_HEADER ----
+				text_single = { fontsize = 12  margin_top = 4  text = "CC_OFFICE_OPEN_HEADER" }
+				flowcontainer = {
+					direction = horizontal
+					wrap_count = 2
+					ignoreinvisible = yes
+					spacing = 6
+
+					# Seneschal
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_seneschal_tt"
+						blockoverride "office_name" { text = "cc_office_seneschal" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_seneschal_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_seneschal_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_seneschal_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_seneschal_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of Coin
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_coin_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_coin" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_master_of_coin_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_coin_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_master_of_coin_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_coin_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Herald of Arms
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_herald_of_arms_tt"
+						blockoverride "office_name" { text = "cc_office_herald_of_arms" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_herald_of_arms_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_herald_of_arms_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_herald_of_arms_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_herald_of_arms_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Marshal of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_marshal_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_marshal_of_the_court_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_marshal_of_the_court_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_marshal_of_the_court_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_marshal_of_the_court_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Clerk of the Signet
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_clerk_of_the_signet_tt"
+						blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_clerk_of_the_signet_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_clerk_of_the_signet_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_clerk_of_the_signet_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_clerk_of_the_signet_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Keeper of the Wardrobe
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_keeper_of_the_wardrobe_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wardrobe_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wardrobe_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_keeper_of_the_wardrobe_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_wardrobe_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Chancellor of the Rolls
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_chancellor_of_the_rolls_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_rolls_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_rolls_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_chancellor_of_the_rolls_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_chancellor_of_the_rolls_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of the Mint
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_mint_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_the_mint_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_mint_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_the_mint_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_mint_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Court Chamberlain
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_chamberlain_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_court_chamberlain_tt"
+						blockoverride "office_name" { text = "cc_office_court_chamberlain" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_court_chamberlain_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_court_chamberlain_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_chamberlain_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of Protocol
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_protocol_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_protocol_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_protocol" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_master_of_protocol_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_protocol_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_protocol_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Intendant of the Household
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_intendant_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_intendant_tt"
+						blockoverride "office_name" { text = "cc_office_intendant" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_intendant_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_intendant_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_intendant_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Permanent Secretary
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_permanent_secretary_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_permanent_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_permanent_secretary" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_permanent_secretary_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_permanent_secretary_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_permanent_secretary_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Director of Public Instruction
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_director_of_public_instruction_tt"
+						blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
+						blockoverride "office_effects" { text = "cc_office_director_of_public_instruction_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_director_of_public_instruction_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_director_of_public_instruction_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Court Chaplain
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_chaplain_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_court_chaplain_tt"
+						blockoverride "office_name" { text = "cc_office_court_chaplain" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_court_chaplain_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_court_chaplain_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_chaplain_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Court Astrologer
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_court_astrologer_tt"
+						blockoverride "office_name" { text = "cc_office_court_astrologer" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_court_astrologer_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_court_astrologer_req" }
+						blockoverride "office_retiring" {
+							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_court_astrologer_retiring_tt" }
+						}
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_astrologer_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Grand Inquisitor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_grand_inquisitor_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_grand_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_grand_inquisitor_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_grand_inquisitor_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_grand_inquisitor_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Ecclesiarch of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_ecclesiarch_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_ecclesiarch_tt"
+						blockoverride "office_name" { text = "cc_office_ecclesiarch" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_ecclesiarch_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_ecclesiarch_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_ecclesiarch_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Qadi of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_qadi_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_qadi_of_the_court_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_qadi_of_the_court_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_qadi_of_the_court_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Court Ulema
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_ulema_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_court_ulema_tt"
+						blockoverride "office_name" { text = "cc_office_court_ulema" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_court_ulema_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_court_ulema_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_ulema_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Court Pandit
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_court_pandit_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_court_pandit_tt"
+						blockoverride "office_name" { text = "cc_office_court_pandit" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_court_pandit_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_court_pandit_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_court_pandit_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Sangha Preceptor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_sangha_preceptor_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_sangha_preceptor_tt"
+						blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_sangha_preceptor_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_sangha_preceptor_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_sangha_preceptor_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Consistory Superintendent
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_consistory_superintendent_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_consistory_superintendent_tt"
+						blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_consistory_superintendent_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_consistory_superintendent_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_consistory_superintendent_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Overseer of the Confession
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_confessional_overseer_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_confessional_overseer_tt"
+						blockoverride "office_name" { text = "cc_office_confessional_overseer" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
+						blockoverride "office_effects" { text = "cc_office_confessional_overseer_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_confessional_overseer_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_confessional_overseer_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Steward of the Demesne
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_steward_of_the_demesne_tt"
+						blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_steward_of_the_demesne_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_steward_of_the_demesne_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_steward_of_the_demesne_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Constable
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_constable_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_constable_tt"
+						blockoverride "office_name" { text = "cc_office_constable" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_constable_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_constable_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_constable_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Consul of Merchants
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_consul_of_merchants_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_consul_of_merchants_tt"
+						blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_consul_of_merchants_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_consul_of_merchants_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_consul_of_merchants_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Chancellor of the See
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_chancellor_of_the_see_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_see_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_see_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_chancellor_of_the_see_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Keeper of the Kurultai
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_keeper_of_the_kurultai_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_kurultai_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_kurultai_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_kurultai_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of the Yam
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_yam_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_the_yam_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_yam_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_the_yam_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_yam_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Phanariote Secretary
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_phanariote_secretary_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_phanariote_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_phanariote_secretary_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_phanariote_secretary_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_phanariote_secretary_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Hansa Factor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_hansa_factor_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_hansa_factor_tt"
+						blockoverride "office_name" { text = "cc_office_hansa_factor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_hansa_factor_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_hansa_factor_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_hansa_factor_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Postelnic
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_postelnic_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_postelnic_tt"
+						blockoverride "office_name" { text = "cc_office_postelnic" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_postelnic_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_postelnic_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_postelnic_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Voivode of the Court
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_voivode_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_voivode_of_the_court_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_voivode_of_the_court_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_voivode_of_the_court_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Herald of the Table of Ranks
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_herald_of_the_table_of_ranks_tt"
+						blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_herald_of_the_table_of_ranks_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_herald_of_the_table_of_ranks_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_herald_of_the_table_of_ranks_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# State Inquisitor
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_state_inquisitor_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_state_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_state_inquisitor" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_state_inquisitor_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_state_inquisitor_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_state_inquisitor_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Priore of the Council
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_priori_of_the_council_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_priori_of_the_council_tt"
+						blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_priori_of_the_council_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_priori_of_the_council_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_priori_of_the_council_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Warden of the Castle Town
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_jokamachi_warden_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_jokamachi_warden_tt"
+						blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_jokamachi_warden_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_jokamachi_warden_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_jokamachi_warden_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of Siege Works
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_siege_works_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_siege_works_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
+						blockoverride "office_effects" { text = "cc_office_master_of_siege_works_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_siege_works_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_siege_works_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Keeper of the Wampum
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_keeper_of_the_wampum_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wampum_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wampum_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_the_wampum_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Speaker of the Elders
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_speaker_of_the_elders_tt"
+						blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_effects" { text = "cc_office_speaker_of_the_elders_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_speaker_of_the_elders_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_speaker_of_the_elders_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Keeper of the Chronicles
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_keeper_of_regnal_chronicles_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_effects" { text = "cc_office_keeper_of_regnal_chronicles_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_keeper_of_regnal_chronicles_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_keeper_of_regnal_chronicles_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of the Road
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_the_silk_road_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_effects" { text = "cc_office_master_of_the_silk_road_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_the_silk_road_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_the_silk_road_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+					# Master of Ceremonies
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_open').IsSet]"
+						using = cc_office_open_card
+						tooltip = "cc_office_master_of_ceremonies_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
+						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
+						blockoverride "office_effects" { text = "cc_office_master_of_ceremonies_fx_base" }
+						blockoverride "office_requirement" { text = "cc_office_master_of_ceremonies_req" }
+						blockoverride "office_button" {
+							card_header_button_01 = {
+								size = { 96 26 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_office_master_of_ceremonies_appoint"
+									actor = "[Player]"
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = {
+									parentanchor = center
+									align = center
+									fontsize = 11
+									text = "CC_OFFICE_BTN_APPOINT"
+								}
+							}
+						}
+					}
+				}
+
+				# ---- CC_OFFICE_LOCKED_HEADER ----
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					margin_top = 4
+					spacing = 4
+					text_single = { fontsize = 12  text = "CC_OFFICE_LOCKED_HEADER"  tooltip = "CC_OFFICE_LOCKED_TT" }
+					expand = {}
+					card_header_button_01 = {
+						size = { 26 26 }
+						onclick = "[GetVariableSystem.Toggle( 'cc_office_hide_locked' )]"
+						tooltip = "CC_OFFICE_TOGGLE_LOCKED_TT"
+						icon = {
+							using = color_white_texture
+							alpha = 0.3
+							size = { 100% 100% }
+							visible = "[Not(GetVariableSystem.Exists( 'cc_office_hide_locked' ))]"
+						}
+						icon = {
+							parentanchor = center
+							size = { 20 20 }
+							texture = "gfx/interface/icons/flat_icons/building_panel/build_visible.dds"
+						}
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					wrap_count = 2
+					ignoreinvisible = yes
+					spacing = 6
+
+					# Clerk of the Signet
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_clerk_of_the_signet_tt"
+						blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
+						blockoverride "office_opens" { text = "cc_office_clerk_of_the_signet_opens" }
+					}
+					# Keeper of the Wardrobe
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_keeper_of_the_wardrobe_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
+						blockoverride "office_opens" { text = "cc_office_keeper_of_the_wardrobe_opens" }
+					}
+					# Chancellor of the Rolls
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_chancellor_of_the_rolls_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
+						blockoverride "office_opens" { text = "cc_office_chancellor_of_the_rolls_opens" }
+					}
+					# Master of the Mint
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_the_mint_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_the_mint_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
+						blockoverride "office_opens" { text = "cc_office_master_of_the_mint_opens" }
+					}
+					# Court Chamberlain
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_court_chamberlain_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_court_chamberlain_tt"
+						blockoverride "office_name" { text = "cc_office_court_chamberlain" }
+						blockoverride "office_opens" { text = "cc_office_court_chamberlain_opens" }
+					}
+					# Master of Protocol
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_protocol_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_protocol_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_protocol" }
+						blockoverride "office_opens" { text = "cc_office_master_of_protocol_opens" }
+					}
+					# Intendant of the Household
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_intendant_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_intendant_tt"
+						blockoverride "office_name" { text = "cc_office_intendant" }
+						blockoverride "office_opens" { text = "cc_office_intendant_opens" }
+					}
+					# Permanent Secretary
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_permanent_secretary_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_permanent_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_permanent_secretary" }
+						blockoverride "office_opens" { text = "cc_office_permanent_secretary_opens" }
+					}
+					# Director of Public Instruction
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_director_of_public_instruction_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_director_of_public_instruction_tt"
+						blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
+						blockoverride "office_opens" { text = "cc_office_director_of_public_instruction_opens" }
+					}
+					# Grand Inquisitor
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_grand_inquisitor_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_grand_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
+						blockoverride "office_opens" { text = "cc_office_grand_inquisitor_opens" }
+					}
+					# Ecclesiarch of the Court
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_ecclesiarch_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_ecclesiarch_tt"
+						blockoverride "office_name" { text = "cc_office_ecclesiarch" }
+						blockoverride "office_opens" { text = "cc_office_ecclesiarch_opens" }
+					}
+					# Qadi of the Court
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_qadi_of_the_court_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_qadi_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
+						blockoverride "office_opens" { text = "cc_office_qadi_of_the_court_opens" }
+					}
+					# Court Ulema
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_court_ulema_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_court_ulema_tt"
+						blockoverride "office_name" { text = "cc_office_court_ulema" }
+						blockoverride "office_opens" { text = "cc_office_court_ulema_opens" }
+					}
+					# Court Pandit
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_court_pandit_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_court_pandit_tt"
+						blockoverride "office_name" { text = "cc_office_court_pandit" }
+						blockoverride "office_opens" { text = "cc_office_court_pandit_opens" }
+					}
+					# Sangha Preceptor
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_sangha_preceptor_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_sangha_preceptor_tt"
+						blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
+						blockoverride "office_opens" { text = "cc_office_sangha_preceptor_opens" }
+					}
+					# Consistory Superintendent
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_consistory_superintendent_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_consistory_superintendent_tt"
+						blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
+						blockoverride "office_opens" { text = "cc_office_consistory_superintendent_opens" }
+					}
+					# Overseer of the Confession
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_confessional_overseer_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_confessional_overseer_tt"
+						blockoverride "office_name" { text = "cc_office_confessional_overseer" }
+						blockoverride "office_opens" { text = "cc_office_confessional_overseer_opens" }
+					}
+					# Steward of the Demesne
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_steward_of_the_demesne_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_steward_of_the_demesne_tt"
+						blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
+						blockoverride "office_opens" { text = "cc_office_steward_of_the_demesne_opens" }
+					}
+					# Constable
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_constable_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_constable_tt"
+						blockoverride "office_name" { text = "cc_office_constable" }
+						blockoverride "office_opens" { text = "cc_office_constable_opens" }
+					}
+					# Consul of Merchants
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_consul_of_merchants_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_consul_of_merchants_tt"
+						blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
+						blockoverride "office_opens" { text = "cc_office_consul_of_merchants_opens" }
+					}
+					# Chancellor of the See
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_chancellor_of_the_see_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_chancellor_of_the_see_tt"
+						blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
+						blockoverride "office_opens" { text = "cc_office_chancellor_of_the_see_opens" }
+					}
+					# Keeper of the Kurultai
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_keeper_of_the_kurultai_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_keeper_of_the_kurultai_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
+						blockoverride "office_opens" { text = "cc_office_keeper_of_the_kurultai_opens" }
+					}
+					# Master of the Yam
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_the_yam_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_the_yam_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
+						blockoverride "office_opens" { text = "cc_office_master_of_the_yam_opens" }
+					}
+					# Phanariote Secretary
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_phanariote_secretary_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_phanariote_secretary_tt"
+						blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
+						blockoverride "office_opens" { text = "cc_office_phanariote_secretary_opens" }
+					}
+					# Hansa Factor
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_hansa_factor_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_hansa_factor_tt"
+						blockoverride "office_name" { text = "cc_office_hansa_factor" }
+						blockoverride "office_opens" { text = "cc_office_hansa_factor_opens" }
+					}
+					# Postelnic
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_postelnic_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_postelnic_tt"
+						blockoverride "office_name" { text = "cc_office_postelnic" }
+						blockoverride "office_opens" { text = "cc_office_postelnic_opens" }
+					}
+					# Voivode of the Court
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_voivode_of_the_court_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_voivode_of_the_court_tt"
+						blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
+						blockoverride "office_opens" { text = "cc_office_voivode_of_the_court_opens" }
+					}
+					# Herald of the Table of Ranks
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_herald_of_the_table_of_ranks_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_herald_of_the_table_of_ranks_tt"
+						blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
+						blockoverride "office_opens" { text = "cc_office_herald_of_the_table_of_ranks_opens" }
+					}
+					# State Inquisitor
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_state_inquisitor_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_state_inquisitor_tt"
+						blockoverride "office_name" { text = "cc_office_state_inquisitor" }
+						blockoverride "office_opens" { text = "cc_office_state_inquisitor_opens" }
+					}
+					# Priore of the Council
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_priori_of_the_council_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_priori_of_the_council_tt"
+						blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
+						blockoverride "office_opens" { text = "cc_office_priori_of_the_council_opens" }
+					}
+					# Warden of the Castle Town
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_jokamachi_warden_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_jokamachi_warden_tt"
+						blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
+						blockoverride "office_opens" { text = "cc_office_jokamachi_warden_opens" }
+					}
+					# Master of Siege Works
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_siege_works_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_siege_works_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
+						blockoverride "office_opens" { text = "cc_office_master_of_siege_works_opens" }
+					}
+					# Keeper of the Wampum
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_keeper_of_the_wampum_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_keeper_of_the_wampum_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
+						blockoverride "office_opens" { text = "cc_office_keeper_of_the_wampum_opens" }
+					}
+					# Speaker of the Elders
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_speaker_of_the_elders_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_speaker_of_the_elders_tt"
+						blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
+						blockoverride "office_opens" { text = "cc_office_speaker_of_the_elders_opens" }
+					}
+					# Keeper of the Chronicles
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_keeper_of_regnal_chronicles_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_keeper_of_regnal_chronicles_tt"
+						blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
+						blockoverride "office_opens" { text = "cc_office_keeper_of_regnal_chronicles_opens" }
+					}
+					# Master of the Road
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_the_silk_road_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_the_silk_road_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
+						blockoverride "office_opens" { text = "cc_office_master_of_the_silk_road_opens" }
+					}
+					# Master of Ceremonies
+					widget = {
+						visible = "[And(Not(GetVariableSystem.Exists( 'cc_office_hide_locked' )), Player.MakeScope.GetVariable('cc_office_master_of_ceremonies_soon').IsSet)]"
+						using = cc_office_locked_card
+						tooltip = "cc_office_master_of_ceremonies_tt"
+						blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
+						blockoverride "office_opens" { text = "cc_office_master_of_ceremonies_opens" }
+					}
+				}
+
+				expand = {}
+			}
+		}
 }
