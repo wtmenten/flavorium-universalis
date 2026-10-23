@@ -395,6 +395,87 @@ cc_xp_school_capacity = {
 # attentive than a mentor and more consistent than watching from the sidelines.
 cc_xp_school_tick = { value = 14 }
 
+# What one member actually earns in a year: the tick, doubled while the school has a
+# Rector, and half again for a member who shares the seat's culture (they are taught in
+# their own tongue and tradition). Character scope; needs scope:cc_xp_school_court, the
+# member's country, saved by cc_xp_yearly_schools.
+cc_xp_school_member_tick = {
+	value = cc_xp_school_tick
+	if = {
+		limit = {
+			OR = {
+				AND = { var:cc_xp_school ?= 1  scope:cc_xp_school_court = { has_variable = cc_xp_school_1_rector } }
+				AND = { var:cc_xp_school ?= 2  scope:cc_xp_school_court = { has_variable = cc_xp_school_2_rector } }
+				AND = { var:cc_xp_school ?= 3  scope:cc_xp_school_court = { has_variable = cc_xp_school_3_rector } }
+			}
+		}
+		multiply = 2
+	}
+	if = {
+		limit = {
+			OR = {
+				AND = { var:cc_xp_school ?= 1  scope:cc_xp_school_court = { has_variable = cc_xp_school_1_culture }  culture ?= scope:cc_xp_school_court.var:cc_xp_school_1_culture }
+				AND = { var:cc_xp_school ?= 2  scope:cc_xp_school_court = { has_variable = cc_xp_school_2_culture }  culture ?= scope:cc_xp_school_court.var:cc_xp_school_2_culture }
+				AND = { var:cc_xp_school ?= 3  scope:cc_xp_school_court = { has_variable = cc_xp_school_3_culture }  culture ?= scope:cc_xp_school_court.var:cc_xp_school_3_culture }
+			}
+		}
+		multiply = 1.5
+	}
+	# Quality: 0.5x at quality 0, 1.5x at 100.
+	if = {
+		limit = { var:cc_xp_school ?= 1  scope:cc_xp_school_court = { has_variable = cc_xp_school_1_qscale } }
+		multiply = scope:cc_xp_school_court.var:cc_xp_school_1_qscale
+	}
+	else_if = {
+		limit = { var:cc_xp_school ?= 2  scope:cc_xp_school_court = { has_variable = cc_xp_school_2_qscale } }
+		multiply = scope:cc_xp_school_court.var:cc_xp_school_2_qscale
+	}
+	else_if = {
+		limit = { var:cc_xp_school ?= 3  scope:cc_xp_school_court = { has_variable = cc_xp_school_3_qscale } }
+		multiply = scope:cc_xp_school_court.var:cc_xp_school_3_qscale
+	}
+}
+
+# PROMINENCE. Renown is earned against the world, so the same two measures score both our
+# schools and the foreign universities they compete with (cc_xp_school_scan_rivals).
+#
+# Location scope. How prominent a place is: development (a city of 50 maxes it), the
+# literacy of its people, and being a capital. At most 35.
+cc_xp_seat_prominence = {
+	value = 0
+	add = { value = development  multiply = 0.4  max = 20  min = 0 }
+	add = { value = average_location_literacy  multiply = 0.1  max = 10  min = 0 }
+	if = {
+		limit = { is_capital = yes }
+		add = 5
+	}
+}
+
+# Country scope. How prominent a realm is: prestige, rank, and great-power standing.
+# At most about 33.
+cc_xp_country_prominence = {
+	value = 0
+	add = { value = prestige  multiply = 0.15  max = 15  min = 0 }
+	add = { value = country_rank_level  multiply = 2 }
+	if = {
+		limit = { is_great_power = yes }
+		add = 10
+	}
+}
+
+# Location scope. A foreign university's standing: its place, its realm, and a flat 15 for
+# being an old, established foundation. Compared against our schools' renown.
+cc_xp_university_score = {
+	value = 15
+	add = cc_xp_seat_prominence
+	add = { value = owner.cc_xp_country_prominence }
+}
+
+# Royal Chairs: one term of intensive teaching. A protege gains more than a seated
+# minister, because the school is all they have.
+cc_xp_school_chairs_member = { value = 40 }
+cc_xp_school_chairs_protege = { value = 60 }
+
 
 ###############################################################################
 # 7. COURT SOIREES

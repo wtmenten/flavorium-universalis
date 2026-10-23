@@ -51,8 +51,9 @@ cc_cabinet_court = {
 	# player, and in multiplayer it colours every human court.
 	#
 	# Three things the cabinet does have a geography for, in priority order:
-	#   school seats   the university a founded school occupies, marked with
-	#                  cc_xp_school_seat by cc_xp_found_institution
+	#   school seats   the university a founded school occupies. Tested with
+	#                  cc_xp_location_is_school_seat, not a bare has_variable: the flag
+	#                  holds the seating country and only counts while it owns the place
 	#   the court      the realm the cabinet belongs to
 	#   residencies    a subject currently housing a seconded minister
 	#
@@ -62,7 +63,7 @@ cc_cabinet_court = {
 	map_color = {
 		if = {
 			limit = {
-				has_variable = cc_xp_school_seat
+				cc_xp_location_is_school_seat = yes
 				owner ?= { is_ai = no }
 			}
 			value = rgb { 205 165 55 }

@@ -1,0 +1,110 @@
+﻿## Cabinet Duty: Rector
+# A minister takes charge of one of the realm's schools, chosen by its seat. They spend
+# their time there rather than on other cabinet business, and the school does more for it:
+#   - its members gain twice their yearly experience (cc_xp_school_member_tick)
+#   - its project cooldown drops from 3 years to 2, and curriculum changes from 10 to 5
+#   - the seat gains institution growth and literacy, the realm a little research speed
+# The Rector's own experience comes through the duty track like any other duty.
+#
+# The duty knows its school only by the seat in scope:target. on_activate finds the slot
+# whose seat it is and records the minister in cc_xp_school_N_rector, which is what the
+# yearly pulse, the cooldowns and the panel read. One Rector per school.
+
+cc_duty_rector = {
+	ability = adm
+	allow_multiple = yes
+
+	potential = {
+		OR = {
+			has_variable = cc_xp_school_1_founder
+			has_variable = cc_xp_school_2_founder
+			has_variable = cc_xp_school_3_founder
+		}
+	}
+
+	select_trigger = {
+		looking_for_a = location
+		source = actor
+		source_flags = only_actual_locations
+		target_flag = target
+		name = "cc_duty_rector_select_school"
+		none_available_msg_key = "cc_duty_rector_no_school"
+		column = { data = name }
+
+		visible = {
+			owner ?= scope:actor
+			cc_xp_location_is_school_seat = yes
+		}
+
+		# A school with a Rector already is shown but cannot be picked.
+		enabled = {
+			NOT = {
+				OR = {
+					AND = {
+						scope:actor = { has_variable = cc_xp_school_1_rector }
+						this = scope:actor.var:cc_xp_school_1_loc
+					}
+					AND = {
+						scope:actor = { has_variable = cc_xp_school_2_rector }
+						this = scope:actor.var:cc_xp_school_2_loc
+					}
+					AND = {
+						scope:actor = { has_variable = cc_xp_school_3_rector }
+						this = scope:actor.var:cc_xp_school_3_loc
+					}
+				}
+			}
+		}
+	}
+
+	country_modifier = {
+		research_speed_modifier = 0.02
+	}
+
+	location_modifier = {
+		local_institution_growth_modifier = 0.1
+		local_monthly_literacy = 0.05
+	}
+
+	on_activate = {
+		if = {
+			limit = { NOT = { exists = root.cabinet_member } }
+			scope:actor = { set_variable = { name = cc_duty_rector_invalid value = yes } }
+		}
+		else = {
+			scope:actor = {
+				cc_xp_school_rector_on = { N = 1  WHO = root.cabinet_member }
+				cc_xp_school_rector_on = { N = 2  WHO = root.cabinet_member }
+				cc_xp_school_rector_on = { N = 3  WHO = root.cabinet_member }
+			}
+		}
+	}
+
+	on_deactivate = {
+		scope:actor = {
+			remove_variable = cc_duty_rector_invalid
+			cc_xp_school_rector_off = { N = 1 }
+			cc_xp_school_rector_off = { N = 2 }
+			cc_xp_school_rector_off = { N = 3 }
+		}
+	}
+
+	# Ends when the school loses its seat (lost, demolished, or in exile).
+	is_finished = {
+		OR = {
+			scope:actor = { has_variable = cc_duty_rector_invalid }
+			NOT = { exists = scope:target }
+			NOT = {
+				scope:target = {
+					owner ?= scope:actor
+					cc_xp_location_is_school_seat = yes
+				}
+			}
+		}
+	}
+
+	# Player tool, like the rest of the school system.
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}

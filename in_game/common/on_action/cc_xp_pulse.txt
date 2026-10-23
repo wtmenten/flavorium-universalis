@@ -28,6 +28,7 @@
 monthly_country_pulse = {
 	on_actions = {
 		cc_xp_monthly_service
+		cc_xp_monthly_schools
 	}
 }
 
@@ -40,6 +41,7 @@ yearly_country_pulse = {
 		cc_xp_yearly_flavour
 		cc_xp_yearly_patronage
 		cc_xp_yearly_schools
+		cc_xp_yearly_school_standing
 		cc_xp_yearly_envoys
 		cc_xp_yearly_envoy_events
 	}
@@ -82,6 +84,104 @@ cc_xp_monthly_service = {
 			limit = { is_ai = no }
 			cc_xp_sync_slots = yes
 			cc_xp_publish_school_capacity = yes
+			cc_xp_publish_art = yes
+		}
+	}
+}
+
+
+###############################################################################
+# MONTHLY — SCHOOL UPKEEP
+#
+# Keeps each founded school's seat true: a seat lost to conquest or to a demolished
+# university moves to another free university, or into exile if there is none, and an
+# exiled school returns as soon as one comes free. See cc_xp_school_effects.txt.
+#
+# Not gated on cc_xp_country_is_tracked or on is_ai. Only a court that founded a school
+# passes the trigger, and a seat must be released even if that court later becomes AI,
+# or the location stays claimed. Membership is republished for human courts only.
+###############################################################################
+
+cc_xp_monthly_schools = {
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_founder
+			has_variable = cc_xp_school_2_founder
+			has_variable = cc_xp_school_3_founder
+		}
+	}
+
+	effect = {
+		cc_xp_school_maintain = { N = 1 }
+		cc_xp_school_maintain = { N = 2 }
+		cc_xp_school_maintain = { N = 3 }
+
+		cc_xp_school_fund = { N = 1 }
+		cc_xp_school_fund = { N = 2 }
+		cc_xp_school_fund = { N = 3 }
+		cc_xp_school_apply_renown = yes
+		if = {
+			limit = { is_ai = no }
+			cc_xp_school_publish_funding = yes
+		}
+
+		if = {
+			limit = { is_ai = no }
+			cc_xp_school_count_members = { N = 1 }
+			cc_xp_school_count_members = { N = 2 }
+			cc_xp_school_count_members = { N = 3 }
+
+			# Summary line on the Schools tab.
+			set_variable = {
+				name = cc_xp_school_total_members
+				value = {
+					value = var:cc_xp_school_1_members
+					add = var:cc_xp_school_2_members
+					add = var:cc_xp_school_3_members
+				}
+			}
+			set_variable = {
+				name = cc_xp_school_founded_count
+				value = {
+					value = 0
+					if = { limit = { has_variable = cc_xp_school_1_founder }  add = 1 }
+					if = { limit = { has_variable = cc_xp_school_2_founder }  add = 1 }
+					if = { limit = { has_variable = cc_xp_school_3_founder }  add = 1 }
+				}
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# YEARLY: SCHOOL RENOWN AND QUALITY
+#
+# Each school ages a year and its renown and quality drift toward their targets; then a
+# human court's schools are ranked against every foreign university and roll their
+# renown events. See RENOWN AND QUALITY in cc_xp_school_effects.txt.
+###############################################################################
+
+cc_xp_yearly_school_standing = {
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_founder
+			has_variable = cc_xp_school_2_founder
+			has_variable = cc_xp_school_3_founder
+		}
+	}
+
+	effect = {
+		cc_xp_school_yearly_standing = { N = 1 }
+		cc_xp_school_yearly_standing = { N = 2 }
+		cc_xp_school_yearly_standing = { N = 3 }
+
+		if = {
+			limit = { is_ai = no }
+			cc_xp_school_scan_rivals = yes
+			cc_xp_school_roll_events = { N = 1 }
+			cc_xp_school_roll_events = { N = 2 }
+			cc_xp_school_roll_events = { N = 3 }
 		}
 	}
 }
@@ -553,26 +653,15 @@ cc_xp_yearly_schools = {
 	}
 
 	effect = {
+		# cc_xp_school_member_tick reads the court's Rector and seat-culture records.
+		save_scope_as = cc_xp_school_court
+
 		every_character = {
 			limit = {
 				has_variable = cc_xp_school_track
 				is_alive = yes
 			}
-
-			if = {
-				limit = { var:cc_xp_school_track = 1 }
-				cc_xp_gain_adm = { AMOUNT = cc_xp_school_tick }
-			}
-			else_if = {
-				limit = { var:cc_xp_school_track = 2 }
-				cc_xp_gain_dip = { AMOUNT = cc_xp_school_tick }
-			}
-			else_if = {
-				limit = { var:cc_xp_school_track = 3 }
-				cc_xp_gain_mil = { AMOUNT = cc_xp_school_tick }
-			}
-
-			cc_xp_recompute = yes
+			cc_xp_school_gain = { AMOUNT = cc_xp_school_member_tick }
 		}
 	}
 }

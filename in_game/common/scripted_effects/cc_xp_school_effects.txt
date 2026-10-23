@@ -1,0 +1,1078 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: school state
+#
+# Everything that keeps a founded school's record true after founding day: where it sits,
+# what kind of institution its seat makes it, what it teaches, and how many belong to it.
+# All effects take N, the slot (1-3), and run in COUNTRY scope.
+#
+# STATE PER SLOT (country variables, cc_xp_school_N_*):
+#   founder      character ref, set at founding (cc_xp_schools.txt)
+#   track        1 adm / 2 dip / 3 mil, set at founding
+#   loc          the seat. Kept while in exile, so the panel can say where it was
+#   prev_loc     the seat it last left, for the notification events only
+#   exile        flag. Set while the school has no university to sit in
+#   kind         1-8, the kind of institution the seat's religion makes it (below)
+#   religion     the seat's dominant religion when seated
+#   culture      the seat's dominant culture when seated
+#   curriculum   1 law / 2 theology / 3 natural philosophy / 4 letters / 5 military science
+#   members      living members, republished monthly for the panel
+#
+# THE SEAT FLAG holds the owning country, not `yes`: cc_xp_school_seat on a location is
+# only a seat while `owner = var:cc_xp_school_seat` (cc_xp_location_is_school_seat). A bare
+# flag outlived its school whenever the seat changed hands, kept the location gold on the
+# map, and kept its new owner from seating a school there. Older saves stored `yes`;
+# cc_xp_school_maintain rewrites the flag on every live seat each month, which migrates
+# them on the first pass.
+#
+# KIND, from the seat's dominant religion:
+#   1 studium    Western Christian
+#   2 academy    Orthodox and the Eastern churches
+#   3 madrasa    Muslim
+#   4 shuyuan    East Asian: sanjiao, mahayana, shinto
+#   5 vihara     theravada, tibetan_buddhism, sammitiya
+#   6 gurukula   Dharmic
+#   7 yeshiva    Israelite
+#   8 school     anything else, or no settled population
+###############################################################################
+
+
+# Seat slot N at scope:cc_xp_seat (a location) and record what that seat makes the school.
+# Used at founding, on relocation and on return from exile.
+cc_xp_school_seat_at = {
+	save_scope_as = cc_xp_school_court
+	scope:cc_xp_seat = {
+		set_variable = { name = cc_xp_school_seat  value = scope:cc_xp_school_court }
+	}
+	set_variable = { name = cc_xp_school_$N$_loc  value = scope:cc_xp_seat }
+	remove_variable = cc_xp_school_$N$_exile
+
+	if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion } }
+		set_variable = { name = cc_xp_school_$N$_religion  value = scope:cc_xp_seat.dominant_religion }
+	}
+	if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_culture } }
+		set_variable = { name = cc_xp_school_$N$_culture  value = scope:cc_xp_seat.dominant_culture }
+	}
+
+	if = {
+		limit = {
+			scope:cc_xp_seat = {
+				exists = dominant_religion
+				OR = {
+					dominant_religion = religion:orthodox
+					dominant_religion = religion:miaphysite
+					dominant_religion = religion:nestorianism
+					dominant_religion = religion:bogomilism
+					dominant_religion = religion:paulicianism
+					dominant_religion = religion:strigolniki
+				}
+			}
+		}
+		set_variable = { name = cc_xp_school_$N$_kind  value = 2 }
+	}
+	else_if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion  dominant_religion.group = religion_group:christian } }
+		set_variable = { name = cc_xp_school_$N$_kind  value = 1 }
+	}
+	else_if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion  dominant_religion.group = religion_group:muslim } }
+		set_variable = { name = cc_xp_school_$N$_kind  value = 3 }
+	}
+	else_if = {
+		limit = {
+			scope:cc_xp_seat = {
+				exists = dominant_religion
+				OR = {
+					dominant_religion = religion:sanjiao
+					dominant_religion = religion:mahayana
+					dominant_religion = religion:shinto
+				}
+			}
+		}
+		set_variable = { name = cc_xp_school_$N$_kind  value = 4 }
+	}
+	else_if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion  dominant_religion.group = religion_group:buddhist } }
+		set_variable = { name = cc_xp_school_$N$_kind  value = 5 }
+	}
+	else_if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion  dominant_religion.group = religion_group:dharmic } }
+		set_variable = { name = cc_xp_school_$N$_kind  value = 6 }
+	}
+	else_if = {
+		limit = { scope:cc_xp_seat = { exists = dominant_religion  dominant_religion.group = religion_group:israelite_group } }
+		set_variable = { name = cc_xp_school_$N$_kind  value = 7 }
+	}
+	else = {
+		set_variable = { name = cc_xp_school_$N$_kind  value = 8 }
+	}
+}
+
+
+# The curriculum a new school starts with, from its discipline. A school always has one, so
+# the panel and the event pools never meet an empty state. Changing it is a school action.
+#
+# TRACK is passed in rather than read back from cc_xp_school_N_track: at founding that
+# variable was written a line earlier, and writes do not commit while the interaction's
+# tooltip is built, so reading it there logs "Failed to fetch variable".
+cc_xp_school_default_curriculum = {
+	if = {
+		limit = { $TRACK$ = 2 }
+		set_variable = { name = cc_xp_school_$N$_curriculum  value = 4 }
+	}
+	else_if = {
+		limit = { $TRACK$ = 3 }
+		set_variable = { name = cc_xp_school_$N$_curriculum  value = 5 }
+	}
+	else = {
+		set_variable = { name = cc_xp_school_$N$_curriculum  value = 1 }
+	}
+}
+
+
+# Find slot N a new seat, or send it into exile. Capital first, then the most developed free
+# university. NOTICE is the per-slot flag suffix the notification event looks for, and
+# EVENT its id in the cc_xp_school namespace: `moved` / 1 when leaving a lost seat,
+# `returned` / 3 when coming back from exile. Exile itself is cc_xp_school.2.
+cc_xp_school_find_seat = {
+	# Saved scopes live for the whole on_action run. Without this, a slot that finds no
+	# university would see the seat an earlier slot found this month and claim it too.
+	clear_saved_scope = cc_xp_seat
+
+	if = {
+		limit = {
+			capital ?= {
+				has_building = building_type:university
+				NOT = { cc_xp_location_is_school_seat = yes }
+			}
+		}
+		capital = { save_scope_as = cc_xp_seat }
+	}
+	else = {
+		ordered_owned_location = {
+			limit = {
+				has_building = building_type:university
+				NOT = { cc_xp_location_is_school_seat = yes }
+			}
+			order_by = development
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_xp_seat
+		}
+	}
+
+	if = {
+		limit = { exists = scope:cc_xp_seat }
+		cc_xp_school_seat_at = { N = $N$ }
+		if = {
+			limit = { is_ai = no }
+			set_variable = { name = cc_xp_school_$N$_$NOTICE$  value = yes  months = 2 }
+			trigger_event_non_silently = cc_xp_school.$EVENT$
+		}
+	}
+	else_if = {
+		limit = { NOT = { has_variable = cc_xp_school_$N$_exile } }
+		set_variable = cc_xp_school_$N$_exile
+		if = {
+			limit = { is_ai = no }
+			set_variable = { name = cc_xp_school_$N$_exiled  value = yes  months = 2 }
+			trigger_event_non_silently = cc_xp_school.2
+		}
+	}
+}
+
+
+# Monthly upkeep for slot N. A seat is lost when the realm no longer owns it or its
+# university is gone; an exiled school is re-seated as soon as a university is free.
+cc_xp_school_maintain = {
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_founder }
+		save_scope_as = cc_xp_school_court
+		clear_saved_scope = cc_xp_lost_seat
+
+		# Seated, and the seat still holds.
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_exile }
+				var:cc_xp_school_$N$_loc ?= {
+					owner ?= scope:cc_xp_school_court
+					has_building = building_type:university
+				}
+			}
+			# Rewritten every month: migrates the old `yes` flag and costs nothing.
+			var:cc_xp_school_$N$_loc = {
+				set_variable = { name = cc_xp_school_seat  value = scope:cc_xp_school_court }
+			}
+			# Schools seated before kinds existed have none recorded. Re-seat them in place
+			# once to fill in kind, religion and culture.
+			if = {
+				limit = { NOT = { has_variable = cc_xp_school_$N$_kind } }
+				var:cc_xp_school_$N$_loc = { save_scope_as = cc_xp_seat }
+				cc_xp_school_seat_at = { N = $N$ }
+			}
+			if = {
+				limit = { has_variable = cc_xp_school_$N$_curriculum }
+				cc_xp_school_apply_modifiers = { N = $N$ }
+			}
+		}
+		# Seated, but the seat is lost.
+		else_if = {
+			limit = { NOT = { has_variable = cc_xp_school_$N$_exile } }
+			var:cc_xp_school_$N$_loc ?= {
+				save_scope_as = cc_xp_lost_seat
+				cc_xp_school_strip_seat = yes
+				# Clear it unless the location's new owner has seated a school of their own
+				# there since. Still ours (the university is what was lost) always clears.
+				# This also clears a pre-migration `yes` flag.
+				if = {
+					limit = {
+						OR = {
+							owner ?= scope:cc_xp_school_court
+							NOT = { cc_xp_location_is_school_seat = yes }
+						}
+					}
+					remove_variable = cc_xp_school_seat
+				}
+			}
+			if = {
+				limit = { exists = scope:cc_xp_lost_seat }
+				set_variable = { name = cc_xp_school_$N$_prev_loc  value = scope:cc_xp_lost_seat }
+			}
+			cc_xp_school_find_seat = { N = $N$  NOTICE = moved  EVENT = 1 }
+		}
+		# In exile, and a university has come free.
+		else_if = {
+			limit = { cc_xp_has_free_university = yes }
+			cc_xp_school_find_seat = { N = $N$  NOTICE = returned  EVENT = 3 }
+		}
+
+		# Schools founded before renown and quality existed.
+		if = {
+			limit = { NOT = { has_variable = cc_xp_school_$N$_renown } }
+			cc_xp_school_init_standing = { N = $N$ }
+		}
+
+		# A Rector who has left the cabinet without the duty ending cleanly.
+		if = {
+			limit = {
+				has_variable = cc_xp_school_$N$_rector
+				NOT = { var:cc_xp_school_$N$_rector ?= { in_cabinet = yes } }
+			}
+			remove_variable = cc_xp_school_$N$_rector
+		}
+
+		# Schools founded before curricula existed get their discipline's default.
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_curriculum }
+				has_variable = cc_xp_school_$N$_track
+			}
+			cc_xp_school_default_curriculum = { N = $N$  TRACK = var:cc_xp_school_$N$_track }
+		}
+	}
+}
+
+
+# Republish slot N's living membership for the panel, which cannot count characters by
+# variable. Human courts only; nothing else reads it.
+cc_xp_school_count_members = {
+	set_variable = { name = cc_xp_school_$N$_members  value = 0 }
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_founder }
+		save_scope_as = cc_xp_school_court
+		every_character = {
+			limit = {
+				is_alive = yes
+				has_variable = cc_xp_school
+				var:cc_xp_school = $N$
+			}
+			scope:cc_xp_school_court = {
+				change_variable = { name = cc_xp_school_$N$_members  add = 1 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# SEAT AND CURRICULUM MODIFIERS
+#
+# Refreshed monthly for a seated school (see cc_xp_school_modifiers.txt for why they are
+# refreshed rather than tracked), sized by quality. Country scope, N = slot.
+###############################################################################
+
+cc_xp_school_apply_modifiers = {
+	save_scope_as = cc_xp_school_court
+	var:cc_xp_school_$N$_loc ?= { save_scope_as = cc_xp_school_seat_scope }
+
+	# The kind of institution the seat makes it.
+	scope:cc_xp_school_seat_scope ?= {
+		if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 1 }
+			add_location_modifier = { modifier = cc_xp_school_kind_studium  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 2 }
+			add_location_modifier = { modifier = cc_xp_school_kind_academy  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 3 }
+			add_location_modifier = { modifier = cc_xp_school_kind_madrasa  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 4 }
+			add_location_modifier = { modifier = cc_xp_school_kind_shuyuan  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 5 }
+			add_location_modifier = { modifier = cc_xp_school_kind_vihara  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 6 }
+			add_location_modifier = { modifier = cc_xp_school_kind_gurukula  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else_if = {
+			limit = { scope:cc_xp_school_court.var:cc_xp_school_$N$_kind ?= 7 }
+			add_location_modifier = { modifier = cc_xp_school_kind_yeshiva  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+		else = {
+			add_location_modifier = { modifier = cc_xp_school_kind_school  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+		}
+	}
+
+	# The curriculum, at the seat and across the realm.
+	if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 1 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_law  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_law  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 2 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_theology  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_theology  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 3 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_natural_philosophy  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_natural_philosophy  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 4 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_letters  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_letters  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 5 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_military_science  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_military_science  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 6 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_medicine  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_medicine  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 7 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_navigation  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_navigation  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+
+	clear_saved_scope = cc_xp_school_seat_scope
+}
+
+# Location scope. Remove every seat-level school modifier from this location: used when a
+# seat is lost and when a curriculum changes. The timed action modifiers stay.
+cc_xp_school_strip_seat = {
+	remove_location_modifier = cc_xp_school_seat_law
+	remove_location_modifier = cc_xp_school_seat_theology
+	remove_location_modifier = cc_xp_school_seat_natural_philosophy
+	remove_location_modifier = cc_xp_school_seat_letters
+	remove_location_modifier = cc_xp_school_seat_military_science
+	remove_location_modifier = cc_xp_school_seat_medicine
+	remove_location_modifier = cc_xp_school_seat_navigation
+	remove_location_modifier = cc_xp_school_kind_studium
+	remove_location_modifier = cc_xp_school_kind_academy
+	remove_location_modifier = cc_xp_school_kind_madrasa
+	remove_location_modifier = cc_xp_school_kind_shuyuan
+	remove_location_modifier = cc_xp_school_kind_vihara
+	remove_location_modifier = cc_xp_school_kind_gurukula
+	remove_location_modifier = cc_xp_school_kind_yeshiva
+	remove_location_modifier = cc_xp_school_kind_school
+}
+
+# Country scope. Drop every realm curriculum modifier, then re-apply the ones the realm's
+# seated schools still teach. Used after a curriculum change, so the old bonus goes at once
+# and a curriculum another school also teaches is not lost with it.
+cc_xp_school_refresh_realm = {
+	remove_country_modifier = cc_xp_school_realm_law
+	remove_country_modifier = cc_xp_school_realm_theology
+	remove_country_modifier = cc_xp_school_realm_natural_philosophy
+	remove_country_modifier = cc_xp_school_realm_letters
+	remove_country_modifier = cc_xp_school_realm_military_science
+	remove_country_modifier = cc_xp_school_realm_medicine
+	remove_country_modifier = cc_xp_school_realm_navigation
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 1 } }
+		cc_xp_school_apply_modifiers = { N = 1 }
+	}
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 2 } }
+		cc_xp_school_apply_modifiers = { N = 2 }
+	}
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 3 } }
+		cc_xp_school_apply_modifiers = { N = 3 }
+	}
+}
+
+
+###############################################################################
+# SCHOOL ACTIONS
+#
+# One effect per action, taking the slot. The generic actions that drive them are thin
+# per-slot wrappers (generic_actions/cc_xp_school_actions.txt, generated), because a
+# panel button cannot tell an action which school it means.
+#
+# Endow, Chairs, Scholars and Disputation share one cooldown per school, `busy`: a school
+# takes on one project at a time. A Rector shortens it. Curriculum has its own, longer one.
+###############################################################################
+
+# Country scope. Mark slot N busy until its next project.
+cc_xp_school_set_busy = {
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_rector }
+		set_variable = { name = cc_xp_school_$N$_busy  value = yes  years = 2 }
+	}
+	else = {
+		set_variable = { name = cc_xp_school_$N$_busy  value = yes  years = 3 }
+	}
+}
+
+# Character scope. Credit AMOUNT to this member's school discipline.
+cc_xp_school_gain = {
+	if = {
+		limit = { has_variable = cc_xp_school_track  var:cc_xp_school_track = 1 }
+		cc_xp_gain_adm = { AMOUNT = $AMOUNT$ }
+	}
+	else_if = {
+		limit = { has_variable = cc_xp_school_track  var:cc_xp_school_track = 2 }
+		cc_xp_gain_dip = { AMOUNT = $AMOUNT$ }
+	}
+	else_if = {
+		limit = { has_variable = cc_xp_school_track  var:cc_xp_school_track = 3 }
+		cc_xp_gain_mil = { AMOUNT = $AMOUNT$ }
+	}
+	cc_xp_recompute = yes
+}
+
+# Country scope. Every living member of slot N gains AMOUNT in the school discipline.
+cc_xp_school_members_gain = {
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = cc_xp_school
+			var:cc_xp_school = $N$
+		}
+		cc_xp_school_gain = { AMOUNT = $AMOUNT$ }
+	}
+}
+
+# Endow the Library: research now, literacy at the seat for ten years.
+cc_xp_school_do_endow = {
+	add_research_progress = {
+		value = research_progress_mild_bonus
+		multiply = var:cc_xp_school_$N$_qscale
+	}
+	cc_xp_school_change = { N = $N$  RENOWN = 0  QUALITY = 8 }
+	var:cc_xp_school_$N$_loc ?= {
+		add_location_modifier = { modifier = cc_xp_school_library  years = 10  mode = replace }
+	}
+	cc_xp_school_set_busy = { N = $N$ }
+}
+
+# Royal Chairs: a term of intensive teaching. Every member gains in the discipline;
+# proteges, who have the most to learn and nothing else to do, gain more.
+cc_xp_school_do_chairs = {
+	every_character = {
+		limit = {
+			is_alive = yes
+			has_variable = cc_xp_school
+			var:cc_xp_school = $N$
+		}
+		if = {
+			limit = { has_variable = cc_protege }
+			cc_xp_school_gain = { AMOUNT = cc_xp_school_chairs_protege }
+		}
+		else = {
+			cc_xp_school_gain = { AMOUNT = cc_xp_school_chairs_member }
+		}
+	}
+	cc_xp_school_change = { N = $N$  RENOWN = 0  QUALITY = 4 }
+	cc_xp_school_set_busy = { N = $N$ }
+}
+
+# Invite Foreign Scholars: progress at the seat toward every institution the realm knows
+# of and the seat lacks, and faster institution growth there for ten years.
+cc_xp_school_do_scholars = {
+	var:cc_xp_school_$N$_loc ?= { save_scope_as = cc_xp_school_seat_scope }
+	every_known_institution = {
+		save_scope_as = cc_xp_school_institution
+		scope:cc_xp_school_seat_scope ?= {
+			if = {
+				limit = { NOT = { has_institution = scope:cc_xp_school_institution } }
+				change_institution_progress = {
+					type = scope:cc_xp_school_institution
+					value = institution_progress_mild_bonus
+				}
+			}
+		}
+	}
+	scope:cc_xp_school_seat_scope ?= {
+		add_location_modifier = { modifier = cc_xp_school_scholars  years = 10  mode = replace }
+	}
+	clear_saved_scope = cc_xp_school_seat_scope
+	cc_xp_school_change = { N = $N$  RENOWN = 5  QUALITY = 2 }
+	cc_xp_school_set_busy = { N = $N$ }
+}
+
+# Hold a Disputation: an event drawn from the school's curriculum.
+cc_xp_school_do_disputation = {
+	set_variable = { name = cc_xp_school_$N$_disputing  value = yes  months = 2 }
+	if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 2 }
+		trigger_event_non_silently = cc_xp_school.12
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 3 }
+		trigger_event_non_silently = cc_xp_school.13
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 4 }
+		trigger_event_non_silently = cc_xp_school.14
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 5 }
+		trigger_event_non_silently = cc_xp_school.15
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 6 }
+		trigger_event_non_silently = cc_xp_school.16
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 7 }
+		trigger_event_non_silently = cc_xp_school.17
+	}
+	else = {
+		trigger_event_non_silently = cc_xp_school.11
+	}
+	cc_xp_school_set_busy = { N = $N$ }
+}
+
+# Change Curriculum: the choice is made in cc_xp_school.20.
+cc_xp_school_do_curriculum = {
+	set_variable = { name = cc_xp_school_$N$_choosing  value = yes  months = 2 }
+	trigger_event_non_silently = cc_xp_school.20
+}
+
+# Country scope, from cc_xp_school.20. Switch slot N to curriculum C (KEY is its modifier
+# suffix: law, theology, ...) and start the cooldown, halved under a Rector.
+cc_xp_school_set_curriculum = {
+	set_variable = { name = cc_xp_school_$N$_curriculum  value = $C$ }
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_rector }
+		set_variable = { name = cc_xp_school_$N$_curr_cd  value = yes  years = 5 }
+	}
+	else = {
+		set_variable = { name = cc_xp_school_$N$_curr_cd  value = yes  years = 10 }
+	}
+	# Stripping and reapplying every seat and realm modifier is housekeeping: shown as
+	# one line rather than a page of removals.
+	custom_tooltip = {
+		text = cc_xp_school_tt_curriculum_switch
+		hidden_effect = {
+			var:cc_xp_school_$N$_loc ?= { cc_xp_school_strip_seat = yes }
+			cc_xp_school_refresh_realm = yes
+		}
+	}
+
+	# What the new curriculum gives, shown but not executed: the refresh above has already
+	# applied it, and the tooltip would otherwise show only the housekeeping line. Sized by
+	# the school's current quality, as the real modifiers are.
+	show_as_tooltip = {
+		var:cc_xp_school_$N$_loc ?= {
+			add_location_modifier = {
+				modifier = cc_xp_school_seat_$KEY$
+				months = 2
+				mode = replace
+				desc = cc_xp_school_while_seated
+				size = root.var:cc_xp_school_$N$_qscale
+			}
+		}
+		add_country_modifier = {
+			modifier = cc_xp_school_realm_$KEY$
+			months = 2
+			mode = replace
+			desc = cc_xp_school_while_taught
+			size = var:cc_xp_school_$N$_qscale
+		}
+	}
+}
+
+
+###############################################################################
+# THE RECTOR
+#
+# cabinet_actions/cc_duty_rector.txt. The duty knows its school only by its seat
+# (scope:target), so these find the slot whose seat it is. Country scope.
+###############################################################################
+
+cc_xp_school_rector_on = {
+	if = {
+		limit = { var:cc_xp_school_$N$_loc ?= scope:target }
+		set_variable = { name = cc_xp_school_$N$_rector  value = $WHO$ }
+	}
+}
+
+cc_xp_school_rector_off = {
+	if = {
+		limit = { var:cc_xp_school_$N$_loc ?= scope:target }
+		remove_variable = cc_xp_school_$N$_rector
+	}
+}
+
+
+###############################################################################
+# RENOWN AND QUALITY
+#
+# Two numbers per school, both 0-100, both recomputed once a year by drifting toward a
+# target, and both pushed directly by actions and events (which then fade back toward
+# the target over the following years).
+#
+# RENOWN is how widely the school is known. It competes with the world.
+#   target = age            0.5 a year, at most 20
+#          + seat           cc_xp_seat_prominence, at most 35
+#          + realm          cc_xp_country_prominence, at most about 33
+#          + quality        a fifth of quality, at most 20
+#          halved in exile. Drifts 15% of the gap a year.
+#   standing = 1 + the number of foreign universities whose cc_xp_university_score beats
+#   this school's renown (cc_xp_school_scan_rivals). Falling behind the leading foreign
+#   university brings rival events; standing first brings its own.
+#   Feeds: the realm renown modifier, scholar and artist arrivals, event options.
+#
+# QUALITY is how good the teaching is. It is bought, not won.
+#   target = funding        20 + 50 x the Culture budget slider (cultural_maintenance),
+#                           or a flat 35 before the realm can invest in culture
+#          + Rector         10, plus their seniority level
+#          + stability      5 while the curriculum has not changed in 10 years
+#          + senior members 3 per member of seniority 5 or more, at most 15
+#          10 flat in exile. Drifts 20% of the gap a year.
+#   Feeds: qscale = 0.5 + quality / 100, which sizes every seat and curriculum modifier
+#   and the members' yearly experience; disputation options; curriculum unlocks.
+#
+# Per-slot state (country): cc_xp_school_N_ renown, quality, qscale, age, founded,
+# renown_target, quality_target, standing, cost, and the target breakdown r_age, r_seat,
+# r_realm, r_quality, q_funding, q_rector, q_stable, q_members, all for the panel.
+# Per-realm: cc_xp_school_rival_loc, cc_xp_school_rival_score, cc_xp_school_best_renown,
+# cc_xp_school_culture_pos and cc_xp_school_no_culture (the funding source, for the panel).
+###############################################################################
+
+# Country scope. Starting values for a new school, and for one founded before this existed.
+cc_xp_school_init_standing = {
+	set_variable = { name = cc_xp_school_$N$_renown   value = 10 }
+	set_variable = { name = cc_xp_school_$N$_quality  value = 40 }
+	set_variable = { name = cc_xp_school_$N$_age      value = 0 }
+	# The year it was founded, for the panel. A school founded before this existed is
+	# dated to the month it was first given renown and quality.
+	set_variable = { name = cc_xp_school_$N$_founded  value = current_year }
+	set_variable = { name = cc_xp_school_$N$_standing value = 0 }
+	# Written directly rather than through cc_xp_school_set_qscale: at founding this runs
+	# while the interaction tooltip is built, when the quality written above cannot yet be
+	# read back. 0.9 is 0.5 + 40 / 100.
+	set_variable = { name = cc_xp_school_$N$_qscale   value = 0.9 }
+}
+
+cc_xp_school_set_qscale = {
+	set_variable = {
+		name = cc_xp_school_$N$_qscale
+		value = {
+			value = var:cc_xp_school_$N$_quality
+			divide = 100
+			add = 0.5
+		}
+	}
+}
+
+# Country scope. Push slot N's renown and quality by RENOWN and QUALITY (either may be 0
+# or negative), clamped to 0-100.
+cc_xp_school_change = {
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_renown }
+		change_variable = { name = cc_xp_school_$N$_renown  add = $RENOWN$ }
+		clamp_variable = { name = cc_xp_school_$N$_renown  min = 0  max = 100 }
+		change_variable = { name = cc_xp_school_$N$_quality  add = $QUALITY$ }
+		clamp_variable = { name = cc_xp_school_$N$_quality  min = 0  max = 100 }
+		cc_xp_school_set_qscale = { N = $N$ }
+	}
+}
+
+
+# Country scope, yearly. Age, recompute both targets with their breakdowns, drift.
+cc_xp_school_yearly_standing = {
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_founder }
+		save_scope_as = cc_xp_school_court
+
+		if = {
+			limit = { NOT = { has_variable = cc_xp_school_$N$_renown } }
+			cc_xp_school_init_standing = { N = $N$ }
+		}
+
+		change_variable = { name = cc_xp_school_$N$_age  add = 1 }
+
+		# ---- Renown target ----
+		set_variable = {
+			name = cc_xp_school_$N$_r_age
+			value = { value = var:cc_xp_school_$N$_age  multiply = 0.5  max = 20 }
+		}
+		set_variable = { name = cc_xp_school_$N$_r_seat  value = 0 }
+		clear_saved_scope = cc_xp_school_seat_scope
+		var:cc_xp_school_$N$_loc ?= { save_scope_as = cc_xp_school_seat_scope }
+		if = {
+			limit = { exists = scope:cc_xp_school_seat_scope }
+			set_variable = { name = cc_xp_school_$N$_r_seat  value = scope:cc_xp_school_seat_scope.cc_xp_seat_prominence }
+		}
+		set_variable = { name = cc_xp_school_$N$_r_realm  value = cc_xp_country_prominence }
+		set_variable = {
+			name = cc_xp_school_$N$_r_quality
+			value = { value = var:cc_xp_school_$N$_quality  multiply = 0.2 }
+		}
+		set_variable = {
+			name = cc_xp_school_$N$_renown_target
+			value = {
+				value = var:cc_xp_school_$N$_r_age
+				add = var:cc_xp_school_$N$_r_seat
+				add = var:cc_xp_school_$N$_r_realm
+				add = var:cc_xp_school_$N$_r_quality
+				if = {
+					limit = { has_variable = cc_xp_school_$N$_exile }
+					multiply = 0.5
+				}
+				max = 100
+			}
+		}
+
+		# ---- Quality target ----
+		# Funding rides the vanilla Culture budget slider. Before the realm can invest in
+		# culture at all, schools live on a customary allowance worth 35.
+		if = {
+			limit = { modifier:has_cultural_maintenance = yes }
+			set_variable = {
+				name = cc_xp_school_$N$_q_funding
+				value = { value = cultural_maintenance  multiply = 50  add = 20 }
+			}
+		}
+		else = {
+			set_variable = { name = cc_xp_school_$N$_q_funding  value = 35 }
+		}
+		set_variable = { name = cc_xp_school_$N$_q_rector  value = 0 }
+		clear_saved_scope = cc_xp_school_rector_scope
+		var:cc_xp_school_$N$_rector ?= { save_scope_as = cc_xp_school_rector_scope }
+		if = {
+			limit = { scope:cc_xp_school_rector_scope ?= { has_variable = cc_level } }
+			set_variable = {
+				name = cc_xp_school_$N$_q_rector
+				value = { value = 10  add = scope:cc_xp_school_rector_scope.var:cc_level }
+			}
+		}
+		else_if = {
+			limit = { exists = scope:cc_xp_school_rector_scope }
+			set_variable = { name = cc_xp_school_$N$_q_rector  value = 10 }
+		}
+		set_variable = { name = cc_xp_school_$N$_q_stable  value = 0 }
+		if = {
+			limit = { NOT = { has_variable = cc_xp_school_$N$_curr_cd } }
+			set_variable = { name = cc_xp_school_$N$_q_stable  value = 5 }
+		}
+		set_variable = { name = cc_xp_school_$N$_q_members  value = 0 }
+		every_character = {
+			limit = {
+				is_alive = yes
+				var:cc_xp_school ?= $N$
+				has_variable = cc_level
+				var:cc_level >= 5
+			}
+			scope:cc_xp_school_court = { change_variable = { name = cc_xp_school_$N$_q_members  add = 3 } }
+		}
+		clamp_variable = { name = cc_xp_school_$N$_q_members  max = 15 }
+		if = {
+			limit = { has_variable = cc_xp_school_$N$_exile }
+			set_variable = { name = cc_xp_school_$N$_quality_target  value = 10 }
+		}
+		else = {
+			set_variable = {
+				name = cc_xp_school_$N$_quality_target
+				value = {
+					value = var:cc_xp_school_$N$_q_funding
+					add = var:cc_xp_school_$N$_q_rector
+					add = var:cc_xp_school_$N$_q_stable
+					add = var:cc_xp_school_$N$_q_members
+					max = 100
+				}
+			}
+		}
+
+		# ---- Drift ----
+		change_variable = {
+			name = cc_xp_school_$N$_renown
+			add = {
+				value = var:cc_xp_school_$N$_renown_target
+				subtract = var:cc_xp_school_$N$_renown
+				multiply = 0.15
+			}
+		}
+		change_variable = {
+			name = cc_xp_school_$N$_quality
+			add = {
+				value = var:cc_xp_school_$N$_quality_target
+				subtract = var:cc_xp_school_$N$_quality
+				multiply = 0.2
+			}
+		}
+		clamp_variable = { name = cc_xp_school_$N$_renown  min = 0  max = 100 }
+		clamp_variable = { name = cc_xp_school_$N$_quality  min = 0  max = 100 }
+		cc_xp_school_set_qscale = { N = $N$ }
+
+		# How far the leading foreign university is ahead, for the rival events and panel.
+		# Uses last year's scan; cc_xp_school_scan_rivals runs after this.
+		set_variable = { name = cc_xp_school_$N$_gap  value = 0 }
+		if = {
+			limit = { has_variable = cc_xp_school_rival_score }
+			set_variable = {
+				name = cc_xp_school_$N$_gap
+				value = { value = var:cc_xp_school_rival_score  subtract = var:cc_xp_school_$N$_renown }
+			}
+		}
+	}
+}
+
+
+# Country scope, yearly. Score every foreign university and rank our schools against them.
+# A university is any foreign location with the vanilla university building. Runs for
+# human courts only: nobody else sees the ranking, and it walks every realm's locations.
+cc_xp_school_scan_rivals = {
+	save_scope_as = cc_xp_school_court
+	set_variable = { name = cc_xp_school_rival_score  value = 0 }
+	remove_variable = cc_xp_school_rival_loc
+	set_variable = { name = cc_xp_school_1_standing  value = 1 }
+	set_variable = { name = cc_xp_school_2_standing  value = 1 }
+	set_variable = { name = cc_xp_school_3_standing  value = 1 }
+
+	every_country = {
+		limit = { NOT = { this = scope:cc_xp_school_court } }
+		every_owned_location = {
+			limit = { has_building = building_type:university }
+			save_scope_as = cc_xp_school_rival_candidate
+
+			scope:cc_xp_school_court = {
+				if = {
+					limit = { scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_rival_score }
+					set_variable = { name = cc_xp_school_rival_score  value = scope:cc_xp_school_rival_candidate.cc_xp_university_score }
+					set_variable = { name = cc_xp_school_rival_loc  value = scope:cc_xp_school_rival_candidate }
+				}
+				if = {
+					limit = {
+						has_variable = cc_xp_school_1_renown
+						scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_1_renown
+					}
+					change_variable = { name = cc_xp_school_1_standing  add = 1 }
+				}
+				if = {
+					limit = {
+						has_variable = cc_xp_school_2_renown
+						scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_2_renown
+					}
+					change_variable = { name = cc_xp_school_2_standing  add = 1 }
+				}
+				if = {
+					limit = {
+						has_variable = cc_xp_school_3_renown
+						scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_3_renown
+					}
+					change_variable = { name = cc_xp_school_3_standing  add = 1 }
+				}
+			}
+		}
+	}
+
+	# The realm's renown modifier follows its most renowned seated school.
+	set_variable = { name = cc_xp_school_best_renown  value = 0 }
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 1 }  var:cc_xp_school_1_renown > var:cc_xp_school_best_renown }
+		set_variable = { name = cc_xp_school_best_renown  value = var:cc_xp_school_1_renown }
+	}
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 2 }  var:cc_xp_school_2_renown > var:cc_xp_school_best_renown }
+		set_variable = { name = cc_xp_school_best_renown  value = var:cc_xp_school_2_renown }
+	}
+	if = {
+		limit = { cc_xp_school_is_seated = { N = 3 }  var:cc_xp_school_3_renown > var:cc_xp_school_best_renown }
+		set_variable = { name = cc_xp_school_best_renown  value = var:cc_xp_school_3_renown }
+	}
+}
+
+
+# Country scope, monthly. The realm renown modifier, sized by the best renown.
+cc_xp_school_apply_renown = {
+	if = {
+		limit = {
+			has_variable = cc_xp_school_best_renown
+			var:cc_xp_school_best_renown > 0
+		}
+		add_country_modifier = {
+			modifier = cc_xp_school_renown
+			months = 2
+			mode = replace
+			desc = cc_xp_school_while_renowned
+			size = { value = var:cc_xp_school_best_renown  divide = 100 }
+		}
+	}
+}
+
+
+# Country scope, monthly. What slot N costs, published for the panel and paid for a seated
+# school: 5% of the realm's monthly trade and tax income at a full Culture budget slider,
+# scaled down with the slider. Nothing before the realm can invest in culture, when schools
+# live on their customary allowance.
+#
+# The engine's budget sliders are a fixed list (EconomyView.GetMaintenanceSettings), so a
+# school cannot have a slider of its own; it follows the Culture slider instead. The cost
+# is a plain gold deduction rather than a budget line, because vanilla has no modifier
+# that raises the culture slider's own expense.
+cc_xp_school_fund = {
+	set_variable = { name = cc_xp_school_$N$_cost  value = 0 }
+	if = {
+		limit = {
+			modifier:has_cultural_maintenance = yes
+			cc_xp_school_is_seated = { N = $N$ }
+		}
+		set_variable = {
+			name = cc_xp_school_$N$_cost
+			value = {
+				value = monthly_income_trade_and_tax
+				multiply = 0.05
+				multiply = cultural_maintenance
+				min = 0
+			}
+		}
+		if = {
+			limit = { var:cc_xp_school_$N$_cost > 0 }
+			add_gold = { value = var:cc_xp_school_$N$_cost  multiply = -1 }
+		}
+	}
+}
+
+# Country scope, monthly. Publish the funding source for the panel, which cannot read
+# cultural_maintenance or a modifier flag itself.
+cc_xp_school_publish_funding = {
+	if = {
+		limit = { modifier:has_cultural_maintenance = yes }
+		remove_variable = cc_xp_school_no_culture
+		set_variable = { name = cc_xp_school_culture_pos  value = cultural_maintenance }
+	}
+	else = {
+		set_variable = cc_xp_school_no_culture
+		set_variable = { name = cc_xp_school_culture_pos  value = 0 }
+	}
+}
+
+
+# Country scope, yearly. Roll slot N's renown events. Each sets the slot's flag and fires
+# an event that finds the school by it, like every other school event. Checked rarest
+# first; the first to fire sets a one-year cooldown, so a school raises at most one a year.
+#   first    standing first in the world, renown 60+, 10%      cc_xp_school.42
+#   rival    the leading foreign university is 10+ ahead, 20%   cc_xp_school.40 / .41
+#   artist   renown 50+, chance renown / 12 percent             cc_xp_school.32
+#   scholar  renown 40+, chance renown / 8 percent              cc_xp_school.30
+#   student  renown 30+, 6%                                     cc_xp_school.31
+cc_xp_school_roll_events = {
+	if = {
+		limit = {
+			is_ai = no
+			cc_xp_school_is_seated = { N = $N$ }
+			has_variable = cc_xp_school_$N$_renown
+		}
+
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				var:cc_xp_school_$N$_standing ?= 1
+				var:cc_xp_school_$N$_renown >= 60
+			}
+			random = {
+				chance = 10
+				cc_xp_school_fire = { N = $N$  FLAG = first  EVENT = 42 }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				has_variable = cc_xp_school_rival_loc
+				has_variable = cc_xp_school_$N$_gap
+				var:cc_xp_school_$N$_gap > 10
+			}
+			random = {
+				chance = 10
+				cc_xp_school_fire = { N = $N$  FLAG = poached  EVENT = 40 }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				has_variable = cc_xp_school_rival_loc
+				has_variable = cc_xp_school_$N$_gap
+				var:cc_xp_school_$N$_gap > 10
+			}
+			random = {
+				chance = 10
+				cc_xp_school_fire = { N = $N$  FLAG = leaving  EVENT = 41 }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				var:cc_xp_school_$N$_renown >= 50
+			}
+			random = {
+				chance = { value = var:cc_xp_school_$N$_renown  divide = 12 }
+				cc_xp_school_fire = { N = $N$  FLAG = artist  EVENT = 32 }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				var:cc_xp_school_$N$_renown >= 40
+			}
+			random = {
+				chance = { value = var:cc_xp_school_$N$_renown  divide = 8 }
+				cc_xp_school_fire = { N = $N$  FLAG = scholar  EVENT = 30 }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				var:cc_xp_school_$N$_renown >= 30
+			}
+			random = {
+				chance = 6
+				cc_xp_school_fire = { N = $N$  FLAG = student  EVENT = 31 }
+			}
+		}
+	}
+}
+
+cc_xp_school_fire = {
+	set_variable = { name = cc_xp_school_$N$_event_cd  value = yes  years = 1 }
+	set_variable = { name = cc_xp_school_$N$_$FLAG$  value = yes  months = 2 }
+	trigger_event_non_silently = cc_xp_school.$EVENT$
+}

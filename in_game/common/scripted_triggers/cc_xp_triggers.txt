@@ -338,8 +338,70 @@ cc_xp_has_free_university = {
 		text = cc_xp_tt_needs_free_university
 		any_owned_location = {
 			has_building = building_type:university
-			NOT = { has_variable = cc_xp_school_seat }
+			NOT = { cc_xp_location_is_school_seat = yes }
 		}
+	}
+}
+
+# Location scope. Is this a live school seat? The flag holds the country that seated the
+# school, and only counts while that country still owns the location, so a seat that
+# changed hands frees itself even if its old owner no longer exists to clear the flag.
+# See scripted_effects/cc_xp_school_effects.txt.
+cc_xp_location_is_school_seat = {
+	has_variable = cc_xp_school_seat
+	exists = owner
+	owner = var:cc_xp_school_seat
+}
+
+# Country scope. Slot N holds a founded school that is not in exile.
+cc_xp_school_is_seated = {
+	has_variable = cc_xp_school_$N$_founder
+	NOT = { has_variable = cc_xp_school_$N$_exile }
+	has_variable = cc_xp_school_$N$_loc
+}
+
+# Country scope. Slot N can take on a project (Endow, Chairs, Scholars, Disputation).
+# Each clause carries its own tooltip so a disabled button says why.
+cc_xp_school_can_act = {
+	custom_tooltip = {
+		text = cc_xp_tt_school_exists
+		has_variable = cc_xp_school_$N$_founder
+	}
+	custom_tooltip = {
+		text = cc_xp_tt_school_not_exiled
+		NOT = { has_variable = cc_xp_school_$N$_exile }
+	}
+	custom_tooltip = {
+		text = cc_xp_tt_school_not_busy
+		NOT = { has_variable = cc_xp_school_$N$_busy }
+	}
+}
+
+# Country scope. Slot N has at least one living member, for Royal Chairs.
+cc_xp_school_has_members = {
+	custom_tooltip = {
+		text = cc_xp_tt_school_has_members
+		any_character = {
+			is_alive = yes
+			has_variable = cc_xp_school
+			var:cc_xp_school = $N$
+		}
+	}
+}
+
+# Country scope. Slot N may change its curriculum.
+cc_xp_school_can_change_curriculum = {
+	custom_tooltip = {
+		text = cc_xp_tt_school_exists
+		has_variable = cc_xp_school_$N$_founder
+	}
+	custom_tooltip = {
+		text = cc_xp_tt_school_not_exiled
+		NOT = { has_variable = cc_xp_school_$N$_exile }
+	}
+	custom_tooltip = {
+		text = cc_xp_tt_school_curriculum_settled
+		NOT = { has_variable = cc_xp_school_$N$_curr_cd }
 	}
 }
 

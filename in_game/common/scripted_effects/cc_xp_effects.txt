@@ -451,6 +451,42 @@ cc_xp_publish_school_capacity = {
 
 
 ###############################################################################
+# ART PUBLICATION
+#
+# The Patronage tab lists every work of art the realm holds. GUI has no country-level
+# works datamodel (Player.GetWorksOfArt does not exist; vanilla's list reads
+# ArtsView.GetArts, which only exists inside its own lateral view), but it does have
+# Location.GetWorksOfArt. So this publishes the owned locations that hold any art as a
+# variable list, and the panel walks each one's works. See docs/scripting-gotchas.md,
+# "Works of art and artists in GUI".
+#
+# Also counts sponsored artists for the summary line. Human courts only, monthly.
+###############################################################################
+
+cc_xp_publish_art = {
+	save_scope_as = cc_xp_art_court
+	clear_variable_list = cc_xp_art_locs
+	every_owned_location = {
+		limit = { any_work_of_art_in_location = { always = yes } }
+		scope:cc_xp_art_court = {
+			add_to_variable_list = { name = cc_xp_art_locs  target = prev }
+		}
+	}
+
+	set_variable = { name = cc_xp_sponsored_artists  value = 0 }
+	every_artist = {
+		limit = {
+			is_alive = yes
+			has_variable = cc_xp_patron
+		}
+		scope:cc_xp_art_court = {
+			change_variable = { name = cc_xp_sponsored_artists  add = 1 }
+		}
+	}
+}
+
+
+###############################################################################
 # CABINET SLOT SYNC
 #
 # Publishes the seated cabinet into numbered country variables. GUI script can only
@@ -644,6 +680,9 @@ cc_xp_bind_patron = {
 	$PATRON$ ?= {
 		set_variable = { name = cc_xp_is_patron  value = yes  years = 25 }
 	}
+
+	# Update the Patronage tab's sponsored count now. Country scope (cc_xp.83's root).
+	hidden_effect = { cc_xp_publish_art = yes }
 }
 
 # Sell one work quietly. The piece goes somewhere real rather than evaporating: a
@@ -706,6 +745,9 @@ cc_xp_sell_work = {
 			}
 		}
 	}
+
+	# Take the sold piece off the Patronage tab now rather than at the next monthly pass.
+	hidden_effect = { cc_xp_publish_art = yes }
 }
 
 # Take a courtier into the crown's care.

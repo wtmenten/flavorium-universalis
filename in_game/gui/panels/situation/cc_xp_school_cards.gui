@@ -1,0 +1,1019 @@
+﻿######################################################################
+# GENERATED FILE. Do not edit by hand: python tools/generate_school_slots.py
+#
+# Flavorium Universalis: one card per founded school, for the Schools tab of the court
+# panel (cc_cabinet_court.gui). A realm holds at most three, so each card is large: the
+# three together fill most of the panel. One template per slot, because each reads its
+# own cc_xp_school_N_* variables and drives its own cc_xp_school_N_* actions.
+#
+# Properties are declared at top level, not wrapped in a widget: `using = <template>`
+# merges a template's contents into the widget it is used on, and an extra layer here
+# collapses to zero size and takes its children's mouse input with it.
+######################################################################
+
+template cc_xp_school_card_1 {
+	layoutpolicy_horizontal = expanding
+	size = { -1 236 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	vbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 12 8 }
+		spacing = 6
+
+		# ---- Header: kind, seat, discipline ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 6
+
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_SCHOOL_KIND_1" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_SCHOOL_KIND_2" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_SCHOOL_KIND_3" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_SCHOOL_KIND_4" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_SCHOOL_KIND_5" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_SCHOOL_KIND_6" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_SCHOOL_KIND_7" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_kind').GetValue, '(CFixedPoint)8')]"  text = "CC_XP_SCHOOL_KIND_8" }
+
+			text_single = { fontsize = 15  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_OF" }
+
+			# The seat. Click selects it and opens its window, double-click pans the map to
+			# it: vanilla pairs onclick with ondoubleclick and never gives a widget two onclicks.
+			button = {
+				size = { 180 26 }
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_loc').GetLocation]"
+				onclick = "[SelectLocation(Location.Self)]"
+				ondoubleclick = "[PanToLocation(Location.Self)]"
+				tooltipwidget = { using = location_simple_tooltip }
+				text_single = {
+					parentanchor = left|vcenter
+					fontsize = 19
+					align = left|nobaseline
+					text = "[Location.GetNameWithNoTooltip]"
+				}
+			}
+
+			expand = {}
+
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_COL_ADM"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_COL_DIP"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_COL_MIL"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+		}
+
+		# ---- Founding year and status ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 8
+			text_single = {
+				fontsize = 11
+				default_format = "#weak"
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founded').IsSet]"
+				text = "CC_XP_SCHOOL_1_FOUNDED"
+			}
+			text_single = {
+				fontsize = 11
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_exile').IsSet]"
+				text = "CC_XP_SCHOOL_IN_EXILE"
+				tooltip = "CC_XP_SCHOOL_IN_EXILE_TT"
+			}
+			expand = {}
+		}
+
+		# ---- Body: people on the left, standing on the right ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			spacing = 12
+
+			vbox = {
+				size = { 170 -1 }
+				layoutpolicy_vertical = expanding
+				spacing = 6
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FOUNDER_LABEL"  tooltip = "CC_XP_SCHOOL_FOUNDER_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+						text_single = {
+							fontsize = 10
+							default_format = "#weak"
+							align = left|nobaseline
+							visible = "[Not(Character.IsAlive)]"
+							text = "CC_XP_SCHOOL_FOUNDER_DEAD"
+							tooltip = "CC_XP_SCHOOL_FOUNDER_DEAD_TT"
+						}
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_rector').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_rector').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RECTOR_LABEL"  tooltip = "CC_XP_SCHOOL_RECTOR_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_1_rector').IsSet)]"
+					widget = {
+						size = { 46 52 }
+						background = { using = color_whiteish_texture  alpha = 0.06 }
+					}
+					text_single = {
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						text = "CC_XP_SCHOOL_NO_RECTOR"
+						tooltip = "CC_XP_SCHOOL_RECTOR_TT"
+					}
+					expand = {}
+				}
+
+				expand = {}
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+				spacing = 5
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_1_RENOWN_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RENOWN_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_renown').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_RENOWN_TIER_4" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_standing').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_1_STANDING"  tooltip = "CC_XP_SCHOOL_STANDING_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_1_QUALITY_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_QUALITY_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_green.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_quality').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_QUALITY_TIER_4" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_CURRICULUM_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_CURRICULUM_1"  tooltip = "CC_XP_CURRICULUM_1_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_CURRICULUM_2"  tooltip = "CC_XP_CURRICULUM_2_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_CURRICULUM_3"  tooltip = "CC_XP_CURRICULUM_3_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_CURRICULUM_4"  tooltip = "CC_XP_CURRICULUM_4_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_CURRICULUM_5"  tooltip = "CC_XP_CURRICULUM_5_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_CURRICULUM_6"  tooltip = "CC_XP_CURRICULUM_6_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_curriculum').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_CURRICULUM_7"  tooltip = "CC_XP_CURRICULUM_7_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FUNDING_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet)]"  text = "CC_XP_SCHOOL_FUNDING_CULTURE"  tooltip = "CC_XP_SCHOOL_FUNDING_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet]"  text = "CC_XP_SCHOOL_FUNDING_CUSTOMARY"  tooltip = "CC_XP_SCHOOL_FUNDING_CUSTOMARY_TT" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_cost').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_1_COST" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_MEMBERS_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_1_members').GetValue|0]"  tooltip = "CC_XP_SCHOOL_MEMBERS_TT" }
+					expand = {}
+				}
+
+				expand = {}
+			}
+		}
+
+		# ---- Actions ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 3
+
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_1_endow"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_ENDOW"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_1_chairs"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CHAIRS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_1_scholars"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_SCHOLARS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_1_disputation"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_DISPUTATION"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_1_curriculum"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CURRICULUM"
+				}
+			}
+
+			expand = {}
+		}
+	}
+}
+
+
+template cc_xp_school_card_2 {
+	layoutpolicy_horizontal = expanding
+	size = { -1 236 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	vbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 12 8 }
+		spacing = 6
+
+		# ---- Header: kind, seat, discipline ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 6
+
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_SCHOOL_KIND_1" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_SCHOOL_KIND_2" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_SCHOOL_KIND_3" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_SCHOOL_KIND_4" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_SCHOOL_KIND_5" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_SCHOOL_KIND_6" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_SCHOOL_KIND_7" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_kind').GetValue, '(CFixedPoint)8')]"  text = "CC_XP_SCHOOL_KIND_8" }
+
+			text_single = { fontsize = 15  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_OF" }
+
+			# The seat. Click selects it and opens its window, double-click pans the map to
+			# it: vanilla pairs onclick with ondoubleclick and never gives a widget two onclicks.
+			button = {
+				size = { 180 26 }
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_loc').GetLocation]"
+				onclick = "[SelectLocation(Location.Self)]"
+				ondoubleclick = "[PanToLocation(Location.Self)]"
+				tooltipwidget = { using = location_simple_tooltip }
+				text_single = {
+					parentanchor = left|vcenter
+					fontsize = 19
+					align = left|nobaseline
+					text = "[Location.GetNameWithNoTooltip]"
+				}
+			}
+
+			expand = {}
+
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_COL_ADM"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_COL_DIP"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_COL_MIL"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+		}
+
+		# ---- Founding year and status ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 8
+			text_single = {
+				fontsize = 11
+				default_format = "#weak"
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founded').IsSet]"
+				text = "CC_XP_SCHOOL_2_FOUNDED"
+			}
+			text_single = {
+				fontsize = 11
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_exile').IsSet]"
+				text = "CC_XP_SCHOOL_IN_EXILE"
+				tooltip = "CC_XP_SCHOOL_IN_EXILE_TT"
+			}
+			expand = {}
+		}
+
+		# ---- Body: people on the left, standing on the right ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			spacing = 12
+
+			vbox = {
+				size = { 170 -1 }
+				layoutpolicy_vertical = expanding
+				spacing = 6
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FOUNDER_LABEL"  tooltip = "CC_XP_SCHOOL_FOUNDER_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+						text_single = {
+							fontsize = 10
+							default_format = "#weak"
+							align = left|nobaseline
+							visible = "[Not(Character.IsAlive)]"
+							text = "CC_XP_SCHOOL_FOUNDER_DEAD"
+							tooltip = "CC_XP_SCHOOL_FOUNDER_DEAD_TT"
+						}
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_rector').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_rector').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RECTOR_LABEL"  tooltip = "CC_XP_SCHOOL_RECTOR_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_2_rector').IsSet)]"
+					widget = {
+						size = { 46 52 }
+						background = { using = color_whiteish_texture  alpha = 0.06 }
+					}
+					text_single = {
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						text = "CC_XP_SCHOOL_NO_RECTOR"
+						tooltip = "CC_XP_SCHOOL_RECTOR_TT"
+					}
+					expand = {}
+				}
+
+				expand = {}
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+				spacing = 5
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_2_RENOWN_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RENOWN_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_renown').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_RENOWN_TIER_4" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_standing').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_2_STANDING"  tooltip = "CC_XP_SCHOOL_STANDING_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_2_QUALITY_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_QUALITY_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_green.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_quality').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_QUALITY_TIER_4" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_CURRICULUM_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_CURRICULUM_1"  tooltip = "CC_XP_CURRICULUM_1_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_CURRICULUM_2"  tooltip = "CC_XP_CURRICULUM_2_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_CURRICULUM_3"  tooltip = "CC_XP_CURRICULUM_3_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_CURRICULUM_4"  tooltip = "CC_XP_CURRICULUM_4_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_CURRICULUM_5"  tooltip = "CC_XP_CURRICULUM_5_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_CURRICULUM_6"  tooltip = "CC_XP_CURRICULUM_6_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_curriculum').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_CURRICULUM_7"  tooltip = "CC_XP_CURRICULUM_7_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FUNDING_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet)]"  text = "CC_XP_SCHOOL_FUNDING_CULTURE"  tooltip = "CC_XP_SCHOOL_FUNDING_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet]"  text = "CC_XP_SCHOOL_FUNDING_CUSTOMARY"  tooltip = "CC_XP_SCHOOL_FUNDING_CUSTOMARY_TT" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_cost').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_2_COST" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_MEMBERS_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_2_members').GetValue|0]"  tooltip = "CC_XP_SCHOOL_MEMBERS_TT" }
+					expand = {}
+				}
+
+				expand = {}
+			}
+		}
+
+		# ---- Actions ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 3
+
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_2_endow"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_ENDOW"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_2_chairs"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CHAIRS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_2_scholars"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_SCHOLARS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_2_disputation"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_DISPUTATION"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_2_curriculum"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CURRICULUM"
+				}
+			}
+
+			expand = {}
+		}
+	}
+}
+
+
+template cc_xp_school_card_3 {
+	layoutpolicy_horizontal = expanding
+	size = { -1 236 }
+	background = { using = color_whiteish_texture  alpha = 0.10 }
+
+	vbox = {
+		layoutpolicy_horizontal = expanding
+		layoutpolicy_vertical = expanding
+		margin = { 12 8 }
+		spacing = 6
+
+		# ---- Header: kind, seat, discipline ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 6
+
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_SCHOOL_KIND_1" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_SCHOOL_KIND_2" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_SCHOOL_KIND_3" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_SCHOOL_KIND_4" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_SCHOOL_KIND_5" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_SCHOOL_KIND_6" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_SCHOOL_KIND_7" }
+			text_single = { fontsize = 19  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_kind').GetValue, '(CFixedPoint)8')]"  text = "CC_XP_SCHOOL_KIND_8" }
+
+			text_single = { fontsize = 15  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_OF" }
+
+			# The seat. Click selects it and opens its window, double-click pans the map to
+			# it: vanilla pairs onclick with ondoubleclick and never gives a widget two onclicks.
+			button = {
+				size = { 180 26 }
+				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_loc').GetLocation]"
+				onclick = "[SelectLocation(Location.Self)]"
+				ondoubleclick = "[PanToLocation(Location.Self)]"
+				tooltipwidget = { using = location_simple_tooltip }
+				text_single = {
+					parentanchor = left|vcenter
+					fontsize = 19
+					align = left|nobaseline
+					text = "[Location.GetNameWithNoTooltip]"
+				}
+			}
+
+			expand = {}
+
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_COL_ADM"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_COL_DIP"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+			text_single = { fontsize = 13  align = right|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_COL_MIL"  tooltip = "CC_XP_SCHOOL_TRACK_TT" }
+		}
+
+		# ---- Founding year and status ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 8
+			text_single = {
+				fontsize = 11
+				default_format = "#weak"
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founded').IsSet]"
+				text = "CC_XP_SCHOOL_3_FOUNDED"
+			}
+			text_single = {
+				fontsize = 11
+				align = left|nobaseline
+				visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_exile').IsSet]"
+				text = "CC_XP_SCHOOL_IN_EXILE"
+				tooltip = "CC_XP_SCHOOL_IN_EXILE_TT"
+			}
+			expand = {}
+		}
+
+		# ---- Body: people on the left, standing on the right ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			layoutpolicy_vertical = expanding
+			spacing = 12
+
+			vbox = {
+				size = { 170 -1 }
+				layoutpolicy_vertical = expanding
+				spacing = 6
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FOUNDER_LABEL"  tooltip = "CC_XP_SCHOOL_FOUNDER_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+						text_single = {
+							fontsize = 10
+							default_format = "#weak"
+							align = left|nobaseline
+							visible = "[Not(Character.IsAlive)]"
+							text = "CC_XP_SCHOOL_FOUNDER_DEAD"
+							tooltip = "CC_XP_SCHOOL_FOUNDER_DEAD_TT"
+						}
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_rector').IsSet]"
+					datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_rector').GetCharacter]"
+					portrait_standard_head_framed_button = {
+						size = { 46 52 }
+						onclick = "[ShowCharacter(Character.Self)]"
+					}
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RECTOR_LABEL"  tooltip = "CC_XP_SCHOOL_RECTOR_TT" }
+						text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+					}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_3_rector').IsSet)]"
+					widget = {
+						size = { 46 52 }
+						background = { using = color_whiteish_texture  alpha = 0.06 }
+					}
+					text_single = {
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						text = "CC_XP_SCHOOL_NO_RECTOR"
+						tooltip = "CC_XP_SCHOOL_RECTOR_TT"
+					}
+					expand = {}
+				}
+
+				expand = {}
+			}
+
+			vbox = {
+				layoutpolicy_horizontal = expanding
+				layoutpolicy_vertical = expanding
+				spacing = 5
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_3_RENOWN_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_RENOWN_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue))]"  text = "CC_XP_SCHOOL_RENOWN_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_renown').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_RENOWN_TIER_4" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_standing').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_3_STANDING"  tooltip = "CC_XP_SCHOOL_STANDING_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					tooltip = "CC_XP_SCHOOL_3_QUALITY_TT"
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_QUALITY_LABEL" }
+					widget = {
+						size = { 140 10 }
+						progressbar = {
+							size = { 100% 100% }
+							noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+							progresstexture = "gfx/interface/progressbars/progress_bar_green.dds"
+							texture_density = 2
+							spriteType = Corneredstretched
+							spriteborder = { 12 0 }
+							min = 0
+							max = 100
+							value = "[FixedPointToFloat(Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue)]"
+						}
+					}
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue|0]" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue, '(CFixedPoint)0'), GreaterThan_CFixedPoint('(CFixedPoint)25', Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_1" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue, '(CFixedPoint)25'), GreaterThan_CFixedPoint('(CFixedPoint)50', Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_2" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[And(GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue, '(CFixedPoint)50'), GreaterThan_CFixedPoint('(CFixedPoint)75', Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue))]"  text = "CC_XP_SCHOOL_QUALITY_TIER_3" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_quality').GetValue, '(CFixedPoint)75')]"  text = "CC_XP_SCHOOL_QUALITY_TIER_4" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_CURRICULUM_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)1')]"  text = "CC_XP_CURRICULUM_1"  tooltip = "CC_XP_CURRICULUM_1_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)2')]"  text = "CC_XP_CURRICULUM_2"  tooltip = "CC_XP_CURRICULUM_2_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)3')]"  text = "CC_XP_CURRICULUM_3"  tooltip = "CC_XP_CURRICULUM_3_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)4')]"  text = "CC_XP_CURRICULUM_4"  tooltip = "CC_XP_CURRICULUM_4_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)5')]"  text = "CC_XP_CURRICULUM_5"  tooltip = "CC_XP_CURRICULUM_5_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)6')]"  text = "CC_XP_CURRICULUM_6"  tooltip = "CC_XP_CURRICULUM_6_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_curriculum').GetValue, '(CFixedPoint)7')]"  text = "CC_XP_CURRICULUM_7"  tooltip = "CC_XP_CURRICULUM_7_TT" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_FUNDING_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Not(Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet)]"  text = "CC_XP_SCHOOL_FUNDING_CULTURE"  tooltip = "CC_XP_SCHOOL_FUNDING_TT" }
+					text_single = { fontsize = 12  align = left|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_xp_school_no_culture').IsSet]"  text = "CC_XP_SCHOOL_FUNDING_CUSTOMARY"  tooltip = "CC_XP_SCHOOL_FUNDING_CUSTOMARY_TT" }
+					text_single = { fontsize = 11  default_format = "#weak"  align = left|nobaseline  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_cost').GetValue, '(CFixedPoint)0')]"  text = "CC_XP_SCHOOL_3_COST" }
+					expand = {}
+				}
+
+				hbox = {
+					layoutpolicy_horizontal = expanding
+					spacing = 6
+					text_single = { size = { 70 20 }  autoresize = no  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_SCHOOL_MEMBERS_LABEL" }
+					text_single = { fontsize = 12  align = left|nobaseline  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_3_members').GetValue|0]"  tooltip = "CC_XP_SCHOOL_MEMBERS_TT" }
+					expand = {}
+				}
+
+				expand = {}
+			}
+		}
+
+		# ---- Actions ----
+		hbox = {
+			layoutpolicy_horizontal = expanding
+			spacing = 3
+
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_3_endow"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_ENDOW"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_3_chairs"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CHAIRS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_3_scholars"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_SCHOLARS"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_3_disputation"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_DISPUTATION"
+				}
+			}
+			card_header_button_01 = {
+				size = { 92 28 }
+				scripted_action_tooltip = {
+					click_type = left
+					click_mode = single
+					action_name = "cc_xp_school_3_curriculum"
+					actor = "[Player]"
+				}
+				enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+				tooltipwidget = { using = action_tooltip_pop_out }
+				text_single = {
+					parentanchor = center
+					align = center
+					fontsize = 10
+					text = "CC_XP_SCHOOL_BTN_CURRICULUM"
+				}
+			}
+
+			expand = {}
+		}
+	}
+}

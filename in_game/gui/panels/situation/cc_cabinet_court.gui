@@ -221,240 +221,470 @@ situation_panel = {
 
 		################################ PATRONAGE ################################
 		#
-		# Summary, panel-level actions, and a live artist roster.
+		# Summary and panel actions, the artist roster, then every work the realm holds.
 		#
-		# NOTHING here is backed by a variable. Works are counted with
-		# Country.GetNumWorksOfArt and artists come from the Country.GetLivingArtistsForUI
-		# datamodel. Artists, unlike cabinet members, DO have a datamodel, so this list
-		# needs no slot sync at all.
+		# Extra tab panels sit OUTSIDE the panel's own scrollarea (common.gui:368, after the
+		# scrollarea at 243 closes), so each tab brings its own. It is not nested in another
+		# scrollarea, which is what swallowed input on the roster tab before.
 		#
-		# Individual works are deliberately never listed: a realm can hold hundreds, and
-		# the one interaction that reaches them uses the engine's own work_of_art selector.
-		#
-		# The closing `expand = {}` is what keeps content at the TOP. Without it, a vbox
-		# with an expanding vertical policy spreads its children down the whole panel.
+		# Artists come from the Country.GetLivingArtistsForUI datamodel. Works come from
+		# cc_xp_art_locs, a list of the owned locations holding art that cc_xp_publish_art
+		# republishes monthly, walked through Location.GetWorksOfArt: there is no country
+		# works datamodel. See docs/scripting-gotchas.md, "Works of art and artists in GUI".
 		###########################################################################
-		vbox = {
-			layoutpolicy_horizontal = expanding
-			layoutpolicy_vertical = expanding
+		scrollarea = {
 			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_patronage' )]"
-			using = bg_secondary_inner_alt
-			margin = { 10 8 }
-			spacing = 6
-
-			# ---- Summary line ----
-			hbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 4
-
-				text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_WORKS_LABEL" }
-				text_single = { fontsize = 15  raw_text = "[Player.GetNumWorksOfArt]" }
-
-				widget = { size = { 18 1 } }
-
-				text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_ARTISTS_LABEL" }
-				text_single = { fontsize = 15  raw_text = "[GetDataModelSize(Player.GetLivingArtistsForUI)]" }
-
-				expand = {}
-
-				# No parameter is supplied: both of this interaction's targets are chosen
-				# through its own pickers, the broker first and then the work.
-				card_header_button_01 = {
-					size = { 150 26 }
-					scripted_action_tooltip = {
-						click_type = left
-						click_mode = single
-						action_name = "cc_xp_sell_art_discreetly"
-						actor = "[Player]"
-					}
-					enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
-					tooltipwidget = { using = action_tooltip_pop_out }
-					text_single = {
-						parentanchor = center
-						align = center
-						fontsize = 11
-						text = "CC_XP_BTN_SELL_WORK"
-					}
+			using = layoutpolicy_expanding
+			scrollbarpolicy_horizontal = always_off
+			autoresizeviewport = yes
+			viewportwidget = {
+				widget = {
+					scissor = yes
 				}
 			}
-
-			# ---- Roster header ----
-			#
-			# Sponsorship moved onto the artist rows below. It needed an artist AND a patron,
-			# and a header button can supply neither, so it was dead here. The artist now comes
-			# from their own row and the minister who puts their name to it is chosen among
-			# options in cc_xp.83.
-			text_single = {
-				layoutpolicy_horizontal = expanding
-				fontsize = 11
-				default_format = "#weak"
-				align = left|nobaseline
-				text = "CC_XP_ARTISTS_HEADER"
+			scrollbar_vertical = {
+				using = Scrollbar_Vertical
 			}
 
-			text_single = {
-				layoutpolicy_horizontal = expanding
-				fontsize = 11
-				default_format = "#weak"
-				align = left|nobaseline
-				visible = "[IsDataModelEmpty(Player.GetLivingArtistsForUI)]"
-				text = "CC_XP_NO_ARTISTS"
-			}
+			scrollwidget = {
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					using = bg_secondary_inner_alt
+					margin = { 10 8 }
+					spacing = 6
 
-			# ---- Artist roster ----
-			vbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 3
-				datamodel = "[Player.GetLivingArtistsForUI]"
-				item = {
-					widget = {
+					# ---- Summary ----
+					hbox = {
 						layoutpolicy_horizontal = expanding
-						size = { -1 46 }
-						background = { using = color_whiteish_texture  alpha = 0.10 }
+						spacing = 4
 
 						hbox = {
-							layoutpolicy_horizontal = expanding
-							layoutpolicy_vertical = expanding
-							margin = { 6 3 }
-							spacing = 6
+							spacing = 4
+							datacontext = "[Player]"
+							tooltipwidget = { using = WorksOfArt_tooltip }
+							text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_WORKS_LABEL" }
+							text_single = { fontsize = 15  raw_text = "[Player.GetNumWorksOfArt]" }
+						}
+						widget = { size = { 14 1 } }
+						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_ARTISTS_LABEL" }
+						text_single = { fontsize = 15  raw_text = "[GetDataModelSize(Player.GetLivingArtistsForUI)]" }
+						widget = { size = { 14 1 } }
+						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_SPONSORED_LABEL" }
+						text_single = { fontsize = 15  raw_text = "[Player.MakeScope.GetVariable('cc_xp_sponsored_artists').GetValue|0]"  tooltip = "CC_XP_SPONSORED_TT" }
 
-							portrait_standard_head_framed_button = {
-								size = { 34 38 }
-								onclick = "[ShowCharacter(Character.Self)]"
+						expand = {}
+					}
+
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+
+						# No parameter is supplied: both of this interaction's targets are chosen
+						# among options in cc_xp.84.
+						card_header_button_01 = {
+							size = { 150 26 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_xp_sell_art_discreetly"
+								actor = "[Player]"
 							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = {
+								parentanchor = center
+								align = center
+								fontsize = 11
+								text = "CC_XP_BTN_SELL_WORK"
+							}
+						}
 
-							vbox = {
+						# Vanilla's own sortable works list, for everything this tab does not do.
+						card_header_button_01 = {
+							size = { 150 26 }
+							onclick = "[OpenLateralView('arts_overview')]"
+							tooltip = "CC_XP_BTN_OPEN_ARTS_TT"
+							text_single = {
+								parentanchor = center
+								align = center
+								fontsize = 11
+								text = "CC_XP_BTN_OPEN_ARTS"
+							}
+						}
+
+						expand = {}
+					}
+
+					# ---- Artists ----
+					text_single = {
+						layoutpolicy_horizontal = expanding
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						margin_top = 4
+						text = "CC_XP_ARTISTS_HEADER"
+					}
+
+					text_single = {
+						layoutpolicy_horizontal = expanding
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						visible = "[IsDataModelEmpty(Player.GetLivingArtistsForUI)]"
+						text = "CC_XP_NO_ARTISTS"
+					}
+
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 3
+						datamodel = "[Player.GetLivingArtistsForUI]"
+						item = {
+							widget = {
 								layoutpolicy_horizontal = expanding
-								spacing = 0
-
-								text_single = {
-									layoutpolicy_horizontal = expanding
-									fontsize = 13
-									align = left|nobaseline
-									text = "[Character.GetShortNameWithNoTooltip]"
-								}
+								size = { -1 66 }
+								background = { using = color_whiteish_texture  alpha = 0.10 }
 
 								hbox = {
 									layoutpolicy_horizontal = expanding
-									spacing = 5
-									text_single = { fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "[Character.GetArtistType.GetNameWithNoTooltip]" }
-									text_single = { fontsize = 10  default_format = "#weak"  align = left|nobaseline  raw_text = "[Character.GetArtistSkill]" }
+									layoutpolicy_vertical = expanding
+									margin = { 6 4 }
+									spacing = 6
+
+									portrait_standard_head_framed_button = {
+										size = { 42 48 }
+										onclick = "[ShowCharacter(Character.Self)]"
+									}
+
+									vbox = {
+										layoutpolicy_horizontal = expanding
+										spacing = 1
+
+										# Name, art form, skill.
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											spacing = 5
+											text_single = { fontsize = 13  align = left|nobaseline  text = "[Character.GetShortNameWithNoTooltip]" }
+											text_single = { fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "[Character.GetArtistType.GetNameWithNoTooltip]" }
+											text_single = { fontsize = 10  default_format = "#weak"  align = left|nobaseline  raw_text = "[Character.GetArtistSkill]"  tooltip = "CC_XP_ARTIST_SKILL_TT" }
+											expand = {}
+										}
+
+										# Patron.
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											spacing = 4
+											text_single = {
+												fontsize = 10
+												align = left|nobaseline
+												visible = "[Character.MakeScope.GetVariable('cc_xp_patron').IsSet]"
+												text = "CC_XP_ARTIST_PATRON"
+												tooltip = "CC_XP_HAS_PATRON_TT"
+											}
+											text_single = {
+												fontsize = 10
+												default_format = "#weak"
+												align = left|nobaseline
+												visible = "[Not(Character.MakeScope.GetVariable('cc_xp_patron').IsSet)]"
+												text = "CC_XP_ARTIST_NO_PATRON"
+											}
+											expand = {}
+										}
+
+										# The piece in hand. Three states, measured in game:
+										#   working     HasArtInProgress, progress above 0
+										#   stalled     HasArtInProgress, progress exactly 0. Pieces do not
+										#               advance at all before the realm can invest in
+										#               culture, and a new piece starts at 0
+										#   idle        not HasArtInProgress
+										# Not the piece's name: StringIsEmpty returns false for it even when
+										# it renders empty. See docs/scripting-gotchas.md.
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											spacing = 5
+											visible = "[And(Character.HasArtInProgress, GreaterThan_CFixedPoint(Character.GetArtProgress, '(CFixedPoint)0'))]"
+											tooltip = "[Character.GetArtProgressInfo]"
+											text_single = { fontsize = 10  align = left|nobaseline  text = "CC_XP_ARTIST_WORKING" }
+											widget = {
+												size = { 110 8 }
+												progressbar = {
+													size = { 100% 100% }
+													noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+													progresstexture = "gfx/interface/progressbars/progress_bar_goldish.dds"
+													texture_density = 2
+													spriteType = Corneredstretched
+													spriteborder = { 12 0 }
+													min = 0
+													max = 1
+													value = "[FixedPointToFloat(Character.GetArtProgress)]"
+												}
+											}
+											text_single = { fontsize = 10  align = left|nobaseline  raw_text = "[Character.GetArtProgress|%0Y]" }
+											expand = {}
+										}
+										text_single = {
+											layoutpolicy_horizontal = expanding
+											fontsize = 10
+											align = left|nobaseline
+											visible = "[And(Character.HasArtInProgress, Not(GreaterThan_CFixedPoint(Character.GetArtProgress, '(CFixedPoint)0')))]"
+											text = "CC_XP_ARTIST_STALLED"
+											tooltip = "CC_XP_ARTIST_STALLED_TT"
+										}
+										text_single = {
+											layoutpolicy_horizontal = expanding
+											fontsize = 10
+											default_format = "#weak"
+											align = left|nobaseline
+											visible = "[Not(Character.HasArtInProgress)]"
+											text = "CC_XP_ARTIST_IDLE"
+											tooltip = "CC_XP_ARTIST_IDLE_TT"
+										}
+									}
+
+									# Works completed by this artist.
 									text_single = {
-										fontsize = 10
+										fontsize = 11
 										default_format = "#weak"
-										align = left|nobaseline
-										visible = "[Character.MakeScope.GetVariable('cc_xp_patron').IsSet]"
-										text = "CC_XP_HAS_PATRON"
-										tooltip = "CC_XP_HAS_PATRON_TT"
+										raw_text = "[GetDataModelSize(Character.GetWorksOfArt)]"
+										tooltip = "CC_XP_WORKS_BY_TT"
 									}
-									expand = {}
-								}
-							}
 
-							# Works completed by this artist.
-							text_single = {
-								fontsize = 11
-								default_format = "#weak"
-								raw_text = "[GetDataModelSize(Character.GetWorksOfArt)]"
-								tooltip = "CC_XP_WORKS_BY_TT"
-							}
-
-							# Sponsorship, our studio visit, then vanilla's two art
-							# interactions. All four take target_flag = recipient and want a
-							# character, so the artist under the cursor IS the parameter and
-							# none needs a picker step. That is the whole reason sponsorship
-							# had to be inverted to take the artist rather than the patron:
-							# this row can supply an artist and nothing on this panel can
-							# supply a minister.
-							card_header_button_01 = {
-								size = { 26 26 }
-								scripted_action_tooltip = {
-									click_type = left
-									click_mode = single
-									action_name = "cc_xp_sponsor_artist"
-									actor = "[Player]"
-									parameter = {
-										parameter_name = "recipient"
-										parameter_value = "[Character.MakeScope]"
+									# Sponsorship, our studio visit, then vanilla's two art
+									# interactions. All four take target_flag = recipient and want a
+									# character, so the artist under the cursor IS the parameter and
+									# none needs a picker step.
+									card_header_button_01 = {
+										size = { 26 26 }
+										scripted_action_tooltip = {
+											click_type = left
+											click_mode = single
+											action_name = "cc_xp_sponsor_artist"
+											actor = "[Player]"
+											parameter = {
+												parameter_name = "recipient"
+												parameter_value = "[Character.MakeScope]"
+											}
+										}
+										enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+										tooltipwidget = { using = action_tooltip_pop_out }
+										icon = {
+											parentanchor = center
+											size = { 78% 78% }
+											texture = "gfx/interface/icons/flat_icons/prestige.dds"
+										}
 									}
-								}
-								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
-								tooltipwidget = { using = action_tooltip_pop_out }
-								icon = {
-									parentanchor = center
-									size = { 78% 78% }
-									texture = "gfx/interface/icons/flat_icons/prestige.dds"
-								}
-							}
 
-							card_header_button_01 = {
-								size = { 26 26 }
-								scripted_action_tooltip = {
-									click_type = left
-									click_mode = single
-									action_name = "cc_xp_studio_visit"
-									actor = "[Player]"
-									parameter = {
-										parameter_name = "recipient"
-										parameter_value = "[Character.MakeScope]"
+									card_header_button_01 = {
+										size = { 26 26 }
+										scripted_action_tooltip = {
+											click_type = left
+											click_mode = single
+											action_name = "cc_xp_studio_visit"
+											actor = "[Player]"
+											parameter = {
+												parameter_name = "recipient"
+												parameter_value = "[Character.MakeScope]"
+											}
+										}
+										enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+										tooltipwidget = { using = action_tooltip_pop_out }
+										icon = {
+											parentanchor = center
+											size = { 78% 78% }
+											texture = "gfx/interface/icons/flat_icons/work_of_art_in_progress.dds"
+										}
 									}
-								}
-								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
-								tooltipwidget = { using = action_tooltip_pop_out }
-								icon = {
-									parentanchor = center
-									size = { 78% 78% }
-									texture = "gfx/interface/icons/flat_icons/work_of_art_in_progress.dds"
-								}
-							}
 
-							card_header_button_01 = {
-								size = { 26 26 }
-								scripted_action_tooltip = {
-									click_type = left
-									click_mode = single
-									action_name = "commission_art"
-									actor = "[Player]"
-									parameter = {
-										parameter_name = "recipient"
-										parameter_value = "[Character.MakeScope]"
+									card_header_button_01 = {
+										size = { 26 26 }
+										scripted_action_tooltip = {
+											click_type = left
+											click_mode = single
+											action_name = "commission_art"
+											actor = "[Player]"
+											parameter = {
+												parameter_name = "recipient"
+												parameter_value = "[Character.MakeScope]"
+											}
+										}
+										enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+										tooltipwidget = { using = action_tooltip_pop_out }
+										icon = {
+											parentanchor = center
+											size = { 78% 78% }
+											texture = "gfx/interface/icons/flat_icons/art_works.dds"
+										}
 									}
-								}
-								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
-								tooltipwidget = { using = action_tooltip_pop_out }
-								icon = {
-									parentanchor = center
-									size = { 78% 78% }
-									texture = "gfx/interface/icons/flat_icons/art_works.dds"
-								}
-							}
 
-							card_header_button_01 = {
-								size = { 26 26 }
-								scripted_action_tooltip = {
-									click_type = left
-									click_mode = single
-									action_name = "dismiss_artist"
-									actor = "[Player]"
-									parameter = {
-										parameter_name = "recipient"
-										parameter_value = "[Character.MakeScope]"
+									card_header_button_01 = {
+										size = { 26 26 }
+										scripted_action_tooltip = {
+											click_type = left
+											click_mode = single
+											action_name = "dismiss_artist"
+											actor = "[Player]"
+											parameter = {
+												parameter_name = "recipient"
+												parameter_value = "[Character.MakeScope]"
+											}
+										}
+										enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+										tooltipwidget = { using = action_tooltip_pop_out }
+										icon = {
+											parentanchor = center
+											size = { 72% 72% }
+											texture = "gfx/interface/buttons/flats/remove.dds"
+										}
 									}
-								}
-								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
-								tooltipwidget = { using = action_tooltip_pop_out }
-								icon = {
-									parentanchor = center
-									size = { 72% 72% }
-									texture = "gfx/interface/buttons/flats/remove.dds"
 								}
 							}
 						}
 					}
+
+					# ---- Works of art ----
+					# The eye hides what Sell a Work will not offer (cc_xp.84): priceless works, and
+					# monuments, palaces, temple towers, regalia and mansions. Keep the two lists in
+					# step. The toggle is a view variable, per viewer and unsaved.
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						margin_top = 6
+						spacing = 4
+						text_single = {
+							fontsize = 11
+							default_format = "#weak"
+							align = left|nobaseline
+							text = "CC_XP_WORKS_HEADER"
+						}
+						expand = {}
+						card_header_button_01 = {
+							size = { 26 26 }
+							onclick = "[GetVariableSystem.Toggle( 'cc_xp_hide_fixed_art' )]"
+							tooltip = "CC_XP_ART_TOGGLE_FIXED_TT"
+							icon = {
+								using = color_white_texture
+								alpha = 0.3
+								size = { 100% 100% }
+								visible = "[GetVariableSystem.Exists( 'cc_xp_hide_fixed_art' )]"
+							}
+							icon = {
+								parentanchor = center
+								size = { 20 20 }
+								texture = "gfx/interface/icons/flat_icons/building_panel/build_visible.dds"
+							}
+						}
+					}
+
+					text_single = {
+						layoutpolicy_horizontal = expanding
+						fontsize = 11
+						default_format = "#weak"
+						align = left|nobaseline
+						visible = "[IsDataModelEmpty(Player.MakeScope.GetList('cc_xp_art_locs'))]"
+						text = "CC_XP_NO_WORKS"
+					}
+
+					# Column headings, sized to match the rows below.
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						visible = "[DataModelHasItems(Player.MakeScope.GetList('cc_xp_art_locs'))]"
+						margin = { 6 0 }
+						spacing = 6
+						widget = { size = { 22 1 } }
+						text_single = { layoutpolicy_horizontal = expanding  size = { 120 18 }  autoresize = no  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_ART_COL_NAME" }
+						text_single = { size = { 64 18 }  autoresize = no  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_ART_COL_TYPE" }
+						text_single = { size = { 56 18 }  autoresize = no  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_ART_COL_QUALITY" }
+						text_single = { size = { 84 18 }  autoresize = no  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_ART_COL_ARTIST" }
+						text_single = { size = { 70 18 }  autoresize = no  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_XP_ART_COL_LOCATION" }
+					}
+
+					# One block per location, one row per work in it.
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 2
+						datamodel = "[Player.MakeScope.GetList('cc_xp_art_locs')]"
+						item = {
+							vbox = {
+								layoutpolicy_horizontal = expanding
+								spacing = 2
+								datacontext = "[Scope.GetLocation]"
+								datamodel = "[Location.GetWorksOfArt]"
+								item = {
+									widget = {
+										layoutpolicy_horizontal = expanding
+										size = { -1 28 }
+										background = { using = color_whiteish_texture  alpha = 0.06 }
+										# The type is matched by comparing its plain name with vanilla's loc
+										# key for that type, so it works in any language. Measured in game:
+										# GetNameWithNoTooltip compares, GetName never matches (it carries
+										# tooltip markup), GetWorkOfArtIcon is a texture with no string
+										# value, and GetKey does not exist on this type.
+										visible = "[Or(Not(GetVariableSystem.Exists( 'cc_xp_hide_fixed_art' )), Not(Or(WorkOfArt.IsPriceless, Or(EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('monument')), Or(EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('palace')), Or(EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('temple_tower')), Or(EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('regalia')), EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('mansion')))))))))]"
+
+										hbox = {
+											layoutpolicy_horizontal = expanding
+											layoutpolicy_vertical = expanding
+											margin = { 6 0 }
+											spacing = 6
+
+											icon = {
+												size = { 22 22 }
+												texture = "[GetWorkOfArtIcon(WorkOfArt.GetDefinition)]"
+											}
+											text_single = {
+												layoutpolicy_horizontal = expanding
+												size = { 120 20 }
+												autoresize = no
+												fontsize = 12
+												default_format = "#yellow_titles"
+												align = left|nobaseline
+												text = "[WorkOfArt.GetNameWithNoTooltip]"
+												tooltipwidget = { using = WorkOfArt_tooltip }
+											}
+											text_single = {
+												size = { 64 20 }
+												autoresize = no
+												fontsize = 11
+												align = left|nobaseline
+												text = "[WorkOfArt.GetDefinition.GetName]"
+											}
+											text_single = {
+												size = { 56 20 }
+												autoresize = no
+												fontsize = 11
+												align = left|nobaseline
+												text = "[WorkOfArt.GetQualityName]"
+												tooltipwidget = { using = QualityOfArt_tooltip }
+											}
+											icon = {
+												size = { 14 14 }
+												visible = "[WorkOfArt.IsPriceless]"
+												texture = "gfx/interface/icons/flat_icons/prestige.dds"
+												tooltip = "CC_XP_ART_PRICELESS_TT"
+											}
+											text_single = {
+												size = { 84 20 }
+												autoresize = no
+												fontsize = 11
+												align = left|nobaseline
+												text = "[WorkOfArt.GetCreatorName]"
+											}
+											text_single = {
+												size = { 70 20 }
+												autoresize = no
+												fontsize = 11
+												default_format = "#weak"
+												align = left|nobaseline
+												text = "[WorkOfArt.GetLocation.GetNameWithNoTooltip]"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
+					expand = {}
 				}
 			}
-
-			expand = {}
 		}
 
 		################################ SCHOOLS ################################
@@ -462,157 +692,144 @@ situation_panel = {
 		# All three slots are drawn at all times, so the ladder of unlocks is visible from
 		# the first hour of the game rather than appearing later without explanation.
 		#
+		# A founded school is a card (cc_xp_school_cards.gui, generated by
+		# tools/generate_school_slots.py) carrying its seat, kind, curriculum, founder,
+		# Rector, members and its five actions.
+		#
 		# A slot is founded, open, or locked. Deciding "open" needs the realm's CAPACITY,
 		# which is a script value and unreadable from GUI, so cc_xp_publish_school_capacity
 		# republishes it monthly as cc_xp_school_capacity_var purely for this comparison.
 		#########################################################################
-		vbox = {
-			layoutpolicy_horizontal = expanding
-			layoutpolicy_vertical = expanding
+		# Extra tab panels sit outside the panel's own scrollarea (common.gui:368), and three
+		# school cards are taller than the panel, so this tab brings its own.
+		scrollarea = {
 			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_xp_schools' )]"
-			using = bg_secondary_inner_alt
-			margin = { 10 8 }
-			spacing = 6
-
-			text_multi = {
-				layoutpolicy_horizontal = expanding
-				autoresize = yes
-				multiline = yes
-				max_width = 470
-				fontsize = 11
-				default_format = "#weak"
-				text = "CC_XP_SCHOOLS_DESC"
-			}
-
-			# Founding and enrollment both act on ONE minister, so both are row buttons on
-			# the roster tab now. They were dead here: a header button supplies no target and
-			# an interaction whose target_flag goes unsupplied can never be performed.
-			text_single = {
-				layoutpolicy_horizontal = expanding
-				fontsize = 11
-				default_format = "#weak"
-				align = left|nobaseline
-				text = "CC_XP_SCHOOLS_HEADER"
-			}
-
-			# ---------------- SLOT 1 ----------------
-			widget = {
-				visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"
-				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').GetCharacter]"
-				using = cc_xp_school_row
-				blockoverride "school_track" {
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)1')]"
-						text = "CC_XP_COL_ADM"
-					}
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)2')]"
-						text = "CC_XP_COL_DIP"
-					}
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_1_track').GetValue, '(CFixedPoint)3')]"
-						text = "CC_XP_COL_MIL"
-					}
+			using = layoutpolicy_expanding
+			scrollbarpolicy_horizontal = always_off
+			autoresizeviewport = yes
+			viewportwidget = {
+				widget = {
+					scissor = yes
 				}
 			}
-			widget = {
-				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)1'))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_1" }
+			scrollbar_vertical = {
+				using = Scrollbar_Vertical
 			}
-			widget = {
-				visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)1')))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_1" }
-			}
+			scrollwidget = {
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					using = bg_secondary_inner_alt
+					margin = { 10 8 }
+					spacing = 6
 
-			# ---------------- SLOT 2 ----------------
-			widget = {
-				visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"
-				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').GetCharacter]"
-				using = cc_xp_school_row
-				blockoverride "school_track" {
-					text_single = {
+					text_multi = {
+						layoutpolicy_horizontal = expanding
+						autoresize = yes
+						multiline = yes
+						max_width = 470
 						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)1')]"
-						text = "CC_XP_COL_ADM"
+						default_format = "#weak"
+						text = "CC_XP_SCHOOLS_DESC"
 					}
+
+					# ---- Summary ----
+					# Published monthly by cc_xp_monthly_schools; GUI cannot count members itself.
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_SCHOOLS_FOUNDED_LABEL" }
+						text_single = { fontsize = 15  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_founded_count').GetValue|0] / [Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue|0]"  tooltip = "CC_XP_SCHOOLS_FOUNDED_TT" }
+						widget = { size = { 18 1 } }
+						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_SCHOOLS_MEMBERS_LABEL" }
+						text_single = { fontsize = 15  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_total_members').GetValue|0]" }
+						expand = {}
+					}
+
+					# The leading foreign university, found by the yearly rival scan
+					# (cc_xp_school_scan_rivals). Renown is measured against it.
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						visible = "[Player.MakeScope.GetVariable('cc_xp_school_rival_loc').IsSet]"
+						tooltip = "CC_XP_SCHOOLS_RIVAL_TT"
+						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_SCHOOLS_RIVAL_LABEL" }
+						text_single = {
+							fontsize = 13
+							datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_rival_loc').GetLocation]"
+							raw_text = "[Location.GetNameWithNoTooltip] ([Location.GetOwner.GetNameWithNoTooltip])"
+						}
+						text_single = { fontsize = 12  default_format = "#weak"  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_rival_score').GetValue|0]" }
+						expand = {}
+					}
+
+					# Founding and enrollment both act on ONE minister, so both are row buttons on
+					# the roster tab now. They were dead here: a header button supplies no target and
+					# an interaction whose target_flag goes unsupplied can never be performed.
 					text_single = {
+						layoutpolicy_horizontal = expanding
 						fontsize = 11
+						default_format = "#weak"
 						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)2')]"
-						text = "CC_XP_COL_DIP"
+						text = "CC_XP_SCHOOLS_HEADER"
 					}
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_2_track').GetValue, '(CFixedPoint)3')]"
-						text = "CC_XP_COL_MIL"
+
+					# ---------------- SLOT 1 ----------------
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet]"
+						using = cc_xp_school_card_1
 					}
+					widget = {
+						visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)1'))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_1" }
+					}
+					widget = {
+						visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_1_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)1')))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_1" }
+					}
+
+					# ---------------- SLOT 2 ----------------
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet]"
+						using = cc_xp_school_card_2
+					}
+					widget = {
+						visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)2'))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_2" }
+					}
+					widget = {
+						visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)2')))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_2" }
+					}
+
+					# ---------------- SLOT 3 ----------------
+					widget = {
+						visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"
+						using = cc_xp_school_card_3
+					}
+					widget = {
+						visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)3'))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_3" }
+					}
+					widget = {
+						visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)3')))]"
+						using = cc_xp_school_slot
+						blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
+						blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_3" }
+					}
+
+					expand = {}
 				}
 			}
-			widget = {
-				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)2'))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_2" }
-			}
-			widget = {
-				visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_2_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)2')))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_2" }
-			}
-
-			# ---------------- SLOT 3 ----------------
-			widget = {
-				visible = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet]"
-				datacontext = "[Player.MakeScope.GetVariable('cc_xp_school_3_founder').GetCharacter]"
-				using = cc_xp_school_row
-				blockoverride "school_track" {
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)1')]"
-						text = "CC_XP_COL_ADM"
-					}
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)2')]"
-						text = "CC_XP_COL_DIP"
-					}
-					text_single = {
-						fontsize = 11
-						align = left|nobaseline
-						visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_3_track').GetValue, '(CFixedPoint)3')]"
-						text = "CC_XP_COL_MIL"
-					}
-				}
-			}
-			widget = {
-				visible = "[And(Not(Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet), GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)3'))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_OPEN" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_3" }
-			}
-			widget = {
-				visible = "[Not(Or(Player.MakeScope.GetVariable('cc_xp_school_3_founder').IsSet, GreaterThanOrEqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_xp_school_capacity_var').GetValue, '(CFixedPoint)3')))]"
-				using = cc_xp_school_slot
-				blockoverride "slot_state" { text = "CC_XP_SLOT_LOCKED" }
-				blockoverride "slot_requirement" { text = "CC_XP_SLOT_REQ_3" }
-			}
-
-			expand = {}
 		}
 
 		################################ HOUSEHOLD ################################

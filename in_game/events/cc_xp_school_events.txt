@@ -1,0 +1,911 @@
+﻿namespace = cc_xp_school
+
+###############################################################################
+# Flavorium Universalis — Cabinet Experience: school notifications
+#
+#   cc_xp_school.1   A school has moved from a lost seat to another university
+#   cc_xp_school.2   A school has lost its seat and has nowhere to go: exile
+#   cc_xp_school.3   An exiled school has a university again
+#   cc_xp_school.11-17  Disputations, one per curriculum (Hold a Disputation)
+#   cc_xp_school.20  Change Curriculum
+#   cc_xp_school.30-32  Renown draws a scholar, a foreign student, an artist
+#   cc_xp_school.40-42  The rival university poaches a master, draws students; first place
+#
+# Fired by cc_xp_school_find_seat (scripted_effects/cc_xp_school_effects.txt), human
+# courts only. Each finds its school by a short-lived per-slot flag rather than a saved
+# scope, the same way the cc_xp choice events find their subject, so two schools moving
+# in the same month raise two events and each names its own school.
+###############################################################################
+
+
+# Character and seats of the first slot carrying cc_xp_school_N_$FLAG$, saved for loc,
+# and that slot's number in cc_xp_school_active for the options. Country scope (the
+# event's root).
+scripted_effect cc_xp_school_take_notice = {
+	if = {
+		limit = { has_variable = cc_xp_school_1_$FLAG$ }
+		remove_variable = cc_xp_school_1_$FLAG$
+		set_variable = { name = cc_xp_school_active  value = 1 }
+		var:cc_xp_school_1_founder ?= { save_scope_as = cc_xp_school_founder }
+		var:cc_xp_school_1_loc ?= { save_scope_as = cc_xp_school_new_seat }
+		var:cc_xp_school_1_prev_loc ?= { save_scope_as = cc_xp_school_old_seat }
+	}
+	else_if = {
+		limit = { has_variable = cc_xp_school_2_$FLAG$ }
+		remove_variable = cc_xp_school_2_$FLAG$
+		set_variable = { name = cc_xp_school_active  value = 2 }
+		var:cc_xp_school_2_founder ?= { save_scope_as = cc_xp_school_founder }
+		var:cc_xp_school_2_loc ?= { save_scope_as = cc_xp_school_new_seat }
+		var:cc_xp_school_2_prev_loc ?= { save_scope_as = cc_xp_school_old_seat }
+	}
+	else_if = {
+		limit = { has_variable = cc_xp_school_3_$FLAG$ }
+		remove_variable = cc_xp_school_3_$FLAG$
+		set_variable = { name = cc_xp_school_active  value = 3 }
+		var:cc_xp_school_3_founder ?= { save_scope_as = cc_xp_school_founder }
+		var:cc_xp_school_3_loc ?= { save_scope_as = cc_xp_school_new_seat }
+		var:cc_xp_school_3_prev_loc ?= { save_scope_as = cc_xp_school_old_seat }
+	}
+}
+
+
+cc_xp_school.1 = {
+	type = country_event
+	title = cc_xp_school.1.title
+	desc = cc_xp_school.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = society
+		10 = exterior
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_moved
+			has_variable = cc_xp_school_2_moved
+			has_variable = cc_xp_school_3_moved
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = moved }
+	}
+
+	option = {
+		name = cc_xp_school.1.a
+	}
+}
+
+
+cc_xp_school.2 = {
+	type = country_event
+	title = cc_xp_school.2.title
+	desc = cc_xp_school.2.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = society
+		10 = exterior
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_exiled
+			has_variable = cc_xp_school_2_exiled
+			has_variable = cc_xp_school_3_exiled
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = exiled }
+	}
+
+	option = {
+		name = cc_xp_school.2.a
+	}
+}
+
+
+cc_xp_school.3 = {
+	type = country_event
+	title = cc_xp_school.3.title
+	desc = cc_xp_school.3.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = society
+		10 = interior
+	}
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_returned
+			has_variable = cc_xp_school_2_returned
+			has_variable = cc_xp_school_3_returned
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = returned }
+	}
+
+	option = {
+		name = cc_xp_school.3.a
+	}
+}
+
+
+###############################################################################
+# SHARED HELPERS FOR THE ACTIVE SCHOOL
+#
+# cc_xp_school_take_notice records which slot an event is about in cc_xp_school_active.
+# These resolve that number into the slot effects and triggers, which take N literally.
+###############################################################################
+
+# Country scope. Members of the active school gain AMOUNT in its discipline.
+scripted_effect cc_xp_school_active_members_gain = {
+	if = {
+		limit = { var:cc_xp_school_active ?= 1 }
+		cc_xp_school_members_gain = { N = 1  AMOUNT = $AMOUNT$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 2 }
+		cc_xp_school_members_gain = { N = 2  AMOUNT = $AMOUNT$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 3 }
+		cc_xp_school_members_gain = { N = 3  AMOUNT = $AMOUNT$ }
+	}
+}
+
+# Country scope. Push the active school's renown and quality.
+scripted_effect cc_xp_school_active_change = {
+	if = {
+		limit = { var:cc_xp_school_active ?= 1 }
+		cc_xp_school_change = { N = 1  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 2 }
+		cc_xp_school_change = { N = 2  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 3 }
+		cc_xp_school_change = { N = 3  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+}
+
+# Country scope. The active school's quality is at least Q.
+scripted_trigger cc_xp_school_active_quality = {
+	custom_tooltip = {
+		text = cc_xp_tt_school_quality_$Q$
+		OR = {
+			AND = { var:cc_xp_school_active ?= 1  has_variable = cc_xp_school_1_quality  var:cc_xp_school_1_quality >= $Q$ }
+			AND = { var:cc_xp_school_active ?= 2  has_variable = cc_xp_school_2_quality  var:cc_xp_school_2_quality >= $Q$ }
+			AND = { var:cc_xp_school_active ?= 3  has_variable = cc_xp_school_3_quality  var:cc_xp_school_3_quality >= $Q$ }
+		}
+	}
+}
+
+# Country scope. Enrol WHO in the active school.
+scripted_effect cc_xp_school_active_enroll = {
+	if = {
+		limit = { var:cc_xp_school_active ?= 1 }
+		$WHO$ = {
+			set_variable = { name = cc_xp_school        value = 1 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_1_track }
+		}
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 2 }
+		$WHO$ = {
+			set_variable = { name = cc_xp_school        value = 2 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_2_track }
+		}
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 3 }
+		$WHO$ = {
+			set_variable = { name = cc_xp_school        value = 3 }
+			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_3_track }
+		}
+	}
+}
+
+scripted_trigger cc_xp_school_disputing = {
+	OR = {
+		has_variable = cc_xp_school_1_disputing
+		has_variable = cc_xp_school_2_disputing
+		has_variable = cc_xp_school_3_disputing
+	}
+}
+
+
+###############################################################################
+# DISPUTATIONS (cc_xp_school.11-17)
+#
+# Hold a Disputation fires the one matching the school's curriculum:
+#   11 law  12 theology  13 natural philosophy  14 letters  15 military science
+#   16 medicine  17 navigation
+# Three options for any school; a fourth for a school of quality 60 or more, which is
+# what good teaching buys. Every option moves the school's renown or quality.
+###############################################################################
+
+# Law
+cc_xp_school.11 = {
+	type = country_event
+	title = cc_xp_school.11.title
+	desc = cc_xp_school.11.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = professional }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	option = {
+		name = cc_xp_school.11.a
+		add_country_modifier = { modifier = cc_xp_school_statute  years = 10 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.11.b
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_members_gain = { AMOUNT = 20 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	option = {
+		name = cc_xp_school.11.c
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_members_gain = { AMOUNT = 10 }
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.11.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_country_modifier = { modifier = cc_xp_school_statute  years = 10 }
+		add_stability = stability_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# Theology
+cc_xp_school.12 = {
+	type = country_event
+	title = cc_xp_school.12.title
+	desc = cc_xp_school.12.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = society }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	option = {
+		name = cc_xp_school.12.a
+		add_religious_influence = religious_influence_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.12.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 2 }
+	}
+	option = {
+		name = cc_xp_school.12.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		add_prestige = prestige_weak_penalty
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.12.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_religious_influence = religious_influence_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# Natural philosophy
+cc_xp_school.13 = {
+	type = country_event
+	title = cc_xp_school.13.title
+	desc = cc_xp_school.13.desc
+	outcome = neutral
+	illustration_tags = { 10 = renaissance  10 = interior }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	option = {
+		name = cc_xp_school.13.a
+		add_research_progress = research_progress_weak_bonus
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	option = {
+		name = cc_xp_school.13.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		add_prestige = prestige_weak_penalty
+		cc_xp_school_active_change = { RENOWN = -3  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.13.c
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	option = {
+		name = cc_xp_school.13.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_research_progress = research_progress_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 6  QUALITY = 0 }
+	}
+}
+
+# Letters
+cc_xp_school.14 = {
+	type = country_event
+	title = cc_xp_school.14.title
+	desc = cc_xp_school.14.desc
+	outcome = neutral
+	illustration_tags = { 10 = society  10 = happy }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	option = {
+		name = cc_xp_school.14.a
+		add_prestige = prestige_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.14.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.14.c
+		add_political_influence = political_influence_weak_bonus
+		cc_xp_school_active_members_gain = { AMOUNT = 10 }
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.14.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 4 }
+	}
+}
+
+# Military science
+cc_xp_school.15 = {
+	type = country_event
+	title = cc_xp_school.15.title
+	desc = cc_xp_school.15.desc
+	outcome = neutral
+	illustration_tags = { 10 = military  10 = interior }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	option = {
+		name = cc_xp_school.15.a
+		add_country_modifier = { modifier = cc_xp_school_drill  years = 10 }
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.15.b
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	option = {
+		name = cc_xp_school.15.c
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 0 }
+	}
+	option = {
+		name = cc_xp_school.15.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_country_modifier = { modifier = cc_xp_school_drill  years = 10 }
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+}
+
+# Medicine
+cc_xp_school.16 = {
+	type = country_event
+	title = cc_xp_school.16.title
+	desc = cc_xp_school.16.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = society }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Fund a hospital for the school.
+	option = {
+		name = cc_xp_school.16.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -20 }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 4 }
+	}
+	# Follow the ancient authorities.
+	option = {
+		name = cc_xp_school.16.b
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 0 }
+	}
+	# Let the students study the dead.
+	option = {
+		name = cc_xp_school.16.c
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Publish the findings.
+	option = {
+		name = cc_xp_school.16.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+}
+
+# Navigation
+cc_xp_school.17 = {
+	type = country_event
+	title = cc_xp_school.17.title
+	desc = cc_xp_school.17.desc
+	outcome = neutral
+	illustration_tags = { 10 = trading  10 = interior }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Commission new charts.
+	option = {
+		name = cc_xp_school.17.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -20 }
+		add_research_progress = research_progress_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 2 }
+	}
+	# Send the masters with the fleet.
+	option = {
+		name = cc_xp_school.17.b
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	# Keep the charts secret.
+	option = {
+		name = cc_xp_school.17.c
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 3 }
+	}
+	# Publish the tables.
+	option = {
+		name = cc_xp_school.17.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+}
+
+
+###############################################################################
+# CHANGE CURRICULUM (cc_xp_school.20)
+#
+# Curricula are gated by what the school can teach: Natural Philosophy needs quality 40,
+# Medicine quality 50, and Navigation a coastal seat. A school keeps its curriculum if
+# its quality later falls; the gate is only on choosing it.
+###############################################################################
+
+scripted_effect cc_xp_school_active_set_curriculum = {
+	if = {
+		limit = { var:cc_xp_school_active ?= 1 }
+		cc_xp_school_set_curriculum = { N = 1  C = $C$  KEY = $KEY$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 2 }
+		cc_xp_school_set_curriculum = { N = 2  C = $C$  KEY = $KEY$ }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_active ?= 3 }
+		cc_xp_school_set_curriculum = { N = 3  C = $C$  KEY = $KEY$ }
+	}
+}
+
+# Country scope. The active school currently has setting KEY at value V.
+scripted_trigger cc_xp_school_active_is = {
+	OR = {
+		AND = { var:cc_xp_school_active ?= 1  var:cc_xp_school_1_$KEY$ ?= $V$ }
+		AND = { var:cc_xp_school_active ?= 2  var:cc_xp_school_2_$KEY$ ?= $V$ }
+		AND = { var:cc_xp_school_active ?= 3  var:cc_xp_school_3_$KEY$ ?= $V$ }
+	}
+}
+
+cc_xp_school.20 = {
+	type = country_event
+	title = cc_xp_school.20.title
+	desc = cc_xp_school.20.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = society }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_choosing
+			has_variable = cc_xp_school_2_choosing
+			has_variable = cc_xp_school_3_choosing
+		}
+	}
+
+	immediate = { cc_xp_school_take_notice = { FLAG = choosing } }
+
+	option = {
+		name = cc_xp_school.20.a
+		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 1 } } }
+		cc_xp_school_active_set_curriculum = { C = 1  KEY = law }
+	}
+	option = {
+		name = cc_xp_school.20.b
+		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 2 } } }
+		cc_xp_school_active_set_curriculum = { C = 2  KEY = theology }
+	}
+	option = {
+		name = cc_xp_school.20.c
+		trigger = {
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 3 } }
+			cc_xp_school_active_quality = { Q = 40 }
+		}
+		cc_xp_school_active_set_curriculum = { C = 3  KEY = natural_philosophy }
+	}
+	option = {
+		name = cc_xp_school.20.d
+		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 4 } } }
+		cc_xp_school_active_set_curriculum = { C = 4  KEY = letters }
+	}
+	option = {
+		name = cc_xp_school.20.e
+		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 5 } } }
+		cc_xp_school_active_set_curriculum = { C = 5  KEY = military_science }
+	}
+	option = {
+		name = cc_xp_school.20.g
+		trigger = {
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 6 } }
+			cc_xp_school_active_quality = { Q = 50 }
+		}
+		cc_xp_school_active_set_curriculum = { C = 6  KEY = medicine }
+	}
+	option = {
+		name = cc_xp_school.20.h
+		trigger = {
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 7 } }
+			custom_tooltip = {
+				text = cc_xp_tt_school_coastal
+				scope:cc_xp_school_new_seat ?= { is_coastal = yes }
+			}
+		}
+		cc_xp_school_active_set_curriculum = { C = 7  KEY = navigation }
+	}
+
+	# Keep it as it is. No cooldown is spent.
+	option = {
+		name = cc_xp_school.20.f
+	}
+}
+
+
+###############################################################################
+# RENOWN EVENTS (cc_xp_school.30-32, 40-42)
+#
+# Rolled yearly by cc_xp_school_roll_events. 30-32 are drawn by renown, 40-41 by falling
+# behind the leading foreign university, 42 by standing first. Characters are created in
+# immediate (in limbo) and moved in or silently removed by the option, as vanilla does.
+###############################################################################
+
+# A promising young scholar. Their skill rises with the school's renown.
+cc_xp_school.30 = {
+	type = country_event
+	title = cc_xp_school.30.title
+	desc = cc_xp_school.30.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = society }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_scholar
+			has_variable = cc_xp_school_2_scholar
+			has_variable = cc_xp_school_3_scholar
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = scholar }
+		if = {
+			limit = {
+				OR = {
+					AND = { var:cc_xp_school_active ?= 1  var:cc_xp_school_1_renown >= 80 }
+					AND = { var:cc_xp_school_active ?= 2  var:cc_xp_school_2_renown >= 80 }
+					AND = { var:cc_xp_school_active ?= 3  var:cc_xp_school_3_renown >= 80 }
+				}
+			}
+			create_character = {
+				age = { 21 25 }
+				adm = { 55 85 }
+				dip = { 55 85 }
+				mil = { 40 70 }
+				culture = scope:cc_xp_school_new_seat.dominant_culture
+				religion = scope:cc_xp_school_new_seat.dominant_religion
+				random_estate_type_trigger = { root = { estate_type_allowed_in_cabinet = { estate_type = prev } } }
+				create_in_limbo = yes
+				save_scope_as = cc_xp_school_scholar
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					AND = { var:cc_xp_school_active ?= 1  var:cc_xp_school_1_renown >= 60 }
+					AND = { var:cc_xp_school_active ?= 2  var:cc_xp_school_2_renown >= 60 }
+					AND = { var:cc_xp_school_active ?= 3  var:cc_xp_school_3_renown >= 60 }
+				}
+			}
+			create_character = {
+				age = { 21 25 }
+				adm = { 45 75 }
+				dip = { 45 75 }
+				mil = { 30 60 }
+				culture = scope:cc_xp_school_new_seat.dominant_culture
+				religion = scope:cc_xp_school_new_seat.dominant_religion
+				random_estate_type_trigger = { root = { estate_type_allowed_in_cabinet = { estate_type = prev } } }
+				create_in_limbo = yes
+				save_scope_as = cc_xp_school_scholar
+			}
+		}
+		else = {
+			create_character = {
+				age = { 21 25 }
+				adm = { 35 65 }
+				dip = { 35 65 }
+				mil = { 20 50 }
+				culture = scope:cc_xp_school_new_seat.dominant_culture
+				religion = scope:cc_xp_school_new_seat.dominant_religion
+				random_estate_type_trigger = { root = { estate_type_allowed_in_cabinet = { estate_type = prev } } }
+				create_in_limbo = yes
+				save_scope_as = cc_xp_school_scholar
+			}
+		}
+	}
+
+	# Take them into the crown's care and into the school.
+	option = {
+		name = cc_xp_school.30.a
+		trigger = { cc_xp_has_protege_room = yes }
+		scope:cc_xp_school_scholar = { move_country = root }
+		cc_xp_take_protege = { WHO = scope:cc_xp_school_scholar }
+		cc_xp_school_active_enroll = { WHO = scope:cc_xp_school_scholar }
+	}
+	# Welcome them at court.
+	option = {
+		name = cc_xp_school.30.b
+		scope:cc_xp_school_scholar = { move_country = root }
+		cc_xp_school_active_enroll = { WHO = scope:cc_xp_school_scholar }
+	}
+	# Let them go elsewhere.
+	option = {
+		name = cc_xp_school.30.c
+		hidden_effect = { kill_character_silently = scope:cc_xp_school_scholar }
+	}
+}
+
+# A foreign family sends its heir to study.
+cc_xp_school.31 = {
+	type = country_event
+	title = cc_xp_school.31.title
+	desc = cc_xp_school.31.desc
+	outcome = positive
+	illustration_tags = { 10 = society  10 = happy }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_student
+			has_variable = cc_xp_school_2_student
+			has_variable = cc_xp_school_3_student
+		}
+	}
+
+	immediate = { cc_xp_school_take_notice = { FLAG = student } }
+
+	# Charge full fees.
+	option = {
+		name = cc_xp_school.31.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = 2  min = 10 }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Waive the fees as a courtesy.
+	option = {
+		name = cc_xp_school.31.b
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+	# Give them the best masters.
+	option = {
+		name = cc_xp_school.31.c
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_political_influence = political_influence_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# An artist drawn by the school's name. A writer to a school of letters, otherwise a painter.
+cc_xp_school.32 = {
+	type = country_event
+	title = cc_xp_school.32.title
+	desc = cc_xp_school.32.desc
+	outcome = positive
+	illustration_tags = { 10 = interior  10 = renaissance }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_artist
+			has_variable = cc_xp_school_2_artist
+			has_variable = cc_xp_school_3_artist
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = artist }
+		if = {
+			limit = { cc_xp_school_active_is = { KEY = curriculum  V = 4 } }
+			create_character = {
+				age = { 22 35 }
+				trait_category = artist
+				artist = writer
+				culture = scope:cc_xp_school_new_seat.dominant_culture
+				religion = scope:cc_xp_school_new_seat.dominant_religion
+				random_estate_type_trigger = { root = { estate_type_allowed_in_cabinet = { estate_type = prev } } }
+				create_in_limbo = yes
+				save_scope_as = cc_xp_school_artist
+			}
+		}
+		else = {
+			create_character = {
+				age = { 22 35 }
+				trait_category = artist
+				artist = painter
+				culture = scope:cc_xp_school_new_seat.dominant_culture
+				religion = scope:cc_xp_school_new_seat.dominant_religion
+				random_estate_type_trigger = { root = { estate_type_allowed_in_cabinet = { estate_type = prev } } }
+				create_in_limbo = yes
+				save_scope_as = cc_xp_school_artist
+			}
+		}
+	}
+
+	# Offer them a place at court.
+	option = {
+		name = cc_xp_school.32.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1  max = -10 }
+		scope:cc_xp_school_artist = { move_country = root }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# We have no room for them.
+	option = {
+		name = cc_xp_school.32.b
+		hidden_effect = { kill_character_silently = scope:cc_xp_school_artist }
+	}
+}
+
+# Country scope, in immediate. Save the leading foreign university for loc.
+scripted_effect cc_xp_school_take_rival = {
+	var:cc_xp_school_rival_loc ?= { save_scope_as = cc_xp_school_rival }
+}
+
+# A master is offered a chair at the leading foreign university.
+cc_xp_school.40 = {
+	type = country_event
+	title = cc_xp_school.40.title
+	desc = cc_xp_school.40.desc
+	outcome = negative
+	illustration_tags = { 10 = interior  10 = professional }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_poached
+			has_variable = cc_xp_school_2_poached
+			has_variable = cc_xp_school_3_poached
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = poached }
+		cc_xp_school_take_rival = yes
+	}
+
+	# Match the offer.
+	option = {
+		name = cc_xp_school.40.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -3  max = -30 }
+	}
+	# Appeal to their loyalty.
+	option = {
+		name = cc_xp_school.40.b
+		add_prestige = prestige_weak_penalty
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = -2 }
+	}
+	# Let them go.
+	option = {
+		name = cc_xp_school.40.c
+		cc_xp_school_active_change = { RENOWN = -1  QUALITY = -6 }
+	}
+}
+
+# Students are leaving for the leading foreign university.
+cc_xp_school.41 = {
+	type = country_event
+	title = cc_xp_school.41.title
+	desc = cc_xp_school.41.desc
+	outcome = negative
+	illustration_tags = { 10 = society  10 = exterior }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_leaving
+			has_variable = cc_xp_school_2_leaving
+			has_variable = cc_xp_school_3_leaving
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = leaving }
+		cc_xp_school_take_rival = yes
+	}
+
+	# Fund scholarships to keep them.
+	option = {
+		name = cc_xp_school.41.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -20 }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Forbid study abroad.
+	option = {
+		name = cc_xp_school.41.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = -1  QUALITY = 0 }
+	}
+	# Let them go.
+	option = {
+		name = cc_xp_school.41.c
+		cc_xp_school_active_change = { RENOWN = -4  QUALITY = 0 }
+	}
+}
+
+# The school stands first among the universities of the world.
+cc_xp_school.42 = {
+	type = country_event
+	title = cc_xp_school.42.title
+	desc = cc_xp_school.42.desc
+	outcome = positive
+	illustration_tags = { 10 = society  10 = happy }
+
+	trigger = {
+		OR = {
+			has_variable = cc_xp_school_1_first
+			has_variable = cc_xp_school_2_first
+			has_variable = cc_xp_school_3_first
+		}
+	}
+
+	immediate = {
+		cc_xp_school_take_notice = { FLAG = first }
+		cc_xp_school_take_rival = yes
+	}
+
+	# Host a congress of scholars.
+	option = {
+		name = cc_xp_school.42.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -4  max = -40 }
+		add_prestige = prestige_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+	# Celebrate it at court.
+	option = {
+		name = cc_xp_school.42.b
+		add_prestige = prestige_weak_bonus
+	}
+}

@@ -16,6 +16,9 @@
 # STATE. Kept small on purpose:
 #   country   cc_xp_school_N_track          1 adm / 2 dip / 3 mil
 #             cc_xp_school_N_founder        character ref, for the panel to print a name
+#             cc_xp_school_N_loc, _kind, _curriculum, _exile and the rest: the seat and
+#             what it makes the school. Kept up to date monthly; the full list is in
+#             scripted_effects/cc_xp_school_effects.txt
 #   character cc_xp_school                  which school they belong to, 1-3
 #             cc_xp_school_track            that school's track, copied at enrollment
 #
@@ -87,8 +90,8 @@ cc_xp_found_institution = {
 			# slot is ever cleared the next founding reuses it.
 			scope:actor = {
 				# WHERE THE SCHOOL SITS. A school occupies a university, and the location it
-				# occupies carries cc_xp_school_seat so the court situation can colour it on
-				# the map without dereferencing anything.
+				# occupies carries cc_xp_school_seat (holding this country) so the court
+				# situation can colour it on the map.
 				#
 				# The capital is preferred, because the capital's university is what unlocks
 				# the first slot in the first place and a realm's first school belongs at its
@@ -99,7 +102,7 @@ cc_xp_found_institution = {
 					limit = {
 						capital ?= {
 							has_building = building_type:university
-							NOT = { has_variable = cc_xp_school_seat }
+							NOT = { cc_xp_location_is_school_seat = yes }
 						}
 					}
 					capital = { save_scope_as = cc_xp_seat }
@@ -108,33 +111,40 @@ cc_xp_found_institution = {
 					random_owned_location = {
 						limit = {
 							has_building = building_type:university
-							NOT = { has_variable = cc_xp_school_seat }
+							NOT = { cc_xp_location_is_school_seat = yes }
 						}
 						save_scope_as = cc_xp_seat
 					}
 				}
 
-				scope:cc_xp_seat ?= { set_variable = cc_xp_school_seat }
-
+				# The seat, its kind, religion and culture are recorded by
+				# cc_xp_school_seat_at (scripted_effects/cc_xp_school_effects.txt), which
+				# relocation and return from exile share.
 				if = {
 					limit = { NOT = { has_variable = cc_xp_school_1_founder } }
 					set_variable = { name = cc_xp_school_1_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_1_founder  value = scope:recipient }
-					set_variable = { name = cc_xp_school_1_loc      value = scope:cc_xp_seat }
+					cc_xp_school_seat_at = { N = 1 }
+					cc_xp_school_default_curriculum = { N = 1  TRACK = scope:recipient.var:cc_track }
+					cc_xp_school_init_standing = { N = 1 }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 1 } }
 				}
 				else_if = {
 					limit = { NOT = { has_variable = cc_xp_school_2_founder } }
 					set_variable = { name = cc_xp_school_2_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_2_founder  value = scope:recipient }
-					set_variable = { name = cc_xp_school_2_loc      value = scope:cc_xp_seat }
+					cc_xp_school_seat_at = { N = 2 }
+					cc_xp_school_default_curriculum = { N = 2  TRACK = scope:recipient.var:cc_track }
+					cc_xp_school_init_standing = { N = 2 }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 2 } }
 				}
 				else_if = {
 					limit = { NOT = { has_variable = cc_xp_school_3_founder } }
 					set_variable = { name = cc_xp_school_3_track    value = scope:recipient.var:cc_track }
 					set_variable = { name = cc_xp_school_3_founder  value = scope:recipient }
-					set_variable = { name = cc_xp_school_3_loc      value = scope:cc_xp_seat }
+					cc_xp_school_seat_at = { N = 3 }
+					cc_xp_school_default_curriculum = { N = 3  TRACK = scope:recipient.var:cc_track }
+					cc_xp_school_init_standing = { N = 3 }
 					scope:recipient = { set_variable = { name = cc_xp_school value = 3 } }
 				}
 

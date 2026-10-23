@@ -1,0 +1,199 @@
+﻿###############################################################################
+# Flavorium Universalis — Cabinet Experience: school modifiers
+#
+# QUALITY SCALES THEM. Every seat, kind and curriculum modifier is added with
+# size = cc_xp_school_N_qscale (0.5 at quality 0, 1.0 at 50, 1.5 at 100), so the values
+# below are what an average school gives. Renown has its own country modifier, sized by
+# the realm's most renowned school.
+#
+# SEAT AND CURRICULUM modifiers are not added once and tracked. cc_xp_school_maintain
+# re-adds them every month for 2 months with mode = replace, so they follow the school:
+# a seat that is lost or a school sent into exile simply stops being refreshed, and the
+# bonus lapses on its own. Curriculum changes strip the old ones at once
+# (cc_xp_school_strip_modifiers) so the switch shows immediately.
+#
+# Two schools on the same curriculum share one country modifier: a realm gains each
+# curriculum's national bonus once, however many schools teach it.
+#
+# ACTION modifiers (library, scholars) are timed and stay where they were applied.
+###############################################################################
+
+
+########################
+# Curriculum: at the seat
+########################
+
+cc_xp_school_seat_law = {
+	game_data = { category = location  decaying = no }
+	local_max_control = 0.05
+	local_unrest = -0.1
+}
+
+cc_xp_school_seat_theology = {
+	game_data = { category = location  decaying = no }
+	local_heretic_pop_conversion_speed_modifier = 0.1
+	local_unrest = -0.05
+}
+
+cc_xp_school_seat_natural_philosophy = {
+	game_data = { category = location  decaying = no }
+	local_max_literacy = 5
+}
+
+cc_xp_school_seat_letters = {
+	game_data = { category = location  decaying = no }
+	local_cultural_influence = 0.25
+}
+
+cc_xp_school_seat_military_science = {
+	game_data = { category = location  decaying = no }
+	local_monthly_control = 0.005
+}
+
+cc_xp_school_seat_medicine = {
+	game_data = { category = location  decaying = no }
+	local_disease_resistance = 0.1
+	local_population_growth = 0.002
+}
+
+cc_xp_school_seat_navigation = {
+	game_data = { category = location  decaying = no }
+	local_ship_build_speed = 0.25
+	local_sailors_modifier = 0.1
+}
+
+
+########################
+# Curriculum: across the realm
+########################
+
+cc_xp_school_realm_law = {
+	game_data = { category = country  decaying = no }
+	global_monthly_control = 0.002
+}
+
+cc_xp_school_realm_theology = {
+	game_data = { category = country  decaying = no }
+	monthly_religious_influence = 0.05
+	tolerance_own = 0.5
+}
+
+cc_xp_school_realm_natural_philosophy = {
+	game_data = { category = country  decaying = no }
+	research_speed_modifier = 0.03
+}
+
+cc_xp_school_realm_letters = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = 0.05
+}
+
+cc_xp_school_realm_military_science = {
+	game_data = { category = country  decaying = no }
+	land_morale_modifier = 0.03
+}
+
+cc_xp_school_realm_medicine = {
+	game_data = { category = country  decaying = no }
+	global_disease_resistance = 0.05
+}
+
+cc_xp_school_realm_navigation = {
+	game_data = { category = country  decaying = no }
+	naval_range_modifier = 0.1
+}
+
+
+########################
+# Kind of institution: at the seat
+########################
+
+cc_xp_school_kind_studium = {
+	game_data = { category = location  decaying = no }
+	local_monthly_literacy = 0.05
+}
+
+cc_xp_school_kind_academy = {
+	game_data = { category = location  decaying = no }
+	local_cultural_tradition = 0.1
+}
+
+cc_xp_school_kind_madrasa = {
+	game_data = { category = location  decaying = no }
+	local_monthly_literacy = 0.03
+	local_unrest = -0.05
+}
+
+cc_xp_school_kind_shuyuan = {
+	game_data = { category = location  decaying = no }
+	local_max_control = 0.03
+}
+
+cc_xp_school_kind_vihara = {
+	game_data = { category = location  decaying = no }
+	local_unrest = -0.1
+}
+
+cc_xp_school_kind_gurukula = {
+	game_data = { category = location  decaying = no }
+	local_cultural_influence = 0.1
+}
+
+cc_xp_school_kind_yeshiva = {
+	game_data = { category = location  decaying = no }
+	local_max_literacy = 3
+}
+
+cc_xp_school_kind_school = {
+	game_data = { category = location  decaying = no }
+	local_monthly_literacy = 0.05
+}
+
+
+########################
+# Actions (timed, at the seat)
+########################
+
+# Endow the Library
+cc_xp_school_library = {
+	game_data = { category = location  decaying = no }
+	local_monthly_literacy = 0.1
+	local_max_literacy = 5
+}
+
+# Invite Foreign Scholars
+cc_xp_school_scholars = {
+	game_data = { category = location  decaying = no }
+	local_institution_growth_modifier = 0.25
+	local_cultural_influence = 0.1
+}
+
+
+########################
+# Disputation outcomes (timed, country)
+########################
+
+# cc_xp_school.15: the court adopts the school's drill proposals.
+cc_xp_school_drill = {
+	game_data = { category = country  decaying = no }
+	land_morale_modifier = 0.05
+}
+
+# cc_xp_school.11: the school's commentary on royal statute is adopted in the courts.
+cc_xp_school_statute = {
+	game_data = { category = country  decaying = no }
+	global_monthly_control = 0.003
+}
+
+
+########################
+# Renown (country)
+########################
+
+# Applied monthly with size = the realm's best renown / 100: a school of renown 100 gives
+# these values in full. One modifier for the realm, from its most renowned school.
+cc_xp_school_renown = {
+	game_data = { category = country  decaying = no }
+	monthly_prestige = 0.1
+	cultural_influence = 0.5
+}
