@@ -890,3 +890,32 @@ cc_xp_publish_payoff_level_best = {
 		}
 	}
 }
+
+
+###############################################################################
+# PICKER DEDUPLICATION
+#
+# Every choice event gathers its candidates with ordered_x { position = N
+# check_range_bounds = no }. Past the end of the list that does NOT come back empty: it
+# clamps to the last entry, so with two candidates, slots 3 and 4 both repeat the second
+# and the event shows the same person three times. The duplicates are always copies of
+# the last real pick, so clearing each slot that matches the one before it, from the top
+# down, leaves exactly the distinct picks. Call after saving $P$_1 .. $P$_4.
+# cc_xp_dedupe_picks = { P = cc_xp_cand }
+###############################################################################
+
+cc_xp_dedupe_picks = {
+	if = {
+		limit = { exists = scope:$P$_4  exists = scope:$P$_3  scope:$P$_4 = scope:$P$_3 }
+		clear_saved_scope = $P$_4
+	}
+	if = {
+		limit = { exists = scope:$P$_3  exists = scope:$P$_2  scope:$P$_3 = scope:$P$_2 }
+		clear_saved_scope = $P$_3
+	}
+	if = {
+		limit = { exists = scope:$P$_2  exists = scope:$P$_1  scope:$P$_2 = scope:$P$_1 }
+		clear_saved_scope = $P$_2
+	}
+}
+

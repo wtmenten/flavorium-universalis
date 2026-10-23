@@ -91,6 +91,7 @@ cc_xp.80 = {
 			check_range_bounds = no
 			save_scope_as = cc_xp_pupil_4
 		}
+		cc_xp_dedupe_picks = { P = cc_xp_pupil }
 	}
 
 	# The pupil may be a crown-estate courtier who has never been in the system.
@@ -127,6 +128,13 @@ cc_xp.80 = {
 			cc_xp_init = yes
 			set_variable = { name = cc_xp_mentor_track  value = scope:cc_xp_mentor.var:cc_track  years = 10 }
 		}
+	}
+
+	# Shown only if nobody qualifies by the time the event fires, so the event
+	# can never open with no option to close it.
+	option = {
+		name = cc_xp.80.none
+		trigger = { NOT = { exists = scope:cc_xp_pupil_1 } }
 	}
 }
 
@@ -180,6 +188,7 @@ cc_xp.81 = {
 			check_range_bounds = no
 			save_scope_as = cc_xp_court_4
 		}
+		cc_xp_dedupe_picks = { P = cc_xp_court }
 	}
 
 	option = {
@@ -201,6 +210,13 @@ cc_xp.81 = {
 		name = cc_xp.81.d
 		trigger = { exists = scope:cc_xp_court_4 }
 		cc_xp_post_envoy = { COURT = scope:cc_xp_court_4 }
+	}
+
+	# Shown only if nobody qualifies by the time the event fires, so the event
+	# can never open with no option to close it.
+	option = {
+		name = cc_xp.81.none
+		trigger = { NOT = { exists = scope:cc_xp_court_1 } }
 	}
 }
 
@@ -254,6 +270,13 @@ cc_xp.82 = {
 			set_variable = { name = cc_xp_school_track  value = root.var:cc_xp_school_3_track }
 		}
 	}
+
+	# Shown only if nobody qualifies by the time the event fires, so the event
+	# can never open with no option to close it.
+	option = {
+		name = cc_xp.82.none
+		trigger = { NOR = { has_variable = cc_xp_school_1_founder  has_variable = cc_xp_school_2_founder  has_variable = cc_xp_school_3_founder } }
+	}
 }
 
 
@@ -306,6 +329,7 @@ cc_xp.83 = {
 			check_range_bounds = no
 			save_scope_as = cc_xp_patron_4
 		}
+		cc_xp_dedupe_picks = { P = cc_xp_patron }
 	}
 
 	option = {
@@ -327,6 +351,13 @@ cc_xp.83 = {
 		name = cc_xp.83.d
 		trigger = { exists = scope:cc_xp_patron_4 }
 		cc_xp_bind_patron = { PATRON = scope:cc_xp_patron_4 }
+	}
+
+	# Shown only if nobody qualifies by the time the event fires, so the event
+	# can never open with no option to close it.
+	option = {
+		name = cc_xp.83.none
+		trigger = { NOT = { exists = scope:cc_xp_patron_1 } }
 	}
 }
 
@@ -428,6 +459,7 @@ cc_xp.84 = {
 			check_range_bounds = no
 			save_scope_as = cc_xp_work_4
 		}
+		cc_xp_dedupe_picks = { P = cc_xp_work }
 	}
 
 	option = {
@@ -502,6 +534,7 @@ cc_xp.85 = {
 			check_range_bounds = no
 			save_scope_as = cc_xp_cand_4
 		}
+		cc_xp_dedupe_picks = { P = cc_xp_cand }
 	}
 
 	option = {
@@ -523,5 +556,12 @@ cc_xp.85 = {
 		name = cc_xp.85.d
 		trigger = { exists = scope:cc_xp_cand_4 }
 		cc_xp_take_protege = { WHO = scope:cc_xp_cand_4 }
+	}
+
+	# Shown only if nobody qualifies by the time the event fires, so the event
+	# can never open with no option to close it.
+	option = {
+		name = cc_xp.85.none
+		trigger = { NOT = { exists = scope:cc_xp_cand_1 } }
 	}
 }
