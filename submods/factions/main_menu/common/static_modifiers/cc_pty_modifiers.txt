@@ -41,6 +41,8 @@ cc_pty_member_angry = {
 cc_pty_comp_stacked = {
 	game_data = { category = country }
 	country_cabinet_efficiency = 0.05
+	# One party delivers the votes.
+	monthly_political_influence_gain_modifier = 0.10
 }
 
 cc_pty_comp_balanced = {
@@ -48,6 +50,8 @@ cc_pty_comp_balanced = {
 	stability_cost_efficiency = 0.05
 	cc_pty_bribe_cost_modifier = -0.25
 	cc_pty_attack_cost_modifier = -0.25
+	# Brokering among the parties is itself a source of influence.
+	monthly_political_influence = 0.5
 }
 
 
@@ -61,3 +65,27 @@ cc_pty_regional_concession = {
 	global_max_control = -0.05
 	global_monthly_control = -0.001
 }
+
+
+###############################################################################
+# THE CHAMBER AND POLITICAL INFLUENCE (country)
+###############################################################################
+
+# Applied with size = the number of parties whose leader sits in the cabinet (0..4).
+cc_pty_leaders_in_office = {
+	game_data = { category = country }
+	monthly_political_influence = 0.05
+}
+
+# The head of the cabinet's party holds 40% of the seats or more.
+cc_pty_working_majority = {
+	game_data = { category = country }
+	monthly_political_influence_gain_modifier = 0.15
+}
+
+# No party holds 30% of the seats.
+cc_pty_hung_chamber = {
+	game_data = { category = country }
+	monthly_political_influence_gain_modifier = -0.10
+}
+

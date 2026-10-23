@@ -187,6 +187,21 @@ cc_pty_teardown = {
 	remove_variable = cc_pty_chamber
 	remove_variable = cc_pty_top_slot
 	remove_variable = cc_pty_election_cd
+	remove_variable = cc_pty_leaders_in
+	remove_variable = cc_pty_majority
+	remove_variable = cc_pty_last_mandate
+	if = {
+		limit = { has_country_modifier = cc_pty_leaders_in_office }
+		remove_country_modifier = cc_pty_leaders_in_office
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_working_majority }
+		remove_country_modifier = cc_pty_working_majority
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_hung_chamber }
+		remove_country_modifier = cc_pty_hung_chamber
+	}
 	remove_variable = cc_pty_1_cum
 	remove_variable = cc_pty_2_cum
 	remove_variable = cc_pty_3_cum
@@ -453,6 +468,7 @@ cc_pty_recompute_all = {
 	cc_pty_with_type_sk = { SLOT = 3 EFFECT = cc_pty_apply_standing }
 	cc_pty_with_type_sk = { SLOT = 4 EFFECT = cc_pty_apply_standing }
 	cc_pty_update_leaders = yes
+	cc_pty_update_influence = yes
 	cc_pty_publish_top_agenda = yes
 }
 
@@ -582,6 +598,93 @@ cc_pty_clear_standing = {
 	if = {
 		limit = { has_country_modifier = cc_pty_marginal_$KEY$ }
 		remove_country_modifier = cc_pty_marginal_$KEY$
+	}
+}
+
+###############################################################################
+# POLITICAL INFLUENCE FROM THE CHAMBER
+#
+#   leaders in office  +0.05 monthly PI for each party whose leader sits in the cabinet
+#   working majority   +15% PI gain while the head of the cabinet's party holds 40%+
+#   hung chamber       -10% PI gain while no party holds 30% (cc_pty_dominant = 0)
+# Published for the panel: cc_pty_leaders_in (0..4), cc_pty_majority (1, -1 or 0).
+###############################################################################
+
+cc_pty_update_influence = {
+	save_scope_as = cc_pty_country
+
+	set_variable = { name = cc_pty_leaders_in value = 0 }
+	cc_pty_count_leader_in = { SLOT = 1 }
+	cc_pty_count_leader_in = { SLOT = 2 }
+	cc_pty_count_leader_in = { SLOT = 3 }
+	cc_pty_count_leader_in = { SLOT = 4 }
+	if = {
+		limit = { has_country_modifier = cc_pty_leaders_in_office }
+		remove_country_modifier = cc_pty_leaders_in_office
+	}
+	if = {
+		limit = { var:cc_pty_leaders_in > 0 }
+		add_country_modifier = {
+			modifier = cc_pty_leaders_in_office
+			years = -1
+			mode = replace
+			size = var:cc_pty_leaders_in
+		}
+	}
+
+	set_variable = { name = cc_pty_majority value = 0 }
+	cc_pty_check_majority = { SLOT = 1 }
+	cc_pty_check_majority = { SLOT = 2 }
+	cc_pty_check_majority = { SLOT = 3 }
+	cc_pty_check_majority = { SLOT = 4 }
+	if = {
+		limit = {
+			var:cc_pty_majority = 0
+			var:cc_pty_dominant = 0
+		}
+		set_variable = { name = cc_pty_majority value = -1 }
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_working_majority }
+		remove_country_modifier = cc_pty_working_majority
+	}
+	if = {
+		limit = { has_country_modifier = cc_pty_hung_chamber }
+		remove_country_modifier = cc_pty_hung_chamber
+	}
+	if = {
+		limit = { var:cc_pty_majority = 1 }
+		add_country_modifier = { modifier = cc_pty_working_majority years = -1 mode = replace }
+	}
+	else_if = {
+		limit = { var:cc_pty_majority = -1 }
+		add_country_modifier = { modifier = cc_pty_hung_chamber years = -1 mode = replace }
+	}
+}
+
+cc_pty_count_leader_in = {
+	if = {
+		limit = {
+			trigger_if = {
+				limit = { has_variable = cc_pty_$SLOT$_leader }
+				var:cc_pty_$SLOT$_leader = { in_cabinet = yes }
+			}
+			trigger_else = { always = no }
+		}
+		change_variable = { name = cc_pty_leaders_in add = 1 }
+	}
+}
+
+cc_pty_check_majority = {
+	if = {
+		limit = {
+			cc_pty_slot_var_ge = { SLOT = $SLOT$ VAR = power VALUE = 40 }
+			any_cabinet_character = {
+				modifier:is_head_of_cabinet = yes
+				cc_pty_member_of_slot = { SLOT = $SLOT$ }
+			}
+		}
+		set_variable = { name = cc_pty_majority value = 1 }
 	}
 }
 
@@ -997,6 +1100,7 @@ cc_pty_resolve_agenda = {
 		if = {
 			limit = { cc_pty_agenda_met = { SLOT = $SLOT$ } }
 			cc_pty_add_sat = { SLOT = $SLOT$ VALUE = 30 }
+			add_political_influence = cc_pty_agenda_dividend_slot_$SLOT$
 			set_variable = { name = cc_pty_$SLOT$_last value = 1 }
 			cc_pty_end_agenda = { SLOT = $SLOT$ }
 		}
@@ -1017,6 +1121,7 @@ cc_pty_end_agenda = {
 		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 8 } }
 		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 12 } }
 	}
+	cc_pty_publish_top_agenda = yes
 }
 
 # cc_pty.20 option b: the court refuses the agenda just announced (cc_pty_event_slot).
@@ -1119,6 +1224,8 @@ cc_pty_start_agenda = {
 		set_variable = { name = cc_pty_event_type value = var:cc_pty_$SLOT$_type }
 		set_variable = { name = cc_pty_event_agenda value = var:cc_pty_$SLOT$_agenda }
 		set_variable = { name = cc_pty_popup_cd value = yes years = 5 }
+		# The panel's top line is published on recompute, which ran before this; refresh it.
+		cc_pty_publish_top_agenda = yes
 		if = {
 			limit = { is_ai = no }
 			trigger_event_non_silently = { id = cc_pty.20 }
@@ -1835,6 +1942,7 @@ cc_pty_appoint = {
 # resent the favour.
 cc_pty_concede = {
 	cc_pty_add_sat = { SLOT = $SLOT$ VALUE = 30 }
+	add_political_influence = cc_pty_agenda_dividend_slot_$SLOT$
 	set_variable = { name = cc_pty_$SLOT$_last value = 1 }
 	cc_pty_end_agenda = { SLOT = $SLOT$ }
 	cc_pty_opposed_ripple = { SLOT = $SLOT$ OTHER = 1 VALUE = -10 }
@@ -1849,7 +1957,56 @@ cc_pty_concede = {
 # Call an election: recount the seats and run a realignment now. Ten-year cooldown.
 cc_pty_call_election = {
 	set_variable = { name = cc_pty_election_cd value = yes years = 10 }
+
+	# Which party leads the cabinet going in, and its seats.
+	save_scope_as = cc_pty_country
+	set_variable = { name = cc_pty_el_type value = 0 }
+	set_variable = { name = cc_pty_el_before value = 0 }
+	cc_pty_record_head_party = { SLOT = 1 }
+	cc_pty_record_head_party = { SLOT = 2 }
+	cc_pty_record_head_party = { SLOT = 3 }
+	cc_pty_record_head_party = { SLOT = 4 }
+
 	cc_pty_realign_pass = yes
+
+	# The same party's seats coming out (0 if a realignment dissolved it).
+	if = {
+		limit = { var:cc_pty_el_type > 0 }
+		set_variable = { name = cc_pty_el_after value = 0 }
+		cc_pty_measure_head_party = { SLOT = 1 }
+		cc_pty_measure_head_party = { SLOT = 2 }
+		cc_pty_measure_head_party = { SLOT = 3 }
+		cc_pty_measure_head_party = { SLOT = 4 }
+		add_political_influence = cc_pty_election_mandate
+		set_variable = { name = cc_pty_last_mandate value = cc_pty_election_mandate }
+	}
+	remove_variable = cc_pty_el_type
+	remove_variable = cc_pty_el_before
+	remove_variable = cc_pty_el_after
+}
+
+cc_pty_record_head_party = {
+	if = {
+		limit = {
+			has_variable = cc_pty_$SLOT$_type
+			any_cabinet_character = {
+				modifier:is_head_of_cabinet = yes
+				cc_pty_member_of_slot = { SLOT = $SLOT$ }
+			}
+		}
+		set_variable = { name = cc_pty_el_type value = var:cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_el_before value = var:cc_pty_$SLOT$_seats }
+	}
+}
+
+cc_pty_measure_head_party = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		if = {
+			limit = { var:cc_pty_$SLOT$_type = var:cc_pty_el_type }
+			set_variable = { name = cc_pty_el_after value = var:cc_pty_$SLOT$_seats }
+		}
+	}
 }
 
 

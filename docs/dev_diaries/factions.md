@@ -116,13 +116,13 @@ Meet it and the party gains 30 satisfaction. Miss it and it loses 25. Either way
 
 Select a party's card and five actions act on it.
 
-- **Bribe** (20 political influence and some gold): +25 satisfaction at once. Once every two years per party.
-- **Attack** (30 political influence): prosecute its leaders and close its clubs. Its elected seats fall by 40% for five years, it loses 30 satisfaction, and every party opposed to it gains 10. Needs the party to hold at least 10% of the seats. Once every five years.
+- **Bribe** (10 political influence and some gold): +25 satisfaction at once. Once every two years per party.
+- **Attack** (20 political influence): prosecute its leaders and close its clubs. Its elected seats fall by 40% for five years, it loses 30 satisfaction, and every party opposed to it gains 10. Needs the party to hold at least 10% of the seats. Once every five years.
 - **Ask a Favour** (no price, needs satisfaction of 10 or more): the party lends you its people for five years. The merchants improve trade, the clergy raise religious influence, the officers stiffen morale, the reformers make the cabinet work better. It costs 15 satisfaction.
-- **Appoint the Leader** (25 political influence): the party's leader takes a cabinet seat, an open one if there is one, otherwise that of the least senior minister from another party. The party gains the appointed seats that come with it.
-- **Concede the Agenda** (40 political influence and gold): the agenda counts as met now. The party gains 30 satisfaction and every party opposed to it loses 10.
+- **Appoint the Leader** (earns 10 political influence: the party owes you for the seat): the party's leader takes a cabinet seat, an open one if there is one, otherwise that of the least senior minister from another party. The party gains the appointed seats that come with it.
+- **Concede the Agenda** (10 government power, 10 political influence and gold): the agenda counts as met now. The party gains 30 satisfaction and every party opposed to it loses 10.
 
-Above the chamber, **Call an Election** (20 political influence and some stability) counts the seats and reviews the parties at once instead of waiting. Once every ten years.
+Above the chamber, **Call an Election** (10 political influence, gold and some stability) counts the seats and reviews the parties at once instead of waiting. Once every ten years.
 
 <figure>
   <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_action_tooltip.png" target="_blank">
@@ -131,7 +131,13 @@ Above the chamber, **Call an Election** (20 political influence and some stabili
   <figcaption>Every action is priced in political influence, and the tooltip says why a button is disabled.</figcaption>
 </figure>
 
-Political influence is the currency 1.4 already uses for appointments and policies, so managing your parties now competes with managing your cabinet and your laws for the same budget.
+Political influence is the currency 1.4 already uses for appointments and policies, so managing your parties competes with managing your cabinet and your laws for the same budget. The chamber also pays some of it back:
+
+- **Cabinet shape:** a balanced cabinet brings +0.5 political influence a month; a stacked one +10% political influence gain.
+- **Leaders in office:** +0.05 a month for each party whose leader sits in the cabinet.
+- **Working majority:** +15% political influence gain while the head of the cabinet's party holds 40% of the seats. A **hung chamber**, where no party holds 30%, costs 10%.
+- **Agenda dividend:** meeting an agenda, on time or by concession, pays political influence equal to half the party's seats.
+- **Election mandate:** an election pays 2 for every seat the head of the cabinet's party gains, and costs 1 for every seat it loses.
 
 ---
 

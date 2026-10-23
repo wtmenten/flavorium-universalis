@@ -462,6 +462,12 @@ DISPATCH_SIGNATURES = [
     ("_k", ("KEY",)),
 ]
 
+# Visible effects an action adds before its hidden body (scope:actor). Appointing a leader
+# earns political influence instead of costing it.
+ACTION_GAIN = {
+    "appoint": "add_political_influence = 10",
+}
+
 ACTIONS = [
     # key, price or None, allow trigger, english name, english desc
     ("bribe", "cc_pty_bribe", "cc_pty_can_bribe", "Bribe the Party",
@@ -470,7 +476,7 @@ ACTIONS = [
      "Move against the party: prosecute its leaders, close its clubs, deny its men office. Its elected seats fall by 40% for five years and its satisfaction drops by 30. Parties opposed to it gain 10 satisfaction. Needs at least 10% power. Once every five years per party."),
     ("favour", None, "cc_pty_can_favour", "Ask the Party a Favour",
      "Call in a favour from the party. It grants its favour modifier for five years and loses 15 satisfaction. Needs satisfaction of 10 or more. Once every five years per party."),
-    ("appoint", "cc_pty_appoint", "cc_pty_can_appoint", "Appoint the Party Leader",
+    ("appoint", None, "cc_pty_can_appoint", "Appoint the Party Leader",
      "Seat the party's leader in the cabinet: in an open seat if there is one, otherwise in place of the least senior minister from another party. The leader's party gains the seats a minister brings."),
     ("concede", "cc_pty_concede", "cc_pty_can_concede", "Concede the Agenda",
      "Meet the party's agenda by decree. It counts as met now, for +30 satisfaction, and every party opposed to it loses 10."),
@@ -813,6 +819,7 @@ def actions_file() -> str:
                       f"\tcustom_tooltip = cc_pty_tt_{key}_effect",
                       "\t# The tooltip evaluates this block (hidden_effect included) without committing",
                       "\t# writes; cc_pty_run_slot skips the body in that pass. See TOOLTIP GUARD.",
+                      *([f"\tscope:actor = {{ {ACTION_GAIN[key]} }}"] if key in ACTION_GAIN else []),
                       f"\thidden_effect = {{ scope:actor = {{ cc_pty_run_slot = {{ EFFECT = cc_pty_{key} SLOT = {s} }} }} }}",
                       "}", "",
                       "ai_will_do = {", "\tadd = { value = 0 }", "}"]
@@ -1283,6 +1290,12 @@ situation_panel = {{
 				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({comp}, {fp(1)})]"  text = "CC_PTY_COMP_STACKED"  tooltip = "CC_PTY_COMP_STACKED_TT" }}
 				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({comp}, {fp(2)})]"  text = "CC_PTY_COMP_BALANCED"  tooltip = "CC_PTY_COMP_BALANCED_TT" }}
 				text_single = {{ fontsize = 11  visible = "[Not(Or(EqualTo_CFixedPoint({comp}, {fp(1)}), EqualTo_CFixedPoint({comp}, {fp(2)})))]"  text = "CC_PTY_COMP_MIXED"  tooltip = "CC_PTY_COMP_MIXED_TT" }}
+				widget = {{ size = {{ 10 1 }} }}
+				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({gv('cc_pty_majority')}, {fp(1)})]"  text = "CC_PTY_MAJORITY"  tooltip = "CC_PTY_MAJORITY_TT" }}
+				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({gv('cc_pty_majority')}, {fp(-1)})]"  text = "CC_PTY_HUNG"  tooltip = "CC_PTY_HUNG_TT" }}
+				widget = {{ size = {{ 10 1 }} }}
+				text_single = {{ fontsize = 11  default_format = "#weak"  text = "CC_PTY_LABEL_LEADERS_IN"  tooltip = "CC_PTY_LEADERS_IN_TT" }}
+				text_single = {{ fontsize = 11  raw_text = "[FixedPointToInt({gv('cc_pty_leaders_in')})]"  tooltip = "CC_PTY_LEADERS_IN_TT" }}
 				expand = {{}}
 				text_single = {{ fontsize = 11  visible = "[Player.MakeScope.GetVariable('cc_pty_termlimits').IsSet]"  text = "CC_PTY_TERMLIMITS"  tooltip = "CC_PTY_TERMLIMITS_TT" }}
 			}}

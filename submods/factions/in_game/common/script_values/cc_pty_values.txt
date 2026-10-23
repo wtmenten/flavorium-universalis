@@ -275,3 +275,43 @@ cc_pty_elected_slot_4 = {
 	divide = var:cc_pty_eraw_total
 	floor = yes
 }
+
+
+# Country scope. Agenda dividend: political influence equal to half the party's seats.
+
+cc_pty_agenda_dividend_slot_1 = {
+	value = var:cc_pty_1_seats
+	multiply = 0.5
+	round = yes
+}
+
+cc_pty_agenda_dividend_slot_2 = {
+	value = var:cc_pty_2_seats
+	multiply = 0.5
+	round = yes
+}
+
+cc_pty_agenda_dividend_slot_3 = {
+	value = var:cc_pty_3_seats
+	multiply = 0.5
+	round = yes
+}
+
+cc_pty_agenda_dividend_slot_4 = {
+	value = var:cc_pty_4_seats
+	multiply = 0.5
+	round = yes
+}
+
+
+# Country scope. Election mandate: +2 political influence per seat the head of the
+# cabinet's party gained at the election, -1 per seat it lost.
+cc_pty_election_mandate = {
+	value = var:cc_pty_el_after
+	subtract = var:cc_pty_el_before
+	if = {
+		limit = { var:cc_pty_el_after > var:cc_pty_el_before }
+		multiply = 2
+	}
+}
+
