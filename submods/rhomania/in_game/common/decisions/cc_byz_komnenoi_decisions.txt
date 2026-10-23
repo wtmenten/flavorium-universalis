@@ -6,8 +6,15 @@
 # inside the effect and gated in allow, the way coal_prospecting.txt does it.
 #
 # The passive route (on_action/cc_byz_komnenoi.txt) opens the same chain without a decision;
-# both call cc_byz_kom_open_effect. The decision needs no entrance condition to be true: an
-# emperor can raise the question cold, but without an entrance it starts with both scores at 0.
+# both call cc_byz_kom_open_effect.
+#
+# THE REQUIREMENTS ARE THE POINT. Political influence alone made this a button any emperor could
+# press on day one. It now needs:
+#   - Constantinople. A claim to the one Roman title made from anywhere else is not a claim.
+#   - At least one of the five entrances. No cold start: the relationship with Trebizond has
+#     to exist, friendly or hostile, before there is anything to negotiate.
+#   - A settled court: stability above 0, legitimacy 50 or more, no regency.
+# Thresholds follow vanilla decisions (stability > 0 in flavor_decisions_*, has_regent = no).
 
 cc_byz_kom_raise_the_question_decision = {
 	decision_category = country_specific_decisions
@@ -22,15 +29,18 @@ cc_byz_kom_raise_the_question_decision = {
 	allow = {
 		political_influence >= 25
 		at_war = no
+		owns = location:constantinople
+		stability > 0
+		legitimacy >= 50
+		has_regent = no
+		custom_tooltip = {
+			text = cc_byz_kom_needs_entry_tt
+			cc_byz_kom_any_entry_trigger = yes
+		}
 	}
 
 	ai_will_do = {
 		value = 5
-		# Conservative AI. A cold start with no entrance is not worth it.
-		if = {
-			limit = { cc_byz_kom_any_entry_trigger = no }
-			value = 0
-		}
 	}
 
 	illustration_tags = {

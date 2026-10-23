@@ -1,4 +1,4 @@
-# Dev Diary: Rhomania
+﻿# Dev Diary: Rhomania
 
 *Published: 2026-08-19*
 
@@ -250,7 +250,7 @@ Repudiation is a legitimate ending rather than a failure state. It restores your
 
 Since 1204 two courts have called their ruler Emperor of the Romans: Constantinople, and the Grand Komnenoi in Trebizond. Neither vanilla nor earlier versions of Rhomania gave Byzantium a way to settle that other than an ordinary war. **The Komnenian Question** (new in 0.4) is a chain that runs for about a decade and ends in a union of the crowns, an annexation, or a claim to Trebizond's throne.
 
-It opens in one of two ways. A Byzantine player can take the **Komnenian Question** decision for 25 political influence, or the chain can start by itself when the two courts are already in a relationship that makes the question urgent. Five such conditions are checked, and every one that holds adds to the starting position:
+It opens in one of two ways. A Byzantine player can take the **Komnenian Question** decision, or the chain can start by itself when the two courts are already in a relationship that makes the question urgent. The decision costs 25 political influence and needs Constantinople, stability above 0, legitimacy of at least 50, no regency, peace, and at least one of five opening conditions. Every condition that holds adds to the starting position:
 
 - **Family:** Trebizond's ruler is of the emperor's own dynasty. In 1337 this is a live possibility, because Trebizond's queen is Irene Palaiologina, daughter of Andronikos III, and a vanilla event can put her on the throne in 1339.
 - **Alliance:** the two courts are allied or joined by marriage, and Trebizond thinks well of us. They start the game allied.
