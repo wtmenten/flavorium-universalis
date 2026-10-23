@@ -1153,6 +1153,22 @@ The GUI layer has its own vocabulary and it is much smaller than script's. Verif
 - **`GetNumberOfMembers` does not exist.** `InternationalOrganization` exposes `GetMembers`, `GetMembersAmount`, `GetMembersText`, `GetMembersInfo` and `IsCountryMember`.
 - **`HasModifier('name')` does exist** and is the way to test a country modifier from GUI. Country *variables* use `Player.MakeScope.GetVariable('x')`; situation variables use `SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('x')`.
 - Numeric comparison needs the fixed-point helpers: `GreaterThan_CFixedPoint(a, '(CFixedPoint)0')`, `EqualTo_CFixedPoint`, `FixedPointToInt`, `FixedPointToFloat`.
+- **One unknown datafunction blanks the whole text.** The widget renders `default` and `error.log` logs `Could not find data system function`. When probing several functions, give each its own `text_single`.
+
+### Situation panel extra tabs do not scroll
+
+`situation_panel_main_content` sits inside the panel's own scrollarea (`common.gui:243`), but `situation_extra_tab_panels` is outside it (`common.gui:368`). An extra tab taller than the panel is simply cut off. Give each extra tab its own `scrollarea` (`autoresizeviewport = yes`, a `viewportwidget` with `scissor = yes`, `Scrollbar_Vertical`, content in `scrollwidget`), as `cc_cabinet_court.gui` does. This is safe because it is not nested in another scrollarea; nesting one inside `situation_panel_main_content` is what swallows mouse input.
+
+**Mount the scrollarea directly, never inside a plain `widget`.** A plain `widget = { }` does not size its children, and a scrollarea has no natural size, so `widget = { using = template_containing_a_scrollarea }` collapses to nothing and the tab renders empty with no error logged. A `vbox` survives the same wrapper only because it sizes itself to its content. If the scrollarea lives in a template, make the template the scrollarea's body (its properties at top level) and mount it as `scrollarea = { visible = ...  using = the_template }`, as the Household tab does.
+
+### Works of art and artists in GUI
+
+Verified in game with probe lines in the court panel:
+
+- **There is no country-level works datamodel.** `Player.GetWorksOfArt` does not exist; vanilla's works list reads `ArtsView.GetArts`, which only exists inside its own `arts_overview` lateral view. `Country.GetNumWorksOfArt` and `Country.GetArtTooltip` do exist.
+- **`Location.GetWorksOfArt` does exist.** Its items are `WorkOfArt`, with `GetNameWithNoTooltip`, `GetQualityName`, `GetCreatorName`, `GetDefinition.GetName`, `GetLocation` and `GetWorkOfArtIcon(WorkOfArt.GetDefinition)` all working. To list a realm's works, publish the owned locations holding art as a variable list and nest: `datamodel = "[Player.MakeScope.GetList('x')]"`, item `Scope.GetLocation.GetWorksOfArt` (the list pattern is vanilla's, `middle_kingdom.gui:350`).
+- **Telling one work-of-art type from another in GUI.** Compare the type's plain name with vanilla's loc key for it: `EqualTo_string(WorkOfArt.GetDefinition.GetNameWithNoTooltip, Localize('monument'))`. This is language-independent, since both sides are localized. Measured in game, the other routes fail: `GetName` never compares equal (it carries tooltip markup), `GetWorkOfArtIcon(...)` is a texture with no string value (it prints empty and makes `EqualTo_string` fail, which blanks the whole expression and, in a `visible`, hides the widget), and `GetKey` does not exist on the type. `WorkOfArt.IsPriceless` works.
+- **`Character.HasArtInProgress` is correct; progress alone is not.** Measured in game: a working artist reads `HasArtInProgress` 1 and an idle one 0. An earlier note here said it was yes for idle artists; that reading came from a working artist whose piece name was hidden by the wrong accessor. Progress (`GetArtProgress`, fixed-point 0 to 1, format `|%0Y`) is **0 for a working artist before the realm can invest in culture**, because works do not advance at all until then, so `progress > 0` misreads those as idle. Use `HasArtInProgress` for working or idle and progress only to tell moving from stalled. Things that do not work: `StringIsEmpty(Character.GetArtInProgress.GetName)` returns false even when the name renders empty; `GetArtInProgress.GetKey` does not exist; the script trigger `has_art_in_progress` returned no for a working artist. `GetArtInProgress` is the work *type*; read it with `.GetName` (`.GetNameWithNoTooltip` is blank).
 
 ### GUI assets that don't exist
 

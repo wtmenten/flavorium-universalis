@@ -82,6 +82,28 @@ A realm may hold three at most, and they are a century apart by design. The firs
 
 This is also what finally makes a protege worth having. Someone enrolled in a school spends the waiting years absorbing a discipline, so when a seat opens they arrive already pointed at that discipline's ladders rather than starting from nothing.
 
+### Seats, kinds and curricula (new in 0.4)
+
+A school is seated at a university, and the seat matters. Its religion decides what kind of institution the school is: a studium, an academy, a madrasa, a shuyuan, a vihara, a gurukula, a yeshiva, or simply a school. Each kind gives its own bonus at the seat. Members who share the seat's culture learn half again as fast, because they are taught in their own tongue.
+
+Lose the seat, to conquest or a demolished university, and the school moves to another free university in the realm. If there is none, it goes into exile: the members keep studying, but the school's bonuses and projects stop until a university is free.
+
+Each school also teaches a curriculum: Law, Theology, Natural Philosophy, Letters, Military Science, Medicine or Navigation. A curriculum gives one bonus at the seat and one across the realm, and decides which disputations the school holds. Natural Philosophy needs a school of some quality, Medicine a better one, and Navigation a seat on the coast. Changing curriculum takes ten years to settle.
+
+### Quality and renown (new in 0.4)
+
+Two numbers describe a school, and they answer different questions.
+
+**Quality** is how good the teaching is, and it is bought. Funding comes from the realm's Culture budget: the higher that slider, the better the school, and the more each one costs. A Rector, a curriculum left alone long enough, and senior ministers among the members all add to it. Quality scales everything the school gives, from half strength at the bottom to one and a half times at the top, including the experience its members earn. A good enough school also gets a fourth, better choice when it holds a disputation.
+
+**Renown** is how widely the school is known, and it is earned against the world. It grows with the school's age, with how developed and literate its seat is, and with the realm's prestige and rank. Once a year every foreign university is scored on the same terms, and each of your schools is ranked against them. A renowned school raises the realm's prestige and cultural influence, and draws people: promising young scholars who can be taken on as proteges, foreign students, and artists. A school that falls well behind the leading foreign university starts losing masters and students to it. One that stands first gets its own event.
+
+### Projects and the Rector (new in 0.4)
+
+Each school can take on one project every few years: endow its library with gold, fund royal chairs with political influence, invite foreign scholars with prestige, or hold a disputation. Disputations are short events about the curriculum, and each choice moves the school's renown or quality as well as the realm.
+
+A minister can also be made Rector of a school, a cabinet duty chosen in the cabinet screen. The Rector's school teaches its members twice as fast, takes on projects and curriculum changes sooner, and its seat grows literacy and institutions faster.
+
 <figure>
   <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_schools_tab.png" target="_blank">
     <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_schools_tab.png" alt="The Schools tab showing founded and locked institution slots">
@@ -116,6 +138,8 @@ A minister can put their name and money behind an artist for a generation. The c
 
 The Patronage tab also lets you sell a work discreetly. Vanilla already has a diplomatic route: you name a counterparty, they can refuse, and a genuinely good piece is harder to move. This is the opposite. Nobody is named, nothing is refused, and you get noticeably less money for exactly that reason. The piece still ends up somewhere real, and the nobility notices which wall is bare.
 
+Since 0.4 the tab lists every work the realm holds, with its type, quality, artist and where it hangs, and a button opens the game's full Works of Art overview. An eye button hides what cannot be sold: priceless works, which are marked, and monuments, palaces, temple towers, regalia and mansions. Each artist shows who their patron is and what they are working on, with its progress. A piece at no progress is shown as stalled, which is what happens to every piece before the realm can invest in culture.
+
 <figure>
   <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_patronage_tab.png" target="_blank">
     <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_patronage_tab.png" alt="The Patronage tab with the artist roster">
@@ -125,7 +149,18 @@ The Patronage tab also lets you sell a work discreetly. Vanilla already has a di
 
 ---
 
-## Sending a minister away
+## The household
+
+Besides a seat in the cabinet, a minister can hold a post in the household: seneschal, master of coin, court chaplain, and some forty others. Which posts exist depends on what the realm has researched. An advance opens a post, and a later one can close it again, so a medieval seneschal gives way to a chancery and a herald to trained diplomats. Religion, government, culture and region open posts of their own. A court can fill six at once, each costs something in court upkeep, and each post's bonus grows with the seniority of the minister who holds it.
+
+### Cards, tenure and events (new in 0.4)
+
+The Household tab now shows every post as a card. A filled post shows its holder, their seniority and years in the post, and its effects at the strength this holder gives them, not the base values. An open post shows its base effects, what it needs, and an Appoint button, which offers the most senior ministers trained for it. A filled post can be dismissed from its card. A post that an advance you can already research would close is marked as retiring, and a section below lists the posts you could open with one more advance, and which advance it is.
+
+Holding a post for a long time now counts. Each year in office adds a little to the post's bonus, up to ten years, on top of what seniority gives.
+
+Posts also produce events. Now and then one of them raises a matter in its own line of work: the household's accounts, a sermon at court, petitions piling up, a festival, news from the frontier. A senior holder or a long-serving one opens a better way to deal with it.
+
 
 You can post a minister to one of your subjects as a resident. They are gone from your cabinet for years, they grow considerably while they are there, and the relationship they build moves that subject's bond every year.
 

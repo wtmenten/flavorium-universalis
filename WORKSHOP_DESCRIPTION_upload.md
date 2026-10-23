@@ -50,6 +50,7 @@ Flavorium Universalis enhances the vanilla EUV experience across multiple areas:
     * **NEW:** Assign explicit duties to ministers: war council, domestic reform, diplomatic mission, colonial posting, and more. Each duty raises related events and grants an ongoing country modifier.
     * **NEW:** Cabinet composition has aggregate effects. A court dominated by militarists, merchants, or clergy activates auto-modifiers that reflect the makeup of your advisors.
     * **NEW:** Ministers accumulate experience in three tracks and climb career ladders from a minor malus to a mastery. Train them, groom successors, pair them with a mentor, and choose which way their career forks.
+    * **NEW:** Found up to three schools at your universities. Each has a curriculum, a quality you fund through the Culture budget, and a renown ranked against the great universities abroad that draws scholars, students and artists to your court.
     * **NEW:** Military ministers run war council events during conflicts, which unlock post-war reform proposals when you win.
     * **NEW:** Post a minister overseas as a colonial governor to run charter company events, handle native uprisings, and unlock the decolonization crisis chain in the Age of Revolutions.
   * New subject types add more ways to use subjects:
@@ -293,6 +294,18 @@ You can also spend on it directly, through interactions on any minister or prote
 
   
 A **Court panel** lists every minister and protege with their level, their progress toward the next one, and their tier in each track, with the training actions on each row.  
+  
+**Schools.** A realm can found up to three schools, each seated at a university. Every member gains experience in the school's discipline each year, in office or not.  
+
+
+  * **Kind and curriculum:** the seat's religion makes the school a studium, madrasa, shuyuan or one of five other kinds, each with a bonus at the seat. Seven curricula (Law, Theology, Natural Philosophy, Letters, Military Science, Medicine, Navigation) each give a bonus at the seat and one across the realm.
+  * **Quality:** set by funding from the Culture budget slider, a Rector, a settled curriculum and senior members. It scales every bonus the school gives and the experience its members earn.
+  * **Renown:** grows with age, the seat's development and literacy, and the realm's prestige and rank, and is ranked each year against every foreign university. It raises prestige and cultural influence and draws young scholars, foreign students and artists. Falling well behind the leading foreign university costs masters and students.
+  * **Projects:** endow the library, fund royal chairs, invite foreign scholars, or hold a disputation on the curriculum. A minister on the **Rector** duty speeds all of it.
+  * If the seat is lost, the school moves to another university, or into exile until one is free.
+
+  
+**Patronage.** Ministers sponsor artists for prestige and diplomatic experience, and works can be sold discreetly. The Court panel lists every work the realm holds and what each artist is working on.  
   
 Long careers have a cost. A minister two decades at the top starts to run down, and you choose whether to give them a year's leave or spend what is left of them. Two accomplished specialists of the same kind will circle each other until the crown settles it. And when a great minister dies, whoever worked beside them keeps some of what they knew.  
   
@@ -747,7 +760,7 @@ Some are age-branch (Adm/Dip/Mil) specific; others are cultural, regional, or co
   
 Many are mixed into existing tech trees, but there are also new mini-trees in each age past the Renaissance. Mini-trees also have age-branch advances; some have follow-on advances which do not appear in the age picker UI.  
   
-**Age of Renaissance** (8 advances)  
+**Age of Renaissance** (9 advances)  
 
 
   * _[DIP]_ **Royal Union Network** unlocks **Junior Partner, Lesser Partner**. Personal unions need not be passive inheritances.
@@ -758,9 +771,11 @@ Many are mixed into existing tech trees, but there are also new mini-trees in ea
   * _[ADM]_ **Dynastic Governance** unlocks **Crown Dependency**. The web of royal marriages binding European courts together need not remain ceremonial.
   * _[MIL]_ **Holy Patronage** unlocks **Holy Protectorate**. Faith is a bond stronger than treaty.
   * _[All]_ **Frontier Administration** : Rather than wait for roads and cities to reach the marches, the crown plants resident noble governors directly in the unsettled interior, binding the borderlands to the capital by loyalty where it cannot yet bind them by stone.
-+1 frontier governors
++1 frontier governors 
+  * _[ADM]_ **Chancery Offices** : The chancery's clerks have become permanent offices with their own rooms, budgets and records.
++1 bureaucracy slots
   
-**Age of Discovery** (15 advances)  
+**Age of Discovery** (16 advances)  
 
 
   * _[ADM]_ **Client State Diplomacy** unlocks **Client State**. By offering protection in exchange for tribute, a great power can extend its influence into neighboring territories without the expense of outright conquest.
@@ -790,6 +805,8 @@ Many are mixed into existing tech trees, but there are also new mini-trees in ea
 +10% cabinet efficiency _(East Asia capital)_
   * _[All]_ **Italian Masters** : The workshops of Florence, Venice, and Milan have produced an unbroken line of masters in painting, sculpture, and architecture.
 +10% art skill, +5% cultural influence _(Italian culture)_
+  * _[ADM]_ **Offices of State** : Trade, colonies, embassies and the fleet are now each run by a standing office.
+
   
 **Age of Reformation** (14 advances)  
 
@@ -1019,7 +1036,7 @@ cc_wc| 9| War council: active-war events, post-war reform proposals, outdated ge
   
 cc_fac| 3| Estate faction capture events  
   
-cc_xp| 38| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
+cc_xp| 55| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
   
 cc_colonial| 6| Colonial divan: charter company events + decolonization crisis chain  
   
@@ -1037,7 +1054,7 @@ cc_office| 2| Household offices: the appointment picker and the notice that an a
   
   
   
- _~527 events total_  
+ _~544 events total_  
   
 
 
