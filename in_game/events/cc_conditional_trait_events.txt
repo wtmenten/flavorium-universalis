@@ -574,8 +574,8 @@ cc_cond.1 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_dev_trait_event value = yes years = 12 }
 		}
 	}
 }
@@ -931,8 +931,8 @@ cc_cond.20 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
 }
@@ -1257,8 +1257,8 @@ cc_cond.21 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
 }
@@ -1559,8 +1559,8 @@ cc_cond.22 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
 }
@@ -1805,8 +1805,8 @@ cc_cond.23 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
 }
@@ -1814,6 +1814,11 @@ cc_cond.23 = {
 
 # --- cc_cond.24: EXPANSION / CULTURAL IDENTITY CLUSTER ---
 # Axes: outward_vs_inward, latinization_vs_hellenization, sinicized_vs_unsinicized
+#
+# COUNTRY-WIDE COOLDOWN. The per-minister cooldowns alone let the cluster come back for
+# each minister in turn, which at a full cabinet is every few months. cc_cond_24_cd (set in
+# immediate, eight years) holds it off for the whole court; the dispatcher branch checks it
+# too, so it is never picked while the event would refuse to fire.
 
 cc_cond.24 = {
 	type = country_event
@@ -1827,6 +1832,7 @@ cc_cond.24 = {
 	}
 
 	trigger = {
+		NOT = { has_variable = cc_cond_24_cd }
 		any_cabinet_character = {
 			in_cabinet = yes
 			NOT = { has_variable = cc_recent_trait_assignment }
@@ -1851,6 +1857,7 @@ cc_cond.24 = {
 	}
 
 	immediate = {
+		set_variable = { name = cc_cond_24_cd value = yes years = 8 }
 		if = {
 			limit = { any_cabinet_character = { has_variable = cc_trait_dispatch_selected } }
 			random_cabinet_character = {
@@ -2075,8 +2082,8 @@ cc_cond.24 = {
 			text = cc_cond_dismiss_tt
 			scope:minister = {
 				set_variable = { name = cc_recent_trait_assignment value = yes months = 5 }
+				set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 			}
-			set_variable = { name = cc_recent_social_trait_event value = yes years = 12 }
 		}
 	}
 }
