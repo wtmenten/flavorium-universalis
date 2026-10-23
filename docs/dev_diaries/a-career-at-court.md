@@ -211,7 +211,19 @@ The tab lists every work the realm holds, with its type, quality, artist and whe
 
 ## The household
 
+<div class="dd-split">
+<div>
+
 Besides a seat in the cabinet, a minister can hold a post in the household: seneschal, master of coin, court chaplain, and some forty others. Which posts exist depends on what the realm has researched. An advance opens a post, and a later one can close it again, so a medieval seneschal gives way to a chancery and a herald to trained diplomats. Religion, government, culture and region open posts of their own. A court can fill six at once, each costs something in court upkeep, and each post's bonus grows with the seniority of the minister who holds it.
+
+</div>
+<figure>
+  <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_household_tab.png" target="_blank">
+    <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_household_tab.png" alt="The Household tab with filled and open posts as cards">
+  </a>
+  <figcaption>The Household tab: filled posts with their holder and effects at this holder's strength, open posts with an Appoint button.</figcaption>
+</figure>
+</div>
 
 New in 0.4:
 

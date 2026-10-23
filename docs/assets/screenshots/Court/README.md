@@ -22,6 +22,7 @@ to the 1600s is the quickest way to get a court worth photographing.
 |---| `EUV_1.3.x_FU_Court_0.3.11_service_record.png` | The Read the Service Record event (cc_xp.1) for a minister with uneven tracks, so seniority and specialisation are visibly different numbers. A senior minister with tier 0 in one track is the ideal subject. |
 |---| `EUV_1.3.x_FU_Court_0.3.11_schools_tab.png` | The Schools tab. Best case has one school founded and the other two slots showing their unlock requirements, which demonstrates the whole ladder at once. |
 |---| `EUV_1.3.x_FU_Court_0.3.11_soiree.png` | The soiree event (cc_xp.50) with all three options visible and their costs readable. |
+|---| `EUV_1.3.x_FU_Court_0.3.11_household_tab.png` | The Household tab (0.4.0 cards). Best case has two or more posts filled, so the holder portraits and scaled effects show, at least one open post with its Appoint button, and the "Within reach" section listing a post or two. A post marked Retiring would be a bonus. |
 |---| `EUV_1.3.x_FU_Court_0.3.11_patronage_tab.png` | The Patronage tab with two or more living artists listed, showing the works total and at least one artist mid-commission. A sponsored artist showing the `sponsored` mark would be better still. |
 
 ## Optional extras if they photograph well
