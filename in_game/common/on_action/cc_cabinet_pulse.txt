@@ -596,12 +596,14 @@ cc_cabinet_yearly_war_council = {
 	}
 }
 
-# Post-war military reform sweeps — all evaluated yearly against reform flag.
+# Post-war military reform proposal — one picked per year while the reform flag is up.
+# Every option in cc_wc.10-12 clears the flag, so a victory yields at most one proposal.
+# (An events = {} list here fired all eligible proposals on the same tick.)
 cc_cabinet_yearly_war_reform = {
 	trigger = { has_variable = cc_military_reform_opportunity }
-	events = {
-		cc_wc.10   # Standing Army Reform proposal
-		cc_wc.11   # Supply Reform proposal
-		cc_wc.12   # Fortification Doctrine proposal
+	random_events = {
+		3 = cc_wc.10   # Standing Army Reform proposal
+		3 = cc_wc.11   # Supply Reform proposal
+		3 = cc_wc.12   # Fortification Doctrine proposal
 	}
 }
