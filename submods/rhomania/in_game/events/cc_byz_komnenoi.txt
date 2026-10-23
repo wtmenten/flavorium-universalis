@@ -1,0 +1,1099 @@
+﻿namespace = cc_byz_komnenoi
+
+# The Komnenian Question: Byzantium and Trebizond.
+#
+# Two Greek emperors have claimed the Roman title since 1204. This chain settles it, by
+# union, by acclamation, or by war. It runs once per campaign.
+#
+# ENTRY. Either the decision (decisions/cc_byz_komnenoi_decisions.txt) or the yearly pulse
+# (on_action/cc_byz_komnenoi.txt). Both call cc_byz_kom_open_effect, which records which of the
+# five entrances held, stacks their starting scores, and fires .1.
+#
+#   .79                hidden opener for the passive route
+#   .1                 the question opened
+#   .2 .3 .4 .5        the stages: the Pontic court, the Turkmen frontier, Komnenian pride,
+#                      rival suitors
+#   .6                 the settlement (climax)
+#   .20                Trebizond's answer, when Trebizond is human
+#   .21                Trebizond accepted: acclamation or union
+#   .30 .31 .32        outcomes: acclamation, union, turned away
+#   .40                the pretext proclaimed
+#   .50 .51            notifications to a human Trebizond
+#   .80                hidden router
+#   .90                the question lapses
+#
+# PACING. The passive entrance is behind the shared cc_byz_pulse_cd limiter. Once open, the
+# chain schedules itself through the router: 1-2 years to the first stage, 2-3 years between
+# the rest, so 8-13 years end to end, or about 5 fewer on the family shortcut in .4. Every
+# stage stamps the cooldown so the other Rhomania threads give way while it runs, but the
+# chain itself never waits on it.
+#
+# SCORES. cc_byz_kom_accord weights the climax roll; cc_byz_kom_pretext sets the CB's length
+# and the peace-table discount. Both are 0..10. See scripted_effects/cc_byz_komnenoi_effects.txt
+# for the state and memory variables.
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100; total_abilities is their sum,
+# 0..300. Roughly: >= 65 above average, >= 75 capable, >= 85 exceptional.
+
+
+#############################################
+# .79  Passive opener (hidden)
+#############################################
+# What the yearly pulse fires. The decision calls cc_byz_kom_open_effect directly; this is the
+# same call for the passive route, re-checking the gate in case anything changed between the
+# on_action trigger and the roll.
+cc_byz_komnenoi.79 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	outcome = neutral
+	hidden = yes
+
+	trigger = {
+		cc_byz_kom_can_open_trigger = yes
+	}
+
+	immediate = {
+		cc_byz_kom_open_effect = yes
+	}
+}
+
+
+#############################################
+# .1  The question opened
+#############################################
+cc_byz_komnenoi.1 = {
+	type = country_event
+	title = cc_byz_komnenoi.1.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_kom_entry_family }
+				desc = cc_byz_komnenoi.1.desc_family
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_kom_entry_hostility }
+				desc = cc_byz_komnenoi.1.desc_hostility
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_kom_entry_alliance }
+				desc = cc_byz_komnenoi.1.desc_alliance
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_kom_entry_peril }
+				desc = cc_byz_komnenoi.1.desc_peril
+			}
+			desc = cc_byz_komnenoi.1.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	# Envoys who will listen before they propose anything.
+	option = {
+		name = cc_byz_komnenoi.1.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+	}
+
+	# Say plainly that there is one empire and its capital is Constantinople.
+	option = {
+		name = cc_byz_komnenoi.1.b
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 3
+				has_variable = cc_byz_kom_entry_hostility
+			}
+		}
+
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus2_tt
+			cc_byz_kom_add_pretext_effect = { value = 2 }
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_minus1_tt
+			cc_byz_kom_add_accord_effect = { value = -1 }
+		}
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_slighted
+			}
+		}
+	}
+
+	# Write as family. Only open when the two rulers share a dynasty.
+	option = {
+		name = cc_byz_komnenoi.1.c
+		trigger = { has_variable = cc_byz_kom_entry_family }
+		ai_chance = { base = 60 }
+
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_kom_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .2  The Pontic court
+#############################################
+cc_byz_komnenoi.2 = {
+	type = country_event
+	title = cc_byz_komnenoi.2.title
+	desc = cc_byz_komnenoi.2.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		c:TRE = { save_scope_as = cc_kom_tre }
+		cc_byz_kom_save_marriage_candidates_effect = yes
+	}
+
+	# Gifts to the archontes who sit on the council in Trebizond.
+	option = {
+		name = cc_byz_komnenoi.2.a
+		trigger = { gold >= 150 }
+		ai_chance = { base = 30 }
+
+		add_gold = -150
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus2_tt
+			cc_byz_kom_add_accord_effect = { value = 2 }
+		}
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_courted
+			}
+		}
+	}
+
+	# A marriage between the two houses. Needs an unmarried adult on each side, of opposite
+	# sexes; cc_byz_kom_save_marriage_candidates_effect finds them.
+	option = {
+		name = cc_byz_komnenoi.2.b
+		trigger = {
+			exists = scope:cc_kom_tre_spouse
+			exists = scope:cc_kom_byz_spouse
+		}
+		ai_chance = { base = 40 }
+
+		scope:cc_kom_byz_spouse = {
+			marry_character = scope:cc_kom_tre_spouse
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus3_tt
+			cc_byz_kom_add_accord_effect = { value = 3 }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Letters from the Patriarch. Trebizond's metropolitan answers to Constantinople.
+	option = {
+		name = cc_byz_komnenoi.2.c
+		trigger = {
+			cc_byz_faith_orthodox_trigger = yes
+			religious_influence >= 30
+		}
+		ai_chance = { base = 20 }
+
+		add_religious_influence = -30
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_courted
+			}
+		}
+	}
+
+	# Build a party at court that would prefer a distant emperor to a near one.
+	option = {
+		name = cc_byz_komnenoi.2.d
+		ai_chance = {
+			base = 10
+			modifier = {
+				factor = 3
+				has_variable = cc_byz_kom_entry_hostility
+			}
+		}
+
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus2_tt
+			cc_byz_kom_add_pretext_effect = { value = 2 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_kom_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .3  The Turkmen frontier
+#############################################
+cc_byz_komnenoi.3 = {
+	type = country_event
+	title = cc_byz_komnenoi.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { c:TRE ?= { at_war = yes } }
+				desc = cc_byz_komnenoi.3.desc_war
+			}
+			desc = cc_byz_komnenoi.3.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	# Send a tagma east. Costs manpower at home for five years.
+	option = {
+		name = cc_byz_komnenoi.3.a
+		trigger = { at_war = no }
+		ai_chance = { base = 35 }
+
+		add_country_modifier = {
+			modifier = cc_byz_kom_troops_abroad
+			years = 5
+			mode = add_and_extend
+		}
+		c:TRE = {
+			add_country_modifier = {
+				modifier = cc_byz_kom_imperial_aid
+				years = 10
+				mode = add_and_extend
+			}
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus2_tt
+			cc_byz_kom_add_accord_effect = { value = 2 }
+		}
+	}
+
+	# Pay for the walls and the garrison and let Trebizond hold its own frontier.
+	option = {
+		name = cc_byz_komnenoi.3.b
+		trigger = { gold >= 200 }
+		ai_chance = { base = 30 }
+
+		add_gold = -200
+		c:TRE = { add_gold = 200 }
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+	}
+
+	# Do nothing. A Trebizond that has bled is easier to talk to, or to take.
+	option = {
+		name = cc_byz_komnenoi.3.c
+		ai_chance = { base = 35 }
+
+		c:TRE = { add_stability = stability_mild_penalty }
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus2_tt
+			cc_byz_kom_add_pretext_effect = { value = 2 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_kom_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .4  Komnenian pride
+#############################################
+cc_byz_komnenoi.4 = {
+	type = country_event
+	title = cc_byz_komnenoi.4.title
+	desc = cc_byz_komnenoi.4.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	# Grant the ruler of Trebizond the title of Despot, second only to the emperor.
+	option = {
+		name = cc_byz_komnenoi.4.a
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_mild_penalty
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_honoured
+			}
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus2_tt
+			cc_byz_kom_add_accord_effect = { value = 2 }
+		}
+	}
+
+	# Require Trebizond to drop the imperial style.
+	option = {
+		name = cc_byz_komnenoi.4.b
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 2
+				has_variable = cc_byz_kom_entry_hostility
+			}
+		}
+
+		add_prestige = prestige_weak_bonus
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_slighted
+			}
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus2_tt
+			cc_byz_kom_add_pretext_effect = { value = 2 }
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_minus1_tt
+			cc_byz_kom_add_accord_effect = { value = -1 }
+		}
+	}
+
+	# THE FAMILY SHORTCUT. Settle it as a family matter and go straight to the settlement,
+	# skipping .5. Needs the family entrance AND a ruler who is still family today.
+	option = {
+		name = cc_byz_komnenoi.4.c
+		trigger = {
+			has_variable = cc_byz_kom_entry_family
+			cc_byz_kom_entry_family_trigger = yes
+		}
+		ai_chance = { base = 60 }
+
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+		custom_tooltip = cc_byz_kom_shortcut_tt
+		hidden_effect = {
+			# schedule_next adds one, so 5 here makes the router fire .6.
+			set_variable = { name = cc_byz_kom_stage  value = 5 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_kom_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .5  Rival suitors
+#############################################
+cc_byz_komnenoi.5 = {
+	type = country_event
+	title = cc_byz_komnenoi.5.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { exists = scope:cc_kom_suitor }
+				desc = cc_byz_komnenoi.5.desc_suitor
+			}
+			desc = cc_byz_komnenoi.5.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = trading
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		c:TRE = { save_scope_as = cc_kom_tre }
+		# The largest independent court within reach of Trebizond that is not us.
+		ordered_country = {
+			limit = {
+				NOT = { this = root }
+				NOT = { this = scope:cc_kom_tre }
+				is_subject = no
+				is_neighbor_of_country_or_across_one_seazone = scope:cc_kom_tre
+			}
+			order_by = country_economical_base
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_kom_suitor
+		}
+	}
+
+	# Outbid them.
+	option = {
+		name = cc_byz_komnenoi.5.a
+		trigger = { gold >= 250 }
+		ai_chance = { base = 30 }
+
+		add_gold = -250
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus2_tt
+			cc_byz_kom_add_accord_effect = { value = 2 }
+		}
+	}
+
+	# Denounce Trebizond's dealings with foreigners in public.
+	option = {
+		name = cc_byz_komnenoi.5.b
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 2
+				has_variable = cc_byz_kom_entry_hostility
+			}
+		}
+
+		c:TRE = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_slighted
+			}
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus2_tt
+			cc_byz_kom_add_pretext_effect = { value = 2 }
+		}
+	}
+
+	# Approach the suitor directly and come to an understanding.
+	option = {
+		name = cc_byz_komnenoi.5.c
+		trigger = { exists = scope:cc_kom_suitor }
+		ai_chance = { base = 30 }
+
+		scope:cc_kom_suitor = {
+			add_opinion = {
+				target = root
+				modifier = cc_byz_kom_suitor_courted
+			}
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_accord_plus1_tt
+			cc_byz_kom_add_accord_effect = { value = 1 }
+		}
+		custom_tooltip = {
+			text = cc_byz_kom_pretext_plus1_tt
+			cc_byz_kom_add_pretext_effect = { value = 1 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_kom_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .6  The settlement
+#############################################
+cc_byz_komnenoi.6 = {
+	type = country_event
+	title = cc_byz_komnenoi.6.title
+	desc = cc_byz_komnenoi.6.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		save_scope_as = cc_kom_emperor
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	# Propose the union. An AI Trebizond is settled by the roll here, with the odds shown;
+	# a human Trebizond is asked in .20.
+	option = {
+		name = cc_byz_komnenoi.6.a
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 2
+				var:cc_byz_kom_accord >= 6
+			}
+			modifier = {
+				factor = 0.3
+				var:cc_byz_kom_accord < 3
+			}
+		}
+
+		if = {
+			limit = { c:TRE = { is_ai = yes } }
+			random_list = {
+				# Acclamation: Trebizond annexed.
+				4 = {
+					modifier = {
+						factor = 2
+						var:cc_byz_kom_accord >= 4
+					}
+					modifier = {
+						factor = 2.5
+						var:cc_byz_kom_accord >= 6
+					}
+					modifier = {
+						factor = 2
+						var:cc_byz_kom_accord >= 8
+					}
+					modifier = {
+						factor = 1.5
+						var:cc_byz_kom_accord >= 10
+					}
+					modifier = {
+						factor = 0.5
+						is_ai = yes
+					}
+					custom_tooltip = cc_byz_kom_roll_acclamation_tt
+					hidden_effect = {
+						trigger_event_non_silently = { id = cc_byz_komnenoi.30 }
+					}
+				}
+				# Union: one emperor, two crowns.
+				30 = {
+					modifier = {
+						factor = 1.5
+						var:cc_byz_kom_accord >= 4
+					}
+					modifier = {
+						factor = 1.2
+						var:cc_byz_kom_accord >= 6
+					}
+					modifier = {
+						factor = 0.8
+						var:cc_byz_kom_accord >= 8
+					}
+					modifier = {
+						factor = 0.7
+						var:cc_byz_kom_accord >= 10
+					}
+					modifier = {
+						factor = 0.5
+						is_ai = yes
+					}
+					custom_tooltip = cc_byz_kom_roll_union_tt
+					hidden_effect = {
+						trigger_event_non_silently = { id = cc_byz_komnenoi.31 }
+					}
+				}
+				# Refusal.
+				66 = {
+					modifier = {
+						factor = 0.6
+						var:cc_byz_kom_accord >= 4
+					}
+					modifier = {
+						factor = 0.5
+						var:cc_byz_kom_accord >= 6
+					}
+					modifier = {
+						factor = 0.5
+						var:cc_byz_kom_accord >= 8
+					}
+					modifier = {
+						factor = 0.5
+						var:cc_byz_kom_accord >= 10
+					}
+					custom_tooltip = cc_byz_kom_roll_refused_tt
+					hidden_effect = {
+						trigger_event_non_silently = { id = cc_byz_komnenoi.32 }
+					}
+				}
+			}
+		}
+		else = {
+			custom_tooltip = cc_byz_kom_human_tre_decides_tt
+			hidden_effect = {
+				c:TRE = { trigger_event_non_silently = { id = cc_byz_komnenoi.20 } }
+			}
+		}
+	}
+
+	# Proclaim Trebizond's crown a usurpation and claim it by right.
+	option = {
+		name = cc_byz_komnenoi.6.b
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 2
+				var:cc_byz_kom_pretext >= 6
+			}
+			modifier = {
+				factor = 0.3
+				var:cc_byz_kom_pretext < 3
+			}
+		}
+
+		custom_tooltip = cc_byz_kom_pretext_outcome_tt
+		hidden_effect = {
+			trigger_event_non_silently = { id = cc_byz_komnenoi.40 }
+		}
+	}
+
+	# Let the question rest. Nothing is gained and nothing is broken.
+	option = {
+		name = cc_byz_komnenoi.6.c
+		ai_chance = { base = 10 }
+
+		set_variable = { name = cc_byz_mem_kom_let_rest  value = yes }
+		cc_byz_kom_close_effect = yes
+	}
+}
+
+
+#############################################
+# .20  Trebizond: the emperor's proposal (human Trebizond only)
+#############################################
+cc_byz_komnenoi.20 = {
+	type = country_event
+	title = cc_byz_komnenoi.20.title
+	desc = cc_byz_komnenoi.20.desc
+	outcome = neutral
+
+	trigger = {
+		exists = scope:cc_kom_emperor
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	# Accept. The archontes then decide between acclamation and union, weighted by the Accord
+	# Byzantium built.
+	option = {
+		name = cc_byz_komnenoi.20.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_kom_tre_accept_tt
+		hidden_effect = {
+			scope:cc_kom_emperor = {
+				trigger_event_non_silently = { id = cc_byz_komnenoi.21 }
+			}
+		}
+	}
+
+	# Refuse.
+	option = {
+		name = cc_byz_komnenoi.20.b
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_kom_tre_refuse_tt
+		hidden_effect = {
+			scope:cc_kom_emperor = {
+				trigger_event_non_silently = { id = cc_byz_komnenoi.32 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .21  Trebizond accepts
+#############################################
+cc_byz_komnenoi.21 = {
+	type = country_event
+	title = cc_byz_komnenoi.21.title
+	desc = cc_byz_komnenoi.21.desc
+	outcome = positive
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		country_exists = c:TRE
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	immediate = {
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	option = {
+		name = cc_byz_komnenoi.21.a
+
+		random_list = {
+			4 = {
+				modifier = {
+					factor = 2
+					var:cc_byz_kom_accord >= 4
+				}
+				modifier = {
+					factor = 2.5
+					var:cc_byz_kom_accord >= 6
+				}
+				modifier = {
+					factor = 2
+					var:cc_byz_kom_accord >= 8
+				}
+				modifier = {
+					factor = 1.5
+					var:cc_byz_kom_accord >= 10
+				}
+				custom_tooltip = cc_byz_kom_roll_acclamation_tt
+				hidden_effect = {
+					trigger_event_non_silently = { id = cc_byz_komnenoi.30 }
+				}
+			}
+			30 = {
+				modifier = {
+					factor = 1.5
+					var:cc_byz_kom_accord >= 4
+				}
+				modifier = {
+					factor = 1.2
+					var:cc_byz_kom_accord >= 6
+				}
+				modifier = {
+					factor = 0.8
+					var:cc_byz_kom_accord >= 8
+				}
+				modifier = {
+					factor = 0.7
+					var:cc_byz_kom_accord >= 10
+				}
+				custom_tooltip = cc_byz_kom_roll_union_tt
+				hidden_effect = {
+					trigger_event_non_silently = { id = cc_byz_komnenoi.31 }
+				}
+			}
+		}
+	}
+}
+
+
+#############################################
+# .30  Acclamation
+#############################################
+cc_byz_komnenoi.30 = {
+	type = country_event
+	title = cc_byz_komnenoi.30.title
+	desc = cc_byz_komnenoi.30.desc
+	outcome = positive
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		country_exists = c:TRE
+	}
+
+	illustration_tags = {
+		10 = exterior
+		10 = happy
+	}
+
+	immediate = {
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	option = {
+		name = cc_byz_komnenoi.30.a
+		cc_byz_kom_acclamation_effect = yes
+	}
+}
+
+
+#############################################
+# .31  One emperor, two crowns
+#############################################
+cc_byz_komnenoi.31 = {
+	type = country_event
+	title = cc_byz_komnenoi.31.title
+	desc = cc_byz_komnenoi.31.desc
+	outcome = positive
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		country_exists = c:TRE
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	immediate = {
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	option = {
+		name = cc_byz_komnenoi.31.a
+		if = {
+			limit = { c:TRE = { is_ai = no } }
+			hidden_effect = {
+				c:TRE = { trigger_event_non_silently = { id = cc_byz_komnenoi.50 } }
+			}
+		}
+		cc_byz_kom_union_effect = yes
+	}
+}
+
+
+#############################################
+# .32  Trebizond turns away
+#############################################
+cc_byz_komnenoi.32 = {
+	type = country_event
+	title = cc_byz_komnenoi.32.title
+	desc = cc_byz_komnenoi.32.desc
+	outcome = negative
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		country_exists = c:TRE
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	immediate = {
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	option = {
+		name = cc_byz_komnenoi.32.a
+		cc_byz_kom_turned_away_effect = yes
+	}
+}
+
+
+#############################################
+# .40  The pretext proclaimed
+#############################################
+cc_byz_komnenoi.40 = {
+	type = country_event
+	title = cc_byz_komnenoi.40.title
+	desc = cc_byz_komnenoi.40.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		country_exists = c:TRE
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	immediate = {
+		save_scope_as = cc_kom_emperor
+		c:TRE = { save_scope_as = cc_kom_tre }
+	}
+
+	option = {
+		name = cc_byz_komnenoi.40.a
+		hidden_effect = {
+			c:TRE = { trigger_event_non_silently = { id = cc_byz_komnenoi.51 } }
+		}
+		cc_byz_kom_pretext_effect = yes
+	}
+}
+
+
+#############################################
+# .50  Trebizond: under one crown (human Trebizond, notification)
+#############################################
+cc_byz_komnenoi.50 = {
+	type = country_event
+	title = cc_byz_komnenoi.50.title
+	desc = cc_byz_komnenoi.50.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_byz_komnenoi.50.a
+	}
+}
+
+
+#############################################
+# .51  Trebizond: the emperor's pretext (notification)
+#############################################
+cc_byz_komnenoi.51 = {
+	type = country_event
+	title = cc_byz_komnenoi.51.title
+	desc = cc_byz_komnenoi.51.desc
+	outcome = negative
+
+	trigger = {
+		exists = scope:cc_kom_emperor
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	option = {
+		name = cc_byz_komnenoi.51.a
+	}
+}
+
+
+#############################################
+# .80  Router (hidden)
+#############################################
+# Fired by cc_byz_kom_schedule_next_effect after each stage's delay. Checks the partner is
+# still valid and fires the stage named by cc_byz_kom_stage, or lapses the chain.
+cc_byz_komnenoi.80 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	outcome = neutral
+	hidden = yes
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+		has_variable = cc_byz_kom_stage
+	}
+
+	immediate = {
+		if = {
+			limit = { cc_byz_kom_partner_valid_trigger = no }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.90 }
+		}
+		else_if = {
+			limit = { var:cc_byz_kom_stage = 2 }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.2 }
+		}
+		else_if = {
+			limit = { var:cc_byz_kom_stage = 3 }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.3 }
+		}
+		else_if = {
+			limit = { var:cc_byz_kom_stage = 4 }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.4 }
+		}
+		else_if = {
+			limit = { var:cc_byz_kom_stage = 5 }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.5 }
+		}
+		else_if = {
+			limit = { var:cc_byz_kom_stage = 6 }
+			trigger_event_non_silently = { id = cc_byz_komnenoi.6 }
+		}
+	}
+}
+
+
+#############################################
+# .90  The question lapses
+#############################################
+cc_byz_komnenoi.90 = {
+	type = country_event
+	title = cc_byz_komnenoi.90.title
+	desc = cc_byz_komnenoi.90.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_kom_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_byz_komnenoi.90.a
+		set_variable = { name = cc_byz_mem_kom_lapsed  value = yes }
+		cc_byz_kom_close_effect = yes
+	}
+}

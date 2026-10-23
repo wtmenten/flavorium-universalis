@@ -1,0 +1,47 @@
+﻿# The Komnenian Question: values read outside the event file.
+#
+# REMEMBER: script values are cached. After editing, `reload script_values` in the console or
+# restart before testing.
+
+# Duration of the reunification CB granted by the pretext path: ten years, plus half the
+# pretext score. A pretext built over a decade keeps the claim open for up to fifteen.
+# Root = the Byzantine country.
+cc_byz_kom_cb_years = {
+	value = 10
+	if = {
+		limit = { has_variable = cc_byz_kom_pretext }
+		add = {
+			value = var:cc_byz_kom_pretext
+			divide = 2
+		}
+	}
+	round = yes
+}
+
+# Peace-table discounts. Read in peace_treaties/cc_byz_komnenoi_peace.txt, where scope:winner
+# is Byzantium. The pretext score survives the chain closing (cc_byz_kom_close_effect leaves
+# it in place) precisely so this can read it during the war that follows.
+#
+# Reunify: base 60, minus 3 per pretext point, so 30 at a full pretext.
+cc_byz_kom_reunify_discount = {
+	value = 0
+	if = {
+		limit = { scope:winner ?= { has_variable = cc_byz_kom_pretext } }
+		add = {
+			value = scope:winner.var:cc_byz_kom_pretext
+			multiply = 3
+		}
+	}
+}
+
+# Despotate (vassalise): base 35, minus 1.5 per point, so 20 at a full pretext.
+cc_byz_kom_despotate_discount = {
+	value = 0
+	if = {
+		limit = { scope:winner ?= { has_variable = cc_byz_kom_pretext } }
+		add = {
+			value = scope:winner.var:cc_byz_kom_pretext
+			multiply = 1.5
+		}
+	}
+}

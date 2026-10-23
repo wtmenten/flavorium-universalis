@@ -1,0 +1,29 @@
+﻿# The reunification of the Pontus. Granted only by the Komnenian Question (events/
+# cc_byz_komnenoi.txt): by the pretext path, or as the fallback when Trebizond turns the union
+# down. It is never created by the player directly.
+#
+# STRUCTURE COPIED FROM VANILLA cb_claim_throne (claim_throne.txt): create_visible and
+# create_enabled are always = no, so the CB exists only when add_casus_belli grants it, and
+# declare_enabled re-checks the target at the moment of declaration.
+#
+# WAR GOAL take_capital, the same goal cc_byz_cb_reduce_the_prefectures uses. The point of
+# the war is the crown in Trebizond, not a strip of coast. The two peace treaties that make
+# the war worth winning live in peace_treaties/cc_byz_komnenoi_peace.txt and are gated on this
+# CB through scope:war.
+cc_byz_cb_reunify_pontus = {
+	create_visible = {
+		always = no
+	}
+	create_enabled = {
+		always = no
+	}
+	declare_enabled = {
+		is_subject = no
+		scope:target = {
+			has_or_had_tag = TRE
+			is_subject = no
+		}
+	}
+
+	war_goal_type = take_capital
+}

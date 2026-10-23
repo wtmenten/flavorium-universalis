@@ -1,0 +1,35 @@
+﻿# Komnenian Question: the passive entrance.
+#
+# The vanilla hook (yearly_country_pulse) is declared in cc_byz_on_actions.txt. This file
+# defines only the custom on_action it points at.
+#
+# Only the ENTRANCE is here, behind the shared cc_byz_pulse_cd limiter like the other condition
+# pulses. Once open, the chain schedules itself through the router event cc_byz_komnenoi.80 and
+# never waits on the cooldown. See events/cc_byz_komnenoi.txt.
+#
+# AI IS CONSERVATIVE. An AI emperor only drifts into the question through the friendly
+# entrances (family, alliance). Hostility, peril and standing are player-only here; an AI can
+# still reach them through the decision, which its ai_will_do keeps rare.
+
+cc_byz_on_yearly_komnenoi = {
+	trigger = {
+		cc_byz_kom_can_open_trigger = yes
+		at_war = no
+		trigger_if = {
+			limit = { is_ai = yes }
+			OR = {
+				cc_byz_kom_entry_family_trigger = yes
+				cc_byz_kom_entry_alliance_trigger = yes
+			}
+		}
+		trigger_else = {
+			cc_byz_kom_any_entry_trigger = yes
+		}
+		# Shared rate limiter. See scripted_effects/cc_byz_pulse.txt.
+		NOT = { has_variable = cc_byz_pulse_cd }
+	}
+	random_events = {
+		100 = 0
+		10 = cc_byz_komnenoi.79
+	}
+}

@@ -1,0 +1,152 @@
+﻿# The Komnenian Question: who may open it, and on what footing.
+#
+# Every trigger here runs in BYZANTINE country scope (root = the emperor's country) and names
+# Trebizond as c:TRE. The chain is Byzantium-driven; Trebizond is never root in these.
+#
+# c:TRE ?= { } RATHER THAN A BARE c:TRE. Trebizond can stop existing at any point in a
+# campaign (conquered, annexed by someone else, or it formed Byzantium itself), and an unguarded
+# c:TRE read on a dead tag errors. ?= makes the block simply false instead.
+#
+# GUARDED READS. As everywhere in this submod: has_variable beside a var: does NOT stop the
+# var: being evaluated, because every trigger in a block is evaluated. trigger_if is the idiom
+# (vanilla character_interactions/banish_character.txt:9).
+
+
+# Trebizond is still a counterparty: independent, not already tied to someone else's crown, and
+# not at war with us. Read at the decision, at the passive entrance, and by the router before
+# every stage, so a chain that loses its partner mid-way lapses instead of stalling.
+cc_byz_kom_partner_valid_trigger = {
+	is_subject = no
+	# Every bare c:TRE read sits under this trigger_if, for the same reason as the guarded
+	# var: reads: a sibling country_exists does not stop the others being evaluated.
+	trigger_if = {
+		limit = { country_exists = c:TRE }
+		c:TRE = {
+			is_subject = no
+			# A Trebizond already inside some other union cannot be offered ours: force_union
+			# would merge the two unions and hand us a partner nobody negotiated with.
+			NOT = { exists = union }
+		}
+		NOT = { in_union_with = c:TRE }
+		NOT = { is_at_war_with = c:TRE }
+	}
+	trigger_else = { always = no }
+}
+
+
+# FAMILY. The ruler of Trebizond is of the emperor's own dynasty. The 1337 hook is Irene
+# Palaiologina, daughter of Andronikos III, whom vanilla flavor_tre.3 can put on the throne of
+# Trebizond in 1339-40 by poisoning her husband.
+cc_byz_kom_entry_family_trigger = {
+	trigger_if = {
+		limit = { ruler ?= { has_dynasty = yes } }
+		c:TRE ?= {
+			ruler ?= {
+				has_dynasty = yes
+				dynasty = root.ruler.dynasty
+			}
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# THE OLD ALLIANCE. The two courts start 1337 allied (setup 12_diplomacy.txt:407). A royal
+# marriage stands in for the alliance, since it is the same relationship by other means.
+cc_byz_kom_entry_alliance_trigger = {
+	trigger_if = {
+		limit = { country_exists = c:TRE }
+		OR = {
+			has_mutual_scripted_relation = {
+				type = relation_type:alliance
+				target = c:TRE
+			}
+			has_royal_marriage_with = c:TRE
+		}
+		c:TRE = {
+			opinion = {
+				target = root
+				value >= 25
+			}
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# IMPERIAL STANDING. An empire that is visibly the senior Greek court. Vanilla reads
+# diplomatic_reputation through modifier: and treats > 10 as high (treaty_of_tordesillas), so
+# 5 is a modest bar.
+cc_byz_kom_entry_standing_trigger = {
+	modifier:diplomatic_reputation >= 5
+	prestige >= 50
+}
+
+# HOSTILITY. Rivalry or open dislike in either direction.
+cc_byz_kom_entry_hostility_trigger = {
+	trigger_if = {
+		limit = { country_exists = c:TRE }
+		OR = {
+			is_rival_of = c:TRE
+			c:TRE = { is_rival_of = root }
+			is_enemy_of = c:TRE
+			c:TRE = {
+				opinion = {
+					target = root
+					value <= -50
+				}
+			}
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# PONTIC PERIL. Trebizond is weak or in trouble: a regency, an unstable court, or a war it is
+# fighting without us. Partner validity already excludes a war against us.
+cc_byz_kom_entry_peril_trigger = {
+	c:TRE ?= {
+		OR = {
+			has_regent = yes
+			stability < 0
+			at_war = yes
+		}
+	}
+}
+
+cc_byz_kom_any_entry_trigger = {
+	OR = {
+		cc_byz_kom_entry_family_trigger = yes
+		cc_byz_kom_entry_alliance_trigger = yes
+		cc_byz_kom_entry_standing_trigger = yes
+		cc_byz_kom_entry_hostility_trigger = yes
+		cc_byz_kom_entry_peril_trigger = yes
+	}
+}
+
+# The chain can be opened at all: the right country, never opened before, partner valid.
+# Shared by the decision's potential and the passive pulse.
+cc_byz_kom_can_open_trigger = {
+	has_dlc = "d008_fate_of_the_phoenix"
+	has_or_had_tag = BYZ
+	NOT = { has_variable = cc_byz_kom_active }
+	NOT = { has_variable = cc_byz_kom_done }
+	cc_byz_kom_partner_valid_trigger = yes
+}
+
+# Mission completion: Trebizond no longer stands as a second emperor. Used by
+# cc_byz_task_no_second_emperor. A tributary still keeps its own crown, so it does not count.
+cc_byz_kom_no_second_emperor_trigger = {
+	OR = {
+		NOT = { country_exists = c:TRE }
+		c:TRE ?= {
+			is_subject_of = root
+			NOT = { is_subject_type = tributary }
+		}
+		trigger_if = {
+			limit = { country_exists = c:TRE }
+			in_union_with = c:TRE
+			union ?= {
+				country_is_senior_partner = { country = root }
+			}
+		}
+		trigger_else = { always = no }
+	}
+}

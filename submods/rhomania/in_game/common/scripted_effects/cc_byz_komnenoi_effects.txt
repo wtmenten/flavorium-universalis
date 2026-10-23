@@ -1,0 +1,298 @@
+﻿# The Komnenian Question: state, scheduling and outcomes.
+#
+# All effects run in BYZANTINE country scope unless stated. Trebizond is c:TRE.
+#
+# State on the Byzantine country:
+#   cc_byz_kom_active     the chain is running
+#   cc_byz_kom_done       the chain has resolved (once per campaign; nothing clears this)
+#   cc_byz_kom_stage      1..6, the stage most recently fired. cc_byz_kom_schedule_next_effect
+#                         increments it before scheduling the router, so the router reads the
+#                         stage it is about to fire.
+#   cc_byz_kom_accord     0..10, the union path. Weights the climax roll.
+#   cc_byz_kom_pretext    0..10, the war path. CB duration and peace-table discount.
+#   cc_byz_kom_entry_*    which entrances held at opening (desc variants, family shortcut)
+#
+# Memory variables, set on resolution:
+#   cc_byz_mem_kom_acclaimed    Trebizond was annexed by acclamation
+#   cc_byz_mem_kom_union        the crowns were joined in a personal union
+#   cc_byz_mem_kom_spurned      Trebizond turned the offer down
+#   cc_byz_mem_kom_pretext      the pretext was proclaimed
+#   cc_byz_mem_kom_let_rest     the emperor let the question drop
+#   cc_byz_mem_kom_lapsed       the partner ceased to be valid mid-chain
+
+
+# Opening. Sets every entrance flag that holds, stacks their starting bonuses, then fires .1.
+# Called by the decision and by the passive pulse, so both routes start identically.
+cc_byz_kom_open_effect = {
+	set_variable = { name = cc_byz_kom_active  value = yes }
+	set_variable = { name = cc_byz_kom_stage  value = 1 }
+	set_variable = { name = cc_byz_kom_accord  value = 0 }
+	set_variable = { name = cc_byz_kom_pretext  value = 0 }
+
+	if = {
+		limit = { cc_byz_kom_entry_family_trigger = yes }
+		set_variable = { name = cc_byz_kom_entry_family  value = yes }
+		change_variable = { name = cc_byz_kom_accord  add = 4 }
+	}
+	if = {
+		limit = { cc_byz_kom_entry_alliance_trigger = yes }
+		set_variable = { name = cc_byz_kom_entry_alliance  value = yes }
+		change_variable = { name = cc_byz_kom_accord  add = 2 }
+	}
+	if = {
+		limit = { cc_byz_kom_entry_standing_trigger = yes }
+		set_variable = { name = cc_byz_kom_entry_standing  value = yes }
+		change_variable = { name = cc_byz_kom_accord  add = 1 }
+	}
+	if = {
+		limit = { cc_byz_kom_entry_hostility_trigger = yes }
+		set_variable = { name = cc_byz_kom_entry_hostility  value = yes }
+		change_variable = { name = cc_byz_kom_pretext  add = 3 }
+	}
+	if = {
+		limit = { cc_byz_kom_entry_peril_trigger = yes }
+		set_variable = { name = cc_byz_kom_entry_peril  value = yes }
+		change_variable = { name = cc_byz_kom_accord  add = 1 }
+		change_variable = { name = cc_byz_kom_pretext  add = 1 }
+	}
+	clamp_variable = { name = cc_byz_kom_accord  min = 0  max = 10 }
+	clamp_variable = { name = cc_byz_kom_pretext  min = 0  max = 10 }
+
+	trigger_event_non_silently = { id = cc_byz_komnenoi.1 }
+}
+
+
+# Score changes. Always clamp, so no option can push a score outside 0..10 whatever order the
+# player takes them in.
+cc_byz_kom_add_accord_effect = {
+	change_variable = { name = cc_byz_kom_accord  add = $value$ }
+	clamp_variable = { name = cc_byz_kom_accord  min = 0  max = 10 }
+}
+
+cc_byz_kom_add_pretext_effect = {
+	change_variable = { name = cc_byz_kom_pretext  add = $value$ }
+	clamp_variable = { name = cc_byz_kom_pretext  min = 0  max = 10 }
+}
+
+
+# Advance to the next stage and schedule the router. Called from the after = { } block of
+# every stage event. The router (.80) checks validity first and only then fires the stage, so
+# a partner that disappears during the wait produces a lapse rather than a dead chain.
+cc_byz_kom_schedule_next_effect = {
+	change_variable = { name = cc_byz_kom_stage  add = 1 }
+	trigger_event_silently = { id = cc_byz_komnenoi.80  years = { $min$ $max$ } }
+}
+
+
+# Close the chain. Leaves the scores in place for anything that wants to read them later, and
+# sets the done flag that keeps the decision and the pulse from ever reopening it.
+cc_byz_kom_close_effect = {
+	remove_variable = cc_byz_kom_active
+	remove_variable = cc_byz_kom_stage
+	set_variable = { name = cc_byz_kom_done  value = yes }
+}
+
+
+# Marriage candidates for stage .2. Trebizond's unmarried ruler, or failing that its unmarried
+# heir; then a Byzantine of the opposite sex from the emperor's own household: the emperor
+# himself if he is free, otherwise one of his children. Saves cc_kom_tre_spouse and
+# cc_kom_byz_spouse; the option checks both exist.
+cc_byz_kom_save_marriage_candidates_effect = {
+	c:TRE ?= {
+		if = {
+			limit = {
+				ruler ?= {
+					is_adult = yes
+					is_eligible_for_marriage = yes
+				}
+			}
+			ruler = { save_scope_as = cc_kom_tre_spouse }
+		}
+		else_if = {
+			limit = {
+				heir ?= {
+					is_adult = yes
+					is_eligible_for_marriage = yes
+				}
+			}
+			heir = { save_scope_as = cc_kom_tre_spouse }
+		}
+	}
+	if = {
+		limit = { exists = scope:cc_kom_tre_spouse }
+		if = {
+			limit = { scope:cc_kom_tre_spouse = { is_female = yes } }
+			cc_byz_kom_save_byz_spouse_effect = { is_female = no }
+		}
+		else = {
+			cc_byz_kom_save_byz_spouse_effect = { is_female = yes }
+		}
+	}
+}
+
+cc_byz_kom_save_byz_spouse_effect = {
+	if = {
+		limit = {
+			ruler ?= {
+				is_female = $is_female$
+				is_adult = yes
+				is_eligible_for_marriage = yes
+			}
+		}
+		ruler = { save_scope_as = cc_kom_byz_spouse }
+	}
+	else = {
+		ruler ?= {
+			random_child = {
+				limit = {
+					is_alive = yes
+					is_female = $is_female$
+					is_adult = yes
+					is_eligible_for_marriage = yes
+					owner = root
+				}
+				save_scope_as = cc_kom_byz_spouse
+			}
+		}
+	}
+}
+
+
+# Breaking the old alliance, from whichever direction. Used by every hostile resolution.
+cc_byz_kom_break_alliance_effect = {
+	if = {
+		limit = {
+			has_mutual_scripted_relation = {
+				type = relation_type:alliance
+				target = c:TRE
+			}
+		}
+		remove_relation = {
+			first = root
+			second = c:TRE
+			type = relation_type:alliance
+		}
+	}
+}
+
+
+# OUTCOME: acclamation. Trebizond is annexed outright. The capstone of the union path.
+cc_byz_kom_acclamation_effect = {
+	set_variable = { name = cc_byz_mem_kom_acclaimed  value = yes }
+	add_prestige = prestige_severe_bonus
+	add_legitimacy = legitimacy_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_kom_acclaimed
+		years = 25
+		mode = add_and_extend
+	}
+	annex_country = {
+		country = c:TRE
+		reason = Diplomatic
+	}
+	cc_byz_kom_close_effect = yes
+}
+
+# OUTCOME: union. One emperor, two crowns. force_union keeps the forcing country's ruler on a
+# merge (effect.md: force_union), and set_senior_partner follows vanilla's
+# assume_union_senority treaty so Byzantium is senior whoever Trebizond's ruler was.
+cc_byz_kom_union_effect = {
+	set_variable = { name = cc_byz_mem_kom_union  value = yes }
+	add_prestige = prestige_mild_bonus
+	add_country_modifier = {
+		modifier = cc_byz_kom_crowns_joined
+		years = 20
+		mode = add_and_extend
+	}
+	force_union = c:TRE
+	set_senior_partner = yes
+	cc_byz_kom_close_effect = yes
+}
+
+# OUTCOME: Trebizond turns away. The alliance ends, both courts resent it, Trebizond looks for
+# another friend, and Byzantium keeps the war route as a fallback.
+cc_byz_kom_turned_away_effect = {
+	set_variable = { name = cc_byz_mem_kom_spurned  value = yes }
+	cc_byz_kom_break_alliance_effect = yes
+	add_opinion = {
+		target = c:TRE
+		modifier = cc_byz_kom_spurned
+	}
+	c:TRE = {
+		save_scope_as = cc_kom_tre
+		add_opinion = {
+			target = root
+			modifier = cc_byz_kom_spurned
+		}
+		add_country_modifier = {
+			modifier = cc_byz_kom_turned_away
+			years = 20
+			mode = add_and_extend
+		}
+		# A protector. AI only, because create_relation imposes the alliance without asking,
+		# and a human should never wake up allied to Trebizond by script. Nearest friendly
+		# court that is not us and not already at odds with Trebizond.
+		ordered_country = {
+			limit = {
+				is_ai = yes
+				NOT = { this = root }
+				NOT = { this = scope:cc_kom_tre }
+				is_subject = no
+				is_neighbor_of_country_or_across_one_seazone = scope:cc_kom_tre
+				NOT = { is_at_war_with = scope:cc_kom_tre }
+				NOT = { is_rival_of = scope:cc_kom_tre }
+				NOT = {
+					has_mutual_scripted_relation = {
+						type = relation_type:alliance
+						target = scope:cc_kom_tre
+					}
+				}
+			}
+			order_by = "opinion(scope:cc_kom_tre)"
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_kom_protector
+		}
+		if = {
+			limit = { exists = scope:cc_kom_protector }
+			create_relation = {
+				first = this
+				second = scope:cc_kom_protector
+				type = relation_type:alliance
+			}
+		}
+	}
+	cc_byz_kom_grant_cb_effect = { years = 15 }
+	cc_byz_kom_close_effect = yes
+}
+
+# OUTCOME: the pretext proclaimed. The CB runs ten years plus half the pretext score, and a
+# pretext of six or more carries a temporary war footing.
+cc_byz_kom_pretext_effect = {
+	set_variable = { name = cc_byz_mem_kom_pretext  value = yes }
+	cc_byz_kom_break_alliance_effect = yes
+	c:TRE = {
+		add_opinion = {
+			target = root
+			modifier = cc_byz_kom_pretext_proclaimed
+		}
+	}
+	cc_byz_kom_grant_cb_effect = { years = cc_byz_kom_cb_years }
+	if = {
+		limit = { var:cc_byz_kom_pretext >= 6 }
+		add_country_modifier = {
+			modifier = cc_byz_kom_just_war
+			years = 10
+			mode = add_and_extend
+		}
+	}
+	cc_byz_kom_close_effect = yes
+}
+
+cc_byz_kom_grant_cb_effect = {
+	add_casus_belli = {
+		target = c:TRE
+		type = casus_belli:cc_byz_cb_reunify_pontus
+		years = $years$
+	}
+}

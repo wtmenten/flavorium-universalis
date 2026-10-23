@@ -1,0 +1,58 @@
+﻿# The Komnenian Question, opened deliberately.
+#
+# THE MOD'S FIRST DECISION. Format follows vanilla 1.4 (in_game/common/decisions/
+# flavor_decisions_byz.txt): decision_category, tags, potential/allow, inline options whose
+# effects sit in an effect = { } block. There is no price block on decisions; costs are paid
+# inside the effect and gated in allow, the way coal_prospecting.txt does it.
+#
+# The passive route (on_action/cc_byz_komnenoi.txt) opens the same chain without a decision;
+# both call cc_byz_kom_open_effect. The decision needs no entrance condition to be true: an
+# emperor can raise the question cold, but without an entrance it starts with both scores at 0.
+
+cc_byz_kom_raise_the_question_decision = {
+	decision_category = country_specific_decisions
+	only_once = yes
+
+	tags = { BYZ ROM }
+
+	potential = {
+		cc_byz_kom_can_open_trigger = yes
+	}
+
+	allow = {
+		political_influence >= 25
+		at_war = no
+	}
+
+	ai_will_do = {
+		value = 5
+		# Conservative AI. A cold start with no entrance is not worth it.
+		if = {
+			limit = { cc_byz_kom_any_entry_trigger = no }
+			value = 0
+		}
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	illustration_scope = {
+		ruler_or_regent ?= {
+			save_scope_as = target_character
+		}
+		c:TRE ?= {
+			save_scope_as = cc_kom_tre
+		}
+	}
+
+	option = {
+		name = cc_byz_kom_raise_the_question_decision.a
+		ai_chance = { value = 100 }
+		effect = {
+			add_political_influence = -25
+			cc_byz_kom_open_effect = yes
+		}
+	}
+}

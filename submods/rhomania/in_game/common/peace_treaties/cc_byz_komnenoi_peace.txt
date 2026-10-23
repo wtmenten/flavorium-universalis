@@ -1,0 +1,99 @@
+﻿# Ending the war for the Pontus. Both treaties are only offered in a war fought on
+# cc_byz_cb_reunify_pontus, by Byzantium, against Trebizond.
+#
+# PRICED BY THE PRETEXT. The base costs are deliberately ordinary, and the discount comes from
+# cc_byz_kom_pretext, which the Komnenian Question built up before the war. An emperor who spent
+# a decade preparing the ground pays half price; one who stumbled into the fallback CB with no
+# pretext pays close to the normal rate. See script_values/cc_byz_komnenoi_values.txt.
+#
+# potential runs with scope:winner, scope:loser and scope:war (peace_treaties/readme.txt:3);
+# cost may read scope:winner (readme.txt:53).
+
+# Annex Trebizond outright.
+cc_byz_kom_reunify = {
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 60
+		}
+		subtract = {
+			desc = "cc_byz_kom_pretext_discount_desc"
+			value = cc_byz_kom_reunify_discount
+		}
+	}
+
+	potential = {
+		scope:war = {
+			casus_belli ?= casus_belli:cc_byz_cb_reunify_pontus
+		}
+		scope:winner = {
+			has_or_had_tag = BYZ
+		}
+		scope:loser = {
+			has_or_had_tag = TRE
+		}
+	}
+
+	effect = {
+		custom_tooltip = {
+			text = cc_byz_kom_reunify_tt
+			annex_country = {
+				country = scope:loser
+			}
+		}
+		scope:winner = {
+			set_variable = { name = cc_byz_mem_kom_reunified_by_war  value = yes }
+		}
+	}
+
+	ai_desire = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 40
+		}
+	}
+}
+
+# Make Trebizond a vassal: the Despotate of the Pontus. Cheaper, and enough to complete
+# cc_byz_task_no_second_emperor.
+cc_byz_kom_despotate = {
+	cost = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 35
+		}
+		subtract = {
+			desc = "cc_byz_kom_pretext_discount_desc"
+			value = cc_byz_kom_despotate_discount
+		}
+	}
+
+	potential = {
+		scope:war = {
+			casus_belli ?= casus_belli:cc_byz_cb_reunify_pontus
+		}
+		scope:winner = {
+			has_or_had_tag = BYZ
+		}
+		scope:loser = {
+			has_or_had_tag = TRE
+			is_subject = no
+		}
+	}
+
+	effect = {
+		scope:loser = {
+			make_subject_of = {
+				target = scope:winner
+				type = subject_type:vassal
+			}
+		}
+	}
+
+	ai_desire = {
+		add = {
+			desc = "DIPLOREASON_BASE"
+			value = 20
+		}
+	}
+}

@@ -792,7 +792,15 @@ cc_byz_renovatio_campaign = {
 	cc_byz_task_no_second_emperor = {
 		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_roman_title }
-		enabled = { NOT = { country_exists = c:TRE } }
+		# Trebizond gone, a non-tributary subject of ours, or our junior union partner. The
+		# Komnenian Question (events/cc_byz_komnenoi.txt) produces the last two; a tributary
+		# keeps its own crown and does not count.
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_kom_no_second_emperor_tt
+				cc_byz_kom_no_second_emperor_trigger = yes
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus

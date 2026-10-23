@@ -246,6 +246,36 @@ Repudiation is a legitimate ending rather than a failure state. It restores your
 
 ---
 
+## The other emperor
+
+Since 1204 two courts have called their ruler Emperor of the Romans: Constantinople, and the Grand Komnenoi in Trebizond. Neither vanilla nor earlier versions of Rhomania gave Byzantium a way to settle that other than an ordinary war. **The Komnenian Question** (new in 0.4) is a chain that runs for about a decade and ends in a union of the crowns, an annexation, or a claim to Trebizond's throne.
+
+It opens in one of two ways. A Byzantine player can take the **Komnenian Question** decision for 25 political influence, or the chain can start by itself when the two courts are already in a relationship that makes the question urgent. Five such conditions are checked, and every one that holds adds to the starting position:
+
+- **Family:** Trebizond's ruler is of the emperor's own dynasty. In 1337 this is a live possibility, because Trebizond's queen is Irene Palaiologina, daughter of Andronikos III, and a vanilla event can put her on the throne in 1339.
+- **Alliance:** the two courts are allied or joined by marriage, and Trebizond thinks well of us. They start the game allied.
+- **Standing:** high diplomatic reputation and prestige.
+- **Hostility:** rivalry, enmity, or open dislike in either direction.
+- **Peril:** Trebizond is under a regency, unstable, or fighting someone else.
+
+Two scores track the chain. **Accord** is the case for a union; **Pretext** is the case for taking the crown by force. Every choice in the chain moves one or both, and the option tooltips say by how much. The first four conditions favour Accord, hostility favours Pretext, and peril adds a little to each.
+
+Five stages follow at intervals of one to three years. Envoys go out. The Pontic court is worked on with gifts, a marriage between the two houses, letters from the Patriarch, or a party built at court. Trebizond's Turkmen frontier needs help, which can be sent, paid for, or withheld. The question of titles comes up, and the Despot title is the recognised middle position between emperor and governor. Then other courts start bidding for Trebizond themselves. A family entrance unlocks a shortcut at the titles stage that settles it as a family matter and skips the rival suitors.
+
+At the settlement there are three choices:
+
+1. **Propose the union.** If Trebizond is AI, a roll decides it and the tooltip shows the odds. At low Accord a refusal is the likely result; at full Accord the archontes are more likely to **acclaim** the emperor outright, which annexes Trebizond, than to settle for a **personal union** with Byzantium as senior partner. If Trebizond is a human player, they choose whether to accept, and Accord then decides between acclamation and union.
+2. **Declare the crown a usurpation.** This grants **Reunify the Pontus**, a casus belli against Trebizond that lasts ten years plus half the Pretext score. At the peace table it offers annexation or a cheaper vassal **Despotate of the Pontus**, and both are discounted by Pretext.
+3. **Let the question rest.** Nothing is gained and nothing is broken.
+
+A refusal is not a dead end. The alliance ends, both courts take an opinion penalty, Trebizond looks for a protector among its neighbours, and Byzantium gets the same casus belli for fifteen years. The chain runs once per campaign. If Trebizond stops existing or becomes someone else's subject partway through, it lapses.
+
+AI Byzantium can run the chain, but more conservatively. It only opens the chain by itself through the friendly entrances, and its odds of union or acclamation at the settlement are halved, so Trebizond survives in most games where Byzantium is not the player.
+
+The **No Second Emperor** mission task now completes when Trebizond is our subject (other than a tributary) or our junior partner in a union, as well as when it no longer exists.
+
+---
+
 ## Bureaucracies, and what funding them means
 
 The eleven Byzantine bureaucracies are now assigned to the Taxis/Dynatoi axis, so what you fund shapes what your state becomes. The bureaux that govern around the magnates drift you toward Taxis; the ones that govern through them drift you toward Dynatoi.
