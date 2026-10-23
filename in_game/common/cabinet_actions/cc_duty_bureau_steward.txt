@@ -88,7 +88,11 @@ cc_duty_bureau_steward = {
 		scope:actor = {
 			# CLEAR FIRST, ALWAYS. See the note above: without this the per-type variables are
 			# write-only and every bureau the player has ever stewarded stays discounted.
-			cc_clear_bureau_steward_effect = yes
+			# Shown as one line: the clear removes every bureau's steward modifiers.
+			custom_tooltip = {
+				text = cc_bureau_steward_tt_clear
+				hidden_effect = { cc_clear_bureau_steward_effect = yes }
+			}
 
 			if = {
 				limit = { exists = scope:target_bureaucracy }
@@ -104,7 +108,10 @@ cc_duty_bureau_steward = {
 
 	on_deactivate = {
 		scope:actor = {
-			cc_clear_bureau_steward_effect = yes
+			custom_tooltip = {
+				text = cc_bureau_steward_tt_clear
+				hidden_effect = { cc_clear_bureau_steward_effect = yes }
+			}
 			remove_variable = cc_duty_bureau_steward_invalid
 		}
 	}
