@@ -154,11 +154,43 @@ body.nav-open .sidebar-overlay{display:block}
 /* ----- dev diary figures ----- */
 .content figure{margin:18px 0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
 .content figure a{display:block}
-.content figure img{display:block;width:100%;height:auto}
+.content figure img{display:block;width:100%;height:auto;max-height:760px;object-fit:contain;background:#0f1116}
 .content figcaption{padding:8px 14px;font-size:12.5px;color:var(--text-mid);border-top:1px solid var(--card-border)}
 .fig-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}
 .fig-row figure{margin:0}
 @media(max-width:680px){.fig-row{grid-template-columns:1fr}}
+/* ----- dev diary layout: wider on wide screens, prose kept to a readable measure ----- */
+@media(min-width:1500px){.content{max-width:1320px}}
+.content>p,.content>ul,.content>blockquote,.h3-group>p,.h3-group>ul,.dd-split>div>p,.dd-split>div>ul,.dd-tabs>section>p,.dd-tabs>section>ul,.dd-more>p,.dd-more>ul{max-width:78ch}
+/* cards side by side */
+.dd-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:16px 0 18px}
+.dd-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:14px 16px 12px;font-size:14px;line-height:1.55}
+.dd-card p:last-child,.dd-card ul:last-child{margin-bottom:0}
+.dd-card:nth-child(5n+1){--c:var(--gold)}.dd-card:nth-child(5n+2){--c:var(--adm)}.dd-card:nth-child(5n+3){--c:var(--dip)}.dd-card:nth-child(5n+4){--c:var(--mil)}.dd-card:nth-child(5n){--c:var(--purple)}
+.dd-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:var(--c,var(--gold));padding-bottom:7px;margin-bottom:9px;position:relative}
+.dd-eyebrow::after{content:'';position:absolute;left:0;bottom:0;width:28px;height:2px;border-radius:2px;background:var(--c,var(--gold))}
+/* text beside a figure */
+.dd-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,42%);gap:24px;align-items:start;margin:8px 0 18px}
+.dd-split>figure{margin:4px 0 0;position:sticky;top:66px}
+@media(max-width:1100px){.dd-split{grid-template-columns:1fr}.dd-split>figure{position:static}}
+/* tabs */
+.dd-tabs{margin:18px 0 20px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
+.dd-tabbar{display:flex;flex-wrap:wrap;gap:2px;padding:6px 8px 0;background:var(--panel-bg);border-bottom:1px solid var(--card-border)}
+.dd-tab{appearance:none;background:none;border:none;color:var(--text-mid);font:inherit;font-size:12.5px;font-weight:600;padding:8px 12px 9px;cursor:pointer;position:relative}
+.dd-tab:hover{color:var(--text)}
+.dd-tab[aria-selected="true"]{color:var(--gold)}
+.dd-tab[aria-selected="true"]::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:2px;background:var(--gold)}
+.dd-tab:focus-visible{outline:2px solid var(--adm);outline-offset:-2px}
+.dd-tabs>section{padding:14px 18px 6px}
+.dd-tabs:not(.js)>section::before{content:attr(data-tab);display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:var(--gold);margin-bottom:8px}
+.dd-tabs:not(.js)>section+section{border-top:1px solid var(--card-border)}
+/* optional detail */
+.dd-more{margin:4px 0 14px}
+.dd-more>summary{cursor:pointer;color:var(--adm);font-size:13px;font-weight:600;list-style:none;display:inline-block}
+.dd-more>summary::-webkit-details-marker{display:none}
+.dd-more>summary::before{content:'\25B8';display:inline-block;margin-right:6px;transition:transform .12s}
+.dd-more[open]>summary::before{transform:rotate(90deg)}
+.dd-more[open]>summary{margin-bottom:8px}
 /* ----- diary entry byline (per-diary pages) ----- */
 .diary-byline{color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:-2px 0 18px}
 /* ----- dev diary index cards (landing page) ----- */
@@ -208,9 +240,6 @@ body.nav-open .sidebar-overlay{display:block}
   <div class="nav-sec" data-sec="3">
     <a class="nav-h2" href="#schools-of-thought"><span class="nav-h2-dot"></span>Schools of thought</a>
     <div class="nav-sub">
-      <a class="nav-h3" href="#seats-kinds-and-curricula-new-in-0-4">Seats, kinds and curricula (new in 0.4)</a>
-      <a class="nav-h3" href="#quality-and-renown-new-in-0-4">Quality and renown (new in 0.4)</a>
-      <a class="nav-h3" href="#projects-and-the-rector-new-in-0-4">Projects and the Rector (new in 0.4)</a>
     </div>
   </div>
   <div class="nav-sec" data-sec="4">
@@ -226,15 +255,19 @@ body.nav-open .sidebar-overlay{display:block}
   <div class="nav-sec" data-sec="6">
     <a class="nav-h2" href="#the-household"><span class="nav-h2-dot"></span>The household</a>
     <div class="nav-sub">
-      <a class="nav-h3" href="#cards-tenure-and-events-new-in-0-4">Cards, tenure and events (new in 0.4)</a>
     </div>
   </div>
   <div class="nav-sec" data-sec="7">
-    <a class="nav-h2" href="#running-out-of-road"><span class="nav-h2-dot"></span>Running out of road</a>
+    <a class="nav-h2" href="#sending-a-minister-away"><span class="nav-h2-dot"></span>Sending a minister away</a>
     <div class="nav-sub">
     </div>
   </div>
   <div class="nav-sec" data-sec="8">
+    <a class="nav-h2" href="#running-out-of-road"><span class="nav-h2-dot"></span>Running out of road</a>
+    <div class="nav-sub">
+    </div>
+  </div>
+  <div class="nav-sec" data-sec="9">
     <a class="nav-h2" href="#switching-it-off"><span class="nav-h2-dot"></span>Switching it off</a>
     <div class="nav-sub">
     </div>
@@ -258,8 +291,16 @@ body.nav-open .sidebar-overlay{display:block}
 <h2 id="two-numbers-and-why-they-are-different" data-sec="0">Two numbers, and why they are different</h2>
 <p>Every minister now earns experience in three separate tracks: administration, diplomacy and warfare. It comes from the duties you assign them, the years they serve, and the wars, laws and royal marriages the realm carries through while they are in office.</p>
 <p>Out of that come two different things, and keeping them apart is the whole design.</p>
-<p><strong>Seniority</strong> is a level from 1 to 10, drawn from total experience across all three tracks. It is a measure of what someone has been through. It grants a growing bonus to how effectively they work, and it gates the things that need standing rather than skill: founding an institution, taking a pupil, presiding over an examination.</p>
-<p><strong>Specialisation</strong> is a tier from 0 to 3 in each track separately, drawn from that track's own experience. It is a measure of what someone has actually learned to do, and it is what decides which traits are within reach.</p>
+<div class="dd-cols">
+<div class="dd-card">
+<div class="dd-eyebrow">Seniority</div>
+<p>A level from 1 to 10, drawn from total experience across all three tracks. It is a measure of what someone has been through. It grants a growing bonus to how effectively they work, and it gates the things that need standing rather than skill: founding an institution, taking a pupil, presiding over an examination.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Specialisation</div>
+<p>A tier from 0 to 3 in each track separately, drawn from that track's own experience. It is a measure of what someone has actually learned to do, and it is what decides which traits are within reach.</p>
+</div>
+</div>
 <p>The two come apart constantly. A minister can be very senior and still be a tier 0 soldier, because thirty years in the treasury teaches you nothing about supply. That minister is worth listening to and worth keeping, and you still should not put them in charge of the army.</p>
 <hr>
 <h2 id="careers-not-chains" data-sec="1">Careers, not chains</h2>
@@ -285,74 +326,148 @@ body.nav-open .sidebar-overlay{display:block}
 <hr>
 <h2 id="spending-money-on-people" data-sec="2">Spending money on people</h2>
 <p>Four things you can pay for, all of them on the Court panel or a minister's own interactions.</p>
-<p><strong>Postings.</strong> Send someone to the chancery, on the embassy circuit, or to the staff college. This is a secondment, not a purchase: the minister leaves, they are unavailable while they are gone, and the experience arrives with them when they return. The embassy circuit takes about a year because it is the one that involves actually travelling.</p>
+<div class="dd-cols">
+<div class="dd-card">
+<div class="dd-eyebrow">Postings</div>
+<p>Send someone to the chancery, on the embassy circuit, or to the staff college. This is a secondment, not a purchase: the minister leaves, they are unavailable while they are gone, and the experience arrives with them when they return. The embassy circuit takes about a year because it is the one that involves actually travelling.</p>
 <p>They come back having done well, ordinarily, or badly. An accomplished minister gets more out of a posting and flounders less often, so training compounds on talent rather than levelling everyone out.</p>
-<p><strong>Proteges.</strong> Take up to three people outside the cabinet into the crown's care. They accumulate experience slowly on their own, but they can be trained, mentored and enrolled exactly like a serving minister, which means you can have a successor ready before a seat opens instead of appointing whoever is standing nearby. The nobility does not care for the crown noticing people it has not vouched for.</p>
-<p><strong>Mentorship.</strong> Put a senior minister's time at a junior's disposal for a decade. The student gains experience each year in whatever their mentor is strongest at, which makes this a way of steering a career rather than merely hurrying one. What was taught outlasts the teacher.</p>
-<p><strong>Court examinations.</strong> Sealed questions, answers read aloud, and a good deal of quiet reputational damage done in a single afternoon. Everyone who sits it learns something. One of them does conspicuously better than anyone expected, and it will not be the person presiding.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Proteges</div>
+<p>Take up to three people outside the cabinet into the crown's care. They accumulate experience slowly on their own, but they can be trained, mentored and enrolled exactly like a serving minister, which means you can have a successor ready before a seat opens instead of appointing whoever is standing nearby. The nobility does not care for the crown noticing people it has not vouched for.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Mentorship</div>
+<p>Put a senior minister's time at a junior's disposal for a decade. The student gains experience each year in whatever their mentor is strongest at, which makes this a way of steering a career rather than merely hurrying one. What was taught outlasts the teacher.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Court examinations</div>
+<p>Sealed questions, answers read aloud, and a good deal of quiet reputational damage done in a single afternoon. Everyone who sits it learns something. One of them does conspicuously better than anyone expected, and it will not be the person presiding.</p>
+</div>
+</div>
 <hr>
 <h2 id="schools-of-thought" data-sec="3">Schools of thought</h2>
+<div class="dd-split">
+<div>
 <p>A school is a standing institution. Its founder's own discipline becomes the school's, and everyone enrolled thereafter grows in that discipline every year, in office or not. It keeps teaching after the founder is dead, which is the difference between an institution and a reputation.</p>
 <p>A realm may hold three at most, and they are a century apart by design. The first needs a university in your capital. The second needs the Scholarly Orders advance. The third needs Enlightened Administration.</p>
 <p>This is also what finally makes a protege worth having. Someone enrolled in a school spends the waiting years absorbing a discipline, so when a seat opens they arrive already pointed at that discipline's ladders rather than starting from nothing.</p>
-<h3 id="seats-kinds-and-curricula-new-in-0-4">Seats, kinds and curricula (new in 0.4)</h3>
-<p>A school is seated at a university, and the seat matters. Its religion decides what kind of institution the school is: a studium, an academy, a madrasa, a shuyuan, a vihara, a gurukula, a yeshiva, or simply a school. Each kind gives its own bonus at the seat. Members who share the seat's culture learn half again as fast, because they are taught in their own tongue.</p>
-<p>Lose the seat, to conquest or a demolished university, and the school moves to another free university in the realm. If there is none, it goes into exile: the members keep studying, but the school's bonuses and projects stop until a university is free.</p>
-<p>Each school also teaches a curriculum: Law, Theology, Natural Philosophy, Letters, Military Science, Medicine or Navigation. A curriculum gives one bonus at the seat and one across the realm, and decides which disputations the school holds. Natural Philosophy needs a school of some quality, Medicine a better one, and Navigation a seat on the coast. Changing curriculum takes ten years to settle.</p>
-<h3 id="quality-and-renown-new-in-0-4">Quality and renown (new in 0.4)</h3>
-<p>Two numbers describe a school, and they answer different questions.</p>
-<p><strong>Quality</strong> is how good the teaching is, and it is bought. Funding comes from the realm's Culture budget: the higher that slider, the better the school, and the more each one costs. A Rector, a curriculum left alone long enough, and senior ministers among the members all add to it. Quality scales everything the school gives, from half strength at the bottom to one and a half times at the top, including the experience its members earn. A good enough school also gets a fourth, better choice when it holds a disputation.</p>
-<p><strong>Renown</strong> is how widely the school is known, and it is earned against the world. It grows with the school's age, with how developed and literate its seat is, and with the realm's prestige and rank. Once a year every foreign university is scored on the same terms, and each of your schools is ranked against them. A renowned school raises the realm's prestige and cultural influence, and draws people: promising young scholars who can be taken on as proteges, foreign students, and artists. A school that falls well behind the leading foreign university starts losing masters and students to it. One that stands first gets its own event.</p>
-<h3 id="projects-and-the-rector-new-in-0-4">Projects and the Rector (new in 0.4)</h3>
-<p>Each school can take on one project every few years: endow its library with gold, fund royal chairs with political influence, invite foreign scholars with prestige, or hold a disputation. Disputations are short events about the curriculum, and each choice moves the school's renown or quality as well as the realm.</p>
-<p>A minister can also be made Rector of a school, a cabinet duty chosen in the cabinet screen. The Rector's school teaches its members twice as fast, takes on projects and curriculum changes sooner, and its seat grows literacy and institutions faster.</p>
+</div>
 <figure>
   <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_schools_tab.png" target="_blank">
     <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_schools_tab.png" alt="The Schools tab showing founded and locked institution slots">
   </a>
   <figcaption>All three institution slots are visible from the start, each naming what unlocks it.</figcaption>
 </figure>
+</div>
+<p>New in 0.4, each school has a seat, a kind, a curriculum, and two numbers of its own:</p>
+<div class="dd-tabs">
+<section data-tab="Seats, kinds and curricula">
+<p>A school is seated at a university, and the seat matters. Its religion decides what kind of institution the school is: a studium, an academy, a madrasa, a shuyuan, a vihara, a gurukula, a yeshiva, or simply a school. Each kind gives its own bonus at the seat. Members who share the seat's culture learn half again as fast, because they are taught in their own tongue.</p>
+<p>Lose the seat, to conquest or a demolished university, and the school moves to another free university in the realm. If there is none, it goes into exile: the members keep studying, but the school's bonuses and projects stop until a university is free.</p>
+<p>Each school also teaches a curriculum: Law, Theology, Natural Philosophy, Letters, Military Science, Medicine or Navigation. A curriculum gives one bonus at the seat and one across the realm, and decides which disputations the school holds. Natural Philosophy needs a school of some quality, Medicine a better one, and Navigation a seat on the coast. Changing curriculum takes ten years to settle.</p>
+</section>
+<section data-tab="Quality and renown">
+<p>Two numbers describe a school, and they answer different questions.</p>
+<div class="dd-cols">
+<div class="dd-card">
+<div class="dd-eyebrow">Quality</div>
+<p>How good the teaching is, and it is bought. Funding comes from the realm's Culture budget: the higher that slider, the better the school, and the more each one costs. A Rector, a curriculum left alone long enough, and senior ministers among the members all add to it. Quality scales everything the school gives, from half strength at the bottom to one and a half times at the top, including the experience its members earn. A good enough school also gets a fourth, better choice when it holds a disputation.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Renown</div>
+<p>How widely the school is known, and it is earned against the world. It grows with the school's age, with how developed and literate its seat is, and with the realm's prestige and rank. Once a year every foreign university is scored on the same terms, and each of your schools is ranked against them. A renowned school raises the realm's prestige and cultural influence, and draws people: promising young scholars who can be taken on as proteges, foreign students, and artists. A school that falls well behind the leading foreign university starts losing masters and students to it. One that stands first gets its own event.</p>
+</div>
+</div>
+</section>
+<section data-tab="Projects and the Rector">
+<p>Each school can take on one project every few years: endow its library with gold, fund royal chairs with political influence, invite foreign scholars with prestige, or hold a disputation. Disputations are short events about the curriculum, and each choice moves the school's renown or quality as well as the realm.</p>
+<p>A minister can also be made Rector of a school, a cabinet duty chosen in the cabinet screen. The Rector's school teaches its members twice as fast, takes on projects and curriculum changes sooner, and its seat grows literacy and institutions faster.</p>
+</section>
+</div>
 <hr>
 <h2 id="the-season" data-sec="4">The season</h2>
+<div class="dd-split">
+<div>
 <p>You can have a minister open the season with an evening at court. Hiring the hall is the easy part. What the evening costs, and who it is for, is decided on the night.</p>
 <p>A night for the nobility is the most expensive and buys the most goodwill from the people who already have it. A room of merchants, scholars and clergy is cheaper and buys a different kind. Or you can keep it to twelve chairs and no musicians, invite only people the crown needs something from, and get some work done.</p>
-<p>Something always happens at these things, and what kind of something depends on how much you spent. Two guests seated together by accident are still talking when the musicians pack up. A minister says something in a room with forty people in it, at least six of whom understood exactly what was being admitted to, and the story can be bought or allowed to run. A courtier nobody has ever looked at properly spends an hour explaining something to a minister who had not thought there was anything to explain. An estate delegation picks the one evening where refusing them would be conspicuous.</p>
-<p>That fourth one is the cheapest route into the protege system, and it is why the crown estate is worth paying attention to. Mentorship reaches those courtiers too, which opens up a pool of people the mod previously ignored entirely.</p>
+<p>Something always happens at these things, and what kind of something depends on how much you spent.</p>
+<details class="dd-more">
+<summary>What can happen on the night</summary>
+<p>Two guests seated together by accident are still talking when the musicians pack up. A minister says something in a room with forty people in it, at least six of whom understood exactly what was being admitted to, and the story can be bought or allowed to run. A courtier nobody has ever looked at properly spends an hour explaining something to a minister who had not thought there was anything to explain. An estate delegation picks the one evening where refusing them would be conspicuous.</p>
+</details>
+<p>The courtier who explains something is the cheapest route into the protege system, and it is why the crown estate is worth paying attention to. Mentorship reaches those courtiers too, which opens up a pool of people the mod previously ignored entirely.</p>
+</div>
 <figure>
   <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_soiree.png" target="_blank">
     <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_soiree.png" alt="The soiree event asking who the evening is for">
   </a>
   <figcaption>The evening. Each option courts a different estate and sets what sort of incident the night produces.</figcaption>
 </figure>
+</div>
 <hr>
 <h2 id="patronage" data-sec="5">Patronage</h2>
+<div class="dd-split">
+<div>
 <p>A minister can put their name and money behind an artist for a generation. The crown gains prestige while the arrangement lasts, and the minister gains diplomatic experience, patronage being reputation work conducted at dinner tables.</p>
 <p>The Patronage tab also lets you sell a work discreetly. Vanilla already has a diplomatic route: you name a counterparty, they can refuse, and a genuinely good piece is harder to move. This is the opposite. Nobody is named, nothing is refused, and you get noticeably less money for exactly that reason. The piece still ends up somewhere real, and the nobility notices which wall is bare.</p>
-<p>Since 0.4 the tab lists every work the realm holds, with its type, quality, artist and where it hangs, and a button opens the game's full Works of Art overview. An eye button hides what cannot be sold: priceless works, which are marked, and monuments, palaces, temple towers, regalia and mansions. Each artist shows who their patron is and what they are working on, with its progress. A piece at no progress is shown as stalled, which is what happens to every piece before the realm can invest in culture.</p>
+<details class="dd-more">
+<summary>The works list and artist status (new in 0.4)</summary>
+<p>The tab lists every work the realm holds, with its type, quality, artist and where it hangs, and a button opens the game's full Works of Art overview. An eye button hides what cannot be sold: priceless works, which are marked, and monuments, palaces, temple towers, regalia and mansions. Each artist shows who their patron is and what they are working on, with its progress. A piece at no progress is shown as stalled, which is what happens to every piece before the realm can invest in culture.</p>
+</details>
+</div>
 <figure>
   <a href="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_patronage_tab.png" target="_blank">
     <img src="../assets/screenshots/Court/EUV_1.3.x_FU_Court_0.3.11_patronage_tab.png" alt="The Patronage tab with the artist roster">
   </a>
   <figcaption>Works held, artists living, and what each of them is currently making.</figcaption>
 </figure>
+</div>
 <hr>
 <h2 id="the-household" data-sec="6">The household</h2>
 <p>Besides a seat in the cabinet, a minister can hold a post in the household: seneschal, master of coin, court chaplain, and some forty others. Which posts exist depends on what the realm has researched. An advance opens a post, and a later one can close it again, so a medieval seneschal gives way to a chancery and a herald to trained diplomats. Religion, government, culture and region open posts of their own. A court can fill six at once, each costs something in court upkeep, and each post's bonus grows with the seniority of the minister who holds it.</p>
-<h3 id="cards-tenure-and-events-new-in-0-4">Cards, tenure and events (new in 0.4)</h3>
-<p>The Household tab now shows every post as a card. A filled post shows its holder, their seniority and years in the post, and its effects at the strength this holder gives them, not the base values. An open post shows its base effects, what it needs, and an Appoint button, which offers the most senior ministers trained for it. A filled post can be dismissed from its card. A post that an advance you can already research would close is marked as retiring, and a section below lists the posts you could open with one more advance, and which advance it is.</p>
-<p>Holding a post for a long time now counts. Each year in office adds a little to the post's bonus, up to ten years, on top of what seniority gives.</p>
-<p>Posts also produce events. Now and then one of them raises a matter in its own line of work: the household's accounts, a sermon at court, petitions piling up, a festival, news from the frontier. A senior holder or a long-serving one opens a better way to deal with it.</p>
+<p>New in 0.4:</p>
+<div class="dd-cols">
+<div class="dd-card">
+<div class="dd-eyebrow">Cards</div>
+<p>The Household tab shows every post as a card. A filled post shows its holder, their seniority and years in the post, and its effects at the strength this holder gives them. An open post shows its base effects, what it needs, and an Appoint button that offers the most senior ministers trained for it. A filled post can be dismissed from its card.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Looking ahead</div>
+<p>A post that an advance you can already research would close is marked as retiring. A section below lists the posts you could open with one more advance, and which advance it is.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Tenure and events</div>
+<p>Each year in office adds a little to the post's bonus, up to ten years, on top of what seniority gives. Now and then a post raises a matter in its own line of work: the household's accounts, a sermon at court, petitions piling up, a festival, news from the frontier. A senior holder or a long-serving one opens a better way to deal with it.</p>
+</div>
+</div>
+<hr>
+<h2 id="sending-a-minister-away" data-sec="7">Sending a minister away</h2>
 <p>You can post a minister to one of your subjects as a resident. They are gone from your cabinet for years, they grow considerably while they are there, and the relationship they build moves that subject's bond every year.</p>
 <p>Which bond moves depends on who you send. An administrator deepens the political relationship, a diplomat the personal one, a soldier the military one. Sending the wrong person is not a mistake so much as a different plan.</p>
+<details class="dd-more">
+<summary>What you hear from them</summary>
 <p>While they are in place you hear from them. A dispatch runs to eleven pages, which is either thoroughness or loneliness, and buried in the middle is something useful. Your resident issues an instruction to a minister of a court that is not yours, in front of people, and everyone there is waiting to see whether you say so out loud. After three years of hospitality the subject finally asks for something, carefully, over dinner, in the way these things are done when refusal has to remain possible.</p>
+</details>
 <hr>
-<h2 id="running-out-of-road" data-sec="7">Running out of road</h2>
-<p>Two things happen to good ministers eventually.</p>
+<h2 id="running-out-of-road" data-sec="8">Running out of road</h2>
+<p>Two things happen to good ministers eventually, and a third happens when they go.</p>
+<div class="dd-cols">
+<div class="dd-card">
+<div class="dd-eyebrow">Running down</div>
 <p>A minister two decades at the top starts to run down. The work still gets done, it is simply taking longer and being checked more often, and nobody is going to say anything. You can send them to their estates for a year and manage without them, or keep them at the desk and accept what that costs.</p>
-<p>And two accomplished specialists of the same kind will circle each other, because there is one reputation available in that field at this court and two people qualified to hold it. It does not turn to open hostility. It turns to duplicated work, memoranda written to be read by a third party, and problems discovered in each other's proposals slightly too late to fix quietly. You can back one, let them compete, or make them sign jointly and pay for the privilege.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">Rivals</div>
+<p>Two accomplished specialists of the same kind will circle each other, because there is one reputation available in that field at this court and two people qualified to hold it. It does not turn to open hostility. It turns to duplicated work, memoranda written to be read by a third party, and problems discovered in each other's proposals slightly too late to fix quietly. You can back one, let them compete, or make them sign jointly and pay for the privilege.</p>
+</div>
+<div class="dd-card">
+<div class="dd-eyebrow">What they leave</div>
 <p>When a genuinely accomplished minister dies, whoever worked beside them keeps some of it: the filing system, the contacts who now write to the office rather than the man, the way of doing things that was never written down and is followed exactly.</p>
+</div>
+</div>
 <hr>
-<h2 id="switching-it-off" data-sec="8">Switching it off</h2>
+<h2 id="switching-it-off" data-sec="9">Switching it off</h2>
 <p>All of it sits behind the <strong>Cabinet Experience</strong> game rule. Turned off, ministers behave as they did before and the monthly pass over each court is skipped entirely.</p>
 <p>Experience is tracked for your own court, for great powers, and for anything grown past 100 development. Several hundred minor courts are left alone, which keeps the cost where the interesting part is.</p>
     </article>
@@ -433,6 +548,49 @@ body.nav-open .sidebar-overlay{display:block}
   overlay.addEventListener('click', close);
   document.querySelectorAll('.nav-h2, .nav-h3').forEach(function(a){
     a.addEventListener('click', function(){ if (window.innerWidth <= 768) close(); });
+  });
+})();
+
+(function(){
+  var boxes = document.querySelectorAll('.dd-tabs');
+  Array.prototype.forEach.call(boxes, function(box, bi){
+    var panels = Array.prototype.filter.call(box.children, function(c){
+      return c.tagName === 'SECTION' && c.hasAttribute('data-tab');
+    });
+    if (!panels.length) return;
+    var bar = document.createElement('div');
+    bar.className = 'dd-tabbar';
+    bar.setAttribute('role', 'tablist');
+    function select(i){
+      panels.forEach(function(p, k){
+        p.hidden = k !== i;
+        var b = bar.children[k];
+        b.setAttribute('aria-selected', k === i ? 'true' : 'false');
+        b.tabIndex = k === i ? 0 : -1;
+      });
+    }
+    panels.forEach(function(p, i){
+      var id = 'ddt' + bi + '-' + i;
+      p.id = id;
+      p.setAttribute('role', 'tabpanel');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dd-tab';
+      b.textContent = p.getAttribute('data-tab');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-controls', id);
+      b.addEventListener('click', function(){ select(i); });
+      b.addEventListener('keydown', function(e){
+        var n = panels.length, j = null;
+        if (e.key === 'ArrowRight') j = (i + 1) % n;
+        if (e.key === 'ArrowLeft') j = (i - 1 + n) % n;
+        if (j !== null) { e.preventDefault(); select(j); bar.children[j].focus(); }
+      });
+      bar.appendChild(b);
+    });
+    box.insertBefore(bar, box.firstChild);
+    box.classList.add('js');
+    select(0);
   });
 })();
 </script>
