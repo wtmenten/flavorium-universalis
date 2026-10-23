@@ -7,8 +7,8 @@
 *Dev Note: the cabinet already had rivalries, careers and estate capture, but nothing that tied a minister to anyone outside the room. Factions is a new submod that gives every realm worth simulating a set of political parties. They draw their strength from the estates, staff your cabinet, keep score of how they are treated, and cost political influence to manage. It is also built to stay quiet: nearly all of it runs without a popup, and the few events it does fire are budgeted.*
 
 <figure>
-  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_politics_panel.png" target="_blank">
-    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_politics_panel.png" alt="The Factions panel: a chamber of party seats around four party cards, with the leading agenda above and the actions below">
+  <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_factions_panel.png" target="_blank">
+    <img src="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_factions_panel.png" alt="The Factions panel: a chamber of party seats around four party cards, with the leading agenda above and the actions below">
   </a>
   <figcaption>The chamber: every seat and who holds it, the four parties with their leaders, and what the leading party wants.</figcaption>
 </figure>
