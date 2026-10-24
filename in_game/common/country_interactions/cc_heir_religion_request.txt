@@ -1,0 +1,120 @@
+﻿
+# Flavorium Universalis: "Request Heir Religion Law"
+# A monarchy asks a royal-marriage partner of a different religion in the same
+# religion group (e.g. Catholic and Orthodox) to move their Heir Religion law
+# from Same Religion to Same Religious Group, so that heirs of the actor's faith
+# become eligible to inherit there.
+#
+# The interaction only sends the request. The partner answers in cc_hrl.1, and
+# the answer is reported back to the requester in cc_hrl.2 (granted) or
+# cc_hrl.3 (refused). See in_game/events/cc_heir_religion_events.txt.
+
+cc_request_heir_religion_group = {
+	type = diplomacy
+	category = CATEGORY_FRIENDLY_ACTIONS
+
+	ai_tick = monthly
+	ai_tick_frequency = 24
+
+	potential = {
+		scope:actor = {
+			government_type = government_type:monarchy
+		}
+	}
+
+	cooldown = {
+		type = cc_request_heir_religion_group
+		years = 10
+	}
+
+	select_trigger = {
+		looking_for_a = country
+		target_flag = recipient
+		ai_interaction_source_list = {
+			scope:actor = {
+				every_royal_marriage = {
+					add_to_list = source
+				}
+			}
+		}
+		name = "choose_country"
+		default_sort = will
+		column = { data = country_diplomacy_info_dynastic }
+		visible = {
+			has_royal_marriage_with = scope:actor
+			NOT = { religion = scope:actor.religion }
+			religion.group = scope:actor.religion.group
+		}
+		enabled = {
+			custom_tooltip = {
+				text = cc_hrl_has_same_religion_policy_tt
+				has_policy = heir_same_religion
+			}
+			custom_tooltip = {
+				text = cc_hrl_policy_not_locked_tt
+				"law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+			}
+			custom_tooltip = {
+				text = cc_hrl_group_policy_available_tt
+				policy:heir_same_religion_group = { is_available_for = prev }
+			}
+			custom_tooltip = {
+				text = cc_hrl_not_recently_asked_tt
+				NOT = { has_variable = cc_hrl_recently_asked }
+			}
+		}
+	}
+
+	block_when_at_war = yes
+
+	effect = {
+		custom_tooltip = cc_hrl_request_tt
+		hidden_effect = {
+			if = {
+				limit = { exists = scope:recipient }
+				scope:recipient = {
+					set_variable = {
+						name = cc_hrl_recently_asked
+						years = 10
+					}
+					# cc_hrl.1 rebuilds scope:cc_hrl_requester from this
+					set_variable = {
+						name = cc_hrl_requester
+						value = scope:actor
+						years = 1
+					}
+					trigger_event_non_silently = cc_hrl.1
+				}
+			}
+		}
+	}
+
+	ai_will_do = {
+		value = 0
+		if = {
+			limit = {
+				exists = scope:recipient
+				scope:recipient = { has_heir = no }
+			}
+			add = {
+				value = 10
+				desc = "partner_succession_uncertain"
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:recipient
+				scope:recipient = {
+					opinion = {
+						target = scope:actor
+						value = 50
+					}
+				}
+			}
+			add = {
+				value = 5
+				desc = "partner_likely_to_agree"
+			}
+		}
+	}
+}

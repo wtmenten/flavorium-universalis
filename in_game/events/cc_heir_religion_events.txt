@@ -1,0 +1,257 @@
+﻿namespace = cc_hrl
+
+###############################################################################
+# HEIR RELIGION LAW REQUEST
+#
+# cc_hrl.1  Partner receives the request (fired by cc_request_heir_religion_group).
+#           a: agree, move Heir Religion law to Same Religious Group   -> .2
+#           b: refuse                                                   -> .3
+#           c: agree only if the requester does the same                -> .4
+# cc_hrl.2  Requester: request granted.
+# cc_hrl.3  Requester: request refused.
+# cc_hrl.4  Requester: partner asks for a reciprocal change.
+#           a: accept, pay the cost, both countries switch              -> .5
+#           b: decline                                                  -> .6
+# cc_hrl.5  Partner: reciprocal agreement sealed.
+# cc_hrl.6  Partner: requester declined the reciprocal agreement.
+#
+# scope:cc_hrl_requester = country that sent the request
+# scope:cc_hrl_partner   = country that received it
+#
+# Saved scopes are not relied on across events. Each side stores the other in a
+# variable (cc_hrl_requester on the partner, cc_hrl_partner on the requester)
+# and every event rebuilds its scopes in immediate.
+###############################################################################
+
+# Shared policy-switch guard, inlined in each place a law is changed:
+#   has_policy = heir_same_religion
+#   "law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+#   policy:heir_same_religion_group = { is_available_for = prev }
+
+cc_hrl.1 = {
+	type = country_event
+	title = cc_hrl.1.title
+	desc = cc_hrl.1.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		save_scope_as = cc_hrl_partner
+		if = {
+			limit = { has_variable = cc_hrl_requester }
+			var:cc_hrl_requester = { save_scope_as = cc_hrl_requester }
+		}
+		else = {
+			# Console-fired: pick any royal-marriage partner so the event is testable
+			random_royal_marriage = { save_scope_as = cc_hrl_requester }
+		}
+		scope:cc_hrl_requester ?= {
+			set_variable = {
+				name = cc_hrl_partner
+				value = root
+				years = 1
+			}
+		}
+	}
+
+	option = {	# Agree
+		name = cc_hrl.1.a
+		if = {
+			limit = {
+				has_policy = heir_same_religion
+				"law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+				policy:heir_same_religion_group = { is_available_for = prev }
+			}
+			add_policy = policy:heir_same_religion_group
+		}
+		scope:cc_hrl_requester ?= {
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_hrl_request_granted
+			}
+			trigger_event_non_silently = cc_hrl.2
+		}
+		ai_will_select = { value = cc_hrl_agree_weight }
+	}
+
+	option = {	# Refuse
+		name = cc_hrl.1.b
+		scope:cc_hrl_requester ?= {
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_hrl_request_refused
+			}
+			trigger_event_non_silently = cc_hrl.3
+		}
+		ai_will_select = { value = cc_hrl_refuse_weight }
+	}
+
+	option = {	# Only if they do the same
+		name = cc_hrl.1.c
+		trigger = {
+			scope:cc_hrl_requester ?= {
+				has_policy = heir_same_religion
+				"law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+				policy:heir_same_religion_group = { is_available_for = prev }
+			}
+		}
+		custom_tooltip = cc_hrl.1.c.tt
+		scope:cc_hrl_requester ?= {
+			trigger_event_non_silently = cc_hrl.4
+		}
+		ai_will_select = { value = cc_hrl_reciprocal_weight }
+	}
+}
+
+cc_hrl.2 = {	# Requester: granted
+	type = country_event
+	title = cc_hrl.2.title
+	desc = cc_hrl.2.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+		10 = interior
+	}
+
+	immediate = {
+		var:cc_hrl_partner ?= { save_scope_as = cc_hrl_partner }
+	}
+
+	option = {
+		name = cc_hrl.2.a
+	}
+}
+
+cc_hrl.3 = {	# Requester: refused
+	type = country_event
+	title = cc_hrl.3.title
+	desc = cc_hrl.3.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = angry
+		10 = interior
+	}
+
+	immediate = {
+		var:cc_hrl_partner ?= { save_scope_as = cc_hrl_partner }
+	}
+
+	option = {
+		name = cc_hrl.3.a
+	}
+}
+
+cc_hrl.4 = {	# Requester: partner asks for reciprocity
+	type = country_event
+	title = cc_hrl.4.title
+	desc = cc_hrl.4.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		save_scope_as = cc_hrl_requester
+		var:cc_hrl_partner ?= { save_scope_as = cc_hrl_partner }
+	}
+
+	option = {	# Accept: pay the cost, both switch
+		name = cc_hrl.4.a
+		add_government_power = government_power_mild_penalty
+		add_stability = stability_mild_penalty
+		add_political_influence = political_influence_mild_penalty
+		if = {
+			limit = {
+				has_policy = heir_same_religion
+				"law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+				policy:heir_same_religion_group = { is_available_for = prev }
+			}
+			add_policy = policy:heir_same_religion_group
+		}
+		scope:cc_hrl_partner ?= {
+			if = {
+				limit = {
+					has_policy = heir_same_religion
+					"law_policy(law:heir_religion_law)" = { NOT = { is_locked_for = prev } }
+					policy:heir_same_religion_group = { is_available_for = prev }
+				}
+				add_policy = policy:heir_same_religion_group
+			}
+			add_opinion = {
+				target = root
+				modifier = opinion_cc_hrl_reciprocal_pact
+			}
+			trigger_event_non_silently = cc_hrl.5
+		}
+		if = {
+			limit = { exists = scope:cc_hrl_partner }
+			add_opinion = {
+				target = scope:cc_hrl_partner
+				modifier = opinion_cc_hrl_reciprocal_pact
+			}
+		}
+		ai_will_select = {
+			value = 60
+			if = {
+				limit = { stability < 0 }
+				add = -40
+			}
+		}
+	}
+
+	option = {	# Decline
+		name = cc_hrl.4.b
+		scope:cc_hrl_partner ?= {
+			trigger_event_non_silently = cc_hrl.6
+		}
+		ai_will_select = { value = 40 }
+	}
+}
+
+cc_hrl.5 = {	# Partner: reciprocal agreement sealed
+	type = country_event
+	title = cc_hrl.5.title
+	desc = cc_hrl.5.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = happy
+		10 = interior
+	}
+
+	immediate = {
+		var:cc_hrl_requester ?= { save_scope_as = cc_hrl_requester }
+	}
+
+	option = {
+		name = cc_hrl.5.a
+	}
+}
+
+cc_hrl.6 = {	# Partner: requester declined reciprocity
+	type = country_event
+	title = cc_hrl.6.title
+	desc = cc_hrl.6.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		var:cc_hrl_requester ?= { save_scope_as = cc_hrl_requester }
+	}
+
+	option = {
+		name = cc_hrl.6.a
+	}
+}

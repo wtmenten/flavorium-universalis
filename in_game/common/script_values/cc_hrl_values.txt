@@ -1,0 +1,82 @@
+﻿# Heir Religion Law request (cc_request_heir_religion_group / cc_hrl events).
+# All values are evaluated in the partner's scope (root = partner) with
+# scope:cc_hrl_requester set. Each guards on the scope existing so a console-fired
+# event logs nothing.
+
+# How willing the partner is to grant the request. Roughly -80 to +110.
+cc_hrl_acceptance = {
+	value = -20	# clergy resistance to opening the succession
+	if = {
+		limit = { exists = scope:cc_hrl_requester }
+
+		# Opinion of the requester: +40 at 200, -40 at -120
+		add = {
+			value = "opinion(scope:cc_hrl_requester)"
+			if = {
+				limit = { "opinion(scope:cc_hrl_requester)" > 0 }
+				divide = 5
+			}
+			else = {
+				divide = 3
+			}
+		}
+		# Trust in the requester
+		add = {
+			value = "trust(scope:cc_hrl_requester)"
+			divide = 5
+		}
+		# Requester's diplomatic reputation
+		add = {
+			value = scope:cc_hrl_requester.modifier:diplomatic_reputation
+			multiply = 5
+		}
+		# Requester's prestige, up to +20
+		add = {
+			value = scope:cc_hrl_requester.prestige
+			divide = 5
+			max = 20
+		}
+		# Great powers are harder to refuse; a great power partner is harder to move
+		if = {
+			limit = { scope:cc_hrl_requester = { is_great_power = yes } }
+			add = 20
+		}
+		if = {
+			limit = { is_great_power = yes }
+			add = -10
+		}
+		# The stronger culture carries more weight at court
+		if = {
+			limit = { scope:cc_hrl_requester.culture.cultural_influence > culture.cultural_influence }
+			add = 15
+		}
+		else = {
+			add = -10
+		}
+		if = {
+			limit = { government_type = government_type:theocracy }
+			add = -50
+		}
+	}
+}
+
+# Option weights for cc_hrl.1. At acceptance 0 the split is 50 / 50 / 30.
+cc_hrl_agree_weight = {
+	value = 50
+	add = cc_hrl_acceptance
+	min = 0
+}
+
+cc_hrl_refuse_weight = {
+	value = 50
+	subtract = cc_hrl_acceptance
+	min = 10
+}
+
+cc_hrl_reciprocal_weight = {
+	value = 30
+	if = {
+		limit = { scope:cc_hrl_requester ?= { has_heir = no } }
+		add = 20	# their throne may come to our dynasty
+	}
+}
