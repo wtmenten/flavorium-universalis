@@ -34,6 +34,10 @@ cc_subject_types_available = {
 # save that predates the counter simply does not fire a payoff until the next
 # monitor cycle stamps one, rather than looking up a key that is not there.
 cc_bonds_aor_eligible = {
+	# Root is the overlord. The registry these payoffs pick from keeps every country that
+	# was ever a subject, and annexation fires no on_becoming_free, so an annexed subject
+	# keeps its bond variables and would otherwise still be chosen.
+	is_subject_of = root
 	NOT = { has_variable = cc_bond_aor_$ID$_fired }
 	# At least two monitor cycles (~20 years) of history. Without this a subject
 	# acquired in 1730 gets handed a verdict on "a generation of good choices".

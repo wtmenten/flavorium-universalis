@@ -309,3 +309,46 @@ cc_bonds_sync_meta = {
 	change_variable = { name = cc_bond_cycles  add = 1 }
 	cc_bonds_stamp_subject_type = yes
 }
+
+
+###############################################################################
+# CHAIN B (cc_bonds.110-113): the merchant house. Root = overlord.
+###############################################################################
+
+# Clear the chain's state: its end (.113's after block), or an abort.
+cc_bond_chain_b_cleanup = {
+	remove_variable = cc_bond_chain_b_active
+	remove_variable = cc_bond_chain_b_subj
+	remove_variable = cc_bond_merchant_rep
+	remove_variable = cc_bond_113_outcome
+	remove_variable = cc_bond_mem_merchant_patronized
+	remove_variable = cc_bond_mem_merchant_allowed
+	remove_variable = cc_bond_mem_merchant_denied
+	remove_variable = cc_bond_mem_merchant_backed
+	remove_variable = cc_bond_mem_merchant_rival
+	remove_variable = cc_bond_mem_crisis_managed
+	remove_variable = cc_bond_mem_second_is_foreign
+	# Clean up per-country variables on each secondary target, then clear the map
+	every_key_in_variable_map = {
+		variable = cc_bond_chain_b_secondary_map
+		remove_variable = cc_bond_secondary_is_foreign
+		remove_variable = cc_bond_merchant_interaction
+	}
+	remove_variable = cc_bond_chain_b_secondary_map
+}
+
+# Yearly. Chain B keeps its subject in cc_bond_chain_b_subj, and a chain in progress
+# blocks a new one. If that subject was annexed or freed, .111-.113 no longer fire, so end
+# the chain here instead of leaving it stuck.
+cc_bond_chain_b_abort_if_lost = {
+	if = {
+		limit = {
+			has_variable = cc_bond_chain_b_active
+			trigger_if = {
+				limit = { has_variable = cc_bond_chain_b_subj }
+				NOT = { var:cc_bond_chain_b_subj = { is_subject_of = root } }
+			}
+		}
+		cc_bond_chain_b_cleanup = yes
+	}
+}

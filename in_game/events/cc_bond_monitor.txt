@@ -26,7 +26,11 @@ cc_bonds.1 = {
 			variable = cc_subject_registry_map
 
 			if = {
-				limit = { has_variable = cc_bond_initialized }
+				# The registry also holds former subjects (annexed ones keep their variables).
+				limit = {
+					has_variable = cc_bond_initialized
+					is_subject_of = root
+				}
 				save_scope_as = cc_sync_subj
 
 					# --- 0. Upgrade subjects from saves predating the LTM system ---

@@ -136,6 +136,9 @@ cc_bonds.111 = {
 
 	trigger = {
 		exists = var:cc_bond_chain_b_subj
+		# The primary subject may have been annexed or freed since the chain began; the
+		# yearly pulse then ends the chain (cc_bond_chain_b_abort_if_lost).
+		var:cc_bond_chain_b_subj = { is_subject_of = root }
 	}
 
 	immediate = {
@@ -323,6 +326,13 @@ cc_bonds.111 = {
 cc_bonds.112 = {
 	type = country_event
 	title = cc_bonds.112.title
+
+	trigger = {
+		exists = var:cc_bond_chain_b_subj
+		# The primary subject may have been annexed or freed since the chain began; the
+		# yearly pulse then ends the chain (cc_bond_chain_b_abort_if_lost).
+		var:cc_bond_chain_b_subj = { is_subject_of = root }
+	}
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -546,6 +556,13 @@ cc_bonds.112 = {
 cc_bonds.113 = {
 	type = country_event
 	title = cc_bonds.113.title
+
+	trigger = {
+		exists = var:cc_bond_chain_b_subj
+		# The primary subject may have been annexed or freed since the chain began; the
+		# yearly pulse then ends the chain (cc_bond_chain_b_abort_if_lost).
+		var:cc_bond_chain_b_subj = { is_subject_of = root }
+	}
 	# cc_bond_mem_second_is_foreign is set in .111 when the house's secondary partners
 	# include a nation outside our own subjects. A dynasty that reached across foreign flags
 	# reads differently from one that only ever traded within the realm, so the two best
@@ -611,25 +628,7 @@ cc_bonds.113 = {
 	}
 
 	after = {
-		# Clean up chain state
-		remove_variable = cc_bond_chain_b_active
-		remove_variable = cc_bond_chain_b_subj
-		remove_variable = cc_bond_merchant_rep
-		remove_variable = cc_bond_113_outcome
-		remove_variable = cc_bond_mem_merchant_patronized
-		remove_variable = cc_bond_mem_merchant_allowed
-		remove_variable = cc_bond_mem_merchant_denied
-		remove_variable = cc_bond_mem_merchant_backed
-		remove_variable = cc_bond_mem_merchant_rival
-		remove_variable = cc_bond_mem_crisis_managed
-		remove_variable = cc_bond_mem_second_is_foreign
-		# Clean up per-country variables on each secondary target, then clear the map
-		every_key_in_variable_map = {
-			variable = cc_bond_chain_b_secondary_map
-			remove_variable = cc_bond_secondary_is_foreign
-			remove_variable = cc_bond_merchant_interaction
-		}
-		remove_variable = cc_bond_chain_b_secondary_map
+		cc_bond_chain_b_cleanup = yes
 	}
 
 	############################################################
