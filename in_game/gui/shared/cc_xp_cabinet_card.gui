@@ -168,6 +168,17 @@ template cabinet_card_header_content {
 				}
 			}
 		}
+		# FLAVORIUM: badge slot for submods. Empty and hidden here (the type at the bottom of
+		# this file); a submod redefines `cc_cabinet_card_badge_slot` in its own file to draw
+		# something for the minister, with Character as the data context. The Factions submod
+		# draws the minister's party (cc_pty_cabinet_badge.gui).
+		# The container keeps an empty seat from handing the slot a null character; the
+		# slot's own visibility stays the submod's to decide.
+		hbox = {
+			visible = "[Cabinet.IsCharacterSet]"
+			datacontext = "[Cabinet.GetCharacter]"
+			cc_cabinet_card_badge_slot = {}
+		}
 		####################################################################
 		# END FLAVORIUM
 		####################################################################
@@ -192,5 +203,20 @@ template cabinet_card_header_content {
 			cabinet_efficiency_icon = {}
 		}
 
+	}
+}
+
+
+######################################################################
+# FLAVORIUM: the submod badge slot used in the template above. Hidden, so the card looks
+# the same without a submod. A submod redefines this type from its own file (a submod
+# loads after the main mod it depends on, and the last definition of a type wins).
+######################################################################
+
+types CcCabinetCardHooks
+{
+	type cc_cabinet_card_badge_slot = widget {
+		size = { 0 0 }
+		visible = no
 	}
 }

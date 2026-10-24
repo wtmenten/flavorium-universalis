@@ -4,6 +4,7 @@
 ###############################################################################
 
 # Country scope. One value of each kind per archetype; cc_pty_read_type picks by type.
+# cc_pty_concern_T_1..3 are what the party watches; their sum is its mood.
 
 # ---- 1 royalist ----
 cc_pty_estate_power_type_1 = {
@@ -18,12 +19,26 @@ cc_pty_members_type_1 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_1 = {
+# Concern 1: The crown's power
+cc_pty_concern_1_1 = {
 	value = "estate_power(estate_type:crown_estate)"
 	subtract = 0.35
 	multiply = 100
-	min = -40
-	max = 40
+	min = -15
+	max = 15
+}
+# Concern 2: Stability
+cc_pty_concern_1_2 = {
+	value = stability
+	multiply = 0.15
+	min = -15
+	max = 15
+}
+# Concern 3: Court spending
+cc_pty_concern_1_3 = {
+	value = court_maintenance
+	subtract = 0.5
+	multiply = 20
 }
 cc_pty_realign_score_type_1 = {
 	value = cc_pty_estate_power_type_1
@@ -47,14 +62,39 @@ cc_pty_members_type_2 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_2 = {
+# Concern 1: The nobility's satisfaction
+cc_pty_concern_2_1 = {
 	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:nobles_estate } }
 		add = estate_satisfaction:nobles_estate
 		subtract = 0.5
-		multiply = 80
+		multiply = 40
 	}
+}
+# Concern 2: Privileges of the nobility
+cc_pty_concern_2_2 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:nobles_estate } }
+		add = "estate(estate_type:nobles_estate).num_privileges"
+		subtract = 2
+		multiply = 4
+	}
+	min = -10
+	max = 12
+}
+# Concern 3: Taxes on the nobility
+cc_pty_concern_2_3 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:nobles_estate } }
+		add = 0.3
+		subtract = "estate(estate_type:nobles_estate).estate_tax_rate"
+		multiply = 40
+	}
+	min = -10
+	max = 10
 }
 cc_pty_realign_score_type_2 = {
 	value = cc_pty_estate_power_type_2
@@ -77,14 +117,36 @@ cc_pty_members_type_3 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_3 = {
+# Concern 1: The burghers' satisfaction
+cc_pty_concern_3_1 = {
 	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:burghers_estate } }
 		add = estate_satisfaction:burghers_estate
 		subtract = 0.5
-		multiply = 80
+		multiply = 40
 	}
+}
+# Concern 2: Taxes on the burghers
+cc_pty_concern_3_2 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:burghers_estate } }
+		add = 0.3
+		subtract = "estate(estate_type:burghers_estate).estate_tax_rate"
+		multiply = 40
+	}
+	min = -10
+	max = 10
+}
+# Concern 3: Peace and credit
+cc_pty_concern_3_3 = {
+	value = 5
+	if = { limit = { at_war = yes } add = -8 }
+	add = { value = num_loans multiply = -2 }
+	if = { limit = { has_variable = cc_pty_mem_bankrupt } add = -10 }
+	min = -15
+	max = 5
 }
 cc_pty_realign_score_type_3 = {
 	value = cc_pty_estate_power_type_3
@@ -107,14 +169,35 @@ cc_pty_members_type_4 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_4 = {
+# Concern 1: The clergy's satisfaction
+cc_pty_concern_4_1 = {
 	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:clergy_estate } }
 		add = estate_satisfaction:clergy_estate
 		subtract = 0.5
-		multiply = 80
+		multiply = 40
 	}
+}
+# Concern 2: Religious unity
+cc_pty_concern_4_2 = {
+	value = religious_unity
+	subtract = 0.8
+	multiply = 50
+	min = -15
+	max = 10
+}
+# Concern 3: Privileges of the clergy
+cc_pty_concern_4_3 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:clergy_estate } }
+		add = "estate(estate_type:clergy_estate).num_privileges"
+		subtract = 2
+		multiply = 4
+	}
+	min = -10
+	max = 12
 }
 cc_pty_realign_score_type_4 = {
 	value = cc_pty_estate_power_type_4
@@ -139,15 +222,29 @@ cc_pty_members_type_5 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_5 = {
-	value = -10
-	if = { limit = { at_war = yes } add = 25 }
-	if = {
-		limit = { any_estate = { estate_type = estate_type:nobles_estate } }
-		add = { value = estate_satisfaction:nobles_estate subtract = 0.5 multiply = 40 }
-	}
-	min = -40
-	max = 40
+# Concern 1: War record
+cc_pty_concern_5_1 = {
+	value = 0
+	if = { limit = { at_war = yes } add = 10 }
+	if = { limit = { has_variable = cc_pty_mem_won } add = 10 }
+	if = { limit = { has_variable = cc_pty_mem_lost } add = -15 }
+	if = { limit = { at_war = no NOT = { has_variable = cc_pty_mem_war } } add = -10 }
+	min = -20
+	max = 20
+}
+# Concern 2: Army upkeep
+cc_pty_concern_5_2 = {
+	value = army_maintenance
+	subtract = 0.5
+	multiply = 30
+}
+# Concern 3: Size of the army
+cc_pty_concern_5_3 = {
+	value = army_size_percentage
+	subtract = 0.75
+	multiply = 40
+	min = -15
+	max = 10
 }
 cc_pty_realign_score_type_5 = {
 	value = cc_pty_estate_power_type_5
@@ -172,14 +269,34 @@ cc_pty_members_type_6 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_6 = {
+# Concern 1: The peasantry's satisfaction
+cc_pty_concern_6_1 = {
 	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:peasants_estate } }
 		add = estate_satisfaction:peasants_estate
 		subtract = 0.5
-		multiply = 80
+		multiply = 40
 	}
+}
+# Concern 2: Taxes on the peasantry
+cc_pty_concern_6_2 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:peasants_estate } }
+		add = 0.3
+		subtract = "estate(estate_type:peasants_estate).estate_tax_rate"
+		multiply = 40
+	}
+	min = -10
+	max = 10
+}
+# Concern 3: War exhaustion
+cc_pty_concern_6_3 = {
+	value = 5
+	add = { value = war_exhaustion multiply = -1.5 }
+	min = -15
+	max = 5
 }
 cc_pty_realign_score_type_6 = {
 	value = cc_pty_estate_power_type_6
@@ -202,11 +319,25 @@ cc_pty_members_type_7 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_7 = {
+# Concern 1: Innovative society
+cc_pty_concern_7_1 = {
 	value = societal_value:traditionalist_vs_innovative
-	multiply = 0.4
-	min = -40
-	max = 40
+	multiply = 0.2
+	min = -20
+	max = 20
+}
+# Concern 2: Literacy
+cc_pty_concern_7_2 = {
+	value = average_country_literacy
+	subtract = 20
+	multiply = 0.3
+	min = -6
+	max = 15
+}
+# Concern 3: Pace of reform
+cc_pty_concern_7_3 = {
+	value = -4
+	if = { limit = { has_variable = cc_pty_mem_law } value = 8 }
 }
 cc_pty_realign_score_type_7 = {
 	value = cc_pty_estate_power_type_7
@@ -232,15 +363,32 @@ cc_pty_members_type_8 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_8 = {
+# Concern 1: Absolutist society
+cc_pty_concern_8_1 = {
 	value = 0
 	if = {
 		limit = { current_age_or_later = { age = age_5_absolutism } }
 		add = societal_value:absolutism_vs_liberalism
-		multiply = -0.4
+		multiply = -0.2
 	}
-	min = -40
-	max = 40
+	min = -20
+	max = 20
+}
+# Concern 2: The crown's power
+cc_pty_concern_8_2 = {
+	value = "estate_power(estate_type:crown_estate)"
+	subtract = 0.45
+	multiply = 100
+	min = -15
+	max = 15
+}
+# Concern 3: Estate privileges
+cc_pty_concern_8_3 = {
+	value = 6
+	subtract = num_privileges
+	multiply = 2
+	min = -10
+	max = 10
 }
 cc_pty_realign_score_type_8 = {
 	value = cc_pty_estate_power_type_8
@@ -266,15 +414,28 @@ cc_pty_members_type_9 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_9 = {
-	value = -10
+# Concern 1: Decentralised society
+cc_pty_concern_9_1 = {
+	value = societal_value:centralization_vs_decentralization
+	multiply = 0.2
+	min = -20
+	max = 20
+}
+# Concern 2: The nobility's satisfaction
+cc_pty_concern_9_2 = {
+	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:nobles_estate } }
-		add = { value = estate_satisfaction:nobles_estate subtract = 0.5 multiply = 40 }
+		add = estate_satisfaction:nobles_estate
+		subtract = 0.5
+		multiply = 30
 	}
-	if = { limit = { num_subjects >= 3 } add = -10 }
-	min = -40
-	max = 40
+}
+# Concern 3: Court spending
+cc_pty_concern_9_3 = {
+	value = court_maintenance
+	subtract = 0.5
+	multiply = -20
 }
 cc_pty_realign_score_type_9 = {
 	value = cc_pty_estate_power_type_9
@@ -301,15 +462,30 @@ cc_pty_members_type_10 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_10 = {
+# Concern 1: Colonial subjects
+cc_pty_concern_10_1 = {
+	value = cc_pty_num_colonial_subjects
+	multiply = 5
+	subtract = 10
+	min = -5
+	max = 15
+}
+# Concern 2: The burghers' satisfaction
+cc_pty_concern_10_2 = {
 	value = 0
 	if = {
 		limit = { any_estate = { estate_type = estate_type:burghers_estate } }
-		add = { value = estate_satisfaction:burghers_estate subtract = 0.5 multiply = 40 }
+		add = estate_satisfaction:burghers_estate
+		subtract = 0.5
+		multiply = 30
 	}
-	if = { limit = { at_war = yes } add = -10 }
-	min = -40
-	max = 40
+}
+# Concern 3: The sea lanes
+cc_pty_concern_10_3 = {
+	value = navy_maintenance
+	subtract = 0.5
+	multiply = 20
+	if = { limit = { at_war = yes } add = -5 }
 }
 cc_pty_realign_score_type_10 = {
 	value = cc_pty_estate_power_type_10
@@ -336,16 +512,33 @@ cc_pty_members_type_11 = {
 		add = 1
 	}
 }
-cc_pty_mood_type_11 = {
+# Concern 1: Liberal society
+cc_pty_concern_11_1 = {
 	value = 0
 	if = {
 		limit = { current_age_or_later = { age = age_5_absolutism } }
 		add = societal_value:absolutism_vs_liberalism
-		multiply = 0.4
+		multiply = 0.2
 	}
-	if = { limit = { has_variable = cc_pty_termlimits } add = 10 }
-	min = -40
-	max = 40
+	min = -20
+	max = 20
+}
+# Concern 2: Term limits
+cc_pty_concern_11_2 = {
+	value = -5
+	if = { limit = { has_variable = cc_pty_termlimits } value = 10 }
+}
+# Concern 3: Taxes on the burghers
+cc_pty_concern_11_3 = {
+	value = 0
+	if = {
+		limit = { any_estate = { estate_type = estate_type:burghers_estate } }
+		add = 0.3
+		subtract = "estate(estate_type:burghers_estate).estate_tax_rate"
+		multiply = 40
+	}
+	min = -10
+	max = 10
 }
 cc_pty_realign_score_type_11 = {
 	value = cc_pty_estate_power_type_11

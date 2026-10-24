@@ -14,7 +14,11 @@
 #   cc_pty_N_power        share of the chamber's seats, 0..100           (panel)
 #   cc_pty_N_leader       the party leader (character)                   (panel)
 #   cc_pty_N_members      seated ministers of the party                  (panel)
-#   cc_pty_N_mood         estate mood this pass, -40..40
+#   cc_pty_N_c1 / _c2 / _c3   the party's three concerns this pass        (panel)
+#   cc_pty_N_mood         their sum, roughly -45..45
+#   cc_pty_N_target       what the party expects                         (panel)
+#   cc_pty_N_t_cab / _t_head / _t_ruler / _t_comp   the target's other terms (panel)
+#   cc_pty_N_sz_* / _dz_* / _fx<j>   aspect sizes and effect totals (see PANEL DISPLAY)
 #   cc_pty_N_sat          satisfaction, -100..100                        (panel)
 #   cc_pty_N_agenda       0 none, 1..3 which agenda                      (panel)
 #   cc_pty_N_agenda_due   timed: the agenda's deadline
@@ -35,6 +39,9 @@
 #   cc_pty_termlimits, cc_pty_liberal_thought, cc_pty_liberal_formed
 #   cc_pty_coup_armed / cc_pty_uprising_armed (read by the disasters)
 #   cc_pty_rivalry_feed (timed; stops the main mod's rivalry decay)
+#   cc_pty_t<T>_*   aspect sizes by archetype, for the panel (see PANEL DISPLAY)
+#   cc_pty_mem_won / _lost / _war / _law / _bankrupt   timed memories read by concerns
+#                   (set in cc_pty_on_actions.txt)
 #   cc_pty_event_slot / _type / _agenda, cc_pty_defect_from_type / _to_type (event loc)
 #   scratch: cc_pty_tmp, cc_pty_total, cc_pty_seats, cc_pty_best, cc_pty_best_type,
 #            cc_pty_best_slot, cc_pty_sc_T, cc_pty_picked_T
@@ -101,6 +108,14 @@ cc_pty_init_slot = {
 	set_variable = { name = cc_pty_$SLOT$_agenda value = 0 }
 	set_variable = { name = cc_pty_$SLOT$_neglect value = 0 }
 	set_variable = { name = cc_pty_$SLOT$_esc value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_c1 value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_c2 value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_c3 value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_t_cab value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_t_head value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_t_ruler value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_t_comp value = 0 }
+	cc_pty_init_display = { SLOT = $SLOT$ }
 	# A new party settles in before it sets an agenda.
 	random_list = {
 		1 = { set_variable = { name = cc_pty_$SLOT$_agenda_cd value = yes years = 3 } }
@@ -119,6 +134,7 @@ cc_pty_vacate_slot = {
 	remove_variable = cc_pty_$SLOT$_elected
 	remove_variable = cc_pty_$SLOT$_seats
 	remove_variable = cc_pty_$SLOT$_leader
+	remove_variable = cc_pty_$SLOT$_leader_in
 	remove_variable = cc_pty_$SLOT$_needs_leader
 	remove_variable = cc_pty_$SLOT$_last
 	remove_variable = cc_pty_$SLOT$_power
@@ -137,8 +153,7 @@ cc_pty_vacate_slot = {
 	remove_variable = cc_pty_$SLOT$_attack_cd
 	remove_variable = cc_pty_$SLOT$_favour_cd
 	remove_variable = cc_pty_$SLOT$_favour_on
-	remove_variable = cc_pty_$SLOT$_standing
-	remove_variable = cc_pty_$SLOT$_mood_pct
+	cc_pty_clear_display = { SLOT = $SLOT$ }
 }
 
 # Called through cc_pty_with_type_tk, so TYPE and KEY are the departing archetype.
@@ -152,6 +167,7 @@ cc_pty_clear_type_effects = {
 	# All three sets: per-key removal would name modifiers that only exist for the
 	# must-placate archetypes. Any still due are reapplied at the next pass.
 	cc_pty_clear_escalation_mods = yes
+	cc_pty_clear_type_display = { TYPE = $TYPE$ }
 	every_cabinet_character = {
 		limit = { cc_pty_is_member = { TYPE = $TYPE$ } }
 		cc_pty_clear_member_mood = yes
@@ -190,6 +206,11 @@ cc_pty_teardown = {
 	remove_variable = cc_pty_leaders_in
 	remove_variable = cc_pty_majority
 	remove_variable = cc_pty_last_mandate
+	remove_variable = cc_pty_mem_won
+	remove_variable = cc_pty_mem_lost
+	remove_variable = cc_pty_mem_war
+	remove_variable = cc_pty_mem_law
+	remove_variable = cc_pty_mem_bankrupt
 	if = {
 		limit = { has_country_modifier = cc_pty_leaders_in_office }
 		remove_country_modifier = cc_pty_leaders_in_office
@@ -470,11 +491,18 @@ cc_pty_recompute_all = {
 	cc_pty_update_leaders = yes
 	cc_pty_update_influence = yes
 	cc_pty_publish_top_agenda = yes
+	cc_pty_publish_display = yes
 }
 
 cc_pty_read_type = {
 	set_variable = { name = cc_pty_$SLOT$_members value = cc_pty_members_type_$TYPE$ }
-	set_variable = { name = cc_pty_$SLOT$_mood value = cc_pty_mood_type_$TYPE$ }
+	# The party's three concerns (generated per archetype); their sum is its mood.
+	set_variable = { name = cc_pty_$SLOT$_c1 value = cc_pty_concern_$TYPE$_1 }
+	set_variable = { name = cc_pty_$SLOT$_c2 value = cc_pty_concern_$TYPE$_2 }
+	set_variable = { name = cc_pty_$SLOT$_c3 value = cc_pty_concern_$TYPE$_3 }
+	set_variable = { name = cc_pty_$SLOT$_mood value = var:cc_pty_$SLOT$_c1 }
+	change_variable = { name = cc_pty_$SLOT$_mood add = var:cc_pty_$SLOT$_c2 }
+	change_variable = { name = cc_pty_$SLOT$_mood add = var:cc_pty_$SLOT$_c3 }
 	set_variable = { name = cc_pty_$SLOT$_eraw value = cc_pty_seat_raw_type_$TYPE$ }
 	if = {
 		limit = { has_variable = cc_pty_$SLOT$_suppressed }
@@ -568,15 +596,16 @@ cc_pty_publish_range = {
 
 # Called through cc_pty_with_type_sk. Every party with 10% of the seats or more grants its
 # standing modifier, scaled by its share (size = share / 25%). Below 10% it is marginalised
-# instead. cc_pty_N_standing is the strength as a percentage, for the panel.
+# instead. cc_pty_N_sz_standing / _dz_standing carry the size to the panel.
 cc_pty_apply_standing = {
 	cc_pty_clear_standing = { KEY = $KEY$ }
 	if = {
 		limit = { var:cc_pty_$SLOT$_power >= 10 }
 		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_power }
 		change_variable = { name = cc_pty_tmp divide = 25 }
-		set_variable = { name = cc_pty_$SLOT$_standing value = var:cc_pty_$SLOT$_power }
-		change_variable = { name = cc_pty_$SLOT$_standing multiply = 4 }
+		set_variable = { name = cc_pty_$SLOT$_sz_standing value = var:cc_pty_tmp }
+		set_variable = { name = cc_pty_$SLOT$_dz_standing value = var:cc_pty_tmp }
+		set_variable = { name = cc_pty_$SLOT$_sz_marginal value = 0 }
 		add_country_modifier = {
 			modifier = cc_pty_standing_$KEY$
 			years = -1
@@ -585,7 +614,9 @@ cc_pty_apply_standing = {
 		}
 	}
 	else = {
-		set_variable = { name = cc_pty_$SLOT$_standing value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_sz_standing value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_dz_standing value = 1 }
+		set_variable = { name = cc_pty_$SLOT$_sz_marginal value = 1 }
 		add_country_modifier = { modifier = cc_pty_marginal_$KEY$ years = -1 mode = replace }
 	}
 }
@@ -662,7 +693,10 @@ cc_pty_update_influence = {
 	}
 }
 
+# Also publishes cc_pty_N_leader_in (1 or 0), so the panel can show which parties' leaders
+# sit in the cabinet.
 cc_pty_count_leader_in = {
+	set_variable = { name = cc_pty_$SLOT$_leader_in value = 0 }
 	if = {
 		limit = {
 			trigger_if = {
@@ -672,6 +706,7 @@ cc_pty_count_leader_in = {
 			trigger_else = { always = no }
 		}
 		change_variable = { name = cc_pty_leaders_in add = 1 }
+		set_variable = { name = cc_pty_$SLOT$_leader_in value = 1 }
 	}
 }
 
@@ -934,8 +969,10 @@ cc_pty_clear_comp = {
 ###############################################################################
 # SATISFACTION
 #
-# Target (cc_pty_compute_target, shown in the panel) = estate mood
-#   + 15 for one seated minister, + 25 for two or more
+# Target (cc_pty_compute_target, shown in the panel) = the party's mood, the sum of its
+# three concerns (cc_pty_concern_T_1..3, generated: what this particular party watches,
+# such as court spending for the Court Party or army upkeep for the War Party)
+#   + 5 for one seated minister, + 25 for two or more
 #   - 20 with none, while holding 20% or more power
 #   + 15 if the head of the cabinet belongs to it, + 10 if the ruler does
 #   stacked cabinet: + 10 for the stacked party, - 10 for every other
@@ -949,19 +986,23 @@ cc_pty_compute_target = {
 	if = {
 		limit = { has_variable = cc_pty_$SLOT$_type }
 
-		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_mood }
+		# Each term is also stored for the panel's expectations card (cc_pty_N_t_*), and the
+		# rows there sum to the target.
+		set_variable = { name = cc_pty_$SLOT$_t_cab value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_t_head value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_t_ruler value = 0 }
 
 		if = {
 			limit = { var:cc_pty_$SLOT$_members >= 2 }
-			change_variable = { name = cc_pty_tmp add = 25 }
+			set_variable = { name = cc_pty_$SLOT$_t_cab value = 25 }
 		}
 		else_if = {
 			limit = { var:cc_pty_$SLOT$_members >= 1 }
-			change_variable = { name = cc_pty_tmp add = 15 }
+			set_variable = { name = cc_pty_$SLOT$_t_cab value = 5 }
 		}
 		else_if = {
 			limit = { var:cc_pty_$SLOT$_power >= 20 }
-			change_variable = { name = cc_pty_tmp add = -20 }
+			set_variable = { name = cc_pty_$SLOT$_t_cab value = -20 }
 		}
 
 		# The head of the cabinet is one of theirs.
@@ -972,7 +1013,7 @@ cc_pty_compute_target = {
 					cc_pty_member_of_slot = { SLOT = $SLOT$ }
 				}
 			}
-			change_variable = { name = cc_pty_tmp add = 15 }
+			set_variable = { name = cc_pty_$SLOT$_t_head value = 15 }
 		}
 
 		# The ruler is one of theirs.
@@ -980,8 +1021,14 @@ cc_pty_compute_target = {
 			limit = {
 				ruler ?= { cc_pty_member_of_slot = { SLOT = $SLOT$ } }
 			}
-			change_variable = { name = cc_pty_tmp add = 10 }
+			set_variable = { name = cc_pty_$SLOT$_t_ruler value = 10 }
 		}
+
+		set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_mood }
+		change_variable = { name = cc_pty_tmp add = var:cc_pty_$SLOT$_t_cab }
+		change_variable = { name = cc_pty_tmp add = var:cc_pty_$SLOT$_t_head }
+		change_variable = { name = cc_pty_tmp add = var:cc_pty_$SLOT$_t_ruler }
+		set_variable = { name = cc_pty_$SLOT$_t_comp value = var:cc_pty_tmp }
 
 		if = {
 			limit = { var:cc_pty_comp = 1 }
@@ -1000,6 +1047,10 @@ cc_pty_compute_target = {
 
 		clamp_variable = { name = cc_pty_tmp min = -100 max = 100 }
 		set_variable = { name = cc_pty_$SLOT$_target value = var:cc_pty_tmp }
+
+		# What the cabinet's shape (and the -100..100 clamp) changed: target minus the rest.
+		change_variable = { name = cc_pty_$SLOT$_t_comp multiply = -1 }
+		change_variable = { name = cc_pty_$SLOT$_t_comp add = var:cc_pty_tmp }
 	}
 }
 
@@ -1257,15 +1308,20 @@ cc_pty_apply_all = {
 	cc_pty_with_type = { SLOT = 3 EFFECT = cc_pty_apply_mood }
 	cc_pty_with_type = { SLOT = 4 EFFECT = cc_pty_apply_mood }
 	cc_pty_apply_push = yes
+	cc_pty_publish_display = yes
 }
 
 cc_pty_apply_slot = {
 	cc_pty_with_type = { SLOT = $SLOT$ EFFECT = cc_pty_apply_mood }
+	cc_pty_publish_display = yes
 }
 
 cc_pty_apply_mood = {
 	cc_pty_clear_country_mood = { KEY = $KEY$ }
-	set_variable = { name = cc_pty_$SLOT$_mood_pct value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_goodwill value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_discontent value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_dz_goodwill value = 1 }
+	set_variable = { name = cc_pty_$SLOT$_dz_discontent value = 1 }
 
 	# ---- Country ----
 	if = {
@@ -1275,8 +1331,8 @@ cc_pty_apply_mood = {
 		change_variable = { name = cc_pty_tmp multiply = var:cc_pty_$SLOT$_power }
 		change_variable = { name = cc_pty_tmp divide = 1250 }
 		change_variable = { name = cc_pty_tmp multiply = cc_pty_gov_weight }
-		set_variable = { name = cc_pty_$SLOT$_mood_pct value = var:cc_pty_tmp }
-		change_variable = { name = cc_pty_$SLOT$_mood_pct multiply = 100 }
+		set_variable = { name = cc_pty_$SLOT$_sz_discontent value = var:cc_pty_tmp }
+		set_variable = { name = cc_pty_$SLOT$_dz_discontent value = var:cc_pty_tmp }
 		add_country_modifier = {
 			modifier = cc_pty_discontent_$KEY$
 			years = -1
@@ -1301,8 +1357,8 @@ cc_pty_apply_mood = {
 			limit = { var:cc_pty_comp = 2 }
 			change_variable = { name = cc_pty_tmp multiply = 0.75 }
 		}
-		set_variable = { name = cc_pty_$SLOT$_mood_pct value = var:cc_pty_tmp }
-		change_variable = { name = cc_pty_$SLOT$_mood_pct multiply = 100 }
+		set_variable = { name = cc_pty_$SLOT$_sz_goodwill value = var:cc_pty_tmp }
+		set_variable = { name = cc_pty_$SLOT$_dz_goodwill value = var:cc_pty_tmp }
 		add_country_modifier = {
 			modifier = cc_pty_goodwill_$KEY$
 			years = -1
@@ -1377,6 +1433,10 @@ cc_pty_clear_member_mood = {
 # x0.5 under a balanced one.
 cc_pty_apply_push = {
 	cc_pty_clear_push = yes
+	cc_pty_reset_push_size = { SLOT = 1 }
+	cc_pty_reset_push_size = { SLOT = 2 }
+	cc_pty_reset_push_size = { SLOT = 3 }
+	cc_pty_reset_push_size = { SLOT = 4 }
 	if = {
 		limit = { var:cc_pty_dominant = 1 }
 		cc_pty_with_type_sk = { SLOT = 1 EFFECT = cc_pty_add_push }
@@ -1408,14 +1468,161 @@ cc_pty_add_push = {
 		limit = { var:cc_pty_comp = 2 }
 		set_variable = { name = cc_pty_tmp value = 0.5 }
 	}
-	set_variable = { name = cc_pty_push_pct value = var:cc_pty_tmp }
-	change_variable = { name = cc_pty_push_pct multiply = 100 }
+	set_variable = { name = cc_pty_$SLOT$_sz_push value = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_dz_push value = var:cc_pty_tmp }
 	add_country_modifier = {
 		modifier = cc_pty_push_$KEY$
 		years = -1
 		mode = replace
 		size = var:cc_pty_tmp
 	}
+}
+
+cc_pty_reset_push_size = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		set_variable = { name = cc_pty_$SLOT$_sz_push value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_dz_push value = 1 }
+	}
+}
+
+
+###############################################################################
+# PANEL DISPLAY
+#
+# What the selected party's aspect cards and the party cards' effects lists read. For each
+# aspect (standing, marginal, goodwill, discontent, push, favour, esc1, esc2):
+#   cc_pty_N_sz_<aspect>   the size its modifier is applied at now, 0 when not applied
+#   cc_pty_N_dz_<aspect>   the size to display: sz while applied, 1 (full strength) while
+#                          not; only for the scaled aspects (standing, goodwill, discontent,
+#                          push). The GUI has no Select for fixed-point numbers, hence two.
+# The apply effects set the scaled ones; this sets favour and escalation, then:
+#   cc_pty_N_fx<j>         the j-th modifier the archetype can apply, summed over every
+#                          aspect at its applied size (generated cc_pty_fx_sum_type_T)
+#   cc_pty_t<T>_*          the sizes again, by archetype: the aspect grid is drawn once per
+#                          archetype rather than once per slot and archetype
+# Run after every apply, after every recompute, and yearly (favour lapses on its own).
+###############################################################################
+
+cc_pty_publish_display = {
+	cc_pty_publish_slot_display = { SLOT = 1 }
+	cc_pty_publish_slot_display = { SLOT = 2 }
+	cc_pty_publish_slot_display = { SLOT = 3 }
+	cc_pty_publish_slot_display = { SLOT = 4 }
+	cc_pty_with_type_st = { SLOT = 1 EFFECT = cc_pty_publish_sums }
+	cc_pty_with_type_st = { SLOT = 2 EFFECT = cc_pty_publish_sums }
+	cc_pty_with_type_st = { SLOT = 3 EFFECT = cc_pty_publish_sums }
+	cc_pty_with_type_st = { SLOT = 4 EFFECT = cc_pty_publish_sums }
+}
+
+cc_pty_publish_slot_display = {
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		# Older saves: slots created before these existed.
+		if = {
+			limit = { NOT = { has_variable = cc_pty_$SLOT$_sz_standing } }
+			cc_pty_init_display = { SLOT = $SLOT$ }
+		}
+		# Whose leader sits in the cabinet (the chamber line's leader icons). Also set by
+		# cc_pty_count_leader_in; refreshed here so a loaded save shows it without waiting
+		# for a recompute.
+		set_variable = { name = cc_pty_$SLOT$_leader_in value = 0 }
+		if = {
+			limit = {
+				trigger_if = {
+					limit = { has_variable = cc_pty_$SLOT$_leader }
+					var:cc_pty_$SLOT$_leader = { in_cabinet = yes }
+				}
+				trigger_else = { always = no }
+			}
+			set_variable = { name = cc_pty_$SLOT$_leader_in value = 1 }
+		}
+		set_variable = { name = cc_pty_$SLOT$_sz_favour value = 0 }
+		if = {
+			limit = { has_variable = cc_pty_$SLOT$_favour_on }
+			set_variable = { name = cc_pty_$SLOT$_sz_favour value = 1 }
+		}
+		set_variable = { name = cc_pty_$SLOT$_sz_esc1 value = 0 }
+		set_variable = { name = cc_pty_$SLOT$_sz_esc2 value = 0 }
+		if = {
+			limit = { var:cc_pty_$SLOT$_esc >= 2 }
+			set_variable = { name = cc_pty_$SLOT$_sz_esc2 value = 1 }
+		}
+		else_if = {
+			limit = { var:cc_pty_$SLOT$_esc >= 1 }
+			set_variable = { name = cc_pty_$SLOT$_sz_esc1 value = 1 }
+		}
+	}
+}
+
+# Called through cc_pty_with_type_st. Slot SLOT holds archetype TYPE.
+cc_pty_publish_sums = {
+	cc_pty_fx_sum_type_$TYPE$ = { SLOT = $SLOT$ }
+	set_variable = { name = cc_pty_t$TYPE$_esc value = var:cc_pty_$SLOT$_esc }
+	set_variable = { name = cc_pty_t$TYPE$_sz_standing value = var:cc_pty_$SLOT$_sz_standing }
+	set_variable = { name = cc_pty_t$TYPE$_sz_marginal value = var:cc_pty_$SLOT$_sz_marginal }
+	set_variable = { name = cc_pty_t$TYPE$_sz_goodwill value = var:cc_pty_$SLOT$_sz_goodwill }
+	set_variable = { name = cc_pty_t$TYPE$_sz_discontent value = var:cc_pty_$SLOT$_sz_discontent }
+	set_variable = { name = cc_pty_t$TYPE$_sz_push value = var:cc_pty_$SLOT$_sz_push }
+	set_variable = { name = cc_pty_t$TYPE$_sz_favour value = var:cc_pty_$SLOT$_sz_favour }
+	set_variable = { name = cc_pty_t$TYPE$_dz_standing value = var:cc_pty_$SLOT$_dz_standing }
+	set_variable = { name = cc_pty_t$TYPE$_dz_goodwill value = var:cc_pty_$SLOT$_dz_goodwill }
+	set_variable = { name = cc_pty_t$TYPE$_dz_discontent value = var:cc_pty_$SLOT$_dz_discontent }
+	set_variable = { name = cc_pty_t$TYPE$_dz_push value = var:cc_pty_$SLOT$_dz_push }
+}
+
+# Every display variable of slot SLOT at rest: nothing applied, full strength shown.
+cc_pty_init_display = {
+	set_variable = { name = cc_pty_$SLOT$_sz_standing value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_marginal value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_goodwill value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_discontent value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_push value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_favour value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_esc1 value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_sz_esc2 value = 0 }
+	set_variable = { name = cc_pty_$SLOT$_dz_standing value = 1 }
+	set_variable = { name = cc_pty_$SLOT$_dz_goodwill value = 1 }
+	set_variable = { name = cc_pty_$SLOT$_dz_discontent value = 1 }
+	set_variable = { name = cc_pty_$SLOT$_dz_push value = 1 }
+}
+
+cc_pty_clear_display = {
+	remove_variable = cc_pty_$SLOT$_c1
+	remove_variable = cc_pty_$SLOT$_c2
+	remove_variable = cc_pty_$SLOT$_c3
+	remove_variable = cc_pty_$SLOT$_t_cab
+	remove_variable = cc_pty_$SLOT$_t_head
+	remove_variable = cc_pty_$SLOT$_t_ruler
+	remove_variable = cc_pty_$SLOT$_t_comp
+	remove_variable = cc_pty_$SLOT$_sz_standing
+	remove_variable = cc_pty_$SLOT$_sz_marginal
+	remove_variable = cc_pty_$SLOT$_sz_goodwill
+	remove_variable = cc_pty_$SLOT$_sz_discontent
+	remove_variable = cc_pty_$SLOT$_sz_push
+	remove_variable = cc_pty_$SLOT$_sz_favour
+	remove_variable = cc_pty_$SLOT$_sz_esc1
+	remove_variable = cc_pty_$SLOT$_sz_esc2
+	remove_variable = cc_pty_$SLOT$_dz_standing
+	remove_variable = cc_pty_$SLOT$_dz_goodwill
+	remove_variable = cc_pty_$SLOT$_dz_discontent
+	remove_variable = cc_pty_$SLOT$_dz_push
+	cc_pty_clear_fx_sums = { SLOT = $SLOT$ }
+}
+
+# From cc_pty_clear_type_effects, when archetype TYPE leaves its slot.
+cc_pty_clear_type_display = {
+	remove_variable = cc_pty_t$TYPE$_esc
+	remove_variable = cc_pty_t$TYPE$_sz_standing
+	remove_variable = cc_pty_t$TYPE$_sz_marginal
+	remove_variable = cc_pty_t$TYPE$_sz_goodwill
+	remove_variable = cc_pty_t$TYPE$_sz_discontent
+	remove_variable = cc_pty_t$TYPE$_sz_push
+	remove_variable = cc_pty_t$TYPE$_sz_favour
+	remove_variable = cc_pty_t$TYPE$_dz_standing
+	remove_variable = cc_pty_t$TYPE$_dz_goodwill
+	remove_variable = cc_pty_t$TYPE$_dz_discontent
+	remove_variable = cc_pty_t$TYPE$_dz_push
 }
 
 

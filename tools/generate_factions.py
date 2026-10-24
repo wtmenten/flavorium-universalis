@@ -46,6 +46,14 @@ def cgroup(g: str) -> str:
     return f"culture = {{ has_culture_group = culture_group:{g} }}"
 
 
+def rgroup(g: str) -> str:
+    return f"religion.group = religion_group:{g}"
+
+
+def tribal() -> str:
+    return f"OR = {{ {gov('tribe')} {gov('steppe_horde')} }}"
+
+
 def estate_power(e: str) -> str:
     return f'"estate_power(estate_type:{e}_estate)"'
 
@@ -58,17 +66,81 @@ def sat_ge(e: str, v: float) -> str:
     return f"cc_pty_estate_sat_ge = {{ ESTATE = {e}_estate VALUE = {v} }}"
 
 
-def estate_mood(e: str) -> list[str]:
-    """Estate satisfaction mapped to -40..40 (0.5 satisfaction = 0)."""
-    return [
-        "value = 0",
-        "if = {",
-        f"\tlimit = {{ {has_estate(e)} }}",
-        f"\tadd = estate_satisfaction:{e}_estate",
-        "\tsubtract = 0.5",
-        "\tmultiply = 80",
-        "}",
-    ]
+# ---------------------------------------------------------------------------
+# CONCERNS
+#
+# What a party watches. Each archetype has exactly three; their sum is the party's mood,
+# the realm-driven part of the satisfaction it expects (cc_pty_compute_target). Every
+# concern is a country-scope script value in satisfaction points, capped so no single one
+# decides the mood. A concern is (label, how to move it, script value lines).
+# ---------------------------------------------------------------------------
+
+ESTATE_NAME = {"nobles": "nobility", "burghers": "burghers", "clergy": "clergy",
+               "peasants": "peasantry", "crown": "crown"}
+POSSESSIVE = {"nobles": "nobility's", "burghers": "burghers'", "clergy": "clergy's",
+              "peasants": "peasantry's"}
+
+
+def c_estate_sat(e: str, cap: int) -> tuple:
+    """Estate satisfaction: 50% is 0, every point either side is worth cap/50."""
+    return (f"The {POSSESSIVE[e]} satisfaction",
+            f"Satisfaction 50% is neutral. From {-cap} at 0% to +{cap} at 100%. "
+            f"Raise it with privileges, lower taxes and seats in the cabinet for the {ESTATE_NAME[e]}.",
+            ["value = 0", "if = {", f"\tlimit = {{ {has_estate(e)} }}",
+             f"\tadd = estate_satisfaction:{e}_estate", "\tsubtract = 0.5", f"\tmultiply = {cap * 2}", "}"])
+
+
+def c_estate_tax(e: str) -> tuple:
+    """Estate tax rate: 30% is 0, from +10 untaxed to -10 at 55%."""
+    return (f"Taxes on the {ESTATE_NAME[e]}",
+            f"A tax rate of 30% is neutral. Lower taxes on the {ESTATE_NAME[e]} please the party, "
+            f"up to +10; raising them to 55% or more costs 10.",
+            ["value = 0", "if = {", f"\tlimit = {{ {has_estate(e)} }}", "\tadd = 0.3",
+             f'\tsubtract = "estate(estate_type:{e}_estate).estate_tax_rate"', "\tmultiply = 40", "}",
+             "min = -10", "max = 10"])
+
+
+def c_privileges(e: str, centre: int) -> tuple:
+    return (f"Privileges of the {ESTATE_NAME[e]}",
+            f"{centre} privileges are neutral. Each one more is worth +4, up to +12; each one fewer costs 4, down to -10.",
+            ["value = 0", "if = {", f"\tlimit = {{ {has_estate(e)} }}",
+             f'\tadd = "estate(estate_type:{e}_estate).num_privileges"', f"\tsubtract = {centre}",
+             "\tmultiply = 4", "}", "min = -10", "max = 12"])
+
+
+def c_slider(trigger: str, label: str, what: str, cap: int, invert: bool = False) -> tuple:
+    """A 0..1 maintenance slider: halfway is 0, the ends are +/-cap."""
+    side = "Lower" if invert else "Higher"
+    return (label,
+            f"Set on the budget. Halfway is neutral. {side} {what} is worth up to +{cap}; the other end costs {cap}.",
+            [f"value = {trigger}", "subtract = 0.5", f"multiply = {-cap * 2 if invert else cap * 2}"])
+
+
+def c_society(axis: str, sign: int, label: str, toward: str, cap: int = 20) -> tuple:
+    """A societal value axis (-100..100): every point toward the party's side is worth cap/100.
+    absolutism_vs_liberalism only counts from the age of absolutism, as the old moods did."""
+    k = fmt_num(sign * cap / 100)
+    if axis == "absolutism_vs_liberalism":
+        lines = ["value = 0", "if = {", f"	limit = {{ {age_ge('age_5_absolutism')} }}",
+                 f"	add = societal_value:{axis}", f"	multiply = {k}", "}"]
+    else:
+        lines = [f"value = societal_value:{axis}", f"multiply = {k}"]
+    return (label,
+            f"Society at the centre is neutral. Fully toward {toward} is worth +{cap}; fully the other way costs {cap}. "
+            f"The strongest party moves society its way.",
+            lines + [f"min = -{cap}", f"max = {cap}"])
+
+
+def c_crown_power(centre: float, cap: int = 15) -> tuple:
+    return ("The crown's power",
+            f"The crown holding {int(centre * 100)}% of the realm's power is neutral. Each point more is worth +1, up to +{cap}; "
+            f"each point less costs 1, down to -{cap}.",
+            [f"value = {estate_power('crown')}", f"subtract = {centre}", "multiply = 100",
+             f"min = -{cap}", f"max = {cap}"])
+
+
+def fmt_num(v: float) -> str:
+    return f"{v:.4f}".rstrip("0").rstrip(".")
 
 
 # ---------------------------------------------------------------------------
@@ -87,14 +159,17 @@ def estate_mood(e: str) -> list[str]:
 
 T = [
     dict(
-        id=1, key="royalist", name="Court Party",
-        blurb="stands for the crown's own authority",
+        id=1, key="royalist", name="Royalists",
+        blurb="stand for the authority of the crown, or of the state where there is no crown",
         power=[f"value = {estate_power('crown')}", "multiply = 80",
                f"add = {{ value = {estate_power('nobles')} multiply = 20 }}"],
-        mood=[f"value = {estate_power('crown')}", "subtract = 0.35", "multiply = 100",
-              "min = -40", "max = 40"],
-        mood_text="how much of the realm's power the crown holds",
-        eligible=[f"OR = {{ {gov('monarchy')} {gov('steppe_horde')} }}"],
+        concerns=[
+            c_crown_power(0.35),
+            ("Stability", "Stability 0 is neutral. Every 10 stability either way is worth 1.5, up to +15 or down to -15.",
+             ["value = stability", "multiply = 0.15", "min = -15", "max = 15"]),
+            c_slider("court_maintenance", "Court spending", "spending on the court", 10),
+        ],
+        eligible=[f"OR = {{ {gov('monarchy')} {gov('steppe_horde')} {gov('republic')} }}"],
         score=[f"if = {{ limit = {{ {gov('monarchy')} }} add = 15 }}"],
         goodwill=dict(diplomatic_reputation=0.25, monthly_political_influence=0.1,
                       crown_estate_agenda_impact=0.05),
@@ -105,14 +180,21 @@ T = [
         agenda1=(f"{estate_power('crown')} >= 0.40", "Raise the crown's share of power to 40%."),
         agenda3=("stability >= 50", "Raise stability to 50."),
         traits=["royal_absolutist"], estates=["crown"],
-        names=[(f"{cgroup('british_group')} {age_ge('age_5_absolutism')}", "Tory Party")],
+        names=[
+            (f"{cgroup('british_group')} {age_ge('age_5_absolutism')} {gov('monarchy')}", "Tories"),
+            (gov("republic"), "Statists"),
+            (gov("steppe_horde"), "Loyalists"),
+        ],
     ),
     dict(
-        id=2, key="aristocratic", name="Aristocratic Faction",
-        blurb="speaks for the nobility",
+        id=2, key="aristocratic", name="Magnates",
+        blurb="speak for the nobility",
         power=[f"value = {estate_power('nobles')}", "multiply = 100"],
-        mood=estate_mood("nobles"),
-        mood_text="the satisfaction of the nobility",
+        concerns=[
+            c_estate_sat("nobles", 20),
+            c_privileges("nobles", 2),
+            c_estate_tax("nobles"),
+        ],
         eligible=[has_estate("nobles")],
         score=[f"if = {{ limit = {{ OR = {{ {gov('tribe')} {gov('steppe_horde')} }} }} add = 10 }}"],
         goodwill=dict(global_max_control=0.02, nobles_estate_agenda_impact=0.05),
@@ -124,16 +206,27 @@ T = [
         agenda3=(f"{estate_power('nobles')} >= 0.35", "Raise the nobility's share of power to 35%."),
         traits=["noble_champion_of_court", "noble_champion"], estates=["nobles"],
         names=[
-            (f"has_or_had_tag = HOL {age_lt('age_4_reformation')}", "Hook Party"),
+            (f"has_or_had_tag = HOL {age_lt('age_4_reformation')}", "Hooks"),
             (f"{cgroup('italian_group')} {age_lt('age_3_discovery')}", "Ghibellines"),
+            (tribal(), "Clan Elders"),
+            (f"OR = {{ {cgroup('russian_group')} {cgroup('romanian_group')} }}", "Boyars"),
+            (cgroup("iberian_group"), "Grandees"),
         ],
     ),
     dict(
-        id=3, key="mercantile", name="Merchant Interest",
-        blurb="speaks for the burghers and the trading houses",
+        id=3, key="mercantile", name="Merchants",
+        blurb="speak for the burghers and the trading houses",
         power=[f"value = {estate_power('burghers')}", "multiply = 100"],
-        mood=estate_mood("burghers"),
-        mood_text="the satisfaction of the burghers",
+        concerns=[
+            c_estate_sat("burghers", 20),
+            c_estate_tax("burghers"),
+            ("Peace and credit",
+             "+5 at peace with no loans. War costs 8, each loan 2, and a bankruptcy in the last twenty years 10. Never below -15.",
+             ["value = 5", "if = { limit = { at_war = yes } add = -8 }",
+              "add = { value = num_loans multiply = -2 }",
+              "if = { limit = { has_variable = cc_pty_mem_bankrupt } add = -10 }",
+              "min = -15", "max = 5"]),
+        ],
         eligible=[has_estate("burghers")],
         score=[f"if = {{ limit = {{ {gov('republic')} }} add = 15 }}"],
         goodwill=dict(trade_land_efficiency=0.03, trade_sea_efficiency=0.03,
@@ -145,14 +238,22 @@ T = [
         agenda1=(sat_ge("burghers", 0.6), "Keep the burghers' satisfaction at 60% or more."),
         agenda3=(f"{estate_power('burghers')} >= 0.30", "Raise the burghers' share of power to 30%."),
         traits=["merchant_of_the_crown", "merchant_prince"], estates=["burghers"],
-        names=[(f"has_or_had_tag = HOL {age_lt('age_4_reformation')}", "Cod Party")],
+        names=[
+            (f"has_or_had_tag = HOL {age_lt('age_4_reformation')}", "Cods"),
+            (gov("republic"), "Oligarchs"),
+        ],
     ),
     dict(
-        id=4, key="clerical", name="Clerical Party",
-        blurb="speaks for the clergy",
+        id=4, key="clerical", name="Clericals",
+        blurb="speak for the clergy",
         power=[f"value = {estate_power('clergy')}", "multiply = 100"],
-        mood=estate_mood("clergy"),
-        mood_text="the satisfaction of the clergy",
+        concerns=[
+            c_estate_sat("clergy", 20),
+            ("Religious unity",
+             "80% of the population sharing the state religion is neutral. Full unity is worth +10; every 2 points below 80% costs 1, down to -15.",
+             ["value = religious_unity", "subtract = 0.8", "multiply = 50", "min = -15", "max = 10"]),
+            c_privileges("clergy", 2),
+        ],
         eligible=[has_estate("clergy")],
         score=[f"if = {{ limit = {{ {gov('theocracy')} }} add = 25 }}"],
         goodwill=dict(monthly_religious_influence=0.1, clergy_estate_agenda_impact=0.05),
@@ -163,19 +264,33 @@ T = [
         agenda1=(sat_ge("clergy", 0.6), "Keep the clergy's satisfaction at 60% or more."),
         agenda3=(f"{estate_power('clergy')} >= 0.25", "Raise the clergy's share of power to 25%."),
         traits=["court_prelate"], estates=["clergy"],
-        names=[(f"{cgroup('italian_group')} {age_lt('age_3_discovery')}", "Guelphs")],
+        names=[
+            (f"{cgroup('italian_group')} {age_lt('age_3_discovery')}", "Guelphs"),
+            (f"religion = religion:catholic {age_ge('age_4_reformation')}", "Ultramontanes"),
+            (rgroup("muslim"), "Ulema"),
+            (rgroup("dharmic"), "Brahmins"),
+            (rgroup("buddhist"), "Sangha"),
+        ],
     ),
     dict(
-        id=5, key="military", name="War Party",
-        blurb="speaks for the officers and the army",
+        id=5, key="military", name="Hawks",
+        blurb="speak for the officers and the army",
         power=[f"value = {estate_power('nobles')}", "multiply = 40",
                f"add = {{ value = {estate_power('crown')} multiply = 20 }}",
                "if = { limit = { at_war = yes } add = 15 }"],
-        mood=["value = -10", "if = { limit = { at_war = yes } add = 25 }",
-              "if = {", f"\tlimit = {{ {has_estate('nobles')} }}",
-              "\tadd = { value = estate_satisfaction:nobles_estate subtract = 0.5 multiply = 40 }", "}",
-              "min = -40", "max = 40"],
-        mood_text="whether the realm is at war, and the satisfaction of the nobility",
+        concerns=[
+            ("War record",
+             "+10 while at war, +10 for a war won in the last ten years, -15 for a war lost in the last ten years, and -10 after ten years without a war. From -20 to +20.",
+             ["value = 0", "if = { limit = { at_war = yes } add = 10 }",
+              "if = { limit = { has_variable = cc_pty_mem_won } add = 10 }",
+              "if = { limit = { has_variable = cc_pty_mem_lost } add = -15 }",
+              "if = { limit = { at_war = no NOT = { has_variable = cc_pty_mem_war } } add = -10 }",
+              "min = -20", "max = 20"]),
+            c_slider("army_maintenance", "Army upkeep", "army maintenance", 15),
+            ("Size of the army",
+             "An army at 75% of its expected size is neutral. Each point more is worth 0.4, up to +10; each point less costs 0.4, down to -15.",
+             ["value = army_size_percentage", "subtract = 0.75", "multiply = 40", "min = -15", "max = 10"]),
+        ],
         eligible=["always = yes"],
         score=[f"if = {{ limit = {{ OR = {{ {gov('tribe')} {gov('steppe_horde')} }} }} add = 15 }}"],
         goodwill=dict(land_morale_modifier=0.03),
@@ -185,15 +300,23 @@ T = [
         agenda1=("at_war = yes", "Go to war."),
         agenda3=(sat_ge("nobles", 0.5), "Keep the nobility's satisfaction at 50% or more."),
         traits=["hawk_minister"], estates=[],
-        names=[(f"has_or_had_tag = SWE {age_ge('age_5_absolutism')}", "Hat Party")],
+        names=[
+            (f"has_or_had_tag = SWE {age_ge('age_5_absolutism')}", "Hats"),
+            (tribal(), "Warband"),
+        ],
         escalates=True,
     ),
     dict(
-        id=6, key="agrarian", name="Agrarian Party",
-        blurb="speaks for the peasantry and the countryside",
+        id=6, key="agrarian", name="Agrarians",
+        blurb="speak for the peasantry and the countryside",
         power=[f"value = {estate_power('peasants')}", "multiply = 100"],
-        mood=estate_mood("peasants"),
-        mood_text="the satisfaction of the peasantry",
+        concerns=[
+            c_estate_sat("peasants", 20),
+            c_estate_tax("peasants"),
+            ("War exhaustion",
+             "+5 with no war exhaustion. Each point of war exhaustion costs 1.5, down to -15.",
+             ["value = 5", "add = { value = war_exhaustion multiply = -1.5 }", "min = -15", "max = 5"]),
+        ],
         eligible=[has_estate("peasants")],
         score=[],
         goodwill=dict(global_manpower_modifier=0.05, peasants_estate_agenda_impact=0.05),
@@ -204,18 +327,24 @@ T = [
         agenda3=("stability >= 30", "Raise stability to 30."),
         traits=[], estates=["peasants"],
         names=[
-            (f"has_or_had_tag = SWE {age_ge('age_5_absolutism')}", "Cap Party"),
+            (f"has_or_had_tag = SWE {age_ge('age_5_absolutism')}", "Caps"),
             (f"{cgroup('british_group')} {age_ge('age_4_reformation')}", "Country Party"),
         ],
     ),
     dict(
-        id=7, key="reformist", name="Reform Party",
-        blurb="wants a better-run, more modern state",
+        id=7, key="reformist", name="Reformers",
+        blurb="want a better-run, more modern state",
         power=[f"value = {estate_power('burghers')}", "multiply = 60",
                f"add = {{ value = {estate_power('peasants')} multiply = 20 }}"],
-        mood=["value = societal_value:traditionalist_vs_innovative", "multiply = 0.4",
-              "min = -40", "max = 40"],
-        mood_text="how innovative the society is",
+        concerns=[
+            c_society("traditionalist_vs_innovative", 1, "Innovative society", "Innovative"),
+            ("Literacy",
+             "Average literacy of 20% is neutral. Each point more is worth 0.3, up to +15; each point less costs 0.3, down to -6.",
+             ["value = average_country_literacy", "subtract = 20", "multiply = 0.3", "min = -6", "max = 15"]),
+            ("Pace of reform",
+             "+8 if a law was changed in the last five years; -4 if none was.",
+             ["value = -4", "if = { limit = { has_variable = cc_pty_mem_law } value = 8 }"]),
+        ],
         eligible=[age_ge("age_2_renaissance"),
                   f"NOT = {{ {gov('tribe')} }}", f"NOT = {{ {gov('steppe_horde')} }}"],
         score=[f"if = {{ limit = {{ {gov('republic')} }} add = 10 }}",
@@ -229,20 +358,23 @@ T = [
         agenda3=(sat_ge("burghers", 0.6), "Keep the burghers' satisfaction at 60% or more."),
         traits=["liberal_reformer", "efficiency_administrator"], estates=[],
         names=[
-            (age_lt("age_4_reformation"), "Humanist Circle"),
-            (f"{cgroup('british_group')} {age_ge('age_5_absolutism')}", "Whig Party"),
+            (age_lt("age_4_reformation"), "Humanists"),
+            (f"{cgroup('british_group')} {age_ge('age_5_absolutism')}", "Whigs"),
         ],
         term_limits=True,
     ),
     dict(
-        id=8, key="absolutist", name="Absolutist Party",
-        blurb="wants every power gathered into the crown",
+        id=8, key="absolutist", name="Absolutists",
+        blurb="want every power gathered into the crown",
         power=[f"value = {estate_power('crown')}", "multiply = 70",
                f"add = {{ value = {estate_power('nobles')} multiply = 30 }}"],
-        mood=["value = 0", "if = {", f"\tlimit = {{ {age_ge('age_5_absolutism')} }}",
-              "\tadd = societal_value:absolutism_vs_liberalism", "\tmultiply = -0.4", "}",
-              "min = -40", "max = 40"],
-        mood_text="how far society leans toward Absolutism",
+        concerns=[
+            c_society("absolutism_vs_liberalism", -1, "Absolutist society", "Absolutism"),
+            c_crown_power(0.45),
+            ("Estate privileges",
+             "Six privileges across all estates is neutral. Each one fewer is worth +2, up to +10; each one more costs 2, down to -10.",
+             ["value = 6", "subtract = num_privileges", "multiply = 2", "min = -10", "max = 10"]),
+        ],
         eligible=[age_ge("age_5_absolutism"), gov("monarchy")],
         score=["if = { limit = { current_age = age_5_absolutism } add = 15 }"],
         goodwill=dict(global_crown_estate_power=0.03, crown_estate_agenda_impact=0.05),
@@ -253,19 +385,21 @@ T = [
                  "Move society to 30 or more toward Absolutism."),
         agenda3=(f"{estate_power('crown')} >= 0.45", "Raise the crown's share of power to 45%."),
         traits=["royal_absolutist"], estates=["crown"],
-        names=[],
+        names=[
+            (f"{cgroup('french_group')} {age_ge('age_6_revolutions')}", "Ultras"),
+        ],
     ),
     dict(
-        id=9, key="regionalist", name="Regional Party",
-        blurb="speaks for the provinces and subject lands against the capital",
+        id=9, key="regionalist", name="Particularists",
+        blurb="speak for the provinces and subject lands against the capital",
         power=[f"value = {estate_power('nobles')}", "multiply = 50",
                f"add = {{ value = {estate_power('peasants')} multiply = 30 }}",
                "if = { limit = { num_subjects >= 2 } add = 10 }"],
-        mood=["value = -10", "if = {", f"\tlimit = {{ {has_estate('nobles')} }}",
-              "\tadd = { value = estate_satisfaction:nobles_estate subtract = 0.5 multiply = 40 }", "}",
-              "if = { limit = { num_subjects >= 3 } add = -10 }",
-              "min = -40", "max = 40"],
-        mood_text="the satisfaction of the provincial nobility, and how many subjects answer to the capital",
+        concerns=[
+            c_society("centralization_vs_decentralization", 1, "Decentralised society", "Decentralization"),
+            c_estate_sat("nobles", 15),
+            c_slider("court_maintenance", "Court spending", "spending on the court", 10, invert=True),
+        ],
         eligible=["OR = { num_subjects >= 2 num_provinces >= 30 }"],
         score=["if = { limit = { num_subjects >= 4 } add = 10 }"],
         goodwill=dict(global_monthly_control=0.001),
@@ -275,20 +409,27 @@ T = [
         agenda1=("at_war = no", "Be at peace."),
         agenda3=(sat_ge("nobles", 0.6), "Keep the nobility's satisfaction at 60% or more."),
         traits=["regional_magnate"], estates=[],
-        names=[],
+        names=[
+            (gov("republic"), "Federalists"),
+        ],
         escalates=True,
     ),
     dict(
-        id=10, key="colonial", name="Colonial Lobby",
-        blurb="speaks for the colonies and the companies that trade with them",
+        id=10, key="colonial", name="Colonialists",
+        blurb="speak for the colonies and the companies that trade with them",
         power=[f"value = {estate_power('burghers')}", "multiply = 60",
                f"add = {{ value = {estate_power('nobles')} multiply = 20 }}",
                "add = { value = cc_pty_num_colonial_subjects multiply = 8 }"],
-        mood=["value = 0", "if = {", f"\tlimit = {{ {has_estate('burghers')} }}",
-              "\tadd = { value = estate_satisfaction:burghers_estate subtract = 0.5 multiply = 40 }", "}",
-              "if = { limit = { at_war = yes } add = -10 }",
-              "min = -40", "max = 40"],
-        mood_text="the satisfaction of the burghers, and whether trade is disturbed by war",
+        concerns=[
+            ("Colonial subjects",
+             "-5 with one colonial subject; each one more is worth +5, up to +15.",
+             ["value = cc_pty_num_colonial_subjects", "multiply = 5", "subtract = 10", "min = -5", "max = 15"]),
+            c_estate_sat("burghers", 15),
+            ("The sea lanes",
+             "Navy maintenance halfway is neutral; full maintenance is worth +10 and none costs 10. War costs a further 5.",
+             ["value = navy_maintenance", "subtract = 0.5", "multiply = 20",
+              "if = { limit = { at_war = yes } add = -5 }"]),
+        ],
         eligible=["cc_pty_num_colonial_subjects >= 1"],
         score=["add = 5"],
         goodwill=dict(global_merchant_power=0.05, trade_sea_efficiency=0.03),
@@ -298,19 +439,24 @@ T = [
         agenda1=("cc_pty_num_colonial_subjects >= 2", "Have at least two colonial subjects."),
         agenda3=(sat_ge("burghers", 0.6), "Keep the burghers' satisfaction at 60% or more."),
         traits=["expansionist_advisor"], estates=[],
-        names=[],
+        names=[
+            (f"OR = {{ {cgroup('netherlandish_group')} {cgroup('british_group')} }} {age_ge('age_4_reformation')}", "Company Men"),
+            (cgroup("iberian_group"), "Indies Interest"),
+        ],
     ),
     dict(
-        id=11, key="liberal", name="Liberal Party",
-        blurb="wants constitutional government and the rights of the citizen",
+        id=11, key="liberal", name="Liberals",
+        blurb="want constitutional government and the rights of the citizen",
         power=[f"value = {estate_power('burghers')}", "multiply = 50",
                f"add = {{ value = {estate_power('peasants')} multiply = 30 }}",
                "if = { limit = { has_variable = cc_pty_liberal_thought } add = { value = var:cc_pty_liberal_thought multiply = 0.4 } }"],
-        mood=["value = 0", "if = {", f"\tlimit = {{ {age_ge('age_5_absolutism')} }}",
-              "\tadd = societal_value:absolutism_vs_liberalism", "\tmultiply = 0.4", "}",
-              "if = { limit = { has_variable = cc_pty_termlimits } add = 10 }",
-              "min = -40", "max = 40"],
-        mood_text="how far society leans toward Liberalism, and whether ministers serve limited terms",
+        concerns=[
+            c_society("absolutism_vs_liberalism", 1, "Liberal society", "Liberalism"),
+            ("Term limits",
+             "+10 while ministers serve limited terms, -5 while they do not.",
+             ["value = -5", "if = { limit = { has_variable = cc_pty_termlimits } value = 10 }"]),
+            c_estate_tax("burghers"),
+        ],
         eligible=["has_variable = cc_pty_liberal_formed"],
         score=["add = 25"],
         goodwill=dict(monthly_political_influence_gain_modifier=0.05, burghers_estate_agenda_impact=0.05),
@@ -321,7 +467,11 @@ T = [
                  "Move society to 30 or more toward Liberalism."),
         agenda3=("has_variable = cc_pty_termlimits", "Limit the terms of cabinet ministers."),
         traits=["liberal_reformer"], estates=[],
-        names=[],
+        names=[
+            (f"{cgroup('french_group')} {age_ge('age_6_revolutions')} {gov('republic')}", "Jacobins"),
+            (f"{cgroup('british_group')} {age_ge('age_6_revolutions')}", "Radicals"),
+            (gov("monarchy"), "Constitutionalists"),
+        ],
         escalates=True, term_limits=True,
     ),
 ]
@@ -368,14 +518,14 @@ SEAT = {
 # under 10% of the seats is marginalised instead: its estate's target satisfaction falls.
 STANDING = {
     "royalist": dict(monthly_legitimacy=0.05, global_crown_estate_power=0.02),
-    "aristocratic": dict(global_nobles_estate_power=0.03, global_max_control=0.01),
+    "aristocratic": dict(global_nobles_estate_power=0.25, global_max_control=0.01),
     "mercantile": dict(global_burghers_estate_power=0.03, trade_land_efficiency=0.02),
     "clerical": dict(global_clergy_estate_power=0.03, monthly_religious_influence=0.05),
     "military": dict(land_morale_modifier=0.02, global_manpower_modifier=0.02),
     "agrarian": dict(global_peasants_estate_power=0.03, global_manpower_modifier=0.03),
     "reformist": dict(country_cabinet_efficiency=0.02, monthly_political_influence=0.03),
     "absolutist": dict(global_crown_estate_power=0.03, monthly_political_influence=0.05),
-    "regionalist": dict(global_nobles_estate_power=0.02, global_max_control=-0.01),
+    "regionalist": dict(global_nobles_estate_power=0.10, global_max_control=-0.01),
     "colonial": dict(global_merchant_power=0.03, trade_sea_efficiency=0.02),
     "liberal": dict(monthly_political_influence_gain_modifier=0.03, global_burghers_estate_power=0.02),
 }
@@ -429,22 +579,22 @@ ESCALATION = {
         warn=dict(country_cabinet_efficiency=-0.02),
         unrest=dict(country_cabinet_efficiency=-0.05, monthly_rebel_growth=0.005),
         warn_name="Officers' Grumbling", unrest_name="Officers Conspiring",
-        warn_desc="The War Party is angry and powerful, and the officers talk openly about it. If nothing changes they will start to organise.",
-        unrest_desc="The officers have started to organise. If the War Party stays angry and powerful, they will attempt a coup.",
+        warn_desc="The Hawks are angry and powerful, and the officers talk openly about it. If nothing changes they will start to organise.",
+        unrest_desc="The officers have started to organise. If the Hawks stay angry and powerful, the officers will attempt a coup.",
     ),
     "regionalist": dict(
         warn=dict(global_max_control=-0.01),
         unrest=dict(monthly_nationalist_rebel_growth=0.01, global_max_control=-0.02),
         warn_name="Provincial Grievances", unrest_name="Provinces Restless",
-        warn_desc="The Regional Party is angry and powerful, and the provinces are listening. If nothing changes they will start to resist the capital.",
-        unrest_desc="The provinces have started to resist the capital. If the Regional Party stays angry and powerful, they will rise, or the subjects will break away.",
+        warn_desc="The Particularists are angry and powerful, and the provinces are listening. If nothing changes they will start to resist the capital.",
+        unrest_desc="The provinces have started to resist the capital. If the Particularists stay angry and powerful, the provinces will rise, or the subjects will break away.",
     ),
     "liberal": dict(
         warn=dict(monthly_political_influence=-0.05),
         unrest=dict(monthly_rebel_growth=0.01, monthly_towards_liberalism="societal_value_tiny_monthly_move"),
         warn_name="Liberal Agitation", unrest_name="Liberal Clubs Organising",
-        warn_desc="The Liberal Party is angry and powerful, and its pamphlets are everywhere. If nothing changes it will start to organise.",
-        unrest_desc="The liberal clubs are organising. If the Liberal Party stays angry and powerful, there will be an uprising.",
+        warn_desc="The Liberals are angry and powerful, and their pamphlets are everywhere. If nothing changes they will start to organise.",
+        unrest_desc="The liberal clubs are organising. If the Liberals stay angry and powerful, there will be an uprising.",
     ),
 }
 
@@ -503,7 +653,8 @@ def fmt_val(v) -> str:
 
 
 def values_file() -> str:
-    parts = [HEADER, "# Country scope. One value of each kind per archetype; cc_pty_read_type picks by type.\n"]
+    parts = [HEADER, "# Country scope. One value of each kind per archetype; cc_pty_read_type picks by type.\n"
+                     "# cc_pty_concern_T_1..3 are what the party watches; their sum is its mood.\n"]
     for t in T:
         i = t["id"]
         parts.append(f"# ---- {i} {t['key']} ----")
@@ -511,7 +662,10 @@ def values_file() -> str:
         parts.append(block(f"cc_pty_members_type_{i}", [
             "value = 0", "every_cabinet_character = {",
             f"\tlimit = {{ cc_pty_is_member = {{ TYPE = {i} }} }}", "\tadd = 1", "}"]))
-        parts.append(block(f"cc_pty_mood_type_{i}", t["mood"]))
+        assert len(t["concerns"]) == 3, f"{t['key']}: every archetype has exactly three concerns"
+        for n, (label, _, lines) in enumerate(t["concerns"], 1):
+            parts.append(f"# Concern {n}: {label}")
+            parts.append(block(f"cc_pty_concern_{i}_{n}", lines))
         parts.append(block(f"cc_pty_realign_score_type_{i}",
                            [f"value = cc_pty_estate_power_type_{i}"] + t["score"]))
         sd = SEAT[t["key"]]
@@ -721,6 +875,26 @@ def effects_file() -> str:
             "if = {", f"\tlimit = {{ has_country_modifier = cc_pty_push_{t['key']} }}",
             f"\tremove_country_modifier = cc_pty_push_{t['key']}", "}")]))
     p.append("")
+
+    # Card effects list: per-modifier totals across every aspect, at the size each is applied at
+    # now (cc_pty_N_sz_<aspect>, published by cc_pty_publish_display before this runs).
+    p.append("# Country scope, slot SLOT holds archetype T (cc_pty_publish_sums). cc_pty_SLOT_fx<j> is the\n"
+             "# total of the j-th modifier the archetype can apply, for the card's effects list.")
+    for t in T:
+        lines = []
+        for j, m in enumerate(type_mods(t), 1):
+            lines.append(f"set_variable = {{ name = cc_pty_$SLOT$_fx{j} value = 0 }}")
+            for a in aspects(t):
+                if m in a["mods"]:
+                    lines += [f"set_variable = {{ name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_{a['key']} }}",
+                              f"change_variable = {{ name = cc_pty_tmp multiply = {fmt_val(mod_value(a['mods'][m]))} }}",
+                              f"change_variable = {{ name = cc_pty_$SLOT$_fx{j} add = var:cc_pty_tmp }}"]
+        p.append(f"# {t['id']} {t['key']}: " + ", ".join(type_mods(t)))
+        p.append(block(f"cc_pty_fx_sum_type_{t['id']}", lines))
+        p.append("")
+    p.append("# Country scope. Remove slot SLOT's effect totals.")
+    p.append(block("cc_pty_clear_fx_sums", [f"remove_variable = cc_pty_$SLOT$_fx{j}" for j in range(1, MAX_FX + 1)]))
+    p.append("")
     return "\n".join(p) + "\n"
 
 
@@ -811,12 +985,15 @@ def customloc_file() -> str:
         ["text = { localization_key = cc_pty_agenda_none fallback = yes }"]))
     p.append("")
 
-    for kind in ("standing", "marginal", "goodwill", "discontent", "favour", "push"):
-        for s_ in SLOTS:
-            p.append(block(f"cc_pty_fx_{kind}_{s_}", ["type = country"] + [
-                f"text = {{ trigger = {{ {slot_type(s_, t['id'])} }} localization_key = cc_pty_fx_{kind}_{t['key']} }}" for t in T] +
-                ["text = { localization_key = cc_pty_fx_none fallback = yes }"]))
-            p.append("")
+    # Concern labels (cc_pty_cn_S_N) and their explanations (cc_pty_cnd_S_N) for the party in
+    # slot S, for the panel's expectations card.
+    for s_ in SLOTS:
+        for n in (1, 2, 3):
+            for name, suffix in ((f"cc_pty_cn_{s_}_{n}", ""), (f"cc_pty_cnd_{s_}_{n}", "_desc")):
+                p.append(block(name, ["type = country"] + [
+                    f"text = {{ trigger = {{ {slot_type(s_, t['id'])} }} localization_key = cc_pty_concern_{t['key']}_{n}{suffix} }}" for t in T] +
+                    ["text = { localization_key = cc_pty_concern_none fallback = yes }"]))
+                p.append("")
     return "\n".join(p) + "\n"
 
 
@@ -875,28 +1052,12 @@ def loc_file() -> str:
             L.append(f' cc_pty_type_{t["key"]}_v{n + 1}: "{q(nm)}"')
     L.append(' cc_pty_type_unknown: "Unformed Party"')
     L.append("")
-    L.append(" # ---- Effect lists for the panel (values at full strength) ----")
-
-    def fx_line(mtype, v):
-        v = SCRIPT_VALUES.get(v, v)
-        good = (v > 0) != (mtype in BAD)
-        num = fmt_val(round(v * 100, 2)) + "%" if mtype not in FLAT else fmt_val(v)
-        sign = "+" if v > 0 else ""
-        col = "P" if good else "N"
-        return f"#{col} {sign}{num}#! $MODIFIER_TYPE_NAME_{mtype}$"
-
-    def fx(body):
-        return "\\n".join(fx_line(m, v) for m, v in body.items())
-
+    L.append(" # ---- Concerns: what each party watches (panel expectations card) ----")
     for t in T:
-        k = t["key"]
-        L.append(f' cc_pty_fx_standing_{k}: "{fx(STANDING[k])}"')
-        L.append(f' cc_pty_fx_marginal_{k}: "{fx({SEAT[k]["leader"] + "_target_satisfaction": MARGINAL_VALUE})}"')
-        L.append(f' cc_pty_fx_goodwill_{k}: "{fx(t["goodwill"])}"')
-        L.append(f' cc_pty_fx_discontent_{k}: "{fx(t["discontent"])}"')
-        L.append(f' cc_pty_fx_favour_{k}: "{fx(t["favour"])}"')
-        L.append(f' cc_pty_fx_push_{k}: "{fx({"monthly_towards_" + t["push"]: "societal_value_tiny_monthly_move"})}"')
-    L.append(' cc_pty_fx_none: ""')
+        for n, (label, desc, _) in enumerate(t["concerns"], 1):
+            L.append(f' cc_pty_concern_{t["key"]}_{n}: "{q(label)}"')
+            L.append(f' cc_pty_concern_{t["key"]}_{n}_desc: "{q(desc)}"')
+    L.append(' cc_pty_concern_none: ""')
     L.append("")
     L.append(" # ---- Agendas ----")
     L.append(' cc_pty_agenda_none: "No agenda"')
@@ -909,21 +1070,21 @@ def loc_file() -> str:
     for t in T:
         k, nm = t["key"], t["name"]
         L.append(f' MODIFIER_TYPE_NAME_cc_pty_party_{k}: "Member of the {q(nm)}"')
-        L.append(f' MODIFIER_TYPE_DESC_cc_pty_party_{k}: "This character belongs to the {q(nm)}, which {q(t["blurb"])}."')
+        L.append(f' MODIFIER_TYPE_DESC_cc_pty_party_{k}: "This character belongs to the {q(nm)}, who {q(t["blurb"])}."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_member_{k}: "{q(nm)}"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_member_{k}: "A member of the {q(nm)}, which {q(t["blurb"])}."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_member_{k}: "A member of the {q(nm)}, who {q(t["blurb"])}."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_goodwill_{k}: "{q(nm)} Goodwill"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_goodwill_{k}: "The {q(nm)} is pleased with the government. Scales with its power and satisfaction."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_goodwill_{k}: "The {q(nm)} are pleased with the government. Scales with their power and satisfaction."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_discontent_{k}: "{q(nm)} Discontent"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_discontent_{k}: "The {q(nm)} is unhappy with the government. Scales with its power and how unhappy it is."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_discontent_{k}: "The {q(nm)} are unhappy with the government. Scales with their power and how unhappy they are."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_favour_{k}: "Favour of the {q(nm)}"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_favour_{k}: "The {q(nm)} put its people and connections at the government\'s disposal when asked."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_favour_{k}: "The {q(nm)} put their people and connections at the government\'s disposal when asked."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_standing_{k}: "{q(nm)} Standing"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_standing_{k}: "What the {q(nm)} brings to the realm by holding seats. Scales with its share of the chamber."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_standing_{k}: "What the {q(nm)} bring to the realm by holding seats. Scales with their share of the chamber."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_marginal_{k}: "{q(nm)} Marginalised"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_marginal_{k}: "The {q(nm)} holds less than a tenth of the chamber, and the estate behind it feels unheard."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_marginal_{k}: "The {q(nm)} hold less than a tenth of the chamber, and the estate behind them feels unheard."')
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_push_{k}: "{q(nm)} Ascendant"')
-        L.append(f' STATIC_MODIFIER_DESC_cc_pty_push_{k}: "The {q(nm)} is the strongest party in the realm, and society moves its way."')
+        L.append(f' STATIC_MODIFIER_DESC_cc_pty_push_{k}: "The {q(nm)} are the strongest party in the realm, and society moves their way."')
     for k, e in ESCALATION.items():
         L.append(f' STATIC_MODIFIER_NAME_cc_pty_esc_1_{k}: "{q(e["warn_name"])}"')
         L.append(f' STATIC_MODIFIER_DESC_cc_pty_esc_1_{k}: "{q(e["warn_desc"])}"')
@@ -953,6 +1114,23 @@ SEAT_PX = 16
 # Seat-count icon on the cards and the chamber line. Empty seats in the grid keep the
 # faded parliament icon.
 SEATS_ICON = "gfx/interface/icons/character_roles/regent.dds"
+# Party card minimum height, so the two cards in a row line up: margins 12, header 22,
+# status 18, leader 38, agenda 30, the rule above the effects 5, spacing 10, and up to
+# seven effect rows at 13 each.
+CARD_MIN_H = 12 + 22 + 18 + 38 + 30 + 5 + 10 + 13 * 7
+# Status iconography (all base-game textures).
+_I = "gfx/interface/icons"
+MOOD_ICONS = {
+    "pleased": f"{_I}/flat_icons/happy.dds",
+    "content": f"{_I}/flat_icons/neutral.dds",
+    "discontent": f"{_I}/flat_icons/sad.dds",
+    "angry": f"{_I}/alerts_icons/unhappy_estates.dds",
+}
+ICON_TREND_UP = f"{_I}/text_icons/arrow_bonus_tier_1.dds"
+ICON_TREND_DOWN = f"{_I}/text_icons/arrow_malus_tier_1.dds"
+ICON_LEADING = f"{_I}/flat_icons/star.dds"
+ICON_WARN = f"{_I}/icon_warning.dds"              # escalation step 1
+ICON_UNREST = f"{_I}/alerts_icons/imminent_revolt.dds"  # escalation step 2 and on
 BAR_ACTIONS = [      # (action key, button loc)
     ("bribe", "CC_PTY_BTN_BRIBE"),
     ("attack", "CC_PTY_BTN_ATTACK"),
@@ -1018,10 +1196,10 @@ def seat_block(first: int) -> str:
 
 
 def card(k: int) -> str:
-    sat, seats, esc = (gv(f"cc_pty_{k}_{x}") for x in ("sat", "seats", "esc"))
+    sat, seats, esc, target = (gv(f"cc_pty_{k}_{x}") for x in ("sat", "seats", "esc", "target"))
     leader = f"Player.MakeScope.GetVariable('cc_pty_{k}_leader')"
-    return f'''				widget = {{
-					size = {{ 196 178 }}
+    return f'''				# Sized by its content (resizeparent below): the effects list varies in length.
+				widget = {{
 					visible = "[Player.MakeScope.GetVariable('cc_pty_{k}_type').IsSet]"
 					background = {{ using = color_whiteish_texture  alpha = 0.10 }}
 
@@ -1040,8 +1218,13 @@ def card(k: int) -> str:
 					}}
 
 					vbox = {{
-						size = {{ 100% 100% }}
+						resizeparent = yes
+						# Tall enough for the longest effects list (seven rows), so the two cards
+						# in a row line up; a longer list would still grow the card.
+						minimumsize = {{ 196 {CARD_MIN_H} }}
+						maximumsize = {{ 196 -1 }}
 						margin = {{ 6 4 }}
+						margin_bottom = 8
 						spacing = 2
 
 						hbox = {{
@@ -1058,19 +1241,22 @@ def card(k: int) -> str:
 								text = "[Player.Custom('cc_pty_name_{k}')]"
 							}}
 							expand = {{}}
-							text_single = {{ fontsize = 10  visible = "[EqualTo_CFixedPoint({gv('cc_pty_dominant')}, {fp(k)})]"  text = "CC_PTY_DOMINANT"  tooltip = "CC_PTY_DOMINANT_TT" }}
+							icon = {{ size = {{ 18 18 }}  texture = "{ICON_WARN}"  visible = "[EqualTo_CFixedPoint({esc}, {fp(1)})]"  tooltip = "CC_PTY_ESC_1_TT" }}
+							icon = {{ size = {{ 20 20 }}  texture = "{ICON_UNREST}"  visible = "[GreaterThanOrEqualTo_CFixedPoint({esc}, {fp(2)})]"  tooltip = "CC_PTY_ESC_2_TT" }}
+							icon = {{ size = {{ 20 20 }}  texture = "{ICON_LEADING}"  visible = "[EqualTo_CFixedPoint({gv('cc_pty_dominant')}, {fp(k)})]"  tooltip = "CC_PTY_DOMINANT_TT" }}
 						}}
 
 						hbox = {{
 							layoutpolicy_horizontal = expanding
 							spacing = 3
-							icon = {{ size = {{ 18 18 }}  texture = "gfx/interface/icons/flat_icons/pop_satisfaction.dds"  tooltip = "CC_PTY_SAT_TT" }}
+							icon = {{ size = {{ 18 18 }}  texture = "{MOOD_ICONS['pleased']}"  visible = "[GreaterThan_CFixedPoint({sat}, {fp(30)})]"  tooltip = "CC_PTY_MOOD_PLEASED_TT" }}
+							icon = {{ size = {{ 18 18 }}  texture = "{MOOD_ICONS['content']}"  visible = "[And(Not(GreaterThan_CFixedPoint({sat}, {fp(30)})), GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-20)}))]"  tooltip = "CC_PTY_MOOD_CONTENT_TT" }}
+							icon = {{ size = {{ 18 18 }}  texture = "{MOOD_ICONS['discontent']}"  visible = "[And(Not(GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-20)})), GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-50)}))]"  tooltip = "CC_PTY_MOOD_DISCONTENT_TT" }}
+							icon = {{ size = {{ 18 18 }}  texture = "{MOOD_ICONS['angry']}"  visible = "[Not(GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-50)}))]"  tooltip = "CC_PTY_MOOD_ANGRY_TT" }}
 							text_single = {{ fontsize = 12  raw_text = "[FixedPointToInt({sat})]"  tooltip = "CC_PTY_SAT_TT" }}
-							text_single = {{ fontsize = 10  default_format = "#weak"  raw_text = "-> [FixedPointToInt({gv(f'cc_pty_{k}_target')})]"  tooltip = "CC_PTY_TARGET_TT" }}
-							text_single = {{ fontsize = 10  visible = "[GreaterThan_CFixedPoint({sat}, {fp(30)})]"  text = "CC_PTY_MOOD_PLEASED"  tooltip = "CC_PTY_MOOD_PLEASED_TT" }}
-							text_single = {{ fontsize = 10  visible = "[And(Not(GreaterThan_CFixedPoint({sat}, {fp(30)})), GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-20)}))]"  text = "CC_PTY_MOOD_CONTENT"  tooltip = "CC_PTY_MOOD_CONTENT_TT" }}
-							text_single = {{ fontsize = 10  visible = "[And(Not(GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-20)})), GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-50)}))]"  text = "CC_PTY_MOOD_DISCONTENT"  tooltip = "CC_PTY_MOOD_DISCONTENT_TT" }}
-							text_single = {{ fontsize = 10  visible = "[Not(GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-50)}))]"  text = "CC_PTY_MOOD_ANGRY"  tooltip = "CC_PTY_MOOD_ANGRY_TT" }}
+							icon = {{ size = {{ 14 14 }}  texture = "{ICON_TREND_UP}"  visible = "[GreaterThan_CFixedPoint({target}, Add_CFixedPoint({sat}, {fp(1)}))]"  tooltip = "CC_PTY_TARGET_TT" }}
+							icon = {{ size = {{ 14 14 }}  texture = "{ICON_TREND_DOWN}"  visible = "[GreaterThan_CFixedPoint({sat}, Add_CFixedPoint({target}, {fp(1)}))]"  tooltip = "CC_PTY_TARGET_TT" }}
+							text_single = {{ fontsize = 10  default_format = "#weak"  raw_text = "[FixedPointToInt({target})]"  tooltip = "CC_PTY_TARGET_TT" }}
 							expand = {{}}
 							icon = {{ size = {{ 18 18 }}  texture = "{SEATS_ICON}"  tooltip = "CC_PTY_SEATS_TT" }}
 							text_single = {{ fontsize = 12  raw_text = "[FixedPointToInt({seats})]"  tooltip = "CC_PTY_SEATS_TT" }}
@@ -1081,11 +1267,11 @@ def card(k: int) -> str:
 							layoutpolicy_horizontal = expanding
 							spacing = 4
 							widget = {{
-								size = {{ 40 44 }}
+								size = {{ 34 38 }}
 								visible = "[{leader}.IsSet]"
 								datacontext = "[{leader}.GetCharacter]"
 								portrait_standard_head_framed_button = {{
-									size = {{ 40 44 }}
+									size = {{ 34 38 }}
 									onclick = "[ShowCharacter(Character.Self)]"
 								}}
 							}}
@@ -1112,7 +1298,7 @@ def card(k: int) -> str:
 							tooltip = "CC_PTY_AGENDA_TT"
 						}}
 
-						text_single = {{ fontsize = 10  visible = "[GreaterThan_CFixedPoint({esc}, {fp(0)})]"  text = "CC_PTY_ESC_WARN"  tooltip = "CC_PTY_ESC_WARN_TT" }}
+{card_effects(k)}
 						expand = {{}}
 					}}
 				}}
@@ -1145,69 +1331,277 @@ def action_button(action: str, label: str, k: int) -> str:
 '''
 
 
-def effects_section(k: int) -> str:
-    """What the selected party (slot k) is doing to the realm right now."""
-    pw, sat, stand, mood, push = (gv(f"cc_pty_{k}_{x}") for x in ("power", "sat", "standing", "mood_pct", "power"))
-    push = gv("cc_pty_push_pct")
+# ---------------------------------------------------------------------------
+# The selected party: expectations card and aspect cards (the summed effects are on the cards)
+#
+# Every aspect a party can grant (standing, goodwill, ...) is a card, at full opacity while
+# the party grants it and faded while it does not, so the player can see what each aspect
+# would do before it is in play. Strength comes from two per-slot variables the script
+# publishes (the apply effects and cc_pty_publish_display):
+#   cc_pty_N_sz_<aspect>   the size the modifier is applied at now, 0 when not applied
+#   cc_pty_N_dz_<aspect>   the size to display: sz while applied, 1 (full strength) while not
+# The GUI has no Select for fixed-point numbers, hence the two.
+# ---------------------------------------------------------------------------
 
-    def row(label, label_tt, pct_expr, fx_kind, vis):
-        pct = (f'text_single = {{ fontsize = 11  raw_text = "[FixedPointToInt({pct_expr})]%"  tooltip = "CC_PTY_FX_STRENGTH_TT" }}'
-               if pct_expr else "")
-        return f'''				hbox = {{
-					layoutpolicy_horizontal = expanding
-					visible = "[{vis}]"
-					spacing = 6
-					vbox = {{
-						spacing = 0
-						text_single = {{ fontsize = 11  align = left|nobaseline  text = "{label}"  tooltip = "{label_tt}" }}
-						{pct}
-					}}
-					text_multi = {{
-						layoutpolicy_horizontal = expanding
-						autoresize = yes
-						multiline = yes
-						max_width = 360
-						fontsize = 11
-						text = "[Player.Custom('cc_pty_fx_{fx_kind}_{k}')]"
-					}}
-				}}
-'''
+def aspects(t: dict) -> list[dict]:
+    """The aspect cards for archetype t, in grid order (two per row)."""
+    k = t["key"]
+    out = [
+        dict(key="standing", title="CC_PTY_FX_STANDING", tip="CC_PTY_FX_STANDING_TT",
+             off="CC_PTY_FX_STANDING_OFF", mods=STANDING[k], scaled=True),
+        dict(key="marginal", title="CC_PTY_FX_MARGINAL", tip="CC_PTY_FX_MARGINAL_TT",
+             off="CC_PTY_FX_MARGINAL_OFF", mods={f"{SEAT[k]['leader']}_target_satisfaction": MARGINAL_VALUE},
+             scaled=False),
+        dict(key="goodwill", title="CC_PTY_FX_GOODWILL", tip="CC_PTY_MOOD_PLEASED_TT",
+             off="CC_PTY_FX_GOODWILL_OFF", mods=t["goodwill"], scaled=True, note="CC_PTY_FX_GOODWILL_MEMBERS"),
+        dict(key="discontent", title="CC_PTY_FX_DISCONTENT", tip="CC_PTY_MOOD_DISCONTENT_TT",
+             off="CC_PTY_FX_DISCONTENT_OFF", mods=t["discontent"], scaled=True, note="CC_PTY_FX_DISCONTENT_MEMBERS"),
+        dict(key="push", title="CC_PTY_FX_PUSH", tip="CC_PTY_DOMINANT_TT",
+             off="CC_PTY_FX_PUSH_OFF", mods={f"monthly_towards_{t['push']}": "societal_value_tiny_monthly_move"},
+             scaled=True),
+        dict(key="favour", title="CC_PTY_FX_FAVOUR", tip="CC_PTY_FX_FAVOUR_TT",
+             off="CC_PTY_FX_FAVOUR_OFF", mods=t["favour"], scaled=False),
+    ]
+    if t.get("escalates"):
+        e = ESCALATION[k]
+        out += [
+            dict(key="esc1", title="CC_PTY_FX_ESC1", tip=f"STATIC_MODIFIER_DESC_cc_pty_esc_1_{k}",
+                 off="CC_PTY_FX_ESC1_OFF", mods=e["warn"], scaled=False),
+            dict(key="esc2", title="CC_PTY_FX_ESC2", tip=f"STATIC_MODIFIER_DESC_cc_pty_esc_2_{k}",
+                 off="CC_PTY_FX_ESC2_OFF", mods=e["unrest"], scaled=False),
+        ]
+    return out
 
-    rows = "".join([
-        row("CC_PTY_FX_STANDING", "CC_PTY_FX_STANDING_TT", stand, "standing",
-            f"GreaterThanOrEqualTo_CFixedPoint({pw}, {fp(10)})"),
-        row("CC_PTY_FX_MARGINAL", "CC_PTY_FX_MARGINAL_TT", None, "marginal",
-            f"Not(GreaterThanOrEqualTo_CFixedPoint({pw}, {fp(10)}))"),
-        row("CC_PTY_FX_GOODWILL", "CC_PTY_MOOD_PLEASED_TT", mood, "goodwill",
-            f"GreaterThan_CFixedPoint({sat}, {fp(30)})"),
-        row("CC_PTY_FX_DISCONTENT", "CC_PTY_MOOD_DISCONTENT_TT", mood, "discontent",
-            f"Not(GreaterThanOrEqualTo_CFixedPoint({sat}, {fp(-20)}))"),
-        row("CC_PTY_FX_PUSH", "CC_PTY_DOMINANT_TT", push, "push",
-            f"EqualTo_CFixedPoint({gv('cc_pty_dominant')}, {fp(k)})"),
-        row("CC_PTY_FX_FAVOUR", "CC_PTY_FX_FAVOUR_TT", None, "favour",
-            f"Player.MakeScope.GetVariable('cc_pty_{k}_favour_on').IsSet"),
-    ])
+
+def mod_value(v) -> float:
+    return SCRIPT_VALUES[v] if isinstance(v, str) else v
+
+
+def fmt_spec(mtype: str) -> str:
+    """Sign and colour by the modifier's sense (BAD types read red when positive);
+    percent types print as percentages."""
+    col = "-=" if mtype in BAD else "+="
+    return f"{col}2" if mtype in FLAT else f"{col}1%"
+
+
+def is_type(k: int, tid: int) -> str:
+    return f"EqualTo_CFixedPoint({gv(f'cc_pty_{k}_type')}, {fp(tid)})"
+
+
+def mod_row(expr: str, mtype: str, pad: str, extra: str = "") -> str:
+    return (f'{pad}hbox = {{ layoutpolicy_horizontal = expanding  spacing = 6  {extra}'
+            f'text_single = {{ minimumsize = {{ 56 -1 }}  fontsize = 11  align = right|nobaseline  text = "[{expr}|{fmt_spec(mtype)}]" }}  '
+            f'text_single = {{ fontsize = 11  align = left|nobaseline  max_width = 170  elide = right  text = "MODIFIER_TYPE_NAME_{mtype}" }}  '
+            f'expand = {{}} }}\n')
+
+
+def type_mods(t: dict) -> list[str]:
+    """Every modifier type archetype t can apply, in aspect order, each once. The j-th is
+    summed into cc_pty_N_fx<j> (cc_pty_fx_sum_type_T) for the card's effects list."""
+    seen = []
+    for a in aspects(t):
+        seen += [m for m in a["mods"] if m not in seen]
+    return seen
+
+
+MAX_FX = max(len(type_mods(t)) for t in T)
+
+
+def tv(tid: int, name: str) -> str:
+    """A per-archetype display variable (cc_pty_t<T>_<name>, copied from the slot holding
+    the archetype by cc_pty_publish_type_vars)."""
+    return gv(f"cc_pty_t{tid}_{name}")
+
+
+def aspect_active(tid: int, key: str) -> str:
+    if key == "esc1":
+        return f"EqualTo_CFixedPoint({tv(tid, 'esc')}, {fp(1)})"
+    if key == "esc2":
+        return f"GreaterThanOrEqualTo_CFixedPoint({tv(tid, 'esc')}, {fp(2)})"
+    return f"GreaterThan_CFixedPoint({tv(tid, f'sz_{key}')}, {fp(0)})"
+
+
+def aspect_card(t: dict, asp: dict) -> str:
+    """One aspect card for archetype t: full opacity while applied, faded while not, with
+    the values it applies now (or would apply at full strength)."""
+    tid, key = t["id"], asp["key"]
+    active = aspect_active(tid, key)
+    dz = tv(tid, f"dz_{key}")
+    p = "\t" * 6
+    rows = ""
+    for mtype, v in asp["mods"].items():
+        expr = f"Multiply_CFixedPoint({dz if asp['scaled'] else fp(1)}, {fp(fmt_val(mod_value(v)))})"
+        rows += mod_row(expr, mtype, p + "\t")
+    note = ""
+    if asp.get("note"):
+        note = (f'{p}\ttext_single = {{ layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  '
+                f'align = left|nobaseline  text = "{asp["note"]}" }}\n')
+    if asp["scaled"]:
+        status_on = (f'{p}\t\t\ttext_single = {{ fontsize = 10  align = right|nobaseline  text = "CC_PTY_FX_ON"  tooltip = "CC_PTY_FX_STRENGTH_TT" }}\n'
+                     f'{p}\t\t\ttext_single = {{ fontsize = 10  align = right|nobaseline  raw_text = "[{dz}|0%]"  tooltip = "CC_PTY_FX_STRENGTH_TT" }}\n')
+    else:
+        status_on = f'{p}\t\t\ttext_single = {{ fontsize = 10  align = right|nobaseline  text = "CC_PTY_FX_ON" }}\n'
+    return (f'{p}vbox = {{\n'
+            f'{p}\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\tlayoutpolicy_vertical = expanding\n'
+            f'{p}\tmargin = {{ 8 6 }}\n'
+            f'{p}\tspacing = 2\n'
+            f'{p}\talpha = "[Select_float({active}, \'(float)1\', \'(float)0.4\')]"\n'
+            f'{p}\tbackground = {{ using = color_whiteish_texture  alpha = 0.08 }}\n'
+            f'{p}\thbox = {{\n'
+            f'{p}\t\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\t\tspacing = 4\n'
+            f'{p}\t\ttext_single = {{ fontsize = 12  align = left|nobaseline  text = "{asp["title"]}"  tooltip = "{asp["tip"]}" }}\n'
+            f'{p}\t\texpand = {{}}\n'
+            f'{p}\t\thbox = {{\n{p}\t\t\tvisible = "[{active}]"\n{p}\t\t\tspacing = 3\n'
+            f'{status_on}'
+            f'{p}\t\t}}\n'
+            f'{p}\t\ttext_single = {{ fontsize = 10  default_format = "#weak"  align = right|nobaseline  visible = "[Not({active})]"  text = "{asp["off"]}" }}\n'
+            f'{p}\t}}\n'
+            # A short rule under the title is the card's accent (no side stripe).
+            f'{p}\twidget = {{ size = {{ 32 2 }}  background = {{ using = color_white_texture  alpha = 0.35 }} }}\n'
+            f'{rows}{note}'
+            f'{p}\texpand = {{}}\n'
+            f'{p}}}\n')
+
+
+def aspects_section(t: dict) -> str:
+    """The aspect grid for archetype t, shown while the selected card holds it."""
+    p = "\t" * 4
+    cards = [aspect_card(t, a) for a in aspects(t)]
+    grid = ""
+    for i in range(0, len(cards), 2):
+        grid += f'{p}hbox = {{\n{p}\tlayoutpolicy_horizontal = expanding\n{p}\tspacing = 6\n{cards[i]}{cards[i + 1]}{p}}}\n'
+    vis = f"And({sel(SLOTS[-1])}, {is_type(SLOTS[-1], t['id'])})"
+    for k in reversed(SLOTS[:-1]):
+        vis = f"Or(And({sel(k)}, {is_type(k, t['id'])}), {vis})"
     return f'''			vbox = {{
 				layoutpolicy_horizontal = expanding
-				visible = "[And({sel(k)}, Player.MakeScope.GetVariable('cc_pty_{k}_type').IsSet)]"
-				margin = {{ 8 4 }}
-				spacing = 4
-				background = {{ using = color_whiteish_texture  alpha = 0.06 }}
+				visible = "[{vis}]"
+				margin = {{ 4 0 }}
+				spacing = 6
 				text_single = {{
 					layoutpolicy_horizontal = expanding
 					fontsize = 12
 					default_format = "#weak"
 					align = left|nobaseline
+					text = "CC_PTY_FX_HEADER"
+					tooltip = "CC_PTY_FX_HEADER_TT"
+				}}
+{grid}			}}
+'''
+
+
+def expectation_row(label: str, tip: str, value: str, p: str, weak: bool = False) -> str:
+    fmt = 'default_format = "#weak"  ' if weak else ""
+    return (f'{p}hbox = {{\n'
+            f'{p}\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\tspacing = 6\n'
+            f'{p}\ttext_single = {{ {fmt}fontsize = 11  align = left|nobaseline  max_width = 400  elide = right  text = "{label}"  tooltip = "{tip}" }}\n'
+            f'{p}\texpand = {{}}\n'
+            f'{p}\ttext_single = {{ minimumsize = {{ 40 -1 }}  fontsize = 11  align = right|nobaseline  text = "[{value}|+=0]"  tooltip = "{tip}" }}\n'
+            f'{p}}}\n')
+
+
+def expectations_card(k: int) -> str:
+    """Where the party's satisfaction is heading, term by term: its three concerns (the
+    levers specific to this party), then the cabinet. The rows sum to cc_pty_N_target."""
+    p = "\t" * 4
+    rows = ""
+    for n in (1, 2, 3):
+        rows += expectation_row(f"[Player.Custom('cc_pty_cn_{k}_{n}')]", f"[Player.Custom('cc_pty_cnd_{k}_{n}')]",
+                                gv(f"cc_pty_{k}_c{n}"), p + "\t")
+    for var, label in (("t_cab", "CC_PTY_EXP_CABINET"), ("t_head", "CC_PTY_EXP_HEAD"),
+                       ("t_ruler", "CC_PTY_EXP_RULER"), ("t_comp", "CC_PTY_EXP_COMP")):
+        rows += expectation_row(label, f"{label}_TT", gv(f"cc_pty_{k}_{var}"), p + "\t", weak=True)
+    target = gv(f"cc_pty_{k}_target")
+    return (f'{p}vbox = {{\n'
+            f'{p}\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\tmargin = {{ 8 6 }}\n'
+            f'{p}\tspacing = 2\n'
+            f'{p}\tbackground = {{ using = color_whiteish_texture  alpha = 0.08 }}\n'
+            f'{p}\thbox = {{\n'
+            f'{p}\t\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\t\ttext_single = {{ fontsize = 12  align = left|nobaseline  text = "CC_PTY_EXP_TITLE"  tooltip = "CC_PTY_TARGET_TT" }}\n'
+            f'{p}\t\texpand = {{}}\n'
+            f'{p}\t\ttext_single = {{ fontsize = 12  align = right|nobaseline  text = "[{target}|+=0]"  tooltip = "CC_PTY_TARGET_TT" }}\n'
+            f'{p}\t}}\n'
+            f'{p}\twidget = {{ size = {{ 32 2 }}  background = {{ using = color_white_texture  alpha = 0.35 }} }}\n'
+            f'{rows}'
+            f'{p}}}\n')
+
+
+def effects_section(k: int) -> str:
+    """What the selected party (slot k) wants: its name and the expectations card."""
+    return f'''			vbox = {{
+				layoutpolicy_horizontal = expanding
+				visible = "[And({sel(k)}, Player.MakeScope.GetVariable('cc_pty_{k}_type').IsSet)]"
+				margin = {{ 4 4 }}
+				spacing = 6
+				text_single = {{
+					layoutpolicy_horizontal = expanding
+					fontsize = 13
+					align = left|nobaseline
 					text = "[Player.Custom('cc_pty_name_{k}')]"
 				}}
-{rows}			}}
+{expectations_card(k)}			}}
 '''
+
+
+def card_effects(k: int) -> str:
+    """Under the agenda on card k: every modifier the party applies now, each summed over
+    all its aspects (cc_pty_N_fx<j>, summed by the script in cc_pty_fx_sum_type_T). Rows
+    that are zero are hidden, so the list is only as long as what is in play."""
+    p = "\t" * 6
+    blocks = ""
+    for t in T:
+        rows = ""
+        for j, m in enumerate(type_mods(t), 1):
+            fx = gv(f"cc_pty_{k}_fx{j}")
+            rows += (f'{p}\t\thbox = {{ layoutpolicy_horizontal = expanding  spacing = 4  '
+                     f'visible = "[Not(EqualTo_CFixedPoint({fx}, {fp(0)}))]"  '
+                     f'text_single = {{ minimumsize = {{ 44 -1 }}  fontsize = 10  align = right|nobaseline  text = "[{fx}|{fmt_spec(m)}]" }}  '
+                     f'text_single = {{ fontsize = 10  align = left|nobaseline  max_width = 130  elide = right  '
+                     f'text = "MODIFIER_TYPE_NAME_{m}"  tooltip = "MODIFIER_TYPE_NAME_{m}" }}  expand = {{}} }}\n')
+        blocks += (f'{p}\tvbox = {{\n{p}\t\tlayoutpolicy_horizontal = expanding\n'
+                   f'{p}\t\tvisible = "[{is_type(k, t["id"])}]"\n{rows}{p}\t}}\n')
+    # A thin rule rather than a label separates the list from the agenda; the explanation
+    # is the list's tooltip.
+    return (f'{p}# Effects in play now, summed by modifier\n'
+            f'{p}vbox = {{\n'
+            f'{p}\tlayoutpolicy_horizontal = expanding\n'
+            f'{p}\tmargin_top = 2\n'
+            f'{p}\tspacing = 0\n'
+            f'{p}\ttooltip = "CC_PTY_CARD_FX_TT"\n'
+            f'{p}\twidget = {{ layoutpolicy_horizontal = expanding  size = {{ 0 1 }}  '
+            f'background = {{ using = color_white_texture  alpha = 0.2 }} }}\n'
+            f'{p}\twidget = {{ size = {{ 1 2 }} }}\n'
+            f'{blocks}{p}}}')
 
 
 def gui_file() -> str:
     comp = gv("cc_pty_comp")
     lt = gv("cc_pty_liberal_thought")
     top = gv("cc_pty_top_slot")
+
+    def in_slot(slot_expr_for_k, t):
+        expr = None
+        for k in reversed(SLOTS):
+            term = f"And({slot_expr_for_k(k)}, {is_type(k, t['id'])})"
+            expr = term if expr is None else f"Or({term}, {expr})"
+        return expr
+
+    # Stacked cabinet: archetype T's icon when the stacked slot (cc_pty_cabinet_slot) holds T.
+    stacked_icons = type_icons(20, lambda t: in_slot(
+        lambda k: f"EqualTo_CFixedPoint({gv('cc_pty_cabinet_slot')}, {fp(k)})", t), "\t" * 5)
+    # Leaders in office: one icon per party whose leader sits in the cabinet.
+    leader_icons = "".join(
+        "\t\t\t\twidget = {\n\t\t\t\t\tsize = { 18 18 }\n"
+        f'\t\t\t\t\tvisible = "[EqualTo_CFixedPoint({gv(f"cc_pty_{k}_leader_in")}, {fp(1)})]"\n'
+        '\t\t\t\t\ttooltip = "CC_PTY_LEADERS_IN_TT"\n'
+        + type_icons(18, lambda t, k=k: is_type(k, t["id"]), "\t" * 5)
+        + "\t\t\t\t}\n"
+        for k in SLOTS)
     head = f'''######################################################################
 # GENERATED by tools/generate_factions.py. Do not edit.
 #
@@ -1227,6 +1621,9 @@ def gui_file() -> str:
 situation_panel = {{
 
 	blockoverride "situation_subheader_content" {{}}
+	# These situations never end, so the vanilla outcomes section (situation_outcomes, in
+	# panels/situation/common.gui) has nothing to show: removed.
+	blockoverride "situation_panel_main_content_top" {{}}
 	blockoverride "situation_panel_main_actions" {{}}
 
 	blockoverride "situation_panel_main_content" {{
@@ -1305,10 +1702,14 @@ situation_panel = {{
 				margin = {{ 4 2 }}
 				icon = {{ size = {{ 18 18 }}  texture = "{SEATS_ICON}"  tooltip = "CC_PTY_CHAMBER_TT" }}
 				text_single = {{ fontsize = 11  raw_text = "[FixedPointToInt({gv('cc_pty_chamber')})]"  tooltip = "CC_PTY_CHAMBER_TT" }}
-				text_single = {{ fontsize = 11  default_format = "#weak"  text = "CC_PTY_LABEL_SEATS"  tooltip = "CC_PTY_CHAMBER_TT" }}
 				widget = {{ size = {{ 10 1 }} }}
 				text_single = {{ fontsize = 11  default_format = "#weak"  text = "CC_PTY_LABEL_CABINET" }}
-				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({comp}, {fp(1)})]"  text = "CC_PTY_COMP_STACKED"  tooltip = "CC_PTY_COMP_STACKED_TT" }}
+				# Stacked: the icon of the party that holds the cabinet.
+				widget = {{
+					size = {{ 20 20 }}
+					visible = "[EqualTo_CFixedPoint({comp}, {fp(1)})]"
+					tooltip = "CC_PTY_COMP_STACKED_TT"
+{stacked_icons}				}}
 				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({comp}, {fp(2)})]"  text = "CC_PTY_COMP_BALANCED"  tooltip = "CC_PTY_COMP_BALANCED_TT" }}
 				text_single = {{ fontsize = 11  visible = "[Not(Or(EqualTo_CFixedPoint({comp}, {fp(1)}), EqualTo_CFixedPoint({comp}, {fp(2)})))]"  text = "CC_PTY_COMP_MIXED"  tooltip = "CC_PTY_COMP_MIXED_TT" }}
 				widget = {{ size = {{ 10 1 }} }}
@@ -1316,7 +1717,7 @@ situation_panel = {{
 				text_single = {{ fontsize = 11  visible = "[EqualTo_CFixedPoint({gv('cc_pty_majority')}, {fp(-1)})]"  text = "CC_PTY_HUNG"  tooltip = "CC_PTY_HUNG_TT" }}
 				widget = {{ size = {{ 10 1 }} }}
 				text_single = {{ fontsize = 11  default_format = "#weak"  text = "CC_PTY_LABEL_LEADERS_IN"  tooltip = "CC_PTY_LEADERS_IN_TT" }}
-				text_single = {{ fontsize = 11  raw_text = "[FixedPointToInt({gv('cc_pty_leaders_in')})]"  tooltip = "CC_PTY_LEADERS_IN_TT" }}
+{leader_icons}				text_single = {{ fontsize = 11  default_format = "#weak"  visible = "[Not(GreaterThan_CFixedPoint({gv('cc_pty_leaders_in')}, {fp(0)}))]"  text = "CC_PTY_LEADERS_NONE"  tooltip = "CC_PTY_LEADERS_IN_TT" }}
 				expand = {{}}
 				text_single = {{ fontsize = 11  visible = "[Player.MakeScope.GetVariable('cc_pty_termlimits').IsSet]"  text = "CC_PTY_TERMLIMITS"  tooltip = "CC_PTY_TERMLIMITS_TT" }}
 			}}
@@ -1390,16 +1791,8 @@ situation_panel = {{
 				text = "CC_PTY_SELECT_HINT"
 			}}
 
-			# ---- What the selected party does to the realm ----
-			text_single = {{
-				layoutpolicy_horizontal = expanding
-				fontsize = 12
-				margin_top = 6
-				default_format = "#weak"
-				text = "CC_PTY_FX_HEADER"
-				tooltip = "CC_PTY_FX_HEADER_TT"
-			}}
-{"".join(effects_section(k) for k in SLOTS)}
+			# ---- The selected party: what it expects, then what it grants ----
+{"".join(effects_section(k) for k in SLOTS)}{"".join(aspects_section(t) for t in T)}
 		}}
 	}}
 }}
@@ -1474,6 +1867,41 @@ types CcPtyCharacterColumns
     return head + block + "\n}\n"
 
 
+def cabinet_badge_file() -> str:
+    """The minister's party on the government view's cabinet card, beside the main mod's
+    seniority badge. The main mod places an empty, hidden `cc_cabinet_card_badge_slot` there
+    (in_game/gui/shared/cc_xp_cabinet_card.gui) with Character as its data context; this
+    redefines it. Shown only while the player's realm has parties (cc_pty_active)."""
+    aff = "Character.MakeScope.GetVariable('cc_pty_aff')"
+    icons = "".join(
+        f'\t\ticon = {{ parentanchor = center  size = {{ 20 20 }}  texture = "{SEAT[t["key"]]["icon"]}"  '
+        f'tooltip = "MODIFIER_TYPE_NAME_cc_pty_party_{t["key"]}"  '
+        f'visible = "[EqualTo_CFixedPoint({aff}.GetValue, {fp(t["id"])})]" }}\n'
+        for t in T)
+    return f"""######################################################################
+# GENERATED by tools/generate_factions.py. Do not edit.
+#
+# Flavorium Universalis - Factions: the minister's party on the cabinet card.
+#
+# Redefines the main mod's `cc_cabinet_card_badge_slot` (empty and hidden there, placed
+# after the seniority badge in cc_xp_cabinet_card.gui). This submod loads after the main
+# mod it depends on, so this definition wins. One fixed-texture icon per party, chosen by
+# visibility: textures cannot be picked by script state in this GUI.
+######################################################################
+
+types CcPtyCabinetBadge
+{{
+	type cc_cabinet_card_badge_slot = widget {{
+		size = {{ 28 24 }}
+		visible = "[And({aff}.IsSet, Player.MakeScope.GetVariable('cc_pty_active').IsSet)]"
+		background = {{
+			using = bg_dark_paper_card
+		}}
+{icons}	}}
+}}
+"""
+
+
 OUTPUTS = {
     "in_game/common/script_values/cc_pty_catalogue_values.txt": values_file,
     "in_game/common/scripted_triggers/cc_pty_catalogue_triggers.txt": triggers_file,
@@ -1485,6 +1913,7 @@ OUTPUTS = {
     "in_game/localization/english/cc_pty_catalogue_l_english.yml": loc_file,
     "in_game/gui/panels/situation/cc_pty_factions.gui": gui_file,
     "in_game/gui/attribute_columns/cc_pty_character_info.gui": picker_file,
+    "in_game/gui/shared/cc_pty_cabinet_badge.gui": cabinet_badge_file,
 }
 
 

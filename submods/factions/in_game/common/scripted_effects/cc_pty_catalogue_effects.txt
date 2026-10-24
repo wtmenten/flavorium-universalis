@@ -850,3 +850,457 @@ cc_pty_clear_push = {
 	}
 }
 
+# Country scope, slot SLOT holds archetype T (cc_pty_publish_sums). cc_pty_SLOT_fx<j> is the
+# total of the j-th modifier the archetype can apply, for the card's effects list.
+# 1 royalist: monthly_legitimacy, global_crown_estate_power, nobles_estate_target_satisfaction, diplomatic_reputation, monthly_political_influence, crown_estate_agenda_impact, monthly_towards_centralization
+cc_pty_fx_sum_type_1 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.25 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.5 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.3 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx7 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx7 add = var:cc_pty_tmp }
+}
+
+# 2 aristocratic: global_nobles_estate_power, global_max_control, nobles_estate_target_satisfaction, nobles_estate_agenda_impact, stability_cost_efficiency, monthly_towards_aristocracy, global_monthly_control
+cc_pty_fx_sum_type_2 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.25 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.01 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx7 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.002 }
+	change_variable = { name = cc_pty_$SLOT$_fx7 add = var:cc_pty_tmp }
+}
+
+# 3 mercantile: global_burghers_estate_power, trade_land_efficiency, burghers_estate_target_satisfaction, trade_sea_efficiency, burghers_estate_agenda_impact, monthly_towards_plutocracy
+cc_pty_fx_sum_type_3 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+}
+
+# 4 clerical: global_clergy_estate_power, monthly_religious_influence, clergy_estate_target_satisfaction, clergy_estate_agenda_impact, stability_cost_efficiency, monthly_towards_spiritualist
+cc_pty_fx_sum_type_4 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.25 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+}
+
+# 5 military: land_morale_modifier, global_manpower_modifier, nobles_estate_target_satisfaction, country_cabinet_efficiency, monthly_towards_belligerent, monthly_rebel_growth
+cc_pty_fx_sum_type_5 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc1 }
+	change_variable = { name = cc_pty_tmp multiply = -0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = 0.005 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+}
+
+# 6 agrarian: global_peasants_estate_power, global_manpower_modifier, peasants_estate_target_satisfaction, peasants_estate_agenda_impact, monthly_towards_free_subjects
+cc_pty_fx_sum_type_6 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+}
+
+# 7 reformist: country_cabinet_efficiency, monthly_political_influence, burghers_estate_target_satisfaction, monthly_towards_innovative
+cc_pty_fx_sum_type_7 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+}
+
+# 8 absolutist: global_crown_estate_power, monthly_political_influence, nobles_estate_target_satisfaction, crown_estate_agenda_impact, monthly_towards_absolutism
+cc_pty_fx_sum_type_8 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+}
+
+# 9 regionalist: global_nobles_estate_power, global_max_control, nobles_estate_target_satisfaction, global_monthly_control, monthly_nationalist_rebel_growth, monthly_towards_decentralization, stability_cost_efficiency
+cc_pty_fx_sum_type_9 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = -0.01 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc1 }
+	change_variable = { name = cc_pty_tmp multiply = -0.01 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = -0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.001 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = 0.005 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = 0.01 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx7 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx7 add = var:cc_pty_tmp }
+}
+
+# 10 colonial: global_merchant_power, trade_sea_efficiency, burghers_estate_target_satisfaction, monthly_towards_outward
+cc_pty_fx_sum_type_10 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+}
+
+# 11 liberal: monthly_political_influence_gain_modifier, global_burghers_estate_power, burghers_estate_target_satisfaction, burghers_estate_agenda_impact, monthly_rebel_growth, monthly_political_influence, monthly_towards_liberalism
+cc_pty_fx_sum_type_11 = {
+	set_variable = { name = cc_pty_$SLOT$_fx1 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.03 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_favour }
+	change_variable = { name = cc_pty_tmp multiply = 0.1 }
+	change_variable = { name = cc_pty_$SLOT$_fx1 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx2 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_standing }
+	change_variable = { name = cc_pty_tmp multiply = 0.02 }
+	change_variable = { name = cc_pty_$SLOT$_fx2 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx3 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_marginal }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx3 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx4 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_goodwill }
+	change_variable = { name = cc_pty_tmp multiply = 0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx4 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx5 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = 0.005 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = 0.01 }
+	change_variable = { name = cc_pty_$SLOT$_fx5 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx6 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_discontent }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc1 }
+	change_variable = { name = cc_pty_tmp multiply = -0.05 }
+	change_variable = { name = cc_pty_$SLOT$_fx6 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_$SLOT$_fx7 value = 0 }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_push }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx7 add = var:cc_pty_tmp }
+	set_variable = { name = cc_pty_tmp value = var:cc_pty_$SLOT$_sz_esc2 }
+	change_variable = { name = cc_pty_tmp multiply = 0.025 }
+	change_variable = { name = cc_pty_$SLOT$_fx7 add = var:cc_pty_tmp }
+}
+
+# Country scope. Remove slot SLOT's effect totals.
+cc_pty_clear_fx_sums = {
+	remove_variable = cc_pty_$SLOT$_fx1
+	remove_variable = cc_pty_$SLOT$_fx2
+	remove_variable = cc_pty_$SLOT$_fx3
+	remove_variable = cc_pty_$SLOT$_fx4
+	remove_variable = cc_pty_$SLOT$_fx5
+	remove_variable = cc_pty_$SLOT$_fx6
+	remove_variable = cc_pty_$SLOT$_fx7
+}
+

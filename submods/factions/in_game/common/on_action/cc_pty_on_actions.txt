@@ -39,6 +39,30 @@ on_character_moved_country = {
 	}
 }
 
+on_winning_war = {
+	on_actions = {
+		cc_pty_on_won_war
+	}
+}
+
+on_losing_war = {
+	on_actions = {
+		cc_pty_on_lost_war
+	}
+}
+
+on_policy_changed = {
+	on_actions = {
+		cc_pty_on_law_changed
+	}
+}
+
+on_bankruptcy = {
+	on_actions = {
+		cc_pty_on_bankruptcy
+	}
+}
+
 
 ###############################################################################
 # GAME START (world scope)
@@ -84,6 +108,12 @@ cc_pty_yearly = {
 			# Tenure, for term limits.
 			every_cabinet_character = { cc_pty_count_year = yes }
 
+			# The War Party remembers the last war for ten years (its War record concern).
+			if = {
+				limit = { at_war = yes }
+				set_variable = { name = cc_pty_mem_war value = yes years = 10 }
+			}
+
 			# Leaders, and parties for the court: catches a leader who died, characters who
 			# came of age, and a realm that has just become a player's.
 			cc_pty_affiliate_court = yes
@@ -99,6 +129,9 @@ cc_pty_yearly = {
 				limit = { NOT = { has_variable = cc_pty_sat_cd } }
 				cc_pty_sat_pass = yes
 			}
+
+			# Favour lapses on its own, between passes; keep the panel's sizes current.
+			cc_pty_publish_display = yes
 
 			# Rare personal chains between ministers and the ruler (cc_pty_court_effects.txt).
 			# After the passes, so a defection this year has already set the shared cooldown.
@@ -171,3 +204,46 @@ cc_pty_on_moved_country = {
 	}
 }
 
+
+###############################################################################
+# MEMORIES (root = country)
+#
+# Timed country variables that some parties' concerns read (cc_pty_concern_T_N, generated).
+# Nothing is announced; the party simply remembers, and the panel shows the effect.
+#   cc_pty_mem_won       ten years after a war won       War Party: War record
+#   cc_pty_mem_lost      ten years after a war lost      War Party: War record
+#   cc_pty_mem_war       ten years after the last year at war (yearly pulse)
+#   cc_pty_mem_law       five years after a law changed  Reform Party: Pace of reform
+#   cc_pty_mem_bankrupt  twenty years after bankruptcy   Merchant Interest: Peace and credit
+###############################################################################
+
+cc_pty_on_won_war = {
+	trigger = { has_variable = cc_pty_active }
+	effect = {
+		set_variable = { name = cc_pty_mem_won value = yes years = 10 }
+	}
+}
+
+cc_pty_on_lost_war = {
+	trigger = { has_variable = cc_pty_active }
+	effect = {
+		set_variable = { name = cc_pty_mem_lost value = yes years = 10 }
+	}
+}
+
+cc_pty_on_law_changed = {
+	trigger = {
+		scope_type = country
+		has_variable = cc_pty_active
+	}
+	effect = {
+		set_variable = { name = cc_pty_mem_law value = yes years = 5 }
+	}
+}
+
+cc_pty_on_bankruptcy = {
+	trigger = { has_variable = cc_pty_active }
+	effect = {
+		set_variable = { name = cc_pty_mem_bankrupt value = yes years = 20 }
+	}
+}
