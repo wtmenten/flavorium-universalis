@@ -596,6 +596,9 @@ cc_xp.42 = {
 	}
 
 	trigger = {
+		# At most one rivalry a decade per court; the per-minister cooldown alone let a court
+		# with several senior ministers see this every few years.
+		NOT = { has_variable = cc_xp_rivalry_country_cd }
 		any_cabinet_character = {
 			in_cabinet = yes
 			cc_xp_level_at_least = { LEVEL = 5 }
@@ -609,6 +612,7 @@ cc_xp.42 = {
 	}
 
 	immediate = {
+		set_variable = { name = cc_xp_rivalry_country_cd  value = yes  years = 10 }
 		random_cabinet_character = {
 			limit = {
 				in_cabinet = yes

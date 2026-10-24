@@ -48,7 +48,7 @@ ACTIONS = [
 EXTRA_ALLOW = {'chairs': 'cc_xp_school_has_members'}
 
 KINDS = 8          # CC_XP_SCHOOL_KIND_1..8
-CURRICULA = 7      # CC_XP_CURRICULUM_1..7
+CURRICULA = 15     # CC_XP_CURRICULUM_1..15 (five per discipline)
 TRACKS = {1: 'CC_XP_COL_ADM', 2: 'CC_XP_COL_DIP', 3: 'CC_XP_COL_MIL'}
 # Tier names for renown and quality: (lower bound, loc key suffix), 0-100 in quarters.
 TIERS = [(0, 1), (25, 2), (50, 3), (75, 4)]
@@ -123,6 +123,7 @@ def emit_loc() -> str:
         out.append(
             f' CC_XP_SCHOOL_{n}_RENOWN_TT: "$CC_XP_SCHOOL_RENOWN_TT_HEAD${nl}{nl}'
             f'$CC_XP_SCHOOL_TT_AGE$ #Y {lv(n, "r_age", "1")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_MATURITY$ #Y {lv(n, "maturity")}%#!{nl}'
             f'$CC_XP_SCHOOL_TT_SEAT$ #Y {lv(n, "r_seat", "1")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_REALM$ #Y {lv(n, "r_realm", "1")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_TEACHING$ #Y {lv(n, "r_quality", "1")}#!{nl}'
@@ -378,6 +379,13 @@ def emit_card(n: int) -> str:
 				visible = "[{var(n, 'exile')}.IsSet]"
 				text = "CC_XP_SCHOOL_IN_EXILE"
 				tooltip = "CC_XP_SCHOOL_IN_EXILE_TT"
+			}}
+			text_single = {{
+				fontsize = 11
+				align = left|nobaseline
+				visible = "[{var(n, 'dormant')}.IsSet]"
+				text = "CC_XP_SCHOOL_DORMANT"
+				tooltip = "CC_XP_SCHOOL_DORMANT_TT"
 			}}
 			expand = {{}}
 		}}

@@ -121,7 +121,13 @@ A school is seated at a university, and the seat matters. Its religion decides w
 
 Lose the seat, to conquest or a demolished university, and the school moves to another free university in the realm. If there is none, it goes into exile: the members keep studying, but the school's bonuses and projects stop until a university is free.
 
-Each school also teaches a curriculum: Law, Theology, Natural Philosophy, Letters, Military Science, Medicine or Navigation. A curriculum gives one bonus at the seat and one across the realm, and decides which disputations the school holds. Natural Philosophy needs a school of some quality, Medicine a better one, and Navigation a seat on the coast. Changing curriculum takes ten years to settle.
+Each school also teaches a curriculum, chosen from the five of its discipline:
+
+- **Administrative:** Law, Theology, Natural Philosophy, Medicine, Public Finance
+- **Diplomatic:** Letters, Rhetoric, Languages, Commerce, History and Genealogy
+- **Military:** Military Science, Navigation, Fortification, Gunnery, Logistics
+
+A curriculum gives one bonus at the seat and one across the realm, both scaled by the school's quality, and decides which disputations the school holds. Each also nudges society: Law toward Jurisprudence, Theology toward Spiritualist, Natural Philosophy toward Innovative, Gunnery toward Offensive, and so on. Natural Philosophy needs a school of some quality, Medicine a better one, Navigation a seat on the coast, and Gunnery the Age of Discovery. Changing curriculum takes ten years to settle.
 
 </section>
 <section data-tab="Quality and renown">
@@ -135,9 +141,11 @@ How good the teaching is, and it is bought. Funding comes from the realm's Cultu
 </div>
 <div class="dd-card">
 <div class="dd-eyebrow">Renown</div>
-How widely the school is known, and it is earned against the world. It grows with the school's age, with how developed and literate its seat is, and with the realm's prestige and rank. Once a year every foreign university is scored on the same terms, and each of your schools is ranked against them. A renowned school raises the realm's prestige and cultural influence, and draws people: promising young scholars who can be taken on as proteges, foreign students, and artists. A school that falls well behind the leading foreign university starts losing masters and students to it. One that stands first gets its own event.
+How widely the school is known, and it is earned against the world. It grows with the school's age, with how developed and literate its seat is, and with the realm's prestige and rank, but the seat and the realm only count as far as the school is established, which takes a century. A new school starts unknown; a well-placed one reaches the middle of the scale after about fifty years. Once a year every foreign university is scored on the same terms, and each of your schools is ranked against them. A renowned school raises the realm's prestige and cultural influence, and draws people: promising young scholars who can be taken on as proteges, foreign students, and artists. A school that falls well behind the leading foreign university starts losing masters and students to it. One that stands first gets its own event.
 </div>
 </div>
+
+A school needs people. One whose last member has died goes **dormant**: it stops ageing, costs nothing, holds no events, and its renown and quality fade every year until someone is enrolled again.
 
 </section>
 <section data-tab="Projects and the Rector">
@@ -230,7 +238,7 @@ New in 0.4:
 <div class="dd-cols">
 <div class="dd-card">
 <div class="dd-eyebrow">Cards</div>
-The Household tab shows every post as a card. A filled post shows its holder, their seniority and years in the post, and its effects at the strength this holder gives them. An open post shows its base effects, what it needs, and an Appoint button that offers the most senior ministers trained for it. A filled post can be dismissed from its card.
+The Household tab shows every post as a card. A filled post shows its holder, their seniority and years in the post, and its effects at the strength this holder gives them. An open post shows its base effects, what it needs, and an Appoint button (the cabinet hat in its corner) that offers the most senior ministers trained for it. A filled post can be dismissed from its card the same way.
 </div>
 <div class="dd-card">
 <div class="dd-eyebrow">Looking ahead</div>

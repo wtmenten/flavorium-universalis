@@ -14,7 +14,10 @@
 #   kind         1-8, the kind of institution the seat's religion makes it (below)
 #   religion     the seat's dominant religion when seated
 #   culture      the seat's dominant culture when seated
-#   curriculum   1 law / 2 theology / 3 natural philosophy / 4 letters / 5 military science
+#   curriculum   by discipline (track). Administrative: 1 law, 2 theology, 3 natural
+#                philosophy, 6 medicine, 8 public finance. Diplomatic: 4 letters, 9 rhetoric,
+#                10 languages, 11 commerce, 12 history. Military: 5 military science,
+#                7 navigation, 13 fortification, 14 gunnery, 15 logistics.
 #   members      living members, republished monthly for the panel
 #
 # THE SEAT FLAG holds the owning country, not `yes`: cc_xp_school_seat on a location is
@@ -270,6 +273,19 @@ cc_xp_school_maintain = {
 			}
 			cc_xp_school_default_curriculum = { N = $N$  TRACK = var:cc_xp_school_$N$_track }
 		}
+		# Curricula are per discipline. A school teaching one outside its own (possible before
+		# that rule, or after a track change) goes back to its discipline's default, with no
+		# cooldown spent.
+		if = {
+			limit = {
+				has_variable = cc_xp_school_$N$_curriculum
+				has_variable = cc_xp_school_$N$_track
+				NOT = { cc_xp_school_curriculum_fits = { N = $N$ } }
+			}
+			cc_xp_school_default_curriculum = { N = $N$  TRACK = var:cc_xp_school_$N$_track }
+			var:cc_xp_school_$N$_loc ?= { cc_xp_school_strip_seat = yes }
+			cc_xp_school_refresh_realm = yes
+		}
 	}
 }
 
@@ -377,6 +393,46 @@ cc_xp_school_apply_modifiers = {
 		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_navigation  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
 		add_country_modifier = { modifier = cc_xp_school_realm_navigation  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
 	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 8 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_public_finance  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_public_finance  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 9 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_rhetoric  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_rhetoric  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 10 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_languages  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_languages  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 11 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_commerce  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_commerce  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 12 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_history  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_history  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 13 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_fortification  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_fortification  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 14 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_gunnery  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_gunnery  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum ?= 15 }
+		scope:cc_xp_school_seat_scope ?= { add_location_modifier = { modifier = cc_xp_school_seat_logistics  months = 2  mode = replace  desc = cc_xp_school_while_seated  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale } }
+		add_country_modifier = { modifier = cc_xp_school_realm_logistics  months = 2  mode = replace  desc = cc_xp_school_while_taught  size = scope:cc_xp_school_court.var:cc_xp_school_$N$_qscale }
+	}
 
 	clear_saved_scope = cc_xp_school_seat_scope
 }
@@ -391,6 +447,14 @@ cc_xp_school_strip_seat = {
 	remove_location_modifier = cc_xp_school_seat_military_science
 	remove_location_modifier = cc_xp_school_seat_medicine
 	remove_location_modifier = cc_xp_school_seat_navigation
+	remove_location_modifier = cc_xp_school_seat_public_finance
+	remove_location_modifier = cc_xp_school_seat_rhetoric
+	remove_location_modifier = cc_xp_school_seat_languages
+	remove_location_modifier = cc_xp_school_seat_commerce
+	remove_location_modifier = cc_xp_school_seat_history
+	remove_location_modifier = cc_xp_school_seat_fortification
+	remove_location_modifier = cc_xp_school_seat_gunnery
+	remove_location_modifier = cc_xp_school_seat_logistics
 	remove_location_modifier = cc_xp_school_kind_studium
 	remove_location_modifier = cc_xp_school_kind_academy
 	remove_location_modifier = cc_xp_school_kind_madrasa
@@ -412,6 +476,14 @@ cc_xp_school_refresh_realm = {
 	remove_country_modifier = cc_xp_school_realm_military_science
 	remove_country_modifier = cc_xp_school_realm_medicine
 	remove_country_modifier = cc_xp_school_realm_navigation
+	remove_country_modifier = cc_xp_school_realm_public_finance
+	remove_country_modifier = cc_xp_school_realm_rhetoric
+	remove_country_modifier = cc_xp_school_realm_languages
+	remove_country_modifier = cc_xp_school_realm_commerce
+	remove_country_modifier = cc_xp_school_realm_history
+	remove_country_modifier = cc_xp_school_realm_fortification
+	remove_country_modifier = cc_xp_school_realm_gunnery
+	remove_country_modifier = cc_xp_school_realm_logistics
 	if = {
 		limit = { cc_xp_school_is_seated = { N = 1 } }
 		cc_xp_school_apply_modifiers = { N = 1 }
@@ -563,6 +635,38 @@ cc_xp_school_do_disputation = {
 		limit = { var:cc_xp_school_$N$_curriculum = 7 }
 		trigger_event_non_silently = cc_xp_school.17
 	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 8 }
+		trigger_event_non_silently = cc_xp_school.50
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 9 }
+		trigger_event_non_silently = cc_xp_school.51
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 10 }
+		trigger_event_non_silently = cc_xp_school.52
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 11 }
+		trigger_event_non_silently = cc_xp_school.53
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 12 }
+		trigger_event_non_silently = cc_xp_school.54
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 13 }
+		trigger_event_non_silently = cc_xp_school.55
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 14 }
+		trigger_event_non_silently = cc_xp_school.56
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_curriculum = 15 }
+		trigger_event_non_silently = cc_xp_school.57
+	}
 	else = {
 		trigger_event_non_silently = cc_xp_school.11
 	}
@@ -650,11 +754,12 @@ cc_xp_school_rector_off = {
 # the target over the following years).
 #
 # RENOWN is how widely the school is known. It competes with the world.
-#   target = age            0.5 a year, at most 20
-#          + seat           cc_xp_seat_prominence, at most 35
-#          + realm          cc_xp_country_prominence, at most about 33
-#          + quality        a fifth of quality, at most 20
-#          halved in exile. Drifts 15% of the gap a year.
+#   target = age            0.2 a year, at most 20 (at 100 years)
+#          + maturity x (   maturity = age / 100, at most 1: a school takes a century
+#              seat         cc_xp_seat_prominence, at most 35
+#            + realm        cc_xp_country_prominence, at most about 33
+#            + quality )    a fifth of quality, at most 20
+#          halved in exile, 0 while dormant. Rises 8% of the gap a year, falls 15%.
 #   standing = 1 + the number of foreign universities whose cc_xp_university_score beats
 #   this school's renown (cc_xp_school_scan_rivals). Falling behind the leading foreign
 #   university brings rival events; standing first brings its own.
@@ -666,7 +771,10 @@ cc_xp_school_rector_off = {
 #          + Rector         10, plus their seniority level
 #          + stability      5 while the curriculum has not changed in 10 years
 #          + senior members 3 per member of seniority 5 or more, at most 15
-#          10 flat in exile. Drifts 20% of the gap a year.
+#          10 flat in exile, 0 while dormant. Drifts 20% of the gap a year.
+#
+# DORMANT (cc_xp_school_N_dormant): no living members at the yearly update. The school does
+# not age, costs nothing, rolls no events, and both targets are 0, so renown and quality fade.
 #   Feeds: qscale = 0.5 + quality / 100, which sizes every seat and curriculum modifier
 #   and the members' yearly experience; disputation options; curriculum unlocks.
 #
@@ -679,7 +787,8 @@ cc_xp_school_rector_off = {
 
 # Country scope. Starting values for a new school, and for one founded before this existed.
 cc_xp_school_init_standing = {
-	set_variable = { name = cc_xp_school_$N$_renown   value = 10 }
+	# Unknown at first: renown takes about a century to build (see RENOWN AND QUALITY).
+	set_variable = { name = cc_xp_school_$N$_renown   value = 0 }
 	set_variable = { name = cc_xp_school_$N$_quality  value = 40 }
 	set_variable = { name = cc_xp_school_$N$_age      value = 0 }
 	# The year it was founded, for the panel. A school founded before this existed is
@@ -728,24 +837,52 @@ cc_xp_school_yearly_standing = {
 			cc_xp_school_init_standing = { N = $N$ }
 		}
 
-		change_variable = { name = cc_xp_school_$N$_age  add = 1 }
+		# A school with no living members is dormant: nobody teaches there and nobody
+		# carries its name, so it does not age, is not paid for, and both targets are 0
+		# (renown and quality fade). It wakes as soon as anyone is enrolled again.
+		cc_xp_school_count_members = { N = $N$ }
+		if = {
+			limit = { var:cc_xp_school_$N$_members <= 0 }
+			set_variable = { name = cc_xp_school_$N$_dormant  value = yes }
+		}
+		else = {
+			remove_variable = cc_xp_school_$N$_dormant
+			change_variable = { name = cc_xp_school_$N$_age  add = 1 }
+		}
 
 		# ---- Renown target ----
+		# Maturity (0-100%, full at 100 years) scales the seat, realm and teaching terms, so
+		# a school takes about a century to be established however fine its seat. The
+		# published terms are the scaled ones, so the panel's rows add up to the target.
+		set_variable = {
+			name = cc_xp_school_$N$_maturity
+			value = { value = var:cc_xp_school_$N$_age  max = 100 }
+		}
 		set_variable = {
 			name = cc_xp_school_$N$_r_age
-			value = { value = var:cc_xp_school_$N$_age  multiply = 0.5  max = 20 }
+			value = { value = var:cc_xp_school_$N$_age  multiply = 0.2  max = 20 }
 		}
 		set_variable = { name = cc_xp_school_$N$_r_seat  value = 0 }
 		clear_saved_scope = cc_xp_school_seat_scope
 		var:cc_xp_school_$N$_loc ?= { save_scope_as = cc_xp_school_seat_scope }
 		if = {
 			limit = { exists = scope:cc_xp_school_seat_scope }
-			set_variable = { name = cc_xp_school_$N$_r_seat  value = scope:cc_xp_school_seat_scope.cc_xp_seat_prominence }
+			set_variable = {
+				name = cc_xp_school_$N$_r_seat
+				value = {
+					value = scope:cc_xp_school_seat_scope.cc_xp_seat_prominence
+					multiply = var:cc_xp_school_$N$_maturity
+					divide = 100
+				}
+			}
 		}
-		set_variable = { name = cc_xp_school_$N$_r_realm  value = cc_xp_country_prominence }
+		set_variable = {
+			name = cc_xp_school_$N$_r_realm
+			value = { value = cc_xp_country_prominence  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
+		}
 		set_variable = {
 			name = cc_xp_school_$N$_r_quality
-			value = { value = var:cc_xp_school_$N$_quality  multiply = 0.2 }
+			value = { value = var:cc_xp_school_$N$_quality  multiply = 0.2  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
 		}
 		set_variable = {
 			name = cc_xp_school_$N$_renown_target
@@ -757,6 +894,10 @@ cc_xp_school_yearly_standing = {
 				if = {
 					limit = { has_variable = cc_xp_school_$N$_exile }
 					multiply = 0.5
+				}
+				if = {
+					limit = { has_variable = cc_xp_school_$N$_dormant }
+					multiply = 0
 				}
 				max = 100
 			}
@@ -806,6 +947,10 @@ cc_xp_school_yearly_standing = {
 		}
 		clamp_variable = { name = cc_xp_school_$N$_q_members  max = 15 }
 		if = {
+			limit = { has_variable = cc_xp_school_$N$_dormant }
+			set_variable = { name = cc_xp_school_$N$_quality_target  value = 0 }
+		}
+		else_if = {
 			limit = { has_variable = cc_xp_school_$N$_exile }
 			set_variable = { name = cc_xp_school_$N$_quality_target  value = 10 }
 		}
@@ -823,12 +968,26 @@ cc_xp_school_yearly_standing = {
 		}
 
 		# ---- Drift ----
-		change_variable = {
-			name = cc_xp_school_$N$_renown
-			add = {
-				value = var:cc_xp_school_$N$_renown_target
-				subtract = var:cc_xp_school_$N$_renown
-				multiply = 0.15
+		# Renown builds slowly (8% of the gap a year) and is lost faster (15%).
+		if = {
+			limit = { var:cc_xp_school_$N$_renown_target > var:cc_xp_school_$N$_renown }
+			change_variable = {
+				name = cc_xp_school_$N$_renown
+				add = {
+					value = var:cc_xp_school_$N$_renown_target
+					subtract = var:cc_xp_school_$N$_renown
+					multiply = 0.08
+				}
+			}
+		}
+		else = {
+			change_variable = {
+				name = cc_xp_school_$N$_renown
+				add = {
+					value = var:cc_xp_school_$N$_renown_target
+					subtract = var:cc_xp_school_$N$_renown
+					multiply = 0.15
+				}
 			}
 		}
 		change_variable = {
@@ -955,6 +1114,7 @@ cc_xp_school_fund = {
 		limit = {
 			modifier:has_cultural_maintenance = yes
 			cc_xp_school_is_seated = { N = $N$ }
+			NOT = { has_variable = cc_xp_school_$N$_dormant }
 		}
 		set_variable = {
 			name = cc_xp_school_$N$_cost
@@ -1001,6 +1161,7 @@ cc_xp_school_roll_events = {
 			is_ai = no
 			cc_xp_school_is_seated = { N = $N$ }
 			has_variable = cc_xp_school_$N$_renown
+			NOT = { has_variable = cc_xp_school_$N$_dormant }
 		}
 
 		if = {

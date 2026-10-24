@@ -389,6 +389,43 @@ cc_xp_school_has_members = {
 	}
 }
 
+# Country scope. Slot N's curriculum belongs to its discipline (cc_xp_school_N_track: 1
+# administrative, 2 diplomatic, 3 military).
+cc_xp_school_curriculum_fits = {
+	OR = {
+		AND = {
+			var:cc_xp_school_$N$_track ?= 1
+			OR = {
+				var:cc_xp_school_$N$_curriculum ?= 1
+				var:cc_xp_school_$N$_curriculum ?= 2
+				var:cc_xp_school_$N$_curriculum ?= 3
+				var:cc_xp_school_$N$_curriculum ?= 6
+				var:cc_xp_school_$N$_curriculum ?= 8
+			}
+		}
+		AND = {
+			var:cc_xp_school_$N$_track ?= 2
+			OR = {
+				var:cc_xp_school_$N$_curriculum ?= 4
+				var:cc_xp_school_$N$_curriculum ?= 9
+				var:cc_xp_school_$N$_curriculum ?= 10
+				var:cc_xp_school_$N$_curriculum ?= 11
+				var:cc_xp_school_$N$_curriculum ?= 12
+			}
+		}
+		AND = {
+			var:cc_xp_school_$N$_track ?= 3
+			OR = {
+				var:cc_xp_school_$N$_curriculum ?= 5
+				var:cc_xp_school_$N$_curriculum ?= 7
+				var:cc_xp_school_$N$_curriculum ?= 13
+				var:cc_xp_school_$N$_curriculum ?= 14
+				var:cc_xp_school_$N$_curriculum ?= 15
+			}
+		}
+	}
+}
+
 # Country scope. Slot N may change its curriculum.
 cc_xp_school_can_change_curriculum = {
 	custom_tooltip = {

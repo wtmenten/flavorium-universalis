@@ -490,9 +490,10 @@ cc_xp_school.17 = {
 ###############################################################################
 # CHANGE CURRICULUM (cc_xp_school.20)
 #
-# Curricula are gated by what the school can teach: Natural Philosophy needs quality 40,
-# Medicine quality 50, and Navigation a coastal seat. A school keeps its curriculum if
-# its quality later falls; the gate is only on choosing it.
+# A school chooses among the five curricula of its discipline. Some are gated by what the
+# school can teach: Natural Philosophy needs quality 40, Medicine quality 50, Navigation a
+# coastal seat, Gunnery the Age of Discovery. A school keeps its curriculum if its quality
+# later falls; the gate is only on choosing it.
 ###############################################################################
 
 scripted_effect cc_xp_school_active_set_curriculum = {
@@ -536,45 +537,104 @@ cc_xp_school.20 = {
 
 	immediate = { cc_xp_school_take_notice = { FLAG = choosing } }
 
+	# Only the curricula of the school's own discipline (cc_xp_school_N_track) are offered.
+	# ---- Administrative ----
 	option = {
 		name = cc_xp_school.20.a
-		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 1 } } }
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 1 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 1 } }
+		}
 		cc_xp_school_active_set_curriculum = { C = 1  KEY = law }
 	}
 	option = {
 		name = cc_xp_school.20.b
-		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 2 } } }
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 1 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 2 } }
+		}
 		cc_xp_school_active_set_curriculum = { C = 2  KEY = theology }
 	}
 	option = {
 		name = cc_xp_school.20.c
 		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 1 }
 			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 3 } }
 			cc_xp_school_active_quality = { Q = 40 }
 		}
 		cc_xp_school_active_set_curriculum = { C = 3  KEY = natural_philosophy }
 	}
 	option = {
-		name = cc_xp_school.20.d
-		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 4 } } }
-		cc_xp_school_active_set_curriculum = { C = 4  KEY = letters }
-	}
-	option = {
-		name = cc_xp_school.20.e
-		trigger = { NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 5 } } }
-		cc_xp_school_active_set_curriculum = { C = 5  KEY = military_science }
-	}
-	option = {
 		name = cc_xp_school.20.g
 		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 1 }
 			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 6 } }
 			cc_xp_school_active_quality = { Q = 50 }
 		}
 		cc_xp_school_active_set_curriculum = { C = 6  KEY = medicine }
 	}
 	option = {
+		name = cc_xp_school.20.i
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 1 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 8 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 8  KEY = public_finance }
+	}
+	# ---- Diplomatic ----
+	option = {
+		name = cc_xp_school.20.d
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 2 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 4 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 4  KEY = letters }
+	}
+	option = {
+		name = cc_xp_school.20.j
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 2 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 9 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 9  KEY = rhetoric }
+	}
+	option = {
+		name = cc_xp_school.20.k
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 2 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 10 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 10  KEY = languages }
+	}
+	option = {
+		name = cc_xp_school.20.l
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 2 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 11 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 11  KEY = commerce }
+	}
+	option = {
+		name = cc_xp_school.20.m
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 2 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 12 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 12  KEY = history }
+	}
+	# ---- Military ----
+	option = {
+		name = cc_xp_school.20.e
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 3 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 5 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 5  KEY = military_science }
+	}
+	option = {
 		name = cc_xp_school.20.h
 		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 3 }
 			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 7 } }
 			custom_tooltip = {
 				text = cc_xp_tt_school_coastal
@@ -582,6 +642,31 @@ cc_xp_school.20 = {
 			}
 		}
 		cc_xp_school_active_set_curriculum = { C = 7  KEY = navigation }
+	}
+	option = {
+		name = cc_xp_school.20.n
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 3 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 13 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 13  KEY = fortification }
+	}
+	option = {
+		name = cc_xp_school.20.o
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 3 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 14 } }
+			current_age_or_later = { age = age_3_discovery }
+		}
+		cc_xp_school_active_set_curriculum = { C = 14  KEY = gunnery }
+	}
+	option = {
+		name = cc_xp_school.20.p
+		trigger = {
+			cc_xp_school_active_is = { KEY = track  V = 3 }
+			NOT = { cc_xp_school_active_is = { KEY = curriculum  V = 15 } }
+		}
+		cc_xp_school_active_set_curriculum = { C = 15  KEY = logistics }
 	}
 
 	# Keep it as it is. No cooldown is spent.
@@ -907,5 +992,319 @@ cc_xp_school.42 = {
 	option = {
 		name = cc_xp_school.42.b
 		add_prestige = prestige_weak_bonus
+	}
+}
+
+
+###############################################################################
+# DISPUTATIONS FOR CURRICULA 8-15 (cc_xp_school.50-57)
+#
+# Fired by cc_xp_school_do_disputation as cc_xp_school.(42 + curriculum):
+#   50 public finance  51 rhetoric  52 languages  53 commerce  54 history
+#   55 fortification  56 gunnery  57 logistics
+# Same shape as 11-17: three options for any school, a fourth at quality 60.
+###############################################################################
+
+# Public finance
+cc_xp_school.50 = {
+	type = country_event
+	title = cc_xp_school.50.title
+	desc = cc_xp_school.50.desc
+	outcome = neutral
+	illustration_tags = { 10 = economy  10 = interior }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Adopt the new accounts.
+	option = {
+		name = cc_xp_school.50.a
+		add_political_influence = political_influence_weak_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Teach it.
+	option = {
+		name = cc_xp_school.50.b
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Give it to the guilds.
+	option = {
+		name = cc_xp_school.50.c
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 0 }
+	}
+	# Auditors.
+	option = {
+		name = cc_xp_school.50.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_stability = stability_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+}
+
+# Rhetoric
+cc_xp_school.51 = {
+	type = country_event
+	title = cc_xp_school.51.title
+	desc = cc_xp_school.51.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = society }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Send the champion abroad.
+	option = {
+		name = cc_xp_school.51.a
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 0 }
+	}
+	# Keep it for the chancery.
+	option = {
+		name = cc_xp_school.51.b
+		add_political_influence = political_influence_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	# Argue both sides.
+	option = {
+		name = cc_xp_school.51.c
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Publish the orations.
+	option = {
+		name = cc_xp_school.51.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_prestige = prestige_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+}
+
+# Languages
+cc_xp_school.52 = {
+	type = country_event
+	title = cc_xp_school.52.title
+	desc = cc_xp_school.52.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = trading }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Interpreters.
+	option = {
+		name = cc_xp_school.52.a
+		add_political_influence = political_influence_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	# Merchants.
+	option = {
+		name = cc_xp_school.52.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Missions.
+	option = {
+		name = cc_xp_school.52.c
+		add_religious_influence = religious_influence_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Print it.
+	option = {
+		name = cc_xp_school.52.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_cultural_influence = cultural_influence_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+}
+
+# Commerce
+cc_xp_school.53 = {
+	type = country_event
+	title = cc_xp_school.53.title
+	desc = cc_xp_school.53.desc
+	outcome = neutral
+	illustration_tags = { 10 = bank  10 = trading }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Require it of our factors.
+	option = {
+		name = cc_xp_school.53.a
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 1 }
+	}
+	# Let the houses keep it.
+	option = {
+		name = cc_xp_school.53.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -1  QUALITY = 0 }
+	}
+	# Teach it to the students.
+	option = {
+		name = cc_xp_school.53.c
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Lecture on exchange.
+	option = {
+		name = cc_xp_school.53.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_research_progress = research_progress_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# History
+cc_xp_school.54 = {
+	type = country_event
+	title = cc_xp_school.54.title
+	desc = cc_xp_school.54.desc
+	outcome = neutral
+	illustration_tags = { 10 = interior  10 = ages }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Flatter the dynasty.
+	option = {
+		name = cc_xp_school.54.a
+		add_legitimacy = legitimacy_weak_bonus
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 0 }
+	}
+	# Let it stand.
+	option = {
+		name = cc_xp_school.54.b
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 3  QUALITY = 0 }
+	}
+	# Settle the pedigrees.
+	option = {
+		name = cc_xp_school.54.c
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_members_gain = { AMOUNT = 20 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	# Official history.
+	option = {
+		name = cc_xp_school.54.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_legitimacy = legitimacy_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# Fortification
+cc_xp_school.55 = {
+	type = country_event
+	title = cc_xp_school.55.title
+	desc = cc_xp_school.55.desc
+	outcome = neutral
+	illustration_tags = { 10 = military  10 = location }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Rebuild the seat's walls.
+	option = {
+		name = cc_xp_school.55.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -20 }
+		cc_xp_school_active_change = { RENOWN = 2  QUALITY = 2 }
+	}
+	# Inspect the frontier.
+	option = {
+		name = cc_xp_school.55.b
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 2 }
+	}
+	# Keep the old walls.
+	option = {
+		name = cc_xp_school.55.c
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 0 }
+	}
+	# Publish the treatise.
+	option = {
+		name = cc_xp_school.55.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_army_tradition = army_tradition_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 5  QUALITY = 0 }
+	}
+}
+
+# Gunnery
+cc_xp_school.56 = {
+	type = country_event
+	title = cc_xp_school.56.title
+	desc = cc_xp_school.56.desc
+	outcome = neutral
+	illustration_tags = { 10 = military  10 = army }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Fund more trials.
+	option = {
+		name = cc_xp_school.56.a
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2  max = -20 }
+		add_research_progress = research_progress_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Give the founders the formulas.
+	option = {
+		name = cc_xp_school.56.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		add_army_tradition = army_tradition_weak_bonus
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Stop the trials.
+	option = {
+		name = cc_xp_school.56.c
+		add_estate_satisfaction = { type = estate_type:peasants_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -2  QUALITY = 0 }
+	}
+	# The gunners' manual.
+	option = {
+		name = cc_xp_school.56.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_army_tradition = army_tradition_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
+	}
+}
+
+# Logistics
+cc_xp_school.57 = {
+	type = country_event
+	title = cc_xp_school.57.title
+	desc = cc_xp_school.57.desc
+	outcome = neutral
+	illustration_tags = { 10 = army  10 = economy }
+	trigger = { cc_xp_school_disputing = yes }
+	immediate = { cc_xp_school_take_notice = { FLAG = disputing } }
+
+	# Build the magazines.
+	option = {
+		name = cc_xp_school.57.a
+		add_army_tradition = army_tradition_weak_bonus
+		add_estate_satisfaction = { type = estate_type:peasants_estate  value = estate_satisfaction_weak_penalty }
+		cc_xp_school_active_change = { RENOWN = 1  QUALITY = 0 }
+	}
+	# Train the quartermasters.
+	option = {
+		name = cc_xp_school.57.b
+		cc_xp_school_active_members_gain = { AMOUNT = 25 }
+		cc_xp_school_active_change = { RENOWN = 0  QUALITY = 3 }
+	}
+	# Leave it to the contractors.
+	option = {
+		name = cc_xp_school.57.c
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_xp_school_active_change = { RENOWN = -1  QUALITY = 0 }
+	}
+	# Plan the next campaign.
+	option = {
+		name = cc_xp_school.57.d
+		trigger = { cc_xp_school_active_quality = { Q = 60 } }
+		add_army_tradition = army_tradition_mild_bonus
+		cc_xp_school_active_change = { RENOWN = 4  QUALITY = 0 }
 	}
 }

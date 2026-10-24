@@ -24,7 +24,7 @@
 
 # A held office. Expects its holder as the Character datacontext (cc_office_<key>_holder).
 template cc_office_held_card {
-	size = { 230 214 }
+	size = { 230 186 }
 	background = { using = color_whiteish_texture  alpha = 0.10 }
 
 	vbox = {
@@ -43,6 +43,7 @@ template cc_office_held_card {
 			}
 			expand = {}
 			block "office_retiring" {}
+			block "office_button" {}
 		}
 		text_single = {
 			layoutpolicy_horizontal = expanding
@@ -91,18 +92,12 @@ template cc_office_held_card {
 		}
 
 		expand = {}
-
-		hbox = {
-			layoutpolicy_horizontal = expanding
-			expand = {}
-			block "office_button" {}
-		}
 	}
 }
 
 # An office the realm has but nobody holds.
 template cc_office_open_card {
-	size = { 230 168 }
+	size = { 230 140 }
 	background = { using = color_black_texture  alpha = 0.18 }
 
 	vbox = {
@@ -122,6 +117,7 @@ template cc_office_open_card {
 			}
 			expand = {}
 			block "office_retiring" {}
+			block "office_button" {}
 		}
 		text_single = {
 			layoutpolicy_horizontal = expanding
@@ -149,12 +145,6 @@ template cc_office_open_card {
 		}
 
 		expand = {}
-
-		hbox = {
-			layoutpolicy_horizontal = expanding
-			expand = {}
-			block "office_button" {}
-		}
 	}
 }
 
@@ -216,16 +206,19 @@ template cc_office_household_content {
 						tooltip = "CC_OFFICE_FILLED_TT"
 					}
 					expand = {}
-				}
-
-				text_multi = {
-					layoutpolicy_horizontal = expanding
-					autoresize = yes
-					multiline = yes
-					max_width = 460
-					fontsize = 11
-					default_format = "#weak"
-					text = "CC_OFFICE_TAB_NOTE"
+					icon = {
+						size = { 20 20 }
+						texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+						texture_density = 2
+						tooltipwidget = {
+							ContextualTooltipType = {
+								blockoverride "title_text" { text = "CC_OFFICE_TAB_HOUSEHOLD" }
+								blockoverride "tooltip_content" {
+									text_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_OFFICE_TAB_NOTE" }
+								}
+							}
+						}
+					}
 				}
 
 				# ---- CC_OFFICE_HELD_HEADER ----
@@ -252,7 +245,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -261,11 +254,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -286,7 +278,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -295,11 +287,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -320,7 +311,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -329,11 +320,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -354,7 +344,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -363,11 +353,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -388,7 +377,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -397,11 +386,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -422,7 +410,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -431,11 +419,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -456,7 +443,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -465,11 +452,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -487,7 +473,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_the_mint_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -496,11 +482,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -518,7 +503,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_court_chamberlain_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -527,11 +512,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -549,7 +533,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_protocol_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -558,11 +542,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -580,7 +563,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_intendant_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -589,11 +572,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -611,7 +593,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_permanent_secretary_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -620,11 +602,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -642,7 +623,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_director_of_public_instruction_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -651,11 +632,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -673,7 +653,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_court_chaplain_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -682,11 +662,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -707,7 +686,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -716,11 +695,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -738,7 +716,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_grand_inquisitor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -747,11 +725,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -769,7 +746,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_ecclesiarch_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -778,11 +755,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -800,7 +776,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_qadi_of_the_court_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -809,11 +785,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -831,7 +806,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_court_ulema_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -840,11 +815,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -862,7 +836,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_court_pandit_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -871,11 +845,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -893,7 +866,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_sangha_preceptor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -902,11 +875,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -924,7 +896,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_consistory_superintendent_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -933,11 +905,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -955,7 +926,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_confessional_overseer_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -964,11 +935,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -986,7 +956,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_steward_of_the_demesne_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -995,11 +965,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1017,7 +986,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_constable_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1026,11 +995,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1048,7 +1016,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_consul_of_merchants_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1057,11 +1025,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1079,7 +1046,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_chancellor_of_the_see_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1088,11 +1055,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1110,7 +1076,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_keeper_of_the_kurultai_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1119,11 +1085,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1141,7 +1106,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_the_yam_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1150,11 +1115,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1172,7 +1136,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_phanariote_secretary_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1181,11 +1145,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1203,7 +1166,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_hansa_factor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1212,11 +1175,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1234,7 +1196,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_postelnic_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1243,11 +1205,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1265,7 +1226,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_voivode_of_the_court_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1274,11 +1235,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1296,7 +1256,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_herald_of_the_table_of_ranks_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1305,11 +1265,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1327,7 +1286,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_state_inquisitor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1336,11 +1295,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1358,7 +1316,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_priori_of_the_council_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1367,11 +1325,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1389,7 +1346,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_jokamachi_warden_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1398,11 +1355,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1420,7 +1376,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_siege_works_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1429,11 +1385,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1451,7 +1406,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_keeper_of_the_wampum_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1460,11 +1415,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1482,7 +1436,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_speaker_of_the_elders_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1491,11 +1445,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1513,7 +1466,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_keeper_of_regnal_chronicles_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1522,11 +1475,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1544,7 +1496,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_the_silk_road_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1553,11 +1505,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1575,7 +1526,7 @@ template cc_office_household_content {
 						blockoverride "office_scale" { text = "cc_office_master_of_ceremonies_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1584,11 +1535,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_DISMISS"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/modifier_types/blocked_from_cabinet.dds"
 								}
 							}
 						}
@@ -1617,7 +1567,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1626,11 +1576,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1649,7 +1598,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1658,11 +1607,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1681,7 +1629,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1690,11 +1638,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1713,7 +1660,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1722,11 +1669,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1745,7 +1691,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1754,11 +1700,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1777,7 +1722,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1786,11 +1731,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1809,7 +1753,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1818,11 +1762,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1838,7 +1781,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_mint_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1847,11 +1790,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1867,7 +1809,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_court_chamberlain_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1876,11 +1818,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1896,7 +1837,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_protocol_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1905,11 +1846,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1925,7 +1865,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_intendant_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1934,11 +1874,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1954,7 +1893,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_permanent_secretary_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1963,11 +1902,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -1983,7 +1921,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_director_of_public_instruction_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -1992,11 +1930,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2012,7 +1949,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_court_chaplain_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2021,11 +1958,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2044,7 +1980,7 @@ template cc_office_household_content {
 						}
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2053,11 +1989,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2073,7 +2008,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_grand_inquisitor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2082,11 +2017,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2102,7 +2036,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_ecclesiarch_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2111,11 +2045,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2131,7 +2064,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_qadi_of_the_court_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2140,11 +2073,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2160,7 +2092,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_court_ulema_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2169,11 +2101,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2189,7 +2120,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_court_pandit_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2198,11 +2129,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2218,7 +2148,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_sangha_preceptor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2227,11 +2157,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2247,7 +2176,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_consistory_superintendent_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2256,11 +2185,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2276,7 +2204,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_confessional_overseer_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2285,11 +2213,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2305,7 +2232,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_steward_of_the_demesne_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2314,11 +2241,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2334,7 +2260,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_constable_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2343,11 +2269,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2363,7 +2288,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_consul_of_merchants_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2372,11 +2297,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2392,7 +2316,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_see_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2401,11 +2325,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2421,7 +2344,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_kurultai_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2430,11 +2353,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2450,7 +2372,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_yam_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2459,11 +2381,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2479,7 +2400,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_phanariote_secretary_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2488,11 +2409,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2508,7 +2428,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_hansa_factor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2517,11 +2437,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2537,7 +2456,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_postelnic_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2546,11 +2465,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2566,7 +2484,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_voivode_of_the_court_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2575,11 +2493,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2595,7 +2512,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_herald_of_the_table_of_ranks_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2604,11 +2521,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2624,7 +2540,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_state_inquisitor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2633,11 +2549,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2653,7 +2568,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_priori_of_the_council_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2662,11 +2577,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2682,7 +2596,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_jokamachi_warden_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2691,11 +2605,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2711,7 +2624,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_siege_works_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2720,11 +2633,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2740,7 +2652,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wampum_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2749,11 +2661,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2769,7 +2680,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_speaker_of_the_elders_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2778,11 +2689,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2798,7 +2708,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_regnal_chronicles_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2807,11 +2717,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2827,7 +2736,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_silk_road_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2836,11 +2745,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}
@@ -2856,7 +2764,7 @@ template cc_office_household_content {
 						blockoverride "office_requirement" { text = "cc_office_master_of_ceremonies_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
-								size = { 96 26 }
+								size = { 30 26 }
 								scripted_action_tooltip = {
 									click_type = left
 									click_mode = single
@@ -2865,11 +2773,10 @@ template cc_office_household_content {
 								}
 								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
 								tooltipwidget = { using = action_tooltip_pop_out }
-								text_single = {
+								icon = {
 									parentanchor = center
-									align = center
-									fontsize = 11
-									text = "CC_OFFICE_BTN_APPOINT"
+									size = { 20 20 }
+									texture = "gfx/interface/icons/character_roles/cabinet.dds"
 								}
 							}
 						}

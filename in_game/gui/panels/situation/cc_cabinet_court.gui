@@ -44,6 +44,9 @@ situation_panel = {
 	# only call site.
 
 	blockoverride "situation_subheader_content" {}
+	# These situations never end, so the vanilla outcomes section (situation_outcomes, in
+	# panels/situation/common.gui) has nothing to show: removed.
+	blockoverride "situation_panel_main_content_top" {}
 
 	##################################### MAIN CONTENT #####################################
 
@@ -722,17 +725,8 @@ situation_panel = {
 					margin = { 10 8 }
 					spacing = 6
 
-					text_multi = {
-						layoutpolicy_horizontal = expanding
-						autoresize = yes
-						multiline = yes
-						max_width = 470
-						fontsize = 11
-						default_format = "#weak"
-						text = "CC_XP_SCHOOLS_DESC"
-					}
-
 					# ---- Summary ----
+					# The tab's explainer is the info icon at the end of this row.
 					# Published monthly by cc_xp_monthly_schools; GUI cannot count members itself.
 					hbox = {
 						layoutpolicy_horizontal = expanding
@@ -743,6 +737,19 @@ situation_panel = {
 						text_single = { fontsize = 12  default_format = "#weak"  text = "CC_XP_SCHOOLS_MEMBERS_LABEL" }
 						text_single = { fontsize = 15  raw_text = "[Player.MakeScope.GetVariable('cc_xp_school_total_members').GetValue|0]" }
 						expand = {}
+						icon = {
+							size = { 20 20 }
+							texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+							texture_density = 2
+							tooltipwidget = {
+								ContextualTooltipType = {
+									blockoverride "title_text" { text = "CC_XP_TAB_SCHOOLS" }
+									blockoverride "tooltip_content" {
+										text_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_XP_SCHOOLS_DESC" }
+									}
+								}
+							}
+						}
 					}
 
 					# The leading foreign university, found by the yearly rival scan

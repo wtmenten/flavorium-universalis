@@ -1198,7 +1198,7 @@ GUI_HEADER = '''################################################################
 
 # A held office. Expects its holder as the Character datacontext (cc_office_<key>_holder).
 template cc_office_held_card {
-\tsize = { 230 214 }
+\tsize = { 230 186 }
 \tbackground = { using = color_whiteish_texture  alpha = 0.10 }
 
 \tvbox = {
@@ -1217,6 +1217,7 @@ template cc_office_held_card {
 \t\t\t}
 \t\t\texpand = {}
 \t\t\tblock "office_retiring" {}
+\t\t\tblock "office_button" {}
 \t\t}
 \t\ttext_single = {
 \t\t\tlayoutpolicy_horizontal = expanding
@@ -1265,18 +1266,12 @@ template cc_office_held_card {
 \t\t}
 
 \t\texpand = {}
-
-\t\thbox = {
-\t\t\tlayoutpolicy_horizontal = expanding
-\t\t\texpand = {}
-\t\t\tblock "office_button" {}
-\t\t}
 \t}
 }
 
 # An office the realm has but nobody holds.
 template cc_office_open_card {
-\tsize = { 230 168 }
+\tsize = { 230 140 }
 \tbackground = { using = color_black_texture  alpha = 0.18 }
 
 \tvbox = {
@@ -1296,6 +1291,7 @@ template cc_office_open_card {
 \t\t\t}
 \t\t\texpand = {}
 \t\t\tblock "office_retiring" {}
+\t\t\tblock "office_button" {}
 \t\t}
 \t\ttext_single = {
 \t\t\tlayoutpolicy_horizontal = expanding
@@ -1323,12 +1319,6 @@ template cc_office_open_card {
 \t\t}
 
 \t\texpand = {}
-
-\t\thbox = {
-\t\t\tlayoutpolicy_horizontal = expanding
-\t\t\texpand = {}
-\t\t\tblock "office_button" {}
-\t\t}
 \t}
 }
 
@@ -1367,9 +1357,17 @@ def _var(k: str, name: str) -> str:
     return f"Player.MakeScope.GetVariable('cc_office_{k}_{name}')"
 
 
+# Appoint and dismiss are icon buttons in the card's top right: the cabinet hat to appoint,
+# the barred cabinet to dismiss. The action's own tooltip names what the button does.
+BUTTON_ICONS = {
+    'CC_OFFICE_BTN_APPOINT': 'gfx/interface/icons/character_roles/cabinet.dds',
+    'CC_OFFICE_BTN_DISMISS': 'gfx/interface/icons/modifier_types/blocked_from_cabinet.dds',
+}
+
+
 def _button(action: str, label: str) -> str:
     return (f'card_header_button_01 = {{\n'
-            f'\tsize = {{ 96 26 }}\n'
+            f'\tsize = {{ 30 26 }}\n'
             f'\tscripted_action_tooltip = {{\n'
             f'\t\tclick_type = left\n'
             f'\t\tclick_mode = single\n'
@@ -1378,11 +1376,10 @@ def _button(action: str, label: str) -> str:
             f'\t}}\n'
             f'\tenabled = "[PdxGuiWidget.IsUberButtonEnabled]"\n'
             f'\ttooltipwidget = {{ using = action_tooltip_pop_out }}\n'
-            f'\ttext_single = {{\n'
+            f'\ticon = {{\n'
             f'\t\tparentanchor = center\n'
-            f'\t\talign = center\n'
-            f'\t\tfontsize = 11\n'
-            f'\t\ttext = "{label}"\n'
+            f'\t\tsize = {{ 20 20 }}\n'
+            f'\t\ttexture = "{BUTTON_ICONS[label]}"\n'
             f'\t}}\n'
             f'}}')
 
@@ -1435,12 +1432,17 @@ def emit_gui() -> str:
     out.append('\t\t\t\t\t\ttooltip = "CC_OFFICE_FILLED_TT"\n')
     out.append('\t\t\t\t\t}\n')
     out.append('\t\t\t\t\texpand = {}\n')
-    out.append('\t\t\t\t}\n\n')
-    out.append('\t\t\t\ttext_multi = {\n')
-    out.append('\t\t\t\t\tlayoutpolicy_horizontal = expanding\n')
-    out.append('\t\t\t\t\tautoresize = yes\n\t\t\t\t\tmultiline = yes\n\t\t\t\t\tmax_width = 460\n')
-    out.append('\t\t\t\t\tfontsize = 11\n\t\t\t\t\tdefault_format = "#weak"\n')
-    out.append('\t\t\t\t\ttext = "CC_OFFICE_TAB_NOTE"\n')
+    # The tab's explainer lives in an info icon at the end of the summary row.
+    out.append('\t\t\t\t\ticon = {\n')
+    out.append('\t\t\t\t\t\tsize = { 20 20 }\n')
+    out.append('\t\t\t\t\t\ttexture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"\n')
+    out.append('\t\t\t\t\t\ttexture_density = 2\n')
+    out.append('\t\t\t\t\t\ttooltipwidget = {\n\t\t\t\t\t\t\tContextualTooltipType = {\n')
+    out.append('\t\t\t\t\t\t\t\tblockoverride "title_text" { text = "CC_OFFICE_TAB_HOUSEHOLD" }\n')
+    out.append('\t\t\t\t\t\t\t\tblockoverride "tooltip_content" {\n')
+    out.append('\t\t\t\t\t\t\t\t\ttext_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_OFFICE_TAB_NOTE" }\n')
+    out.append('\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n')
+    out.append('\t\t\t\t\t}\n')
     out.append('\t\t\t\t}\n\n')
 
     def grid(header: str, cards: list, extra_header: str = '') -> None:
