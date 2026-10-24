@@ -16,7 +16,10 @@
 #   cc_pty.42  The liberal clubs rise             escalation outcome, always
 #   cc_pty.43  The subjects pull away             escalation outcome, always
 #   cc_pty.45  The coup ends
-#   cc_pty.46  The uprising ends
+#   cc_pty.46  The uprising ends: defused (momentum 0) or the party is gone
+#   cc_pty.47  The uprising boils over (momentum 100): constitution or civil war
+#   cc_pty.48  The uprising ends after five years, unresolved
+#   cc_pty.70-75  Liberal uprising crisis events  from the disaster's on_monthly
 #   cc_pty.50  The Liberal Party forms            budgeted
 #   cc_pty.60  Term limits adopted                rare (follows the dominant party)
 #   cc_pty.61  Term limits lifted                 rare
@@ -267,16 +270,21 @@ cc_pty.42 = {
 		10 = angry
 	}
 
-	# Concede reforms.
+	# Opens the uprising. No option ends it: see cc_pty_liberal_uprising for the momentum
+	# meter (starts at 60) and how it falls. The desc explains it to the player.
+
+	# Concede some reforms.
 	option = {
 		name = cc_pty.42.a
 		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_minor_move_to_right }
-		custom_tooltip = cc_pty_tt_liberal_concede
-		hidden_effect = {
-			cc_pty_type_add_sat = { TYPE = 11 VALUE = 60 }
-		}
 		add_political_influence = political_influence_mild_penalty
-		ai_chance = { base = 50 }
+		custom_tooltip = cc_pty_tt_liberal_concede
+		custom_tooltip = cc_pty_lu_tt_down_10
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = 20 }
+			cc_pty_lu_change = { VALUE = -10 }
+		}
+		ai_chance = { base = 45 }
 	}
 
 	# Close the clubs and arrest the leaders.
@@ -284,11 +292,25 @@ cc_pty.42 = {
 		name = cc_pty.42.b
 		add_stability = stability_severe_penalty
 		custom_tooltip = cc_pty_tt_liberal_purge
+		custom_tooltip = cc_pty_lu_tt_down_15
+		custom_tooltip = cc_pty_lu_tt_repressed
 		hidden_effect = {
 			cc_pty_type_suppress = { TYPE = 11 }
 			cc_pty_type_add_sat = { TYPE = 11 VALUE = -20 }
+			cc_pty_lu_change = { VALUE = -15 }
+			set_variable = cc_pty_lu_repressed
 		}
-		ai_chance = { base = 50 }
+		ai_chance = { base = 35 }
+	}
+
+	# Wait and see.
+	option = {
+		name = cc_pty.42.c
+		custom_tooltip = cc_pty_lu_tt_up_5
+		hidden_effect = {
+			cc_pty_lu_change = { VALUE = 5 }
+		}
+		ai_chance = { base = 20 }
 	}
 }
 
@@ -373,6 +395,60 @@ cc_pty.46 = {
 	}
 }
 
+# The uprising's momentum reached 100: the crown must grant a constitution or fight.
+cc_pty.47 = {
+	type = country_event
+	title = cc_pty.47.title
+	desc = cc_pty.47.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = society
+		10 = angry
+	}
+
+	# Grant a constitution.
+	option = {
+		name = cc_pty.47.a
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_large_move_to_right }
+		add_country_modifier = { modifier = cc_pty_liberal_constitution years = 20 mode = replace }
+		custom_tooltip = cc_pty_tt_liberal_sat_40
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = 40 }
+		}
+		ai_chance = { base = 70 }
+	}
+
+	# Refuse, and fight.
+	option = {
+		name = cc_pty.47.b
+		trigger = { cc_pty_can_liberal_rising = yes }
+		add_stability = stability_mild_penalty
+		custom_tooltip = cc_pty.47.b.tt
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_start_liberal_rising } }
+		ai_chance = { base = 30 }
+	}
+}
+
+# Five years passed with the momentum still above 0: the crowds go home, the grievance does not.
+cc_pty.48 = {
+	type = country_event
+	title = cc_pty.48.title
+	desc = cc_pty.48.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = society
+		10 = regular
+	}
+
+	option = {
+		name = cc_pty.48.a
+		add_stability = stability_mild_penalty
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_minor_move_to_right }
+	}
+}
+
 
 ###############################################################################
 # cc_pty.50 - THE LIBERAL PARTY FORMS
@@ -428,5 +504,258 @@ cc_pty.61 = {
 
 	option = {
 		name = cc_pty.61.a
+	}
+}
+
+
+###############################################################################
+# cc_pty.70-75 - LIBERAL UPRISING CRISIS EVENTS
+#
+# Fired by cc_pty_lu_monthly while cc_pty_liberal_uprising runs. Each moves the momentum
+# meter (cc_pty_lu_change, 0..100); bringing it down costs gold, stability, political
+# influence or ground on Liberalism. Repression (cc_pty_lu_repressed) adds +0.5 a month
+# to the drift and unlocks cc_pty.74.
+###############################################################################
+
+# The pamphlet war.
+cc_pty.70 = {
+	type = country_event
+	title = cc_pty.70.title
+	desc = cc_pty.70.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = society
+		10 = interior
+	}
+
+	# Censor the presses.
+	option = {
+		name = cc_pty.70.a
+		add_stability = stability_weak_penalty
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_tiny_move_to_left }
+		custom_tooltip = cc_pty_lu_tt_down_8
+		custom_tooltip = cc_pty_lu_tt_repressed
+		hidden_effect = {
+			cc_pty_lu_change = { VALUE = -8 }
+			set_variable = cc_pty_lu_repressed
+		}
+		ai_chance = { base = 35 }
+	}
+
+	# Answer them in print.
+	option = {
+		name = cc_pty.70.b
+		add_gold = cc_pty_lu_print_cost
+		custom_tooltip = cc_pty_lu_tt_down_5
+		hidden_effect = { cc_pty_lu_change = { VALUE = -5 } }
+		ai_chance = { base = 40 }
+	}
+
+	# Let them print.
+	option = {
+		name = cc_pty.70.c
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_tiny_move_to_right }
+		custom_tooltip = cc_pty_lu_tt_up_8
+		hidden_effect = { cc_pty_lu_change = { VALUE = 8 } }
+		ai_chance = { base = 25 }
+	}
+}
+
+# A petition to the throne.
+cc_pty.71 = {
+	type = country_event
+	title = cc_pty.71.title
+	desc = cc_pty.71.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	# Receive the petitioners.
+	option = {
+		name = cc_pty.71.a
+		add_political_influence = political_influence_mild_penalty
+		custom_tooltip = cc_pty_tt_liberal_sat_10
+		custom_tooltip = cc_pty_lu_tt_down_10
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = 10 }
+			cc_pty_lu_change = { VALUE = -10 }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	# Turn them away.
+	option = {
+		name = cc_pty.71.b
+		custom_tooltip = cc_pty_tt_liberal_sat_minus_10
+		custom_tooltip = cc_pty_lu_tt_up_10
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = -10 }
+			cc_pty_lu_change = { VALUE = 10 }
+		}
+		ai_chance = { base = 40 }
+	}
+}
+
+# Soldiers in the crowd.
+cc_pty.72 = {
+	type = country_event
+	title = cc_pty.72.title
+	desc = cc_pty.72.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = army
+		10 = angry
+	}
+
+	# Pay the garrison's arrears.
+	option = {
+		name = cc_pty.72.a
+		add_gold = cc_pty_lu_arrears_cost
+		custom_tooltip = cc_pty_lu_tt_down_6
+		hidden_effect = { cc_pty_lu_change = { VALUE = -6 } }
+		ai_chance = { base = 40 }
+	}
+
+	# Bring in loyal regiments.
+	option = {
+		name = cc_pty.72.b
+		add_stability = stability_mild_penalty
+		custom_tooltip = cc_pty_lu_tt_down_12
+		custom_tooltip = cc_pty_lu_tt_repressed
+		hidden_effect = {
+			cc_pty_lu_change = { VALUE = -12 }
+			set_variable = cc_pty_lu_repressed
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Leave them be.
+	option = {
+		name = cc_pty.72.c
+		custom_tooltip = cc_pty_lu_tt_up_10
+		hidden_effect = { cc_pty_lu_change = { VALUE = 10 } }
+		ai_chance = { base = 20 }
+	}
+}
+
+# The shops close.
+cc_pty.73 = {
+	type = country_event
+	title = cc_pty.73.title
+	desc = cc_pty.73.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = trading
+		10 = angry
+	}
+
+	trigger = {
+		any_estate = { estate_type = estate_type:burghers_estate }
+	}
+
+	# Meet the guilds.
+	option = {
+		name = cc_pty.73.a
+		add_gold = cc_pty_lu_print_cost
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_mild_bonus }
+		custom_tooltip = cc_pty_lu_tt_down_8
+		hidden_effect = { cc_pty_lu_change = { VALUE = -8 } }
+		ai_chance = { base = 55 }
+	}
+
+	# Break the strike.
+	option = {
+		name = cc_pty.73.b
+		add_estate_satisfaction = { type = estate_type:burghers_estate value = estate_satisfaction_severe_penalty }
+		custom_tooltip = cc_pty_lu_tt_down_5
+		custom_tooltip = cc_pty_lu_tt_repressed
+		hidden_effect = {
+			cc_pty_lu_change = { VALUE = -5 }
+			set_variable = cc_pty_lu_repressed
+		}
+		ai_chance = { base = 45 }
+	}
+}
+
+# A martyr. Only after the government has used force.
+cc_pty.74 = {
+	type = country_event
+	title = cc_pty.74.title
+	desc = cc_pty.74.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = society
+		10 = angry
+	}
+
+	trigger = {
+		has_variable = cc_pty_lu_repressed
+	}
+
+	# Hold a public inquiry.
+	option = {
+		name = cc_pty.74.a
+		add_political_influence = political_influence_mild_penalty
+		custom_tooltip = cc_pty_lu_tt_down_5
+		custom_tooltip = cc_pty_lu_tt_repression_lifted
+		hidden_effect = {
+			cc_pty_lu_change = { VALUE = -5 }
+			remove_variable = cc_pty_lu_repressed
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Blame foreign agitators.
+	option = {
+		name = cc_pty.74.b
+		custom_tooltip = cc_pty_lu_tt_up_12
+		hidden_effect = { cc_pty_lu_change = { VALUE = 12 } }
+		ai_chance = { base = 50 }
+	}
+}
+
+# The moderates offer terms. Only once the momentum is below 50.
+cc_pty.75 = {
+	type = country_event
+	title = cc_pty.75.title
+	desc = cc_pty.75.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		has_variable = cc_pty_lu_momentum
+		var:cc_pty_lu_momentum < 50
+	}
+
+	# Accept their terms.
+	option = {
+		name = cc_pty.75.a
+		change_societal_value = { type = absolutism_vs_liberalism value = societal_value_move_to_right }
+		custom_tooltip = cc_pty_tt_liberal_sat_15
+		custom_tooltip = cc_pty_lu_tt_down_25
+		hidden_effect = {
+			cc_pty_type_add_sat = { TYPE = 11 VALUE = 15 }
+			cc_pty_lu_change = { VALUE = -25 }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	# Hold out for more.
+	option = {
+		name = cc_pty.75.b
+		custom_tooltip = cc_pty_lu_tt_up_5
+		hidden_effect = { cc_pty_lu_change = { VALUE = 5 } }
+		ai_chance = { base = 40 }
 	}
 }

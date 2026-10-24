@@ -66,6 +66,29 @@ cc_pty_slot_var_ge = {
 	trigger_else = { always = no }
 }
 
+# Country scope. Does the realm have a liberal city outside the capital's province for
+# cc_pty_start_liberal_rising to take? Gates cc_pty.47 option b; keep in step with it.
+cc_pty_can_liberal_rising = {
+	any_owned_location = {
+		has_variable = cc_pty_lt
+		var:cc_pty_lt >= 50
+		province ?= {
+			NOT = { any_location_in_province = { is_capital = yes } }
+		}
+	}
+}
+
+# Country scope. Is slot variable VAR (target, members, power, ...) of the party of
+# archetype TYPE at least VALUE? False if the court has no such party.
+cc_pty_type_var_ge = {
+	OR = {
+		AND = { cc_pty_slot_is_type = { SLOT = 1 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 1 VAR = $VAR$ VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 2 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 2 VAR = $VAR$ VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 3 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 3 VAR = $VAR$ VALUE = $VALUE$ } }
+		AND = { cc_pty_slot_is_type = { SLOT = 4 TYPE = $TYPE$ } cc_pty_slot_var_ge = { SLOT = 4 VAR = $VAR$ VALUE = $VALUE$ } }
+	}
+}
+
 # Country scope. Is the party of archetype TYPE at satisfaction VALUE or more?
 # False if the court has no such party.
 cc_pty_type_sat_ge = {
@@ -244,5 +267,46 @@ cc_pty_can_call_election = {
 	custom_tooltip = {
 		text = cc_pty_tt_election_cooldown
 		NOT = { has_variable = cc_pty_election_cd }
+	}
+}
+
+
+###############################################################################
+# COURT EVENTS (cc_pty.80-98)
+###############################################################################
+
+# Country scope, scope:cc_pty_country set. Two seated ministers of opposed parties?
+cc_pty_ce_feud_possible = {
+	any_cabinet_character = {
+		cc_pty_aff_active = yes
+		cc_pty_has_opposed_colleague = yes
+	}
+}
+
+# Character scope, scope:cc_pty_country set. A seated minister with a party and eight years
+# in office: long enough to be governing in the ruler's name.
+cc_pty_ce_overmighty = {
+	cc_pty_aff_active = yes
+	has_variable = cc_pty_years
+	var:cc_pty_years >= 8
+}
+
+# Character scope, scope:cc_pty_country set. A seated minister with a party who is not
+# already the ruler's confidant.
+cc_pty_ce_confidant_candidate = {
+	cc_pty_aff_active = yes
+	NOT = { has_character_modifier = cc_pty_ce_confidant }
+}
+
+# Country scope. Is the character stored in country variable cc_pty_ce_WHO still alive?
+cc_pty_ce_alive = {
+	var:cc_pty_ce_$WHO$ ?= { is_alive = yes }
+}
+
+# Country scope. Alive and still in this cabinet.
+cc_pty_ce_seated = {
+	var:cc_pty_ce_$WHO$ ?= {
+		is_alive = yes
+		in_cabinet = yes
 	}
 }

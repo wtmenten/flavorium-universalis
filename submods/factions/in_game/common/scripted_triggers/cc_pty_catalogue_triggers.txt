@@ -221,6 +221,70 @@ cc_pty_slots_opposed = {
 	}
 }
 
+# Character scope. Do this character's party and OTHER's party stand against each other?
+cc_pty_aff_opposed = {
+	OR = {
+		AND = { cc_pty_is_member = { TYPE = 1 } $OTHER$ = { cc_pty_is_member = { TYPE = 2 } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } $OTHER$ = { cc_pty_is_member = { TYPE = 1 } } }
+		AND = { cc_pty_is_member = { TYPE = 1 } $OTHER$ = { cc_pty_is_member = { TYPE = 11 } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } $OTHER$ = { cc_pty_is_member = { TYPE = 1 } } }
+		AND = { cc_pty_is_member = { TYPE = 1 } $OTHER$ = { cc_pty_is_member = { TYPE = 9 } } }
+		AND = { cc_pty_is_member = { TYPE = 9 } $OTHER$ = { cc_pty_is_member = { TYPE = 1 } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } $OTHER$ = { cc_pty_is_member = { TYPE = 7 } } }
+		AND = { cc_pty_is_member = { TYPE = 7 } $OTHER$ = { cc_pty_is_member = { TYPE = 8 } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } $OTHER$ = { cc_pty_is_member = { TYPE = 11 } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } $OTHER$ = { cc_pty_is_member = { TYPE = 8 } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } $OTHER$ = { cc_pty_is_member = { TYPE = 9 } } }
+		AND = { cc_pty_is_member = { TYPE = 9 } $OTHER$ = { cc_pty_is_member = { TYPE = 8 } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } $OTHER$ = { cc_pty_is_member = { TYPE = 3 } } }
+		AND = { cc_pty_is_member = { TYPE = 3 } $OTHER$ = { cc_pty_is_member = { TYPE = 2 } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } $OTHER$ = { cc_pty_is_member = { TYPE = 6 } } }
+		AND = { cc_pty_is_member = { TYPE = 6 } $OTHER$ = { cc_pty_is_member = { TYPE = 2 } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } $OTHER$ = { cc_pty_is_member = { TYPE = 11 } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } $OTHER$ = { cc_pty_is_member = { TYPE = 2 } } }
+		AND = { cc_pty_is_member = { TYPE = 3 } $OTHER$ = { cc_pty_is_member = { TYPE = 5 } } }
+		AND = { cc_pty_is_member = { TYPE = 5 } $OTHER$ = { cc_pty_is_member = { TYPE = 3 } } }
+		AND = { cc_pty_is_member = { TYPE = 4 } $OTHER$ = { cc_pty_is_member = { TYPE = 7 } } }
+		AND = { cc_pty_is_member = { TYPE = 7 } $OTHER$ = { cc_pty_is_member = { TYPE = 4 } } }
+		AND = { cc_pty_is_member = { TYPE = 4 } $OTHER$ = { cc_pty_is_member = { TYPE = 11 } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } $OTHER$ = { cc_pty_is_member = { TYPE = 4 } } }
+		AND = { cc_pty_is_member = { TYPE = 6 } $OTHER$ = { cc_pty_is_member = { TYPE = 10 } } }
+		AND = { cc_pty_is_member = { TYPE = 10 } $OTHER$ = { cc_pty_is_member = { TYPE = 6 } } }
+	}
+}
+
+# Character scope, scope:cc_pty_country set. Does a minister of an opposed party sit in its cabinet?
+cc_pty_has_opposed_colleague = {
+	OR = {
+		AND = { cc_pty_is_member = { TYPE = 1 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 2 } } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 1 } } } }
+		AND = { cc_pty_is_member = { TYPE = 1 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 11 } } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 1 } } } }
+		AND = { cc_pty_is_member = { TYPE = 1 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 9 } } } }
+		AND = { cc_pty_is_member = { TYPE = 9 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 1 } } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 7 } } } }
+		AND = { cc_pty_is_member = { TYPE = 7 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 8 } } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 11 } } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 8 } } } }
+		AND = { cc_pty_is_member = { TYPE = 8 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 9 } } } }
+		AND = { cc_pty_is_member = { TYPE = 9 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 8 } } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 3 } } } }
+		AND = { cc_pty_is_member = { TYPE = 3 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 2 } } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 6 } } } }
+		AND = { cc_pty_is_member = { TYPE = 6 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 2 } } } }
+		AND = { cc_pty_is_member = { TYPE = 2 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 11 } } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 2 } } } }
+		AND = { cc_pty_is_member = { TYPE = 3 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 5 } } } }
+		AND = { cc_pty_is_member = { TYPE = 5 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 3 } } } }
+		AND = { cc_pty_is_member = { TYPE = 4 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 7 } } } }
+		AND = { cc_pty_is_member = { TYPE = 7 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 4 } } } }
+		AND = { cc_pty_is_member = { TYPE = 4 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 11 } } } }
+		AND = { cc_pty_is_member = { TYPE = 11 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 4 } } } }
+		AND = { cc_pty_is_member = { TYPE = 6 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 10 } } } }
+		AND = { cc_pty_is_member = { TYPE = 10 } scope:cc_pty_country = { any_cabinet_character = { cc_pty_is_member = { TYPE = 6 } } } }
+	}
+}
+
 # Country scope. Is the party in slot SLOT one that must be placated?
 cc_pty_slot_escalates = {
 	OR = {

@@ -1,0 +1,800 @@
+﻿namespace = cc_pty
+
+###############################################################################
+# Flavorium Universalis - Factions: court events (cc_pty.80-98)
+#
+# Rare personal chains between ministers, and between a minister and the ruler. Started by
+# cc_pty_try_court_events (scripted_effects/cc_pty_court_effects.txt, which documents the
+# pacing and the stored characters). Every event rebuilds its scopes with cc_pty_ce_load:
+#   scope:cc_pty_ce_a, scope:cc_pty_ce_b   the ministers
+#   scope:cc_pty_ce_ruler                  the ruler
+#   Custom('cc_pty_ev_a_name') / _b_name   their parties' names
+#
+# Chains:
+#   .80 Bad Blood -> .81 Whispers of a Plot -> .82 Murder at Court / .83 The Plot Unravels
+#       (from .81 on, a is the plotter and b the target)
+#   .85 An Affair of Honour -> .86 The Duel (a the winner, b the loser)
+#   .88 The Power Behind the Throne -> .89 The Minister's Price
+#   .91 Across the Aisle -> .92 An Unlikely Friendship
+#   .94 A Friend at Court -> .95 Jealousy at Court
+#   .97 Loyalty Tested
+###############################################################################
+
+
+###############################################################################
+# THE KNIFE
+###############################################################################
+
+# Two ministers of opposed parties fall out in front of the council.
+cc_pty.80 = {
+	type = country_event
+	title = cc_pty.80.title
+	desc = cc_pty.80.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+		cc_pty_ce_seated = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Rebuke them both.
+	option = {
+		name = cc_pty.80.a
+		add_political_influence = political_influence_weak_penalty
+		custom_tooltip = cc_pty_ce_tt_both_m5
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -5 }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Side with a. b is humiliated, and becomes the plotter.
+	option = {
+		name = cc_pty.80.b
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 5 mode = replace }
+		}
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_p10
+		custom_tooltip = cc_pty_ce_tt_b_m15
+		custom_tooltip = cc_pty_ce_tt_b_grudge
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 10 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -15 }
+			random = {
+				chance = 70
+				cc_pty_run = { EFFECT = cc_pty_ce_swap }
+				trigger_event_non_silently = { id = cc_pty.81 days = { 180 360 } }
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+
+	# Side with b. a is humiliated, and becomes the plotter.
+	option = {
+		name = cc_pty.80.c
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 5 mode = replace }
+		}
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_b_p10
+		custom_tooltip = cc_pty_ce_tt_a_m15
+		custom_tooltip = cc_pty_ce_tt_a_grudge
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 10 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -15 }
+			random = {
+				chance = 70
+				trigger_event_non_silently = { id = cc_pty.81 days = { 180 360 } }
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+
+	# Let them settle it between themselves.
+	option = {
+		name = cc_pty.80.d
+		custom_tooltip = cc_pty_ce_tt_unsettled
+		hidden_effect = {
+			random = {
+				chance = 50
+				trigger_event_non_silently = { id = cc_pty.81 days = { 180 360 } }
+			}
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+# Word reaches the crown that a is arranging b's death.
+cc_pty.81 = {
+	type = country_event
+	title = cc_pty.81.title
+	desc = cc_pty.81.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		cc_pty_ce_alive = { WHO = a }
+		cc_pty_ce_alive = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Arrest the plotter.
+	option = {
+		name = cc_pty.81.a
+		add_political_influence = political_influence_mild_penalty
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 10 }
+		custom_tooltip = cc_pty_ce_tt_a_m20
+		custom_tooltip = cc_pty_ce_tt_a_suppressed
+		custom_tooltip = cc_pty_ce_tt_b_p10
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -20 }
+			cc_pty_char_suppress = { CHAR = scope:cc_pty_ce_a }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 10 }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Warn the target quietly.
+	option = {
+		name = cc_pty.81.b
+		add_political_influence = political_influence_weak_penalty
+		custom_tooltip = cc_pty_ce_tt_warned
+		hidden_effect = {
+			trigger_event_non_silently = { id = cc_pty.83 days = { 30 90 } }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Let it run its course.
+	option = {
+		name = cc_pty.81.c
+		custom_tooltip = cc_pty_ce_tt_plot_course
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_ce_plot_course } }
+		ai_chance = { base = 20 }
+	}
+}
+
+# The plot succeeds: b is murdered.
+cc_pty.82 = {
+	type = country_event
+	title = cc_pty.82.title
+	desc = cc_pty.82.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		cc_pty_ce_alive = { WHO = a }
+		cc_pty_ce_alive = { WHO = b }
+	}
+
+	immediate = {
+		cc_pty_ce_load = yes
+		cc_pty_ce_save_victim_slot = yes
+		cc_pty_ce_add_sat_victim = { VALUE = -30 }
+		kill_character = {
+			target = scope:cc_pty_ce_b
+			reason = assassination
+			killer = scope:cc_pty_ce_a
+		}
+	}
+
+	# Hunt down the killers.
+	option = {
+		name = cc_pty.82.a
+		add_gold = cc_pty_ce_inquiry_cost
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 20 }
+		custom_tooltip = cc_pty_ce_tt_a_m20
+		custom_tooltip = cc_pty_ce_tt_a_suppressed
+		custom_tooltip = cc_pty_ce_tt_victim_p20
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -20 }
+			cc_pty_char_suppress = { CHAR = scope:cc_pty_ce_a }
+			cc_pty_ce_add_sat_victim = { VALUE = 20 }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	# Let the matter rest.
+	option = {
+		name = cc_pty.82.b
+		add_stability = stability_mild_penalty
+		add_country_modifier = { modifier = court_tension years = 3 mode = set_to_largest_and_extend }
+		custom_tooltip = cc_pty_ce_tt_victim_m15
+		hidden_effect = {
+			cc_pty_ce_add_sat_victim = { VALUE = -15 }
+		}
+		ai_chance = { base = 40 }
+	}
+}
+
+# The plot is discovered and the assassins taken.
+cc_pty.83 = {
+	type = country_event
+	title = cc_pty.83.title
+	desc = cc_pty.83.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		cc_pty_ce_alive = { WHO = a }
+		cc_pty_ce_alive = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Put the plotter on trial.
+	option = {
+		name = cc_pty.83.a
+		add_prestige = prestige_mild_bonus
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 20 }
+		custom_tooltip = cc_pty_ce_tt_a_m25
+		custom_tooltip = cc_pty_ce_tt_a_suppressed
+		custom_tooltip = cc_pty_ce_tt_b_p15
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -25 }
+			cc_pty_char_suppress = { CHAR = scope:cc_pty_ce_a }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 15 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Exile the plotter quietly.
+	option = {
+		name = cc_pty.83.b
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 10 }
+		custom_tooltip = cc_pty_ce_tt_a_m10
+		custom_tooltip = cc_pty_ce_tt_b_m10
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -10 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -10 }
+		}
+		ai_chance = { base = 30 }
+	}
+
+	# Pardon the plotter, who will owe the crown for it.
+	option = {
+		name = cc_pty.83.c
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_p15
+		custom_tooltip = cc_pty_ce_tt_b_m25
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 15 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -25 }
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+
+###############################################################################
+# AN AFFAIR OF HONOUR
+###############################################################################
+
+# a has challenged b to a duel.
+cc_pty.85 = {
+	type = country_event
+	title = cc_pty.85.title
+	desc = cc_pty.85.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = armed
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+		cc_pty_ce_seated = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Forbid it.
+	option = {
+		name = cc_pty.85.a
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 5 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_both_m5
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -5 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Let them meet.
+	option = {
+		name = cc_pty.85.b
+		custom_tooltip = cc_pty_ce_tt_duel
+		hidden_effect = { cc_pty_run = { EFFECT = cc_pty_ce_fight_duel } }
+		ai_chance = { base = 20 }
+	}
+
+	# Make them settle it at the council table.
+	option = {
+		name = cc_pty.85.c
+		add_political_influence = political_influence_mild_penalty
+		custom_tooltip = cc_pty_ce_tt_both_p5
+		custom_tooltip = cc_pty_ce_tt_rivalry_eased
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 5 }
+			if = {
+				limit = {
+					has_variable = cc_court_rivalry
+					var:cc_court_rivalry > 0
+				}
+				change_variable = { name = cc_court_rivalry add = -1 }
+			}
+		}
+		ai_chance = { base = 30 }
+	}
+}
+
+# The duel has been fought. a won; b is dead.
+cc_pty.86 = {
+	type = country_event
+	title = cc_pty.86.title
+	desc = cc_pty.86.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = exterior
+		10 = armed
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	option = {
+		name = cc_pty.86.a
+	}
+}
+
+
+###############################################################################
+# THE POWER BEHIND THE THRONE
+###############################################################################
+
+# A long-serving minister has been issuing orders in the ruler's name.
+cc_pty.88 = {
+	type = country_event
+	title = cc_pty.88.title
+	desc = cc_pty.88.desc
+	outcome = neutral
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		exists = ruler
+		cc_pty_ce_seated = { WHO = a }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Reassert the ruler's authority.
+	option = {
+		name = cc_pty.88.a
+		add_prestige = prestige_mild_bonus
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_m15
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -15 }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Let them govern.
+	option = {
+		name = cc_pty.88.b
+		add_country_modifier = { modifier = cc_pty_ce_minister_rule years = 10 mode = replace }
+		custom_tooltip = cc_pty_ce_tt_a_p15
+		custom_tooltip = cc_pty_ce_tt_followup
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 15 }
+			trigger_event_non_silently = { id = cc_pty.89 days = { 730 1460 } }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Dismiss them.
+	option = {
+		name = cc_pty.88.c
+		add_prestige = prestige_weak_bonus
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 5 }
+		custom_tooltip = cc_pty_ce_tt_a_m25
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -25 }
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+# The minister who governs wants their party's people in every office.
+cc_pty.89 = {
+	type = country_event
+	title = cc_pty.89.title
+	desc = cc_pty.89.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+		has_country_modifier = cc_pty_ce_minister_rule
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Grant it.
+	option = {
+		name = cc_pty.89.a
+		add_stability = stability_weak_penalty
+		add_country_modifier = { modifier = court_tension years = 3 mode = set_to_largest_and_extend }
+		custom_tooltip = cc_pty_ce_tt_a_p25
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 25 }
+		}
+		ai_chance = { base = 30 }
+	}
+
+	# Refuse, and take back the reins.
+	option = {
+		name = cc_pty.89.b
+		remove_country_modifier = cc_pty_ce_minister_rule
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_m20
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -20 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Remove them from office.
+	option = {
+		name = cc_pty.89.c
+		remove_country_modifier = cc_pty_ce_minister_rule
+		add_stability = stability_mild_penalty
+		cc_pty_ce_remove = { CHAR = scope:cc_pty_ce_a YEARS = 10 }
+		custom_tooltip = cc_pty_ce_tt_a_m30
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -30 }
+		}
+		ai_chance = { base = 20 }
+	}
+}
+
+
+###############################################################################
+# ACROSS THE AISLE
+###############################################################################
+
+# Two ministers of opposed parties have drafted a measure together.
+cc_pty.91 = {
+	type = country_event
+	title = cc_pty.91.title
+	desc = cc_pty.91.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+		cc_pty_ce_seated = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Back their compromise.
+	option = {
+		name = cc_pty.91.a
+		add_political_influence = political_influence_mild_penalty
+		add_country_modifier = { modifier = cc_pty_ce_compromise years = 10 mode = replace }
+		if = {
+			limit = { has_country_modifier = court_tension }
+			remove_country_modifier = court_tension
+		}
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 5 mode = replace }
+		}
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 5 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_both_p10
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 10 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 10 }
+			trigger_event_non_silently = { id = cc_pty.92 days = { 730 1460 } }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	# Take the credit.
+	option = {
+		name = cc_pty.91.b
+		add_prestige = prestige_mild_bonus
+		custom_tooltip = cc_pty_ce_tt_both_m5
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -5 }
+		}
+		ai_chance = { base = 30 }
+	}
+
+	# Shelve it.
+	option = {
+		name = cc_pty.91.c
+		ai_chance = { base = 10 }
+	}
+}
+
+# The two have become friends, and their parties have noticed.
+cc_pty.92 = {
+	type = country_event
+	title = cc_pty.92.title
+	desc = cc_pty.92.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+		cc_pty_ce_seated = { WHO = b }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Honour them both.
+	option = {
+		name = cc_pty.92.a
+		add_gold = cc_pty_ce_honours_cost
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 10 mode = replace }
+		}
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_both_p5
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 5 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Let their example speak for itself.
+	option = {
+		name = cc_pty.92.b
+		add_political_influence = political_influence_weak_bonus
+		ai_chance = { base = 50 }
+	}
+}
+
+
+###############################################################################
+# A FRIEND AT COURT
+###############################################################################
+
+# The ruler and a minister have grown close.
+cc_pty.94 = {
+	type = country_event
+	title = cc_pty.94.title
+	desc = cc_pty.94.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	trigger = {
+		exists = ruler
+		cc_pty_ce_seated = { WHO = a }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Take them into confidence.
+	option = {
+		name = cc_pty.94.a
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_pty_ce_confidant years = 20 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_p15
+		custom_tooltip = cc_pty_ce_tt_followup
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 15 }
+			trigger_event_non_silently = { id = cc_pty.95 days = { 730 1460 } }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	# Keep a proper distance.
+	option = {
+		name = cc_pty.94.b
+		add_prestige = prestige_weak_bonus
+		ai_chance = { base = 40 }
+	}
+}
+
+# Another minister resents the confidant's influence.
+cc_pty.95 = {
+	type = country_event
+	title = cc_pty.95.title
+	desc = cc_pty.95.desc
+	outcome = negative
+
+	illustration_tags = {
+		10 = interior
+		10 = angry
+	}
+
+	trigger = {
+		exists = ruler
+		cc_pty_ce_seated = { WHO = a }
+		var:cc_pty_ce_a ?= { has_character_modifier = cc_pty_ce_confidant }
+		any_cabinet_character = {
+			has_variable = cc_pty_aff
+			NOT = { has_character_modifier = cc_pty_ce_confidant }
+		}
+	}
+
+	immediate = {
+		cc_pty_ce_load = yes
+		# The accuser: a minister of an opposed party if there is one, otherwise any other.
+		if = {
+			limit = {
+				any_cabinet_character = {
+					cc_pty_aff_active = yes
+					cc_pty_aff_opposed = { OTHER = scope:cc_pty_ce_a }
+				}
+			}
+			random_cabinet_character = {
+				limit = {
+					cc_pty_aff_active = yes
+					cc_pty_aff_opposed = { OTHER = scope:cc_pty_ce_a }
+				}
+				save_scope_as = cc_pty_ce_pick_b
+			}
+		}
+		else = {
+			random_cabinet_character = {
+				limit = {
+					has_variable = cc_pty_aff
+					NOT = { has_character_modifier = cc_pty_ce_confidant }
+				}
+				save_scope_as = cc_pty_ce_pick_b
+			}
+		}
+		cc_pty_ce_store = { WHO = b CHAR = scope:cc_pty_ce_pick_b }
+		cc_pty_ce_load = yes
+	}
+
+	# Stand by your friend.
+	option = {
+		name = cc_pty.95.a
+		scope:cc_pty_ce_b = {
+			add_character_modifier = { modifier = cc_minister_slighted years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_p5
+		custom_tooltip = cc_pty_ce_tt_b_m15
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = 5 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = -15 }
+		}
+		ai_chance = { base = 50 }
+	}
+
+	# Put some distance between you.
+	option = {
+		name = cc_pty.95.b
+		scope:cc_pty_ce_a = {
+			remove_character_modifier = cc_pty_ce_confidant
+		}
+		custom_tooltip = cc_pty_ce_tt_a_m10
+		custom_tooltip = cc_pty_ce_tt_b_p10
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -10 }
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_b VALUE = 10 }
+		}
+		ai_chance = { base = 50 }
+	}
+}
+
+
+###############################################################################
+# LOYALTY TESTED
+###############################################################################
+
+# A minister refuses to join their angry party's protest against the crown.
+cc_pty.97 = {
+	type = country_event
+	title = cc_pty.97.title
+	desc = cc_pty.97.desc
+	outcome = positive
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	trigger = {
+		cc_pty_ce_seated = { WHO = a }
+	}
+
+	immediate = { cc_pty_ce_load = yes }
+
+	# Honour them publicly.
+	option = {
+		name = cc_pty.97.a
+		add_prestige = prestige_weak_bonus
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 10 mode = replace }
+		}
+		custom_tooltip = cc_pty_ce_tt_a_m5
+		hidden_effect = {
+			cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_a VALUE = -5 }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# Reward them privately.
+	option = {
+		name = cc_pty.97.b
+		add_gold = cc_pty_ce_honours_cost
+		scope:cc_pty_ce_a = {
+			add_character_modifier = { modifier = cc_minister_favoured years = 10 mode = replace }
+		}
+		ai_chance = { base = 40 }
+	}
+
+	# A loyal servant needs no reward.
+	option = {
+		name = cc_pty.97.c
+		ai_chance = { base = 20 }
+	}
+}

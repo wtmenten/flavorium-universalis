@@ -1,0 +1,287 @@
+﻿###############################################################################
+# Flavorium Universalis - Factions: court events (cc_pty.80-98)
+#
+# Rare personal chains between ministers, and between a minister and the ruler. Players
+# only. A yearly roll (20%) while cc_pty_ce_cd (five years) and the main mod's
+# cc_rival_event_cooldown are both clear, so at most one chain every five years and never
+# on top of a rivalry or defection event. Every follow-up lands within four years, so a
+# chain finishes before the next can start.
+#
+#   cc_pty.80-83  The Knife: two opposed ministers fall out; one plots against the other
+#   cc_pty.85-86  An Affair of Honour: two opposed ministers fight a duel
+#   cc_pty.88-89  The Power Behind the Throne: a long-serving minister rules in the ruler's name
+#   cc_pty.91-92  Across the Aisle: two opposed ministers work together
+#   cc_pty.94-95  A Friend at Court: the ruler takes a minister as confidant
+#   cc_pty.97     Loyalty Tested: a minister stands by the crown against an angry party
+#
+# The characters live in country variables cc_pty_ce_a / cc_pty_ce_b (eight years), and
+# their parties in cc_pty_ev_a_type / cc_pty_ev_b_type for the loc names
+# (Custom('cc_pty_ev_a_name'), generated). Each event rebuilds scope:cc_pty_ce_a / _b,
+# scope:cc_pty_ce_ruler and scope:cc_pty_country in immediate (cc_pty_ce_load), and every
+# delayed event checks its characters are still alive.
+#
+# Option effects that save new scopes or pick at random run through cc_pty_run (TOOLTIP
+# GUARD in cc_pty_effects.txt), since an option is evaluated once for its tooltip.
+###############################################################################
+
+# Country scope. Store CHAR as cc_pty_ce_WHO (a or b), with its party for the loc.
+cc_pty_ce_store = {
+	set_variable = { name = cc_pty_ce_$WHO$ value = $CHAR$ years = 8 }
+	if = {
+		limit = { $CHAR$ = { has_variable = cc_pty_aff } }
+		set_variable = { name = cc_pty_ev_$WHO$_type value = $CHAR$.var:cc_pty_aff }
+	}
+}
+
+# Country scope, an event's immediate.
+cc_pty_ce_load = {
+	save_scope_as = cc_pty_country
+	var:cc_pty_ce_a ?= { save_scope_as = cc_pty_ce_a }
+	var:cc_pty_ce_b ?= { save_scope_as = cc_pty_ce_b }
+	ruler ?= { save_scope_as = cc_pty_ce_ruler }
+	if = {
+		limit = { scope:cc_pty_ce_a ?= { has_variable = cc_pty_aff } }
+		set_variable = { name = cc_pty_ev_a_type value = scope:cc_pty_ce_a.var:cc_pty_aff }
+	}
+	if = {
+		limit = { scope:cc_pty_ce_b ?= { has_variable = cc_pty_aff } }
+		set_variable = { name = cc_pty_ev_b_type value = scope:cc_pty_ce_b.var:cc_pty_aff }
+	}
+}
+
+# Country scope, scope:cc_pty_country set. VALUE satisfaction to CHAR's party.
+cc_pty_char_add_sat = {
+	if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 1 } } }
+		cc_pty_add_sat = { SLOT = 1 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 2 } } }
+		cc_pty_add_sat = { SLOT = 2 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 3 } } }
+		cc_pty_add_sat = { SLOT = 3 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 4 } } }
+		cc_pty_add_sat = { SLOT = 4 VALUE = $VALUE$ }
+	}
+}
+
+# Country scope, scope:cc_pty_country set. Cut CHAR's party's strength for ten years.
+cc_pty_char_suppress = {
+	if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 1 } } }
+		set_variable = { name = cc_pty_1_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 2 } } }
+		set_variable = { name = cc_pty_2_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 3 } } }
+		set_variable = { name = cc_pty_3_suppressed value = yes years = 10 }
+	}
+	else_if = {
+		limit = { $CHAR$ = { cc_pty_member_of_slot = { SLOT = 4 } } }
+		set_variable = { name = cc_pty_4_suppressed value = yes years = 10 }
+	}
+}
+
+# Country scope. Take CHAR out of the cabinet if seated, and bar them for YEARS.
+cc_pty_ce_remove = {
+	if = {
+		limit = { $CHAR$ = { in_cabinet = yes } }
+		remove_from_cabinet = $CHAR$
+	}
+	$CHAR$ = {
+		add_character_modifier = { modifier = banned_from_cabinet years = $YEARS$ mode = replace }
+	}
+}
+
+# Country scope. A chain has started: hold back the next one, and the main mod's rivalry
+# and defection events, which share cc_rival_event_cooldown.
+cc_pty_ce_fired = {
+	set_variable = { name = cc_pty_ce_cd value = yes years = 5 }
+	set_variable = { name = cc_rival_event_cooldown value = yes months = 24 }
+}
+
+# Country scope, scope:cc_pty_country set. Two seated ministers of opposed parties.
+cc_pty_ce_pick_feud = {
+	random_cabinet_character = {
+		limit = {
+			cc_pty_aff_active = yes
+			cc_pty_has_opposed_colleague = yes
+		}
+		save_scope_as = cc_pty_ce_pick_a
+	}
+	random_cabinet_character = {
+		limit = {
+			cc_pty_aff_active = yes
+			cc_pty_aff_opposed = { OTHER = scope:cc_pty_ce_pick_a }
+		}
+		save_scope_as = cc_pty_ce_pick_b
+	}
+	if = {
+		limit = {
+			exists = scope:cc_pty_ce_pick_a
+			exists = scope:cc_pty_ce_pick_b
+		}
+		cc_pty_ce_store = { WHO = a CHAR = scope:cc_pty_ce_pick_a }
+		cc_pty_ce_store = { WHO = b CHAR = scope:cc_pty_ce_pick_b }
+	}
+}
+
+# Country scope, scope:cc_pty_country set. One seated minister matching TRIGGER, as a.
+cc_pty_ce_pick_one = {
+	random_cabinet_character = {
+		limit = { $TRIGGER$ = yes }
+		save_scope_as = cc_pty_ce_pick_a
+	}
+	if = {
+		limit = { exists = scope:cc_pty_ce_pick_a }
+		cc_pty_ce_store = { WHO = a CHAR = scope:cc_pty_ce_pick_a }
+	}
+}
+
+# Country scope, yearly (cc_pty_yearly).
+cc_pty_try_court_events = {
+	if = {
+		limit = {
+			is_ai = no
+			NOT = { has_variable = cc_rival_event_cooldown }
+			NOT = { has_variable = cc_pty_ce_cd }
+		}
+		save_scope_as = cc_pty_country
+		random = {
+			chance = 20
+			remove_variable = cc_pty_ce_a
+			remove_variable = cc_pty_ce_b
+			random_list = {
+				20 = {	# The Knife
+					trigger = { cc_pty_ce_feud_possible = yes }
+					cc_pty_ce_pick_feud = yes
+					trigger_event_non_silently = { id = cc_pty.80 }
+					cc_pty_ce_fired = yes
+				}
+				10 = {	# An Affair of Honour
+					trigger = { cc_pty_ce_feud_possible = yes }
+					cc_pty_ce_pick_feud = yes
+					trigger_event_non_silently = { id = cc_pty.85 }
+					cc_pty_ce_fired = yes
+				}
+				15 = {	# The Power Behind the Throne
+					trigger = {
+						exists = ruler
+						any_cabinet_character = { cc_pty_ce_overmighty = yes }
+					}
+					cc_pty_ce_pick_one = { TRIGGER = cc_pty_ce_overmighty }
+					trigger_event_non_silently = { id = cc_pty.88 }
+					cc_pty_ce_fired = yes
+				}
+				15 = {	# Across the Aisle
+					trigger = { cc_pty_ce_feud_possible = yes }
+					cc_pty_ce_pick_feud = yes
+					trigger_event_non_silently = { id = cc_pty.91 }
+					cc_pty_ce_fired = yes
+				}
+				15 = {	# A Friend at Court
+					trigger = {
+						exists = ruler
+						any_cabinet_character = { cc_pty_ce_confidant_candidate = yes }
+					}
+					cc_pty_ce_pick_one = { TRIGGER = cc_pty_ce_confidant_candidate }
+					trigger_event_non_silently = { id = cc_pty.94 }
+					cc_pty_ce_fired = yes
+				}
+				15 = {	# Loyalty Tested
+					trigger = { any_cabinet_character = { cc_pty_member_party_angry = yes } }
+					cc_pty_ce_pick_one = { TRIGGER = cc_pty_member_party_angry }
+					trigger_event_non_silently = { id = cc_pty.97 }
+					cc_pty_ce_fired = yes
+				}
+			}
+		}
+	}
+}
+
+# cc_pty.80 option c: the other minister becomes the plotter. Swaps a and b so that a is
+# always the plotter and b the target from cc_pty.81 on. Run under cc_pty_run.
+cc_pty_ce_swap = {
+	cc_pty_ce_store = { WHO = a CHAR = scope:cc_pty_ce_b }
+	cc_pty_ce_store = { WHO = b CHAR = scope:cc_pty_ce_a }
+}
+
+# cc_pty.85 option b: the duel. a becomes the winner and b the loser for cc_pty.86.
+# Run under cc_pty_run.
+cc_pty_ce_fight_duel = {
+	random_list = {
+		50 = { cc_pty_ce_duel_result = { WIN = a LOSE = b } }
+		50 = { cc_pty_ce_duel_result = { WIN = b LOSE = a } }
+	}
+}
+
+cc_pty_ce_duel_result = {
+	cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_$WIN$ VALUE = 10 }
+	cc_pty_char_add_sat = { CHAR = scope:cc_pty_ce_$LOSE$ VALUE = -20 }
+	cc_pty_ce_store = { WHO = a CHAR = scope:cc_pty_ce_$WIN$ }
+	cc_pty_ce_store = { WHO = b CHAR = scope:cc_pty_ce_$LOSE$ }
+	kill_character = {
+		target = scope:cc_pty_ce_$LOSE$
+		reason = combat
+		killer = scope:cc_pty_ce_$WIN$
+	}
+	trigger_event_non_silently = { id = cc_pty.86 }
+}
+
+# cc_pty.82 immediate, before the killing: remember which slot the victim's party holds,
+# so the options can still reach it once b is dead.
+cc_pty_ce_save_victim_slot = {
+	set_variable = { name = cc_pty_ce_victim_slot value = 0 }
+	if = {
+		limit = { scope:cc_pty_ce_b = { cc_pty_member_of_slot = { SLOT = 1 } } }
+		set_variable = { name = cc_pty_ce_victim_slot value = 1 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_ce_b = { cc_pty_member_of_slot = { SLOT = 2 } } }
+		set_variable = { name = cc_pty_ce_victim_slot value = 2 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_ce_b = { cc_pty_member_of_slot = { SLOT = 3 } } }
+		set_variable = { name = cc_pty_ce_victim_slot value = 3 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_ce_b = { cc_pty_member_of_slot = { SLOT = 4 } } }
+		set_variable = { name = cc_pty_ce_victim_slot value = 4 }
+	}
+}
+
+# Country scope. VALUE satisfaction to the murdered minister's party.
+cc_pty_ce_add_sat_victim = {
+	if = {
+		limit = { var:cc_pty_ce_victim_slot ?= 1 }
+		cc_pty_add_sat = { SLOT = 1 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { var:cc_pty_ce_victim_slot ?= 2 }
+		cc_pty_add_sat = { SLOT = 2 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { var:cc_pty_ce_victim_slot ?= 3 }
+		cc_pty_add_sat = { SLOT = 3 VALUE = $VALUE$ }
+	}
+	else_if = {
+		limit = { var:cc_pty_ce_victim_slot ?= 4 }
+		cc_pty_add_sat = { SLOT = 4 VALUE = $VALUE$ }
+	}
+}
+
+# cc_pty.81 option c: the plot runs its course. 60% it succeeds (cc_pty.82), otherwise it
+# is discovered (cc_pty.83). Run under cc_pty_run.
+cc_pty_ce_plot_course = {
+	random_list = {
+		60 = { trigger_event_non_silently = { id = cc_pty.82 days = { 30 90 } } }
+		40 = { trigger_event_non_silently = { id = cc_pty.83 days = { 30 90 } } }
+	}
+}

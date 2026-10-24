@@ -315,3 +315,71 @@ cc_pty_election_mandate = {
 	}
 }
 
+
+
+###############################################################################
+# LIBERAL UPRISING (cc_pty_liberal_uprising)
+###############################################################################
+
+# Country scope. Monthly change in cc_pty_lu_momentum. +1 while nothing is done, so an
+# ignored uprising boils over from its starting 60 in under three and a half years. It only
+# falls once the grievance itself is addressed: the Liberals' target satisfaction at 0 or
+# more (ministers seated, society leaning liberal), a Liberal in the cabinet, society at
+# their agenda's 30 toward Liberalism, or term limits in force.
+cc_pty_lu_drift = {
+	value = 1
+	if = {
+		limit = { cc_pty_type_var_ge = { TYPE = 11 VAR = target VALUE = 0 } }
+		add = -1.5
+	}
+	if = {
+		limit = { cc_pty_type_var_ge = { TYPE = 11 VAR = members VALUE = 1 } }
+		add = -0.5
+	}
+	if = {
+		limit = { societal_value:absolutism_vs_liberalism >= 30 }
+		add = -0.5
+	}
+	if = {
+		limit = { has_variable = cc_pty_termlimits }
+		add = -0.5
+	}
+	if = {
+		limit = { stability < 0 }
+		add = 0.5
+	}
+	if = {
+		limit = { has_variable = cc_pty_lu_repressed }
+		add = 0.5
+	}
+}
+
+# Gold costs for the crisis events, negative for add_gold.
+cc_pty_lu_print_cost = {
+	value = monthly_income_total
+	multiply = -3
+	max = -25
+}
+
+cc_pty_lu_arrears_cost = {
+	value = monthly_income_total
+	multiply = -5
+	max = -40
+}
+
+
+###############################################################################
+# COURT EVENTS (cc_pty.80-98). Gold costs, negative for add_gold.
+###############################################################################
+
+cc_pty_ce_inquiry_cost = {
+	value = monthly_income_total
+	multiply = -4
+	max = -30
+}
+
+cc_pty_ce_honours_cost = {
+	value = monthly_income_total
+	multiply = -2
+	max = -15
+}

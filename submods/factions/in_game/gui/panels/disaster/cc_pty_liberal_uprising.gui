@@ -2,8 +2,8 @@
 # Flavorium Universalis - Factions: cc_pty_liberal_uprising panel
 #
 # Copied from vanilla's minimal disaster panel (panels/disaster/reform_society.gui):
-# the end conditions and the illustration from the disaster's `image`. Nothing here
-# reads party state; the Factions panel shows that.
+# the end conditions and the illustration from the disaster's `image`, plus a line for
+# the uprising's momentum meter. Party state is shown in the Factions panel.
 ######################################################################
 
 disaster_panel = {
@@ -52,9 +52,16 @@ disaster_panel = {
 
 	##################################### MAIN CONTENT #####################################
 
+	# The momentum meter (cc_pty_lu_momentum): the uprising ends at 0 and boils over at 100.
 	blockoverride "subheader_content"{
 		hbox = {
 			using = layoutpolicy_expanding
+			margin = { 15 10 }
+			text_single = {
+				visible = "[Player.MakeScope.GetVariable('cc_pty_lu_momentum').IsSet]"
+				text = "CC_PTY_LU_MOMENTUM"
+				tooltip = "CC_PTY_LU_MOMENTUM_TT"
+			}
 			widget = {
 				layoutpolicy_horizontal = expanding
 				size = { -1 40 }

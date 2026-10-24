@@ -1538,6 +1538,83 @@ cc_pty_outcome_liberal = {
 	set_variable = { name = cc_pty_uprising_armed value = yes }
 }
 
+# ---- Liberal Uprising (see the header of cc_pty_liberal_uprising) ----
+
+# Country scope. Move the uprising's momentum by VALUE, kept within 0..100.
+cc_pty_lu_change = {
+	if = {
+		limit = { has_variable = cc_pty_lu_momentum }
+		change_variable = { name = cc_pty_lu_momentum add = $VALUE$ }
+		clamp_variable = { name = cc_pty_lu_momentum min = 0 max = 100 }
+	}
+}
+
+# Country scope, the disaster's on_monthly. Drift, then perhaps a crisis event: none for
+# six months after one fires, then 30% a month, so about six over the five years.
+cc_pty_lu_monthly = {
+	cc_pty_lu_change = { VALUE = cc_pty_lu_drift }
+	if = {
+		limit = { NOT = { has_variable = cc_pty_lu_event_cd } }
+		random = {
+			chance = 30
+			set_variable = { name = cc_pty_lu_event_cd value = yes months = 6 }
+			random_list = {
+				10 = { trigger_event_non_silently = { id = cc_pty.70 } }
+				10 = { trigger_event_non_silently = { id = cc_pty.71 } }
+				10 = { trigger_event_non_silently = { id = cc_pty.72 } }
+				10 = {
+					trigger = { any_estate = { estate_type = estate_type:burghers_estate } }
+					trigger_event_non_silently = { id = cc_pty.73 }
+				}
+				15 = {
+					trigger = { has_variable = cc_pty_lu_repressed }
+					trigger_event_non_silently = { id = cc_pty.74 }
+				}
+				15 = {
+					trigger = {
+						has_variable = cc_pty_lu_momentum
+						var:cc_pty_lu_momentum < 50
+					}
+					trigger_event_non_silently = { id = cc_pty.75 }
+				}
+			}
+		}
+	}
+}
+
+# Country scope. The uprising boiled over and the crown refused (cc_pty.47 option b): a
+# burgher rebel faction takes the liberal cities' provinces, up to about a sixth of the
+# realm and never the capital's, and starts a civil war. Same sequence as the regional
+# rising below.
+cc_pty_start_liberal_rising = {
+	create_rebel = {
+		category = estate
+		estate = burghers_estate
+		name = cc_pty_liberal_rebels
+		save_scope_as = cc_pty_rebels
+	}
+	set_local_variable = { name = cc_pty_rebel_provinces value = num_provinces }
+	change_local_variable = { name = cc_pty_rebel_provinces multiply = 0.15 }
+	ordered_province = {
+		limit = {
+			NOT = { any_location_in_province = { is_capital = yes } }
+			any_location_in_province = {
+				owner = root
+				has_variable = cc_pty_lt
+				var:cc_pty_lt >= 50
+			}
+		}
+		max = local_var:cc_pty_rebel_provinces
+		every_location_in_province = {
+			every_pop = {
+				limit = { owner = root }
+				change_pop_allegiance = scope:cc_pty_rebels
+			}
+		}
+	}
+	scope:cc_pty_rebels = { start_civil_war = {} }
+}
+
 # The provinces rise (cc_pty.41), or, where subjects carry the grievance, the subjects
 # pull away (cc_pty.43). The player chooses in the event; the AI rolls.
 cc_pty_outcome_regionalist = {

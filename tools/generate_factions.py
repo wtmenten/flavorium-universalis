@@ -569,6 +569,26 @@ def triggers_file() -> str:
     p.append(block("cc_pty_slots_opposed", lines))
     p.append("")
 
+    # Character pairs, for the court events (cc_pty.80-98).
+    p.append("# Character scope. Do this character's party and OTHER's party stand against each other?")
+    lines = ["OR = {"]
+    for a, b in OPPOSED:
+        ia, ib = KEY_ID[a], KEY_ID[b]
+        lines.append(f"\tAND = {{ cc_pty_is_member = {{ TYPE = {ia} }} $OTHER$ = {{ cc_pty_is_member = {{ TYPE = {ib} }} }} }}")
+        lines.append(f"\tAND = {{ cc_pty_is_member = {{ TYPE = {ib} }} $OTHER$ = {{ cc_pty_is_member = {{ TYPE = {ia} }} }} }}")
+    lines.append("}")
+    p.append(block("cc_pty_aff_opposed", lines))
+    p.append("")
+    p.append("# Character scope, scope:cc_pty_country set. Does a minister of an opposed party sit in its cabinet?")
+    lines = ["OR = {"]
+    for a, b in OPPOSED:
+        ia, ib = KEY_ID[a], KEY_ID[b]
+        for x, y in ((ia, ib), (ib, ia)):
+            lines.append(f"\tAND = {{ cc_pty_is_member = {{ TYPE = {x} }} scope:cc_pty_country = {{ any_cabinet_character = {{ cc_pty_is_member = {{ TYPE = {y} }} }} }} }}")
+    lines.append("}")
+    p.append(block("cc_pty_has_opposed_colleague", lines))
+    p.append("")
+
     esc = [t for t in T if t.get("escalates")]
     p.append("# Country scope. Is the party in slot SLOT one that must be placated?")
     p.append(block("cc_pty_slot_escalates", ["OR = {"] + [f"\t{slot_type('$SLOT$', t['id'])}" for t in esc] + ["}"]))
@@ -753,7 +773,8 @@ def customloc_file() -> str:
     for s in SLOTS:
         p.append(block(f"cc_pty_name_{s}", ["type = country"] + name_texts(lambda i, s=s: slot_type(s, i))))
         p.append("")
-    for var in ("cc_pty_event_type", "cc_pty_defect_from_type", "cc_pty_defect_to_type"):
+    for var in ("cc_pty_event_type", "cc_pty_defect_from_type", "cc_pty_defect_to_type",
+                "cc_pty_ev_a_type", "cc_pty_ev_b_type"):
         p.append(f"# Party name for the archetype id in {var}.")
         p.append(block(var.replace("_type", "_name"), ["type = country"] + name_texts(lambda i, v=var: var_is(v, i))))
         p.append("")

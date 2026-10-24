@@ -52,6 +52,16 @@ cc_pty_praetorian_coup = {
 	}
 }
 
+# The Liberal Uprising runs on a momentum meter (cc_pty_lu_momentum, 0..100), not on the
+# party's satisfaction: satisfaction is a one-off bump that a single event could push past
+# zero. Momentum starts at 60 and moves every month by cc_pty_lu_drift (+1 while nothing is
+# done; down only once the Liberals' grievance is actually addressed), and by the choices in
+# the opening event cc_pty.42 and the crisis events cc_pty.70-75 (see cc_pty_lu_monthly).
+#
+#   momentum 0      defused                 -> cc_pty.46
+#   momentum 100    boils over              -> cc_pty.47 (constitution or civil war)
+#   five years      the clubs outlast it    -> cc_pty.48
+#   party gone                              -> cc_pty.46
 cc_pty_liberal_uprising = {
 	image = "gfx/interface/illustrations/disaster/revolution_disaster.dds"
 
@@ -65,7 +75,16 @@ cc_pty_liberal_uprising = {
 	can_end = {
 		OR = {
 			NOT = { cc_pty_has_type = { TYPE = 11 } }
-			cc_pty_type_sat_ge = { TYPE = 11 VALUE = 0 }
+			custom_tooltip = {
+				text = cc_pty_lu_end_defused_tt
+				has_variable = cc_pty_lu_momentum
+				NOT = { var:cc_pty_lu_momentum > 0 }
+			}
+			custom_tooltip = {
+				text = cc_pty_lu_end_boiled_tt
+				has_variable = cc_pty_lu_momentum
+				var:cc_pty_lu_momentum >= 100
+			}
 			had_disaster_for_years = {
 				disaster_type = scope:disaster
 				years >= 5
@@ -81,10 +100,38 @@ cc_pty_liberal_uprising = {
 
 	on_start = {
 		remove_variable = cc_pty_uprising_armed
+		set_variable = { name = cc_pty_lu_momentum value = 60 }
+		remove_variable = cc_pty_lu_repressed
+		set_variable = { name = cc_pty_lu_event_cd value = yes months = 4 }
 		trigger_event_non_silently = { id = cc_pty.42 }
 	}
 
+	on_monthly = {
+		cc_pty_lu_monthly = yes
+	}
+
 	on_end = {
-		trigger_event_non_silently = { id = cc_pty.46 }
+		if = {
+			limit = {
+				cc_pty_has_type = { TYPE = 11 }
+				has_variable = cc_pty_lu_momentum
+				var:cc_pty_lu_momentum >= 100
+			}
+			trigger_event_non_silently = { id = cc_pty.47 }
+		}
+		else_if = {
+			limit = {
+				cc_pty_has_type = { TYPE = 11 }
+				has_variable = cc_pty_lu_momentum
+				var:cc_pty_lu_momentum > 0
+			}
+			trigger_event_non_silently = { id = cc_pty.48 }
+		}
+		else = {
+			trigger_event_non_silently = { id = cc_pty.46 }
+		}
+		remove_variable = cc_pty_lu_momentum
+		remove_variable = cc_pty_lu_repressed
+		remove_variable = cc_pty_lu_event_cd
 	}
 }
