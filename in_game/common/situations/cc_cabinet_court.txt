@@ -20,11 +20,18 @@ cc_cabinet_court = {
 	# High spawn chance so the ledger appears promptly once a court has anyone to show.
 	monthly_spawn_chance = monthly_spawn_chance_ultimate_high
 
+	# Either system opens the Ledger: cabinet experience (its roster and tabs) or factions
+	# (its Factions tab). With only one rule on, the other system's tabs are hidden.
 	can_start = {
-		has_game_rule = cc_cabinet_xp_on
-		any_country = {
-			cc_xp_country_is_tracked = yes
-			any_cabinet_character = { cc_xp_is_tracked = yes }
+		OR = {
+			AND = {
+				has_game_rule = cc_cabinet_xp_on
+				any_country = {
+					cc_xp_country_is_tracked = yes
+					any_cabinet_character = { cc_xp_is_tracked = yes }
+				}
+			}
+			any_country = { has_variable = cc_pty_active }
 		}
 	}
 
@@ -39,8 +46,13 @@ cc_cabinet_court = {
 
 	# Only courts that actually track experience see the header icon and the panel.
 	visible = {
-		cc_xp_country_is_tracked = yes
-		any_cabinet_character = { cc_xp_is_tracked = yes }
+		OR = {
+			AND = {
+				cc_xp_country_is_tracked = yes
+				any_cabinet_character = { cc_xp_is_tracked = yes }
+			}
+			has_variable = cc_pty_active
+		}
 	}
 
 	# ---------------------------------------------------------------------------------
@@ -67,6 +79,36 @@ cc_cabinet_court = {
 				owner ?= { is_ai = no }
 			}
 			value = rgb { 205 165 55 }
+		}
+		# Liberal Thought (factions), from the Age of Absolutism: cities and the capital.
+		else_if = {
+			limit = {
+				owner ?= { is_ai = no  has_variable = cc_pty_active }
+				trigger_if = {
+					limit = { has_variable = cc_pty_lt }
+					var:cc_pty_lt >= 60
+				}
+				trigger_else = { always = no }
+			}
+			value = rgb { 40 140 70 }
+		}
+		else_if = {
+			limit = {
+				owner ?= { is_ai = no  has_variable = cc_pty_active }
+				trigger_if = {
+					limit = { has_variable = cc_pty_lt }
+					var:cc_pty_lt >= 30
+				}
+				trigger_else = { always = no }
+			}
+			value = rgb { 110 175 95 }
+		}
+		else_if = {
+			limit = {
+				owner ?= { is_ai = no  has_variable = cc_pty_active }
+				has_variable = cc_pty_lt
+			}
+			value = rgb { 175 200 140 }
 		}
 		else_if = {
 			limit = { owner ?= { is_ai = no } }
@@ -97,6 +139,29 @@ cc_cabinet_court = {
 	legend_key = {
 		desc = "cc_xp_legend_resident"
 		color = rgb { 125 180 205 }
+	}
+	legend_key = {
+		desc = "cc_pty_legend_lt_low"
+		color = rgb { 175 200 140 }
+	}
+	legend_key = {
+		desc = "cc_pty_legend_lt_mid"
+		color = rgb { 110 175 95 }
+	}
+	legend_key = {
+		desc = "cc_pty_legend_lt_high"
+		color = rgb { 40 140 70 }
+	}
+
+	# Liberal Thought is the one map shade that needs explaining.
+	tooltip = {
+		if = {
+			limit = {
+				owner ?= { is_ai = no  has_variable = cc_pty_active }
+				has_variable = cc_pty_lt
+			}
+			custom_tooltip = cc_pty_map_tt_lt
+		}
 	}
 
 	# Deliberately omitted: on_start announcement and tooltip.

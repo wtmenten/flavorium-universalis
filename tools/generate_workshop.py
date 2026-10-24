@@ -104,6 +104,7 @@ EVENT_INFO: list[tuple[str, str, str]] = [
     ("cc_invasion_mexico",  "cc_invasion_mexico.txt",           "Mexican Conquest situation: expedition decisions, Mesoamerican reactions, confederation events, conquest resolution"),
     ("cc_balance_of_power",  "cc_balance_of_power.txt",          "European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings"),
     ("cc_office",           "cc_office_events.txt",             "Household offices: the appointment picker and the notice that an advance has retired a post"),
+    ("cc_pty",              "cc_pty_*.txt",                     "Factions: realignments, agendas, defections, term limits, the coup and the liberal uprising, and rare court chains between party ministers"),
 ]
 
 HIGHLIGHTED_TRAITS: list[str] = [

@@ -4,7 +4,7 @@
 
 *Four parties, the ministers who belong to them, and what they do when you ignore them.*
 
-*Dev Note: the cabinet already had rivalries, careers and estate capture, but nothing that tied a minister to anyone outside the room. Factions is a new submod that gives every realm worth simulating a set of political parties. They draw their strength from the estates, staff your cabinet, keep score of how they are treated, and cost political influence to manage. It is also built to stay quiet: nearly all of it runs without a popup, and the few events it does fire are budgeted.*
+*Dev Note: the cabinet already had rivalries, careers and estate capture, but nothing that tied a minister to anyone outside the room. Factions gives every realm worth simulating a set of political parties. It started as a submod and is part of Flavorium Universalis from 0.4, on its own tab of the Court Ledger. They draw their strength from the estates, staff your cabinet, keep score of how they are treated, and cost political influence to manage. It is also built to stay quiet: nearly all of it runs without a popup, and the few events it does fire are budgeted.*
 
 <figure>
   <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_factions_panel.png" target="_blank">
@@ -182,7 +182,7 @@ There are two ways out before that. Placate the party until it is no longer angr
 
 ## Liberal Thought
 
-From the Age of Absolutism, liberal ideas start to spread in your capital and your cities. Each city has its own level, which grows with literacy, the presence of the court, the Enlightenment and a liberal-leaning society, and falls while the Absolutists lead the realm. The Factions situation's map mode shows where it has taken hold.
+From the Age of Absolutism, liberal ideas start to spread in your capital and your cities. Each city has its own level, which grows with literacy, the presence of the court, the Enlightenment and a liberal-leaning society, and falls while the Absolutists lead the realm. The Court Ledger's map mode shades your cities by how far it has taken hold.
 
 <figure>
   <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_liberal_thought_map.png" target="_blank">
@@ -230,10 +230,10 @@ Every one of these little systems is tempting to announce, and a game full of th
 - the only character event, a minister crossing the floor, fires only for ministers currently in the cabinet and shares the cooldown of the existing rivalry events
 - the outcomes of escalation always fire, because by then you have had two warnings
 
-Parties are simulated for you, for the great powers and for any realm with 100 or more development. Smaller AI realms have none, which keeps the cost down and keeps the system aimed at the realms that matter. A game rule turns it off entirely.
+Parties are simulated for you, for the great powers and for any realm with 100 or more development. Smaller AI realms have none, which keeps the cost down and keeps the system aimed at the realms that matter. The game rule "C&C: Political Parties" (on by default) turns it off entirely. Like every game rule it is set when the game starts. It is independent of the cabinet experience rule: with experience off and parties on, the Court Ledger shows only its Factions tab.
 
 ---
 
 ## Status
 
-This is the first version, and it has not yet been played through. The numbers above are first guesses, and the Liberal Thought rate in particular will need tuning once it has been seen across a full game. Factions requires Flavorium Universalis, and with it loaded, the main mod's estate-capture events, court-captured modifiers and balanced-court bonus give way to the party versions for the realms that have parties.
+This is the first version, and it has not yet been played through. The numbers above are first guesses, and the Liberal Thought rate in particular will need tuning once it has been seen across a full game. With parties on, the mod's estate-capture events, court-captured modifiers and balanced-court bonus give way to the party versions for the realms that have parties.

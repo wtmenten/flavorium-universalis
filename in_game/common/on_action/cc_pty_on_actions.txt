@@ -1,7 +1,7 @@
 ﻿###############################################################################
 # Flavorium Universalis - Factions: on_actions
 #
-# The ONLY file in this submod that names vanilla on_actions, and only through
+# The ONLY factions file that names vanilla on_actions, and only through
 # `on_actions = { }` sub-lists, which merge with vanilla and with the main mod. A direct
 # `effect = { }` on any of these would replace whatever else hooks them.
 #
@@ -82,7 +82,7 @@ cc_pty_game_start = {
 # YEARLY (root = country)
 #
 # Lazy init and teardown as countries move in and out of the tracked set, which also
-# arms existing saves the year after the submod is added. Realignment and the
+# arms existing saves the year after factions is added. Realignment and the
 # satisfaction pass run when their cooldowns lapse.
 ###############################################################################
 
@@ -104,6 +104,8 @@ cc_pty_yearly = {
 		}
 		else_if = {
 			limit = { has_variable = cc_pty_active }
+
+			cc_pty_publish_rules = yes
 
 			# Tenure, for term limits.
 			every_cabinet_character = { cc_pty_count_year = yes }

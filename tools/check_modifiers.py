@@ -80,10 +80,16 @@ def main():
             c = re.sub(r'#.*', '', line)
             for m in re.finditer(
                     r'\b(?:add|remove|has)_(?:country|character|location|province)_modifier'
-                    r'\s*=\s*\{?\s*(?:modifier\s*=\s*)?([a-z][a-z0-9_]*)', c):
+                    r'\s*=\s*\{?\s*(?:modifier\s*=\s*)?([a-z][a-zA-Z0-9_$]*)', c):
                 k = m.group(1)
                 if k in ('modifier', 'yes', 'no') or k in statics:
                     continue
+                # A name built from a scripted-effect parameter (cc_pty_push_$KEY$) resolves
+                # if at least one static modifier fits the pattern.
+                if '$' in k:
+                    pat = re.compile('^' + re.sub(r'\\\$[A-Za-z0-9_]+\\\$', '[a-z0-9_]+', re.escape(k)) + '$')
+                    if any(pat.match(s_) for s_ in statics):
+                        continue
                 why = ('MODIFIER TYPE, not a static modifier' if k in types else
                        'BIAS, not a static modifier' if k in biases else
                        'not defined anywhere')

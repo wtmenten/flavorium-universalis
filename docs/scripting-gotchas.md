@@ -240,7 +240,7 @@ The same applies to any write-then-read inside one effect, including
 `set_variable = { name = counter value = 0 }` followed by `var:counter` in a loop.
 
 It is not specific to interactions. A `generic_action` button and an event option build
-their tooltips the same way. The Factions submod's attack action recomputed party power on a
+their tooltips the same way. The Factions attack action recomputed party power on a
 scratch variable and logged `Invalid right side during comparison 'var:cc_pty_best'` every
 time the button was hovered.
 
@@ -267,8 +267,8 @@ effect = {
 }
 ```
 
-The Factions submod packages this as `cc_pty_run = { EFFECT = x }` and
-`cc_pty_run_slot = { EFFECT = x SLOT = n }` in `submods/factions/.../cc_pty_effects.txt`.
+Factions packages this as `cc_pty_run = { EFFECT = x }` and
+`cc_pty_run_slot = { EFFECT = x SLOT = n }` in `in_game/common/scripted_effects/cc_pty_effects.txt`.
 
 ### A texture cannot be chosen by script state; switch fixed textures by visibility
 

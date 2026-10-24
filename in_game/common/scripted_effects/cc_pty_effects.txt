@@ -61,6 +61,7 @@
 
 cc_pty_init_country = {
 	set_variable = { name = cc_pty_active value = yes }
+	cc_pty_publish_rules = yes
 	set_variable = { name = cc_pty_comp value = 0 }
 	set_variable = { name = cc_pty_dominant value = 0 }
 	set_variable = { name = cc_pty_cabinet_slot value = 0 }
@@ -92,6 +93,19 @@ cc_pty_init_country = {
 	# Leaders again a day later. At game start the player's country is not yet marked as a
 	# player, so cc_pty_update_leaders above generated no leaders for it.
 	trigger_event_silently = { id = cc_pty.6 days = 1 }
+}
+
+# The Court Ledger hides its cabinet experience roster and tabs when that rule is off, and
+# GUI cannot read a game rule, so the factions side publishes it. Rules are fixed for a
+# campaign; this runs at setup and yearly so a save that predates it catches up.
+cc_pty_publish_rules = {
+	if = {
+		limit = { NOT = { has_game_rule = cc_cabinet_xp_on } }
+		set_variable = { name = cc_xp_off value = yes }
+	}
+	else = {
+		remove_variable = cc_xp_off
+	}
 }
 
 cc_pty_init_slot = {
@@ -183,6 +197,7 @@ cc_pty_teardown = {
 	cc_pty_vacate_slot = { SLOT = 4 }
 	cc_pty_clear_comp = yes
 	remove_variable = cc_pty_active
+	remove_variable = cc_xp_off
 	remove_variable = cc_pty_sat_cd
 	remove_variable = cc_pty_realign_cd
 	remove_variable = cc_pty_popup_cd
@@ -2076,7 +2091,7 @@ cc_pty_sat_pass = {
 	save_scope_as = cc_pty_country
 	cc_pty_count_seats = yes
 
-	# Backfill ministers seated before the submod loaded, and reassign anyone whose
+	# Backfill ministers seated before factions started, and reassign anyone whose
 	# party left at a realignment.
 	every_cabinet_character = {
 		limit = {
