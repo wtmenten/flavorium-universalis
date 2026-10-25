@@ -1096,6 +1096,27 @@ Characters cannot be created within options of events they must be created befor
 
 ---
 
+## Diplomatic acceptance factors take numbers only
+
+The factor lines in a subject type's `diplo_chance_accept_subject` / `diplo_chance_accept_overlord`
+(and the `ai_diplochance` blocks) are engine-defined quantities with a numeric coefficient:
+`tax_base = -0.4` means the engine multiplies the target's tax base by -0.4. A script value in
+that slot does not work. Tested 2026-10-25 with `tax_base = cc_junior_partner_tax_base_coef`:
+
+```
+Error: "Malformed token: cc_junior_partner_tax_base_coef, near line: 147" in file: "common/subject_types/cc_subject_types.txt"
+```
+
+The factor is then dropped altogether, so the acceptance breakdown simply loses that line
+rather than showing a wrong value.
+
+To make acceptance depend on script state, move a quantity some factor already reads. The
+offerer's side has the modifier `accept_subjugation_reasons` (weighed by the
+`accept_subjugation_reasons` factor), which an auto-modifier with `scales_with` can size; that is
+how union integration softens the junior partner offer (`auto_modifiers/cc_union_integration.txt`).
+The target's side has opinion and trust. Note `accept_subjugation_reasons` sits on the offerer,
+so it applies to all of that country's subjugation offers, not to one target.
+
 ## Things That Don't Exist (Don't Waste Time Searching)
 
 - Per-location monthly income as a scripted value — use `scope:location.development` as a proxy
