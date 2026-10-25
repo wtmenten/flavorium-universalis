@@ -104,13 +104,18 @@ cc_byz_strong_crown = {
 	monthly_towards_cc_taxis = societal_value_minor_monthly_move
 }
 
-# A state that runs on paper: literate clerks are the fisc's real infrastructure.
-# average_location_literacy is location scope; average_country_literacy is the country one.
+# A state that runs on paper: literate clerks are the fisc's real infrastructure. Read from the
+# estates that staff the administration (nobles 40%, burghers 25%, as A Literate
+# Administration), not the realm average, which low peasant literacy drags down. Scales from
+# x1 at the thresholds to x3 at full literacy (cc_byz_literate_admin_scale).
 cc_byz_literate_administration = {
 	potential_trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
-		average_country_literacy > 20
+		cc_byz_avg_literacy_nobles >= 40
+		cc_byz_avg_literacy_burghers >= 25
 	}
+
+	scales_with = cc_byz_literate_admin_scale
 
 	monthly_towards_cc_taxis = societal_value_tiny_monthly_move
 }

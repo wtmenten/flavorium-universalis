@@ -395,3 +395,105 @@ cc_byz_bureau_starved = {
 	max = 12
 }
 
+
+###############################################################################
+# LITERACY BY ESTATE (A Literate Administration, the Academy, Greek Fire, the Notitia)
+#
+# Country scope. Average literacy (0-100) of one pop type across the realm, weighted by pop
+# size. The mod keeps peasant maximum literacy low, so average_country_literacy falls as the
+# empire expands into the countryside and could put an administration task out of reach. The
+# people who staff an administration are the nobility and the burghers, so the task reads them.
+###############################################################################
+
+cc_byz_lit_sum_nobles = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:nobles }
+		add = { value = pop_size  multiply = pop_literacy }
+	}
+}
+
+cc_byz_lit_size_nobles = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:nobles }
+		add = pop_size
+	}
+}
+
+cc_byz_avg_literacy_nobles = {
+	value = 0
+	if = {
+		limit = { cc_byz_lit_size_nobles > 0 }
+		value = cc_byz_lit_sum_nobles
+		divide = cc_byz_lit_size_nobles
+	}
+}
+
+cc_byz_lit_sum_burghers = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:burghers }
+		add = { value = pop_size  multiply = pop_literacy }
+	}
+}
+
+cc_byz_lit_size_burghers = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:burghers }
+		add = pop_size
+	}
+}
+
+cc_byz_avg_literacy_burghers = {
+	value = 0
+	if = {
+		limit = { cc_byz_lit_size_burghers > 0 }
+		value = cc_byz_lit_sum_burghers
+		divide = cc_byz_lit_size_burghers
+	}
+}
+
+cc_byz_lit_sum_clergy = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:clergy }
+		add = { value = pop_size  multiply = pop_literacy }
+	}
+}
+
+cc_byz_lit_size_clergy = {
+	value = 0
+	every_pop = {
+		limit = { pop_type = pop_type:clergy }
+		add = pop_size
+	}
+}
+
+cc_byz_avg_literacy_clergy = {
+	value = 0
+	if = {
+		limit = { cc_byz_lit_size_clergy > 0 }
+		value = cc_byz_lit_sum_clergy
+		divide = cc_byz_lit_size_clergy
+	}
+}
+
+# Country scope. Scale of the literate administration auto-modifier: 1 at the thresholds
+# (nobles 40, burghers 25), rising with every point above them, 3 at full literacy for both.
+cc_byz_literate_admin_scale = {
+	value = 1
+	add = {
+		value = cc_byz_avg_literacy_nobles
+		subtract = 40
+		divide = 60
+		min = 0
+	}
+	add = {
+		value = cc_byz_avg_literacy_burghers
+		subtract = 25
+		divide = 75
+		min = 0
+	}
+}

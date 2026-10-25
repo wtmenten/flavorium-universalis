@@ -306,7 +306,19 @@ cc_byz_renovatio_campaign = {
 	cc_byz_task_literate_admin = {
 		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_council }
-		enabled = { average_country_literacy > 25 }
+		# The estates that staff the administration, not the realm average: peasant literacy is
+		# capped low in this mod, so an expanding empire's average could fall out of reach.
+		# Averages weighted by pop size (cc_byz_avg_literacy_*, cc_byz_values.txt).
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_tt_nobles_literate_40
+				cc_byz_avg_literacy_nobles >= 40
+			}
+			custom_tooltip = {
+				text = cc_byz_tt_burghers_literate_25
+				cc_byz_avg_literacy_burghers >= 25
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_country_modifier = { modifier = cc_byz_reward_administration  years = 25  mode = add_and_extend }
@@ -497,7 +509,10 @@ cc_byz_renovatio_campaign = {
 		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_hippodrome }
 		enabled = {
-			average_country_literacy > 25
+			custom_tooltip = {
+				text = cc_byz_tt_nobles_literate_35
+				cc_byz_avg_literacy_nobles >= 35
+			}
 			custom_tooltip = {
 				text = cc_byz_academy_tt
 				OR = {
@@ -982,7 +997,20 @@ cc_byz_renovatio_campaign = {
 	cc_byz_task_embassies = {
 		icon = cc_byz_mission_trade
 		requires = { cc_byz_task_latin_powers }
-		enabled = { num_of_diplomats >= 4 }
+		# Standing with the courts that matter in the West: three great powers seated in western
+		# Europe, each thinking well of us (opinion 150 of a possible 200). Was four diplomats,
+		# which said nothing about the West.
+		enabled = {
+			custom_tooltip = {
+				text = cc_byz_tt_western_gp_friends
+				any_country = {
+					count >= 3
+					is_great_power = yes
+					capital.sub_continent = sub_continent:western_europe
+					opinion = { target = root  value >= 150 }
+				}
+			}
+		}
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_weak_bonus
@@ -1754,7 +1782,10 @@ cc_byz_renovatio_campaign = {
 		requires = { cc_byz_task_dromon }
 		enabled = {
 			navy_tradition >= 50
-			average_country_literacy > 20
+			custom_tooltip = {
+				text = cc_byz_tt_burghers_literate_45
+				cc_byz_avg_literacy_burghers >= 45
+			}
 		}
 		duration = 0
 		on_persistent_completion = {
@@ -1867,7 +1898,10 @@ cc_byz_renovatio_campaign = {
 		requires = { cc_byz_task_logothete }
 		enabled = {
 			num_of_advances_researched >= 30
-			average_country_literacy > 35
+			custom_tooltip = {
+				text = cc_byz_tt_nobles_literate_50
+				cc_byz_avg_literacy_nobles >= 50
+			}
 		}
 		duration = 0
 		on_persistent_completion = {
