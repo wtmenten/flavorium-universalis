@@ -1112,10 +1112,11 @@ rather than showing a wrong value.
 
 To make acceptance depend on script state, move a quantity some factor already reads. The
 offerer's side has the modifier `accept_subjugation_reasons` (weighed by the
-`accept_subjugation_reasons` factor), which an auto-modifier with `scales_with` can size; that is
-how union integration softens the junior partner offer (`auto_modifiers/cc_union_integration.txt`).
-The target's side has opinion and trust. Note `accept_subjugation_reasons` sits on the offerer,
-so it applies to all of that country's subjugation offers, not to one target.
+`accept_subjugation_reasons` factor), which an auto-modifier with `scales_with` can size, but it
+sits on the offerer and so applies to every subjugation offer that country makes, to any target.
+It was tried for union integration and removed for exactly that reason; the junior partner
+offer now just uses a smaller coefficient (`tax_base = -0.15`). The target's side has opinion
+and trust.
 
 ## Things That Don't Exist (Don't Waste Time Searching)
 
