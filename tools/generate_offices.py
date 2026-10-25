@@ -129,7 +129,7 @@ OFFICES = [
     # ------------------------------------------------------------------ CORE ---
     dict(key='seneschal', name='Seneschal', track='adm', tier=1, family='core',
          unlock=None, obsolete='chancery_records',
-         mod={'country_cabinet_efficiency': 0.08, 'court_spending_efficiency': 0.05,
+         mod={'country_cabinet_efficiency': 0.32, 'court_spending_efficiency': 0.05,
               'nobles_estate_agenda_impact': 0.08},
          desc="Runs the household and the lord's own lands. Superseded once written chancery "
               "records make the office a clerical one."),
@@ -164,7 +164,7 @@ OFFICES = [
     dict(key='chancellor_of_the_rolls', name='Chancellor of the Rolls', track='adm', tier=2,
          family='core', unlock='chancery_records', obsolete='modern_bureaucracy',
          mod={'legislative_efficiency': 0.08, 'stability_cost_efficiency': 0.10,
-              'country_cabinet_efficiency': 0.06},
+              'country_cabinet_efficiency': 0.24},
          desc="Keeps the written record of every grant, charter and judgement the crown has "
               "made. A modern bureaucracy makes the rolls a department rather than a person."),
     dict(key='master_of_the_mint', name='Master of the Mint', track='adm', tier=2,
@@ -184,13 +184,13 @@ OFFICES = [
          desc="Settles precedence, form of address and the terms on which envoys are received."),
     dict(key='intendant', name='Intendant of the Household', track='adm', tier=3,
          family='core', unlock='absolutist_court', obsolete=None,
-         mod={'global_crown_estate_power': 0.05, 'country_cabinet_efficiency': 0.10,
+         mod={'global_crown_estate_power': 0.05, 'country_cabinet_efficiency': 0.4,
               'global_monthly_control': 0.02},
          desc="A crown servant rather than a courtier, answerable to the ruler alone. The post "
               "exists because the absolutist court no longer trusts hereditary officers."),
     dict(key='permanent_secretary', name='Permanent Secretary', track='adm', tier=3,
          family='core', unlock='modern_bureaucracy', obsolete=None,
-         mod={'legislative_efficiency': 0.12, 'country_cabinet_efficiency': 0.10,
+         mod={'legislative_efficiency': 0.12, 'country_cabinet_efficiency': 0.4,
               'global_integration_speed_modifier': 0.05},
          desc="Stays in post while ministers come and go, which is the whole point of him."),
     dict(key='director_of_public_instruction', name='Director of Public Instruction',
@@ -295,7 +295,7 @@ OFFICES = [
     dict(key='postelnic', name='Postelnic', track='dip', tier=2, family='culture',
          unlock='romanian_the_postelnic_bureaucracy', obsolete=None,
          mod={'diplomatic_reputation': 1, 'antagonism_received_modifier': -0.08,
-              'country_cabinet_efficiency': 0.06},
+              'country_cabinet_efficiency': 0.24},
          desc="Chamberlain and foreign secretary in one post, which is how the voivode's court "
               "was actually run."),
     dict(key='voivode_of_the_court', name='Voivode of the Court', track='mil', tier=2,
@@ -305,7 +305,7 @@ OFFICES = [
          desc="Holds military and civil authority together in the ruler's name."),
     dict(key='herald_of_the_table_of_ranks', name='Herald of the Table of Ranks', track='adm',
          tier=3, family='culture', unlock='table_of_ranks', obsolete=None,
-         mod={'country_cabinet_efficiency': 0.10, 'nobles_estate_agenda_impact': 0.08,
+         mod={'country_cabinet_efficiency': 0.4, 'nobles_estate_agenda_impact': 0.08,
               'legislative_efficiency': 0.06},
          desc="Decides where every servant of the state stands, which is a great deal of power "
               "for a clerk."),

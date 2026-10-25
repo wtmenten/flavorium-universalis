@@ -159,9 +159,13 @@ cc_pty_try_court_events = {
 			remove_variable = cc_pty_ce_a
 			remove_variable = cc_pty_ce_b
 			random_list = {
-				20 = {	# The Knife
-					trigger = { cc_pty_ce_feud_possible = yes }
+				8 = {	# The Knife: the commonest setup, so rarer weight and a 20-year cooldown
+					trigger = {
+						cc_pty_ce_feud_possible = yes
+						NOT = { has_variable = cc_pty_ce_knife_cd }
+					}
 					cc_pty_ce_pick_feud = yes
+					set_variable = { name = cc_pty_ce_knife_cd value = yes years = 20 }
 					trigger_event_non_silently = { id = cc_pty.80 }
 					cc_pty_ce_fired = yes
 				}

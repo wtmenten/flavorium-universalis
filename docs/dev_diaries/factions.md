@@ -41,7 +41,7 @@ This is the zeitgeist part of the design. Nobody chooses to have Absolutists in 
 
 Every adult at your court belongs to a party from the moment they arrive, so you know where a candidate stands before you appoint them. A cabinet trait that names a side decides it first: a royal absolutist sits with the absolutists if there are any and with the Royalists if not, and a merchant prince sits with the merchants. Failing that, the character's estate decides. Anyone left over draws evenly among the parties you have.
 
-The party shows on the character sheet as "Member of the …", as the party's icon in every character picker, cabinet appointments included, and as a badge beside each minister's seniority on the cabinet cards. It matters because every minister brings their party **2 appointed seats** in the chamber, and because a party's mood follows its members into office. A minister whose party is pleased works 5% better. One whose party is angry works 20% worse, no matter how good they are.
+The party shows on the character sheet as "Member of the …", as the party's icon in every character picker, cabinet appointments included, and as a badge beside each minister's seniority on the cabinet cards. It matters because every minister brings their party **2 appointed seats** in the chamber, and because a party's mood follows its members into office. A minister whose party is pleased works 20% better. One whose party is angry works 80% worse, no matter how good they are.
 
 <figure>
   <a href="../assets/screenshots/Factions/EUV_1.4.x_FU_Factions_0.1.0_member_badge.png" target="_blank">
@@ -107,7 +107,7 @@ Parties tied to an estate also push that estate's parliament agendas when please
 
 The cabinet itself now has a shape.
 
-A **stacked** cabinet, where one party holds more than half the cabinet, runs well: +5% cabinet efficiency, and the party that runs it gets a stronger bonus and moves society faster. Every other party expects less, though, and the court's rivalry score climbs.
+A **stacked** cabinet, where one party holds more than half the cabinet, runs well: +20% cabinet efficiency, and the party that runs it gets a stronger bonus and moves society faster. Every other party expects less, though, and the court's rivalry score climbs.
 
 A **balanced** cabinet, where no party holds more than 40% of the cabinet and at least three are represented, is steadier. Stability is cheaper, bribes and attacks cost a quarter less, and no party's expectation falls below -20. In exchange the bonuses are weaker and society barely moves.
 

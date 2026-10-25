@@ -1153,7 +1153,8 @@ cc_xp_school_publish_funding = {
 #   first    standing first in the world, renown 60+, 10%      cc_xp_school.42
 #   rival    the leading foreign university is 10+ ahead, 20%   cc_xp_school.40 / .41
 #   artist   renown 50+, chance renown / 12 percent             cc_xp_school.32
-#   scholar  renown 40+, chance renown / 8 percent              cc_xp_school.30
+#   scholar  renown 40+, chance renown / 20 percent, and at most one
+#            a decade for the whole realm (cc_xp_school_scholar_cd)  cc_xp_school.30
 #   student  renown 30+, 6%                                     cc_xp_school.31
 cc_xp_school_roll_events = {
 	if = {
@@ -1212,10 +1213,12 @@ cc_xp_school_roll_events = {
 		if = {
 			limit = {
 				NOT = { has_variable = cc_xp_school_$N$_event_cd }
+				NOT = { has_variable = cc_xp_school_scholar_cd }
 				var:cc_xp_school_$N$_renown >= 40
 			}
 			random = {
-				chance = { value = var:cc_xp_school_$N$_renown  divide = 8 }
+				chance = { value = var:cc_xp_school_$N$_renown  divide = 20 }
+				set_variable = { name = cc_xp_school_scholar_cd  value = yes  years = 10 }
 				cc_xp_school_fire = { N = $N$  FLAG = scholar  EVENT = 30 }
 			}
 		}
