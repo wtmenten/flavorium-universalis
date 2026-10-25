@@ -35,8 +35,9 @@
 # THE FIVE STRUCTURES, and how each is expressed.
 #
 # GATEWAY. The State Restored used to have TWELVE direct children, which made the third rank of
-# the tree unreadable. Four gateways now sit between it and that cluster: The Roman Title, The
-# Balkan Frontier, The Latin Powers and The Anatolian Return. Each is a small objective in its
+# the tree unreadable. Four gateways were put between it and that cluster: The Roman Title, The
+# Balkan Frontier, The Latin Powers and The Anatolian Return. The two frontier gateways have
+# since moved up to hang off The Walls and Thessaloniki (see SHAPE); the other two remain. Each is a small objective in its
 # own right rather than a pure connector, and no node in the tree now has more than four
 # children. Nothing downstream needed rewriting, because requires is AND across the whole pack
 # and not just within a branch: Illyricum still names Despotate, No Second Emperor and Adriatic
@@ -130,8 +131,16 @@
 #
 #   T0  House in Order      5 roots, any order
 #   T1  Three pillars       Fisc / Faith / Sword, any order -> The State Restored (2 of 3)
-#   T2  Four gateways       Roman Title / Balkan Frontier / Latin Powers / Anatolian Return
-#   T3  Anatolia            FORK 2 destroy or vassalise the Turks, FORK 3 tagmata or pronoia
+#       Two frontiers       run ALONGSIDE the pillars, not after them: The Anatolian Return
+#                           (off The Walls) and The Balkan Frontier (off Thessaloniki), with
+#                           the Ottoman fork, the Themes, the Bulgarian and Serbian questions,
+#                           the Danube, the Adriatic and No Second Emperor below them. Gating
+#                           all of it behind The State Restored let the player outrun the tree
+#                           for a century.
+#   T2  Two gateways        Roman Title / Latin Powers, off The State Restored
+#   T3  Anatolia            FORK 2 destroy or vassalise the Turks, FORK 3 tagmata or pronoia.
+#                           Anatolia Secured (and the Levant after it) also needs The State
+#                           Restored, so the late east still waits for it
 #   T4  The Levant          the seats (2 of 3), FORK 4 treaty or Pentarchy War
 #   T5  The West            Illyricum -> Italy / Africa / Spania in ANY ORDER (2 of 3)
 #   T6  The East            off the Sinai Road, FORK 5 monopoly or company
@@ -744,8 +753,11 @@ cc_byz_renovatio_campaign = {
 	# individual quarrels there can be settled.
 	cc_byz_task_balkan_frontier = {
 		icon = cc_byz_mission_reconquest
-		requires = { cc_byz_task_state_restored }
-		enabled = { any_owned_location = { count >= 15  region = region:balkan_region } }
+		requires = { cc_byz_task_thessaloniki }
+		# Byzantium starts with 82 Balkan locations, so the old 15 was complete at game start
+		# and, now that this opens early, would have been a free task. 100 means retaking
+		# about eighteen.
+		enabled = { any_owned_location = { count >= 100  region = region:balkan_region } }
 		duration = 0
 		on_persistent_completion = {
 			add_country_modifier = { modifier = cc_byz_reward_levies  years = 20  mode = add_and_extend }
@@ -775,7 +787,7 @@ cc_byz_renovatio_campaign = {
 	# GATEWAY D. A foothold in Anatolia before the Turkish question is put.
 	cc_byz_task_anatolian_return = {
 		icon = cc_byz_mission_reconquest
-		requires = { cc_byz_task_state_restored }
+		requires = { cc_byz_task_walls }
 		enabled = { any_owned_location = { count >= 10  region = region:anatolia_region } }
 		duration = 0
 		on_persistent_completion = {
@@ -791,7 +803,7 @@ cc_byz_renovatio_campaign = {
 
 	cc_byz_task_no_second_emperor = {
 		icon = cc_byz_mission_crown
-		requires = { cc_byz_task_roman_title }
+		requires = { cc_byz_task_anatolian_return }
 		# Trebizond gone, a non-tributary subject of ours, or our junior union partner. The
 		# Komnenian Question (events/cc_byz_komnenoi.txt) produces the last two; a tributary
 		# keeps its own crown and does not count.
@@ -1120,7 +1132,7 @@ cc_byz_renovatio_campaign = {
 	# bypass: without it this would wait forever on the one that can no longer complete.
 	cc_byz_task_anatolia_secured = {
 		icon = cc_byz_mission_reconquest
-		requires = { cc_byz_task_themes }
+		requires = { cc_byz_task_themes cc_byz_task_state_restored }
 		enabled = {
 			custom_tooltip = {
 				text = cc_byz_turkish_question_settled_tt

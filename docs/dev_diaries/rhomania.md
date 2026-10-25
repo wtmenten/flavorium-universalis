@@ -351,7 +351,7 @@ Then the tree splits into **three pillars you can pursue in any order**. The **F
   <figcaption>Fisc, Faith and Sword. Two of the three carry you to The State Restored.</figcaption>
 </figure>
 
-The tree also stopped being a fan. One task, The State Restored, used to open twelve at once, which made the third rank unreadable. Four gateways now sit between it and that cluster: the Roman Title, the Balkan Frontier, the Latin Powers, the Anatolian Return. Each is a small objective in its own right, and no node in the tree opens more than four things.
+The tree also stopped being a fan. One task, The State Restored, used to open twelve at once, which made the third rank unreadable. Gateways now sit in front of each cluster, and no node in the tree opens more than four things. Two of them, the Roman Title and the Latin Powers, follow The State Restored. The other two do not wait for it: **the Anatolian Return** opens off the Walls and **the Balkan Frontier** off Thessaloniki, so the Ottomans, the Themes, the Bulgarian and Serbian questions, the Danube and the question of Trebizond's emperor can be pursued alongside the pillars. Gating them behind The State Restored let a player conquer for a century before the tree caught up. Anatolia Secured, the Levant beyond it and the western reconquest still wait for the restored state.
 
 ### Choices that close doors
 
