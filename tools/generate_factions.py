@@ -173,9 +173,9 @@ T = [
         eligible=[f"OR = {{ {gov('monarchy')} {gov('steppe_horde')} {gov('republic')} }}"],
         score=[f"if = {{ limit = {{ {gov('monarchy')} }} add = 15 }}"],
         goodwill=dict(diplomatic_reputation=0.25, monthly_political_influence=0.1,
-                      crown_estate_agenda_impact=0.05),
+                      global_crown_estate_power=0.03),
         discontent=dict(diplomatic_reputation=-0.5, monthly_political_influence=-0.1,
-                        crown_estate_agenda_impact=-0.05),
+                        global_crown_estate_power=-0.05),
         favour=dict(monthly_political_influence=0.3),
         push="centralization",
         agenda1=(f"{estate_power('crown')} >= 0.40", "Raise the crown's share of power to 40%."),
@@ -378,8 +378,8 @@ T = [
         ],
         eligible=[age_ge("age_5_absolutism"), gov("monarchy")],
         score=["if = { limit = { current_age = age_5_absolutism } add = 15 }"],
-        goodwill=dict(global_crown_estate_power=0.03, crown_estate_agenda_impact=0.05),
-        discontent=dict(global_crown_estate_power=-0.05, crown_estate_agenda_impact=-0.05),
+        goodwill=dict(global_crown_estate_power=0.03, monthly_legitimacy=0.05),
+        discontent=dict(global_crown_estate_power=-0.05, monthly_legitimacy=-0.1),
         favour=dict(global_crown_estate_power=0.05),
         push="absolutism",
         agenda1=("societal_value:absolutism_vs_liberalism <= -30",
@@ -522,7 +522,7 @@ STANDING = {
     "aristocratic": dict(global_nobles_estate_power=0.25, global_max_control=0.01),
     "mercantile": dict(global_burghers_estate_power=0.03, trade_land_efficiency=0.02),
     "clerical": dict(global_clergy_estate_power=0.03, monthly_religious_influence=0.05),
-    "military": dict(land_morale_modifier=0.02, global_manpower_modifier=0.02),
+    "military": dict(land_morale_modifier=0.02, military_tactics=0.05),
     "agrarian": dict(global_peasants_estate_power=0.03, global_manpower_modifier=0.03),
     "reformist": dict(country_cabinet_efficiency=0.08, monthly_political_influence=0.03),
     "absolutist": dict(global_crown_estate_power=0.03, monthly_political_influence=0.05),
@@ -536,7 +536,7 @@ MARGINAL_VALUE = -0.05
 # flat (percent = no); everything else prints as a percentage. BAD types read as a cost
 # when positive (estate power is vanilla color = bad).
 FLAT = {"diplomatic_reputation", "monthly_political_influence", "monthly_religious_influence",
-        "monthly_legitimacy"} | {f"monthly_towards_{x}" for x in (
+        "monthly_legitimacy", "military_tactics"} | {f"monthly_towards_{x}" for x in (
             "centralization aristocracy plutocracy spiritualist belligerent free_subjects innovative "
             "absolutism decentralization outward liberalism").split()}
 BAD = {"monthly_nationalist_rebel_growth", "monthly_rebel_growth", "global_nobles_estate_power",

@@ -174,7 +174,7 @@ OFFICES = [
               "by striking it."),
     dict(key='court_chamberlain', name='Court Chamberlain', track='adm', tier=2, family='core',
          unlock='regulate_court_procedures', obsolete=None,
-         mod={'court_spending_efficiency': 0.12, 'crown_estate_agenda_impact': 0.08},
+         mod={'court_spending_efficiency': 0.12, 'global_crown_estate_power': 0.04},
          desc="Controls access to the ruler and the order of the court day. Regulated "
               "procedure is what gives the office its power."),
     dict(key='master_of_protocol', name='Master of Protocol', track='dip', tier=2,
