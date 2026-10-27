@@ -137,19 +137,53 @@ arriving through a door you built yourself.
 
 ### What you can actually do about it
 
-Seven repeatable actions, available whether or not you play with mission packs enabled. Order a
-census. Pay the annual donative. Demand the tribute. Send a strategos west. Confirm an exarch's
-son. Grant a commune its charter. Summon an exarch to the capital.
+The actions are available whether or not you play with mission packs enabled, and as of 0.4
+they come in two kinds.
 
-Six of those are decisions. The seventh is not: **whether he comes when called is not yours to
-decide**, and the odds read off a loyalty score the other six have been moving for decades. An
-emperor who took the tribute twice, never paid the donative and confirmed nobody's son is
-issuing an order to a man with no reason to obey it. When the summons is refused and nothing
+Three act on the whole west at once: order a census, pay the full donative, demand the tribute.
+
+The rest act on **one prefecture**, because the problem is usually one man rather than four
+(new in 0.4). Each province has its own: pay its garrisons, confer a court title on its exarch,
+confirm his son, send a strategos, summon him to the capital, and, in Italy and Gaul, charter
+a commune. Each has its own cooldown, so dealing with a disaffected prefect in Carthage does not
+use up the answer you need for Ravenna. The court title is new. It costs prestige rather than
+gold and buys loyalty without handing the west any more say, which makes it the one way to
+reward an exarch that does not also strengthen the province.
+
+Most of these are decisions. The summons is not: **whether he comes when called is not yours
+to decide**, and the odds read off his loyalty, which the others have been moving for decades.
+An emperor who took the tribute twice, never paid the garrisons and confirmed nobody's son is
+issuing an order to a man with no reason to obey it. An exarch whose son was confirmed holds
+the office as family property and is slower to come. When the summons is refused and nothing
 happens to him, every governor in the empire notices.
 
 Loyalty also reaches the chamber. A well-treated prefect moderates almost to the point of
-voting with the capital; a mistreated one nearly doubles his push. The donative is not only
-about manpower.
+voting with the capital; a mistreated one nearly doubles his push. Paying the garrisons is not
+only about manpower.
+
+Each exarch now also has his own **appetite** (new in 0.4): how much more of his province he
+thinks should be his. It used to be a single number for the whole west, so an African exarch
+inherited the Italian one's demands. It rises when his requests are refused or the cession
+review is withheld, and falls when they are granted or he is honoured.
+
+### The panel
+
+The West panel was rebuilt in 0.4. The first tab shows the two counters with how far each moved
+over the last year, and a map of the four endings with their thresholds and the current corner
+marked. Below that is one card per prefecture: the exarch's portrait, what kind of exarch he is,
+whether his office is hereditary, whether he is disaffected or contented, his loyalty and
+appetite, whether a cession review is due, and that province's buttons. An empty prefecture
+shows what it would take to open it. A second tab covers the consistory: whether it sits, the
+vote count with whether you can be outvoted, each member's votes, and its three actions.
+
+### When an exarch dies
+
+An exarch's death is now a decision rather than a formality (new in 0.4). His heir has already
+taken up the office by the time you hear of it. You can confirm him, which makes the office
+hereditary in that family, or send one of your two ablest loyal courtiers to replace him. A man
+from the capital raises your grip and starts again from no loyalty at all, and the province may
+decide it preferred the son. If the son's right was already confirmed, overriding it is a broken
+promise and costs more. While the consistory sits, you can also let it name the successor.
 
 ### The rising
 
