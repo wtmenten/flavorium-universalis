@@ -1,0 +1,133 @@
+﻿# The Serenissima Question: triggers. See events/cc_byz_venice.txt. Byzantine country scope
+# unless stated. Venice is c:VEN throughout; every bare c:VEN read sits under a country_exists
+# guard, for the same reason as the guarded var: reads elsewhere.
+
+# Venice is still a free party we can deal with, and we still hold the City.
+cc_byz_ven_valid_trigger = {
+	owns = location:constantinople
+	trigger_if = {
+		limit = { country_exists = c:VEN }
+		c:VEN = { is_subject = no }
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_ven_at_war_trigger = {
+	trigger_if = {
+		limit = { country_exists = c:VEN }
+		is_at_war_with = c:VEN
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_ven_human_trigger = {
+	trigger_if = {
+		limit = { country_exists = c:VEN }
+		c:VEN = { is_ai = no }
+	}
+	trigger_else = { always = no }
+}
+
+# Guarded score reads. Unset reads as failing.
+cc_byz_ven_concord_at_least_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_ven_concord }
+		var:cc_byz_ven_concord >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_ven_concord_at_most_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_ven_concord }
+		var:cc_byz_ven_concord <= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_ven_leverage_at_least_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_ven_leverage }
+		var:cc_byz_ven_leverage >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+# --- Ministers who open options. Read only; never granted.
+
+cc_byz_ven_diplomat_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = tactful_envoy
+			has_trait = diplomatic_attache
+			has_trait = christian_diplomat
+		}
+	}
+}
+
+cc_byz_ven_admiral_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = admiral_counselor
+			has_trait = legendary_navigator
+		}
+	}
+}
+
+cc_byz_ven_merchant_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = merchant_prince
+			has_trait = merchant_of_the_crown
+			has_trait = trade_consortium_minister
+			has_trait = merchant_syndic
+		}
+	}
+}
+
+# --- Links to the other threads.
+
+# The vanilla crown jewels (flavor_byz_ven.2) are in pawn to Venice.
+cc_byz_ven_jewels_pawned_trigger = {
+	has_country_modifier = BYZ_lacking_jewels
+	trigger_if = {
+		limit = { country_exists = c:VEN }
+		c:VEN = { has_variable = original_crown_jewels_lender }
+	}
+	trigger_else = { always = no }
+}
+
+# An exarch sits in Italy (pillar 2).
+cc_byz_ven_italian_exarch_trigger = {
+	any_subject = {
+		has_variable = cc_byz_is_exarchate
+		capital.region = region:italy_region
+	}
+}
+
+# A Venetian-held port in the Morea or the Aegean that the Stato da Mar stage can bargain for.
+cc_byz_ven_port_candidate_trigger = {
+	OR = {
+		area = area:morea_area
+		area = area:aegean_archipelago_area
+	}
+	is_capital = no
+}
+
+cc_byz_ven_has_port_trigger = {
+	trigger_if = {
+		limit = { country_exists = c:VEN }
+		c:VEN = { any_owned_location = { cc_byz_ven_port_candidate_trigger = yes } }
+	}
+	trigger_else = { always = no }
+}
+
+# The Ducate is on offer: Venice trusts us completely and needs us more than we need it.
+cc_byz_ven_ducate_possible_trigger = {
+	cc_byz_ven_concord_at_least_trigger = { VALUE = 8 }
+	cc_byz_ven_leverage_at_least_trigger = { VALUE = 2 }
+	c:VEN ?= {
+		is_great_power = no
+		NOT = { exists = union }
+	}
+}

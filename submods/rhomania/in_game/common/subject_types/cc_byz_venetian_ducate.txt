@@ -1,0 +1,64 @@
+﻿# The Ducate of Venetia: Venice back under the purple, in name and in trade.
+#
+# Granted only by the Serenissima Question's climax (events/cc_byz_venice.txt), never through
+# diplomacy or a peace treaty, so every visibility trigger is always = no.
+#
+# THE LIGHTEST TIE THE ENGINE ALLOWS. Level 0, like vanilla's tributary: no troops owed, its
+# own diplomacy and wars, never annexed. What the empire gets is a small gold tribute, free
+# passage for its merchants through Venetian markets (overlord_exempt_from_subject_import_
+# tariffs), basing rights for the fleet, and the great-power score of a client republic.
+# Venice keeps its government, its fleet and the Stato da Mar.
+#
+# loyalty_to_overlord stands in for "liberty desire stays low while Concord holds": the
+# Concord that earned the Ducate is what the subject_modifier represents.
+cc_byz_venetian_ducate = {
+	subject_pays = cc_byz_ven_ducate_tribute
+	color = subject_tributary
+	level = 0
+
+	visible = { always = no }
+	visible_through_diplomacy = { always = no }
+	visible_through_treaty = { always = no }
+	creation_visible = { always = no }
+	release_country_enabled = { always = no }
+
+	join_defensive_wars_always = {
+		always = yes
+	}
+	join_offensive_wars_can_call = {
+		scope:actor ?= { is_subject_of = scope:recipient }
+	}
+	allow_declaring_wars = { always = yes }
+
+	has_overlords_ruler = no
+	will_join_independence_wars = no
+	can_be_annexed = no
+	annulled_by_peace_treaty = no
+	can_be_force_broken_in_peace_treaty = yes
+	subject_can_cancel = no
+	overlord_can_cancel = yes
+	has_limited_diplomacy = no
+	can_change_rank = yes
+	can_change_heir_selection = yes
+	fleet_basing_rights = yes
+	food_access = yes
+	overlord_exempt_from_subject_import_tariffs = yes
+	diplomatic_capacity_cost_scale = 0.2
+	strength_vs_overlord = -0.25
+	maritime_path_tolerance = 0.5
+	use_overlord_map_color = no
+	use_overlord_map_name = no
+	great_power_score_transfer = 0.25
+	minimum_opinion_for_offer = 150
+	institution_spread_to_overlord = monthly_institution_spread_weak
+	institution_spread_to_subject = monthly_institution_spread_weak
+
+	overlord_modifier = {
+		monthly_prestige = 0.05
+		global_trade_center_power = 0.05
+	}
+	subject_modifier = {
+		loyalty_to_overlord = 30
+		global_trade_center_power = 0.05
+	}
+}

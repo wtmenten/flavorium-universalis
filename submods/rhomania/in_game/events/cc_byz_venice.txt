@@ -1,0 +1,1231 @@
+﻿namespace = cc_byz_venice
+
+# The Serenissima Question: Venice and the empire, over half a century.
+#
+# Venice was a Roman province before it was a republic. Its first doges were Byzantine
+# officials, it held the title of dux from Constantinople into the eleventh century, and St
+# Mark's is a Constantinopolitan church built on the lagoon. It was also the city that sacked
+# Constantinople in 1204. This chain asks whether a restored empire can bring Venice back into
+# its orbit, and what that would cost.
+#
+# ENTRY. Completing cc_byz_task_venetian_alliance calls cc_byz_ven_open_effect, which fires .1.
+# Runs once per campaign. The Genoese task remains the exclusive alternative; inside the chain
+# Genoa is the rival partner, and siding with it costs Concord.
+#
+#   .1   the chrysobull renewed                      privileges, Genoa, Italian standing
+#   .2   the jewels and the loans                    vanilla crown jewels, creditor grip
+#   .3   the Genoese war                             join Venice, stay out, or side with Genoa
+#   .4   the sea league                              a joint fleet against the Turks
+#   .5   Dalmatia                                    Venice pressed by Hungary
+#   .6   the mainland question                       the Italian exarch, if there is one
+#   .7   the Stato da Mar                            buy or swap a Morea or Aegean port
+#   .20  (Venice) the port offer                     a human Venice answers .7
+#   .22  the port answer                             back to us; the deal is applied here
+#   .8   the Emperor's vicariate                     the HRE pull, against our old ducal title
+#   .9   St Mark's and the purple                    union, Latin Empress and Academy read here
+#   .10  the climax                                  Ducate, perpetual alliance, friendship, or rupture
+#   .25  (Venice) the proposal                       a human Venice answers .10
+#   .26  the proposal answer                         back to us; the ending is applied here
+#   .80  hidden router
+#   .90  the question lapses
+#
+# SCORES. Concord 0..10 (starts 3) decides the ending: 8+ with Leverage +2 makes the Ducate
+# possible, 5+ the alliance, 3-4 a friendship, 2 or less a rupture. Leverage -5..5 is who needs
+# whom. See scripted_effects/cc_byz_venice_effects.txt.
+#
+# PACING. 4-6 years between stages, so 40-55 years end to end. A war with Venice holds the
+# router a year at a time; ten years of it closes the chain through .90. Wars elsewhere do not.
+#
+# CHARACTER STAT RANGES. adm, dip and mil are each 0..100. Roughly >= 65 above average.
+
+
+#############################################
+# .1  The chrysobull renewed
+#############################################
+cc_byz_venice.1 = {
+	type = country_event
+	title = cc_byz_venice.1.title
+	desc = cc_byz_venice.1.desc
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Renew the 1082 terms in full.
+	option = {
+		name = cc_byz_venice.1.a
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_mem_ven_privileges_full  value = yes }
+		add_country_modifier = { modifier = cc_byz_ven_old_privileges  years = 30  mode = add_and_extend }
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_courted }
+		custom_tooltip = cc_byz_ven_concord_plus2_tt
+		custom_tooltip = cc_byz_ven_leverage_minus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 2 }
+			cc_byz_ven_add_leverage_effect = { value = -1 }
+			cc_byz_ven_add_italian_standing_effect = { value = 1 }
+		}
+		c:GEN ?= { add_opinion = { target = root  modifier = cc_byz_rival_privilege_granted } }
+	}
+
+	# Cut the exemption to two percent, as the 1265 treaty did for Genoa.
+	option = {
+		name = cc_byz_venice.1.b
+		ai_chance = { base = 45 }
+
+		add_country_modifier = { modifier = cc_byz_ven_reduced_privileges  years = 30  mode = add_and_extend }
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = { cc_byz_ven_add_leverage_effect = { value = 1 } }
+	}
+
+	# Revoke it and charge the full kommerkion.
+	option = {
+		name = cc_byz_venice.1.c
+		ai_chance = { base = 20 }
+
+		set_variable = { name = cc_byz_mem_ven_privileges_revoked  value = yes }
+		add_country_modifier = { modifier = cc_byz_ven_full_kommerkion  years = 30  mode = add_and_extend }
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_wronged }
+		custom_tooltip = cc_byz_ven_concord_minus2_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = -2 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+			cc_byz_ven_add_italian_standing_effect = { value = -1 }
+		}
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		c:GEN ?= { add_opinion = { target = root  modifier = cc_byz_ven_courted } }
+	}
+
+	# A merchant minister writes terms both sides can live with.
+	option = {
+		name = cc_byz_venice.1.d
+		trigger = { cc_byz_ven_merchant_minister_trigger = yes }
+		ai_chance = { base = 50 }
+
+		add_country_modifier = { modifier = cc_byz_ven_reduced_privileges  years = 30  mode = add_and_extend }
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+		}
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .2  The jewels and the loans
+#
+# Reads vanilla's crown jewels (flavor_byz_ven.2): pawned to Venice, the jewels are leverage
+# Venice holds over us. Otherwise Venice simply offers money.
+#############################################
+cc_byz_venice.2 = {
+	type = country_event
+	title = cc_byz_venice.2.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { cc_byz_ven_jewels_pawned_trigger = yes }
+				desc = cc_byz_venice.2.desc_jewels
+			}
+			desc = cc_byz_venice.2.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = bank
+		10 = economy
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Jewels in pawn: pay the debt down and ask for them back in good faith.
+	option = {
+		name = cc_byz_venice.2.a
+		trigger = {
+			cc_byz_ven_jewels_pawned_trigger = yes
+			gold >= 200
+		}
+		ai_chance = { base = 50 }
+
+		add_gold = -200
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+			cc_byz_ven_add_creditor_grip_effect = { value = -1 }
+		}
+	}
+
+	# Take the loan Venice offers.
+	option = {
+		name = cc_byz_venice.2.b
+		ai_chance = { base = 40 }
+
+		add_gold = 250
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_minus1_tt
+		custom_tooltip = cc_byz_ven_creditor_grip_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = -1 }
+			cc_byz_ven_add_creditor_grip_effect = { value = 1 }
+		}
+	}
+
+	# Owe Venice nothing.
+	option = {
+		name = cc_byz_venice.2.c
+		ai_chance = { base = 30 }
+
+		add_prestige = prestige_weak_bonus
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = { cc_byz_ven_add_leverage_effect = { value = 1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .3  The Genoese war
+#############################################
+cc_byz_venice.3 = {
+	type = country_event
+	title = cc_byz_venice.3.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { NOT = { country_exists = c:GEN } }
+				desc = cc_byz_venice.3.desc_no_genoa
+			}
+			desc = cc_byz_venice.3.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = military
+		10 = exterior
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Join Venice, as the empire did in 1351.
+	option = {
+		name = cc_byz_venice.3.a
+		trigger = { country_exists = c:GEN }
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_ven_genoese_war  value = yes }
+		add_country_modifier = { modifier = cc_byz_ven_anti_genoese_league  years = 10  mode = add_and_extend }
+		c:GEN = { add_opinion = { target = root  modifier = cc_byz_ven_wronged } }
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_courted }
+		custom_tooltip = cc_byz_ven_concord_plus2_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 2 } }
+	}
+
+	# Stay out of it. Galata is across the Horn.
+	option = {
+		name = cc_byz_venice.3.b
+		trigger = { country_exists = c:GEN }
+		ai_chance = { base = 40 }
+
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = { cc_byz_ven_add_leverage_effect = { value = 1 } }
+	}
+
+	# Side with Genoa.
+	option = {
+		name = cc_byz_venice.3.c
+		trigger = { country_exists = c:GEN }
+		ai_chance = { base = 20 }
+
+		set_variable = { name = cc_byz_mem_ven_sided_genoa  value = yes }
+		c:GEN = { add_opinion = { target = root  modifier = cc_byz_ven_sworn_friends } }
+		add_country_modifier = { modifier = cc_byz_reward_trade  years = 15  mode = add_and_extend }
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_wronged }
+		custom_tooltip = cc_byz_ven_concord_minus2_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = -2 } }
+	}
+
+	# No Genoa left to fight.
+	option = {
+		name = cc_byz_venice.3.d
+		trigger = { NOT = { country_exists = c:GEN } }
+		ai_chance = { base = 100 }
+
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .4  The sea league
+#############################################
+cc_byz_venice.4 = {
+	type = country_event
+	title = cc_byz_venice.4.title
+	desc = cc_byz_venice.4.desc
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Pay for galleys in the league's fleet.
+	option = {
+		name = cc_byz_venice.4.a
+		trigger = { gold >= 150 }
+		ai_chance = { base = 40 }
+
+		add_gold = -150
+		set_variable = { name = cc_byz_mem_ven_sea_league  value = yes }
+		add_country_modifier = { modifier = cc_byz_ven_sea_league  years = 15  mode = add_and_extend }
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	# An admiral of ours commands the league's squadron.
+	option = {
+		name = cc_byz_venice.4.b
+		trigger = { cc_byz_ven_admiral_minister_trigger = yes }
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_ven_sea_league  value = yes }
+		add_country_modifier = { modifier = cc_byz_ven_sea_league  years = 15  mode = add_and_extend }
+		add_prestige = prestige_weak_bonus
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+		}
+	}
+
+	# Decline. Our ships guard our own coasts.
+	option = {
+		name = cc_byz_venice.4.c
+		ai_chance = { base = 30 }
+
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_slighted }
+		custom_tooltip = cc_byz_ven_concord_minus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = -1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .5  Dalmatia
+#############################################
+cc_byz_venice.5 = {
+	type = country_event
+	title = cc_byz_venice.5.title
+	desc = cc_byz_venice.5.desc
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Back Venice's claim to the Dalmatian coast.
+	option = {
+		name = cc_byz_venice.5.a
+		ai_chance = { base = 40 }
+
+		c:HUN ?= { add_opinion = { target = root  modifier = cc_byz_ven_slighted } }
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	# A diplomat of ours mediates between Venice and the Hungarians.
+	option = {
+		name = cc_byz_venice.5.b
+		trigger = {
+			OR = {
+				cc_byz_ven_diplomat_minister_trigger = yes
+				ruler ?= { dip >= 70 }
+			}
+		}
+		ai_chance = { base = 50 }
+
+		add_prestige = prestige_mild_bonus
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+		}
+	}
+
+	# Dalmatia is not our quarrel.
+	option = {
+		name = cc_byz_venice.5.c
+		ai_chance = { base = 30 }
+
+		custom_tooltip = cc_byz_ven_concord_minus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = -1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .6  The mainland question
+#
+# With an exarch in Italy the question is his: he governs the land next to the lagoon and wants
+# more of it. Without one, it is Venice's own push onto the terraferma against the Empire.
+#############################################
+cc_byz_venice.6 = {
+	type = country_event
+	title = cc_byz_venice.6.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { cc_byz_ven_italian_exarch_trigger = yes }
+				desc = cc_byz_venice.6.desc_exarch
+			}
+			desc = cc_byz_venice.6.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_ven_stage_setup_effect = yes
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				capital.region = region:italy_region
+			}
+			save_scope_as = cc_ven_exarch
+		}
+	}
+
+	# --- With an exarch ---
+
+	# Restrain the exarch. Venice's land is not his to want.
+	option = {
+		name = cc_byz_venice.6.a
+		trigger = { exists = scope:cc_ven_exarch }
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_concord_plus2_tt
+		custom_tooltip = cc_byz_ven_exarch_restrained_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 2 }
+			change_variable = { name = cc_byz_exarch_appetite  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+			scope:cc_ven_exarch = {
+				if = {
+					limit = { has_variable = cc_byz_exarch_loyalty }
+					change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+					clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+				}
+			}
+		}
+	}
+
+	# Let the exarch press Venice. It reminds the lagoon whose neighbour it is.
+	option = {
+		name = cc_byz_venice.6.b
+		trigger = { exists = scope:cc_ven_exarch }
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_concord_minus2_tt
+		custom_tooltip = cc_byz_ven_leverage_plus2_tt
+		custom_tooltip = cc_byz_ven_exarch_unleashed_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = -2 }
+			cc_byz_ven_add_leverage_effect = { value = 2 }
+			change_variable = { name = cc_byz_exarch_appetite  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		}
+	}
+
+	# --- Without one ---
+
+	# Support Venice on the terraferma against the Empire's lords.
+	option = {
+		name = cc_byz_venice.6.c
+		trigger = { NOT = { exists = scope:cc_ven_exarch } }
+		ai_chance = { base = 60 }
+
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	# Venice's mainland is Venice's business.
+	option = {
+		name = cc_byz_venice.6.d
+		trigger = { NOT = { exists = scope:cc_ven_exarch } }
+		ai_chance = { base = 40 }
+
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = { cc_byz_ven_add_leverage_effect = { value = 1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .7  The Stato da Mar
+#
+# The Venetian ports in the Morea and the Aegean sit inside the empire's own reconquest. One
+# can be bought or swapped for trading rights, never taken: an AI Venice agrees at Concord 5 or
+# more; a human Venice decides in .20.
+#############################################
+cc_byz_venice.7 = {
+	type = country_event
+	title = cc_byz_venice.7.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { NOT = { exists = scope:cc_ven_port } }
+				desc = cc_byz_venice.7.desc_none
+			}
+			desc = cc_byz_venice.7.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = trading
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_ven_stage_setup_effect = yes
+		cc_byz_ven_save_port_effect = yes
+	}
+
+	# Offer to buy it.
+	option = {
+		name = cc_byz_venice.7.a
+		trigger = {
+			exists = scope:cc_ven_port
+			gold >= cc_byz_ven_port_price
+		}
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_ven_port_deal  value = 1 }
+		custom_tooltip = cc_byz_ven_port_buy_tt
+		cc_byz_ven_port_offer_effect = yes
+	}
+
+	# Offer trading rights in Romania for it.
+	option = {
+		name = cc_byz_venice.7.b
+		trigger = { exists = scope:cc_ven_port }
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_ven_port_deal  value = 2 }
+		custom_tooltip = cc_byz_ven_port_swap_tt
+		cc_byz_ven_port_offer_effect = yes
+	}
+
+	# Leave the Stato da Mar to Venice.
+	option = {
+		name = cc_byz_venice.7.c
+		trigger = { exists = scope:cc_ven_port }
+		ai_chance = { base = 30 }
+
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	# Venice holds nothing here to bargain over.
+	option = {
+		name = cc_byz_venice.7.d
+		trigger = { NOT = { exists = scope:cc_ven_port } }
+		ai_chance = { base = 100 }
+
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = { cc_byz_ven_add_leverage_effect = { value = 1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .20  (Venice) The port offer
+#############################################
+cc_byz_venice.20 = {
+	type = country_event
+	title = cc_byz_venice.20.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_ven_emperor = { var:cc_byz_ven_port_deal = 1 } }
+				desc = cc_byz_venice.20.desc_buy
+			}
+			desc = cc_byz_venice.20.desc_swap
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		exists = scope:cc_ven_emperor
+		exists = scope:cc_ven_port
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = location
+	}
+
+	option = {
+		name = cc_byz_venice.20.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_port_accept_tt
+		hidden_effect = {
+			scope:cc_ven_emperor = {
+				set_variable = { name = cc_byz_ven_answer  value = 1 }
+				trigger_event_non_silently = { id = cc_byz_venice.22 }
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_venice.20.b
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_port_refuse_tt
+		hidden_effect = {
+			scope:cc_ven_emperor = {
+				set_variable = { name = cc_byz_ven_answer  value = 0 }
+				trigger_event_non_silently = { id = cc_byz_venice.22 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .22  The port answer
+#
+# Fired by .20 (human Venice) or directly by cc_byz_ven_port_offer_effect (AI Venice). The deal
+# is applied here, in our scope.
+#############################################
+cc_byz_venice.22 = {
+	type = country_event
+	title = cc_byz_venice.22.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_ven_answer = 1 }
+				desc = cc_byz_venice.22.desc_yes
+			}
+			desc = cc_byz_venice.22.desc_no
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_ven_active
+		has_variable = cc_byz_ven_answer
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = location
+	}
+
+	immediate = {
+		cc_byz_ven_stage_setup_effect = yes
+		var:cc_byz_ven_port ?= { save_scope_as = cc_ven_port }
+	}
+
+	option = {
+		name = cc_byz_venice.22.a
+		trigger = { var:cc_byz_ven_answer = 1 }
+
+		cc_byz_ven_port_transfer_effect = yes
+	}
+
+	option = {
+		name = cc_byz_venice.22.b
+		trigger = { var:cc_byz_ven_answer = 0 }
+
+		custom_tooltip = cc_byz_ven_concord_minus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = -1 } }
+	}
+
+	after = {
+		hidden_effect = {
+			remove_variable = cc_byz_ven_answer
+			remove_variable = cc_byz_ven_port_deal
+			remove_variable = cc_byz_ven_port
+		}
+	}
+}
+
+
+#############################################
+# .8  The Emperor's vicariate
+#
+# The western emperor offers Venice an imperial vicariate, or, if it already sits in the
+# Empire, a larger say there. The answer is our old title: the doges were dukes from
+# Constantinople once.
+#############################################
+cc_byz_venice.8 = {
+	type = country_event
+	title = cc_byz_venice.8.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					c:VEN ?= {
+						io_exists = international_organization:hre
+						is_member_of_international_organization = international_organization:hre
+					}
+				}
+				desc = cc_byz_venice.8.desc_member
+			}
+			desc = cc_byz_venice.8.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Offer the doge the old title: dux and protosebastos, from Constantinople.
+	option = {
+		name = cc_byz_venice.8.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_ven_dux_offered  value = yes }
+		custom_tooltip = cc_byz_ven_dux_offered_tt
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = 1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+		}
+	}
+
+	# Outbid the Emperor with gold.
+	option = {
+		name = cc_byz_venice.8.b
+		trigger = { gold >= 200 }
+		ai_chance = { base = 30 }
+
+		add_gold = -200
+		set_variable = { name = cc_byz_mem_ven_dux_offered  value = yes }
+		custom_tooltip = cc_byz_ven_dux_offered_tt
+		custom_tooltip = cc_byz_ven_concord_plus2_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 2 } }
+	}
+
+	# Let Venice choose its emperor.
+	option = {
+		name = cc_byz_venice.8.c
+		ai_chance = { base = 20 }
+
+		custom_tooltip = cc_byz_ven_concord_minus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = -1 } }
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .9  St Mark's and the purple
+#
+# Venice's Roman inheritance, and the other threads read in one place: a union received pleases
+# Venice (+1), a union repudiated worries it (-1), a close Latin marriage helps (+1). Applied in
+# immediate and stated in the description. Bessarion left his library to St Mark's in 1468; an
+# emperor who has reopened the Academy has more to send.
+#############################################
+cc_byz_venice.9 = {
+	type = country_event
+	title = cc_byz_venice.9.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_union_stage
+					var:cc_byz_union_stage = 3
+				}
+				desc = cc_byz_venice.9.desc_union
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_union_stage
+					var:cc_byz_union_stage = 4
+				}
+				desc = cc_byz_venice.9.desc_repudiated
+			}
+			desc = cc_byz_venice.9.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_ven_stage_setup_effect = yes
+		if = {
+			limit = {
+				has_variable = cc_byz_union_stage
+				var:cc_byz_union_stage = 3
+			}
+			cc_byz_ven_add_concord_effect = { value = 1 }
+		}
+		else_if = {
+			limit = {
+				has_variable = cc_byz_union_stage
+				var:cc_byz_union_stage = 4
+			}
+			cc_byz_ven_add_concord_effect = { value = -1 }
+		}
+		if = {
+			limit = {
+				has_variable = cc_byz_lat_bond
+				var:cc_byz_lat_bond >= 7
+			}
+			cc_byz_ven_add_concord_effect = { value = 1 }
+		}
+	}
+
+	# Send manuscripts to the library of St Mark's, as Bessarion would.
+	option = {
+		name = cc_byz_venice.9.a
+		ai_chance = { base = 40 }
+
+		if = {
+			limit = { has_variable = cc_byz_acad_done }
+			custom_tooltip = cc_byz_ven_concord_plus2_tt
+			hidden_effect = { cc_byz_ven_add_concord_effect = { value = 2 } }
+		}
+		else = {
+			custom_tooltip = cc_byz_ven_concord_plus1_tt
+			hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	# Gold and enamel for the Pala d'Oro.
+	option = {
+		name = cc_byz_venice.9.b
+		trigger = { gold >= 150 }
+		ai_chance = { base = 30 }
+
+		add_gold = -150
+		cc_byz_ven_venice_opinion_effect = { modifier = cc_byz_ven_courted }
+		custom_tooltip = cc_byz_ven_concord_plus1_tt
+		hidden_effect = { cc_byz_ven_add_concord_effect = { value = 1 } }
+	}
+
+	# Ask that the doge's oath name the emperor again.
+	option = {
+		name = cc_byz_venice.9.c
+		ai_chance = { base = 30 }
+
+		custom_tooltip = cc_byz_ven_concord_minus1_tt
+		custom_tooltip = cc_byz_ven_leverage_plus1_tt
+		hidden_effect = {
+			cc_byz_ven_add_concord_effect = { value = -1 }
+			cc_byz_ven_add_leverage_effect = { value = 1 }
+		}
+	}
+
+	after = { hidden_effect = { cc_byz_ven_schedule_next_effect = { min = 4  max = 6 } } }
+}
+
+
+#############################################
+# .10  The climax
+#############################################
+cc_byz_venice.10 = {
+	type = country_event
+	title = cc_byz_venice.10.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { cc_byz_ven_concord_at_most_trigger = { VALUE = 2 } }
+				desc = cc_byz_venice.10.desc_rupture
+			}
+			triggered_desc = {
+				trigger = { cc_byz_ven_ducate_possible_trigger = yes }
+				desc = cc_byz_venice.10.desc_ducate
+			}
+			triggered_desc = {
+				trigger = { cc_byz_ven_concord_at_least_trigger = { VALUE = 5 } }
+				desc = cc_byz_venice.10.desc_alliance
+			}
+			desc = cc_byz_venice.10.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	# Propose the Ducate of Venetia.
+	option = {
+		name = cc_byz_venice.10.a
+		trigger = { cc_byz_ven_ducate_possible_trigger = yes }
+		ai_chance = { base = 60 }
+
+		set_variable = { name = cc_byz_ven_offer  value = 1 }
+		custom_tooltip = cc_byz_ven_ducate_tt
+		cc_byz_ven_proposal_effect = yes
+	}
+
+	# Propose a perpetual alliance.
+	option = {
+		name = cc_byz_venice.10.b
+		trigger = { cc_byz_ven_concord_at_least_trigger = { VALUE = 5 } }
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_ven_offer  value = 2 }
+		custom_tooltip = cc_byz_ven_alliance_tt
+		cc_byz_ven_proposal_effect = yes
+	}
+
+	# Keep the friendship as it stands.
+	option = {
+		name = cc_byz_venice.10.c
+		trigger = { cc_byz_ven_concord_at_least_trigger = { VALUE = 3 } }
+		ai_chance = { base = 10 }
+
+		cc_byz_ven_friendship_effect = yes
+	}
+
+	# --- Rupture ---
+
+	# Then the ports will be ours.
+	option = {
+		name = cc_byz_venice.10.d
+		trigger = { cc_byz_ven_concord_at_most_trigger = { VALUE = 2 } }
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_rupture_tt
+		cc_byz_ven_rupture_effect = yes
+	}
+
+	# Turn to Genoa.
+	option = {
+		name = cc_byz_venice.10.e
+		trigger = {
+			cc_byz_ven_concord_at_most_trigger = { VALUE = 2 }
+			country_exists = c:GEN
+		}
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_rupture_tt
+		c:GEN = { add_opinion = { target = root  modifier = cc_byz_ven_sworn_friends } }
+		add_country_modifier = { modifier = cc_byz_reward_trade  years = 25  mode = add_and_extend }
+		cc_byz_ven_rupture_effect = yes
+	}
+}
+
+
+#############################################
+# .25  (Venice) The proposal
+#############################################
+cc_byz_venice.25 = {
+	type = country_event
+	title = cc_byz_venice.25.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_ven_emperor = { var:cc_byz_ven_offer = 1 } }
+				desc = cc_byz_venice.25.desc_ducate
+			}
+			desc = cc_byz_venice.25.desc_alliance
+		}
+	}
+	outcome = neutral
+
+	trigger = { exists = scope:cc_ven_emperor }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_byz_venice.25.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_proposal_accept_tt
+		hidden_effect = {
+			scope:cc_ven_emperor = {
+				set_variable = { name = cc_byz_ven_answer  value = 1 }
+				trigger_event_non_silently = { id = cc_byz_venice.26 }
+			}
+		}
+	}
+
+	option = {
+		name = cc_byz_venice.25.b
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_ven_proposal_refuse_tt
+		hidden_effect = {
+			scope:cc_ven_emperor = {
+				set_variable = { name = cc_byz_ven_answer  value = 0 }
+				trigger_event_non_silently = { id = cc_byz_venice.26 }
+			}
+		}
+	}
+}
+
+
+#############################################
+# .26  The proposal answer
+#
+# Fired by .25 (human Venice) or by cc_byz_ven_proposal_effect (AI Venice). A refused Ducate
+# falls back to the alliance, since everything that earned the Ducate also earned that; a
+# refused alliance falls back to friendship.
+#############################################
+cc_byz_venice.26 = {
+	type = country_event
+	title = cc_byz_venice.26.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					var:cc_byz_ven_answer = 1
+					var:cc_byz_ven_offer = 1
+				}
+				desc = cc_byz_venice.26.desc_ducate
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_ven_answer = 1 }
+				desc = cc_byz_venice.26.desc_alliance
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_ven_offer = 1 }
+				desc = cc_byz_venice.26.desc_ducate_refused
+			}
+			desc = cc_byz_venice.26.desc_alliance_refused
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_ven_active
+		has_variable = cc_byz_ven_answer
+		has_variable = cc_byz_ven_offer
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = { cc_byz_ven_stage_setup_effect = yes }
+
+	option = {
+		name = cc_byz_venice.26.a
+		trigger = {
+			var:cc_byz_ven_answer = 1
+			var:cc_byz_ven_offer = 1
+		}
+		cc_byz_ven_ducate_effect = yes
+	}
+
+	option = {
+		name = cc_byz_venice.26.b
+		trigger = {
+			OR = {
+				AND = {
+					var:cc_byz_ven_answer = 1
+					var:cc_byz_ven_offer = 2
+				}
+				AND = {
+					var:cc_byz_ven_answer = 0
+					var:cc_byz_ven_offer = 1
+				}
+			}
+		}
+		cc_byz_ven_alliance_effect = yes
+	}
+
+	option = {
+		name = cc_byz_venice.26.c
+		trigger = {
+			var:cc_byz_ven_answer = 0
+			var:cc_byz_ven_offer = 2
+		}
+		cc_byz_ven_friendship_effect = yes
+	}
+}
+
+
+#############################################
+# .80  Router (hidden)
+#############################################
+cc_byz_venice.80 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	outcome = neutral
+	hidden = yes
+
+	trigger = {
+		has_variable = cc_byz_ven_active
+		has_variable = cc_byz_ven_stage
+	}
+
+	immediate = {
+		if = {
+			limit = { cc_byz_ven_valid_trigger = no }
+			trigger_event_non_silently = { id = cc_byz_venice.90 }
+		}
+		# At war with Venice: wait a year at a time, and close after ten.
+		else_if = {
+			limit = { cc_byz_ven_at_war_trigger = yes }
+			if = {
+				limit = { var:cc_byz_ven_war_years >= 10 }
+				trigger_event_non_silently = { id = cc_byz_venice.90 }
+			}
+			else = {
+				change_variable = { name = cc_byz_ven_war_years  add = 1 }
+				trigger_event_silently = { id = cc_byz_venice.80  years = 1 }
+			}
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 2 }
+			trigger_event_non_silently = { id = cc_byz_venice.2 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 3 }
+			trigger_event_non_silently = { id = cc_byz_venice.3 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 4 }
+			trigger_event_non_silently = { id = cc_byz_venice.4 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 5 }
+			trigger_event_non_silently = { id = cc_byz_venice.5 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 6 }
+			trigger_event_non_silently = { id = cc_byz_venice.6 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 7 }
+			trigger_event_non_silently = { id = cc_byz_venice.7 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 8 }
+			trigger_event_non_silently = { id = cc_byz_venice.8 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 9 }
+			trigger_event_non_silently = { id = cc_byz_venice.9 }
+		}
+		else_if = {
+			limit = { var:cc_byz_ven_stage = 10 }
+			trigger_event_non_silently = { id = cc_byz_venice.10 }
+		}
+	}
+}
+
+
+#############################################
+# .90  The question lapses
+#############################################
+cc_byz_venice.90 = {
+	type = country_event
+	title = cc_byz_venice.90.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { NOT = { country_exists = c:VEN } }
+				desc = cc_byz_venice.90.desc_gone
+			}
+			triggered_desc = {
+				trigger = { NOT = { owns = location:constantinople } }
+				desc = cc_byz_venice.90.desc_city
+			}
+			triggered_desc = {
+				trigger = { c:VEN ?= { is_subject = yes } }
+				desc = cc_byz_venice.90.desc_subject
+			}
+			desc = cc_byz_venice.90.desc_war
+		}
+	}
+	outcome = neutral
+
+	trigger = { has_variable = cc_byz_ven_active }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_byz_venice.90.a
+		set_variable = { name = cc_byz_mem_ven_lapsed  value = yes }
+		cc_byz_ven_close_effect = yes
+	}
+}

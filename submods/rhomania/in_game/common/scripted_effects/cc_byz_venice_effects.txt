@@ -1,0 +1,324 @@
+﻿# The Serenissima Question: state, scheduling and outcomes. See events/cc_byz_venice.txt.
+#
+# All effects run in BYZANTINE country scope unless stated. Venice is c:VEN.
+#
+# State on Byzantium:
+#   cc_byz_ven_active       the chain is running
+#   cc_byz_ven_done         the chain has resolved (once per campaign)
+#   cc_byz_ven_stage        1..10, the stage the router fires next
+#   cc_byz_ven_concord      0..10, how far Venice trusts us. Starts at 3. Decides the ending.
+#   cc_byz_ven_leverage     -5..5, who depends on whom. Positive: Venice needs us. The Ducate
+#                           needs +2; debts, pawned jewels and conceded privileges lower it.
+#   cc_byz_ven_war_years    years the chain has been held by a war with Venice. Ten closes it.
+#   cc_byz_ven_port_deal    the deal on the table at .7: 1 purchase, 2 trading rights
+#   cc_byz_ven_offer        the proposal at .10: 1 ducate, 2 alliance
+#   cc_byz_ven_port         the port on the table at .7 (a location), kept as a variable so it
+#                           survives the round trip through a human Venice's answer (.20, .22)
+#   cc_byz_ven_answer       a human Venice's answer: 1 yes, 0 no
+#
+# A HUMAN VENICE ANSWERS IN ITS OWN EVENT (.20 the port, .25 the climax), which only records the
+# answer and fires our notification (.22, .26). The outcome is applied THERE, in our scope,
+# because these effects say root and mean Byzantium.
+#
+# Memory variables:
+#   cc_byz_mem_ven_privileges_full      the 1082 terms were renewed in full
+#   cc_byz_mem_ven_privileges_revoked   the exemption was revoked
+#   cc_byz_mem_ven_genoese_war          we joined Venice against Genoa
+#   cc_byz_mem_ven_sided_genoa          we sided with Genoa
+#   cc_byz_mem_ven_sea_league           we joined the sea league
+#   cc_byz_mem_ven_dux_offered          the old ducal title was offered against the Empire's
+#   cc_byz_mem_ven_port_gained          a Stato da Mar port came to us by treaty
+#   cc_byz_mem_ven_ducate / _alliance / _friendship / _rupture   the ending
+#   cc_byz_mem_ven_lapsed               the chain closed early
+
+
+cc_byz_ven_open_effect = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_byz_ven_active }
+			NOT = { has_variable = cc_byz_ven_done }
+			cc_byz_ven_valid_trigger = yes
+		}
+		cc_byz_init_debt_scores_effect = yes
+		set_variable = { name = cc_byz_ven_active  value = yes }
+		set_variable = { name = cc_byz_ven_stage  value = 1 }
+		set_variable = { name = cc_byz_ven_concord  value = 3 }
+		set_variable = { name = cc_byz_ven_leverage  value = 0 }
+		set_variable = { name = cc_byz_ven_war_years  value = 0 }
+		# The starting balance. A great power has something Venice needs; jewels in Venetian
+		# pawn and a fisc in its creditors' hands mean the opposite.
+		if = {
+			limit = { is_great_power = yes }
+			change_variable = { name = cc_byz_ven_leverage  add = 1 }
+		}
+		if = {
+			limit = { cc_byz_ven_jewels_pawned_trigger = yes }
+			change_variable = { name = cc_byz_ven_leverage  add = -1 }
+		}
+		if = {
+			limit = { var:cc_byz_creditor_grip >= 3 }
+			change_variable = { name = cc_byz_ven_leverage  add = -1 }
+		}
+		trigger_event_non_silently = { id = cc_byz_venice.1 }
+	}
+}
+
+# Called first by every visible stage on our side.
+cc_byz_ven_stage_setup_effect = {
+	cc_byz_pulse_stamp_effect = yes
+	cc_byz_init_debt_scores_effect = yes
+	save_scope_as = cc_ven_emperor
+	c:VEN ?= { save_scope_as = cc_ven }
+	c:GEN ?= { save_scope_as = cc_ven_genoa }
+}
+
+cc_byz_ven_add_concord_effect = {
+	change_variable = { name = cc_byz_ven_concord  add = $value$ }
+	clamp_variable = { name = cc_byz_ven_concord  min = 0  max = 10 }
+}
+
+cc_byz_ven_add_leverage_effect = {
+	change_variable = { name = cc_byz_ven_leverage  add = $value$ }
+	clamp_variable = { name = cc_byz_ven_leverage  min = -5  max = 5 }
+}
+
+# The shared Italian bloc score (pillar 6b), -5..5.
+cc_byz_ven_add_italian_standing_effect = {
+	change_variable = { name = cc_byz_italian_standing  add = $value$ }
+	clamp_variable = { name = cc_byz_italian_standing  min = -5  max = 5 }
+}
+
+cc_byz_ven_add_creditor_grip_effect = {
+	change_variable = { name = cc_byz_creditor_grip  add = $value$ }
+	clamp_variable = { name = cc_byz_creditor_grip  min = 0  max = 5 }
+}
+
+cc_byz_ven_venice_opinion_effect = {
+	c:VEN ?= {
+		add_opinion = {
+			target = root
+			modifier = $modifier$
+		}
+	}
+}
+
+cc_byz_ven_schedule_next_effect = {
+	change_variable = { name = cc_byz_ven_stage  add = 1 }
+	trigger_event_silently = { id = cc_byz_venice.80  years = { $min$ $max$ } }
+}
+
+cc_byz_ven_close_effect = {
+	remove_variable = cc_byz_ven_active
+	remove_variable = cc_byz_ven_stage
+	remove_variable = cc_byz_ven_war_years
+	remove_variable = cc_byz_ven_port_deal
+	remove_variable = cc_byz_ven_offer
+	remove_variable = cc_byz_ven_port
+	remove_variable = cc_byz_ven_answer
+	set_variable = { name = cc_byz_ven_done  value = yes }
+}
+
+
+###############################################################################
+# THE STATO DA MAR (.7)
+###############################################################################
+
+# The most developed Venetian port in the Morea or the Aegean, as scope:cc_ven_port.
+cc_byz_ven_save_port_effect = {
+	c:VEN ?= {
+		ordered_owned_location = {
+			limit = { cc_byz_ven_port_candidate_trigger = yes }
+			order_by = development
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_ven_port
+		}
+	}
+	if = {
+		limit = { exists = scope:cc_ven_port }
+		set_variable = { name = cc_byz_ven_port  value = scope:cc_ven_port }
+	}
+}
+
+# The deal goes through. Run in OUR scope with scope:cc_ven_port and scope:cc_ven saved.
+cc_byz_ven_port_transfer_effect = {
+	var:cc_byz_ven_port ?= { save_scope_as = cc_ven_port }
+	set_variable = { name = cc_byz_mem_ven_port_gained  value = yes }
+	if = {
+		limit = { var:cc_byz_ven_port_deal = 1 }
+		add_gold = { value = cc_byz_ven_port_price  multiply = -1 }
+		scope:cc_ven = { add_gold = cc_byz_ven_port_price }
+	}
+	else = {
+		scope:cc_ven = {
+			add_country_modifier = {
+				modifier = cc_byz_ven_romania_rights
+				years = 30
+				mode = add_and_extend
+			}
+		}
+		cc_byz_ven_add_leverage_effect = { value = -1 }
+	}
+	scope:cc_ven_port = { change_location_owner = root }
+}
+
+
+###############################################################################
+# ENDINGS (.10)
+###############################################################################
+
+# Keep Venice out of the Empire. Vanilla's own join blocker, gag_left_hre_guelph_victory, is the
+# only thing hre.txt's can_join_trigger lets a script set (hre.txt:376), and the Guelph victory
+# sets it for exactly this purpose. Without it the HRE's monthly_effect would re-add any member
+# whose capital sits on imperial land. If Venice has already joined, take it out first.
+cc_byz_ven_keep_out_of_hre_effect = {
+	c:VEN ?= {
+		set_variable = { name = gag_left_hre_guelph_victory  value = yes  years = 100 }
+		if = {
+			limit = {
+				io_exists = international_organization:hre
+				is_member_of_international_organization = international_organization:hre
+			}
+			international_organization:hre = {
+				remove_country_from_international_organization = prev
+			}
+		}
+	}
+}
+
+cc_byz_ven_ducate_effect = {
+	set_variable = { name = cc_byz_mem_ven_ducate  value = yes }
+	add_prestige = prestige_severe_bonus
+	c:VEN = {
+		make_subject_of = {
+			target = root
+			type = subject_type:cc_byz_venetian_ducate
+		}
+	}
+	cc_byz_ven_keep_out_of_hre_effect = yes
+	cc_byz_ven_close_effect = yes
+}
+
+cc_byz_ven_alliance_effect = {
+	set_variable = { name = cc_byz_mem_ven_alliance  value = yes }
+	add_prestige = prestige_mild_bonus
+	if = {
+		limit = {
+			NOT = {
+				has_mutual_scripted_relation = {
+					type = relation_type:alliance
+					target = c:VEN
+				}
+			}
+		}
+		create_relation = {
+			first = root
+			second = c:VEN
+			type = relation_type:alliance
+		}
+	}
+	add_country_modifier = { modifier = cc_byz_ven_perpetual_alliance  years = -1  mode = add }
+	c:VEN = {
+		add_country_modifier = { modifier = cc_byz_ven_romania_rights  years = -1  mode = add }
+		add_opinion = { target = root  modifier = cc_byz_ven_sworn_friends }
+	}
+	if = {
+		limit = { has_variable = cc_byz_mem_ven_dux_offered }
+		cc_byz_ven_keep_out_of_hre_effect = yes
+	}
+	cc_byz_ven_close_effect = yes
+}
+
+cc_byz_ven_friendship_effect = {
+	set_variable = { name = cc_byz_mem_ven_friendship  value = yes }
+	add_country_modifier = { modifier = cc_byz_ven_good_relations  years = 25  mode = add_and_extend }
+	c:VEN ?= { add_opinion = { target = root  modifier = cc_byz_ven_courted } }
+	cc_byz_ven_close_effect = yes
+}
+
+# Rupture. A claim on the Stato da Mar ports for us, and the opinion on both sides.
+cc_byz_ven_rupture_effect = {
+	set_variable = { name = cc_byz_mem_ven_rupture  value = yes }
+	c:VEN ?= {
+		add_opinion = { target = root  modifier = cc_byz_ven_broken_faith }
+	}
+	add_opinion = { target = c:VEN  modifier = cc_byz_ven_broken_faith }
+	add_casus_belli = {
+		target = c:VEN
+		type = casus_belli:cc_byz_cb_stato_da_mar
+		years = 25
+	}
+	cc_byz_ven_close_effect = yes
+}
+
+
+###############################################################################
+# PUTTING AN OFFER TO VENICE
+###############################################################################
+
+# .7. A human Venice answers in .20; an AI Venice agrees at Concord 5 or more. Either way the
+# answer comes back to us in .22.
+cc_byz_ven_port_offer_effect = {
+	if = {
+		limit = { cc_byz_ven_human_trigger = yes }
+		custom_tooltip = cc_byz_ven_venice_decides_tt
+		hidden_effect = {
+			c:VEN = { trigger_event_non_silently = { id = cc_byz_venice.20 } }
+		}
+	}
+	else = {
+		custom_tooltip = cc_byz_ven_port_ai_rule_tt
+		hidden_effect = {
+			if = {
+				limit = { cc_byz_ven_concord_at_least_trigger = { VALUE = 5 } }
+				set_variable = { name = cc_byz_ven_answer  value = 1 }
+			}
+			else = {
+				set_variable = { name = cc_byz_ven_answer  value = 0 }
+			}
+			trigger_event_non_silently = { id = cc_byz_venice.22  days = 30 }
+		}
+	}
+}
+
+# .10. A human Venice answers in .25. An AI Venice always takes the alliance; the Ducate is a
+# roll that starts even and improves with Concord 9+ and Leverage 4+. The answer comes back to
+# us in .26.
+cc_byz_ven_proposal_effect = {
+	if = {
+		limit = { cc_byz_ven_human_trigger = yes }
+		custom_tooltip = cc_byz_ven_venice_decides_tt
+		hidden_effect = {
+			c:VEN = { trigger_event_non_silently = { id = cc_byz_venice.25 } }
+		}
+	}
+	else_if = {
+		limit = { var:cc_byz_ven_offer = 1 }
+		custom_tooltip = cc_byz_ven_ducate_ai_rule_tt
+		hidden_effect = {
+			random_list = {
+				50 = {
+					modifier = {
+						factor = 1.5
+						cc_byz_ven_concord_at_least_trigger = { VALUE = 9 }
+					}
+					modifier = {
+						factor = 1.5
+						cc_byz_ven_leverage_at_least_trigger = { VALUE = 4 }
+					}
+					set_variable = { name = cc_byz_ven_answer  value = 1 }
+				}
+				50 = {
+					set_variable = { name = cc_byz_ven_answer  value = 0 }
+				}
+			}
+			trigger_event_non_silently = { id = cc_byz_venice.26  days = 30 }
+		}
+	}
+	else = {
+		hidden_effect = {
+			set_variable = { name = cc_byz_ven_answer  value = 1 }
+			trigger_event_non_silently = { id = cc_byz_venice.26  days = 30 }
+		}
+	}
+}

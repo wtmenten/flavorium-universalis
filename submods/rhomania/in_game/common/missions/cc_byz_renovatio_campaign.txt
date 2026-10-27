@@ -1054,6 +1054,10 @@ cc_byz_renovatio_campaign = {
 	}
 
 	# ---- FORK 1: Venice or Genoa ----
+	#
+	# The Venetian side opens the Serenissima Question (events/cc_byz_venice.txt), a ten-stage
+	# chain over about fifty years that can end in a perpetual alliance, Venice as a client
+	# Ducate, Venice kept out of the HRE, or a rupture. The Genoese side stays a plain task.
 
 	cc_byz_task_venetian_alliance = {
 		icon = cc_byz_mission_trade
@@ -1062,12 +1066,19 @@ cc_byz_renovatio_campaign = {
 		bypass = { mission_task_completed = mission_task:cc_byz_task_genoese_compact }
 		enabled = {
 			c:VEN ?= { opinion = { target = root  value >= 100 } }
+			custom_tooltip = {
+				text = cc_byz_ven_task_free_tt
+				cc_byz_ven_valid_trigger = yes
+				cc_byz_ven_at_war_trigger = no
+			}
 		}
 		duration = 0
 		on_persistent_completion = {
 			add_gold = 200
 			add_country_modifier = { modifier = cc_byz_reward_naval  years = 25  mode = add_and_extend }
 			c:GEN ?= { add_opinion = { target = root  modifier = cc_byz_rival_privilege_granted } }
+			custom_tooltip = cc_byz_ven_opens_chain_tt
+			hidden_effect = { cc_byz_ven_open_effect = yes }
 		}
 	}
 

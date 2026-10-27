@@ -276,6 +276,44 @@ The **No Second Emperor** mission task now completes when Trebizond is our subje
 
 ---
 
+## A Latin marriage
+
+The **Latin Bride** mission task now asks for more than any royal marriage with a Catholic court. Our ruler or heir must be married to the ruler or heir of a Catholic great power, so the children of the marriage stand in line for two crowns. Completing it opens **The Latin Empress** (new in 0.4), a chain of about a decade with that court as the partner.
+
+The chain has two branches, depending on which way the bride travelled. If their princess came to Constantinople, the questions are the ones the Komnenian emperors faced: whether she takes an Orthodox name or keeps a Latin chapel in the palace, and what to do with the company of knights her family sends. The knights are cheap at first. Five to eight years later their captain presents the account, and an emperor who will not pay finds out what the Catalans did in Thrace. If our princess went west instead, the first question is whether she joins the Roman Church, and the second is what she takes with her: scholars and manuscripts, the ceremonial of the Sacred Palace, or a habit of writing home that the palace reads as intelligence.
+
+Both branches then share three stages: the in-laws' merchants asking for a quarter and the terms Venice got in 1082, a letter from the Pope that reads where the union arc stands, and a crusade proposal against the strongest Muslim neighbour. The crusade waits while either court is at war. Choices build a **bond** score, and the settlement ten years on is tiered by it.
+
+The chain closes early if the partner stops being a Catholic great power, goes to war with us, or if the couple die or leave the line of succession. It does not create a union of crowns itself. If the couple's line inherits both thrones, vanilla's succession rules do that.
+
+---
+
+## Venice
+
+Venice was a Roman province before it was a republic. Its first doges held their title from Constantinople, St Mark's was built on the plan of a Constantinopolitan church, and in 1204 Venice sacked the city. The **Venetian Alliance** task used to be a gold reward and a naval modifier. It now opens **The Serenissima Question** (new in 0.4), ten stages over about fifty years.
+
+The stages follow the late medieval relationship: renewing or revoking the 1082 customs exemption, Venetian loans and the crown jewels still in pawn, the Genoese war of 1351, a sea league against the Turks, Hungary pressing on Dalmatia, and the Venetian push onto the mainland. If an exarch governs Italy, that question is his, and restraining him costs his loyalty. One stage offers to buy back a Venetian port in the Morea or the Aegean, or trade rights in our markets for it. Another sets the doge's old ducal title against a vicariate from the western emperor. Genoa is the alternative partner throughout, and siding with it costs ground with Venice.
+
+Two scores decide the ending. **Concord** is how far Venice trusts us; **Leverage** is which of us needs the other more. At the top, Venice can become the **Ducate of Venetia**, a light subject that keeps its republic, fleet, colonies and wars, pays a small tribute, lets our merchants trade free of its tariffs, and cannot be annexed. Below that is a perpetual alliance, then a plain friendship. At the bottom is a rupture and a war claim on the Stato da Mar ports. Both of the good endings can also keep Venice out of the Holy Roman Empire, using vanilla's own block on joining it. A human Venice decides the port deal and the final proposal for itself.
+
+---
+
+## The Academy
+
+The **Academy Reopened** task now needs five universities as well as Constantinople or Athens, and opens a chain of six stages over six to ten years (new in 0.4). Three parties want the appointment: the Latinophrones who read Aquinas in Demetrios Kydones' translation, the Palamite monks, and Gemistos Plethon's circle from Mistra. Choices then decide which faculties open, what the library translates, how to answer the Patriarch, and whether one of your Court Ledger schools takes part in a public disputation. Ministers with scholarly, legal, military or theological traits open extra options at each stage.
+
+The chain ends in a charter. You get one pick, plus one if the Church was reconciled and one if your school won the disputation. Each reward was unlocked by an earlier choice and some have their own requirement:
+
+- **Imperial Academy:** a new policy for Elite Education.
+- **Literate Universities:** higher literacy caps for nobles and burghers at every university you own, including ones built later.
+- **Western Learning:** faster institution growth at every university.
+- **The Tactica Taught:** military tactics scaling with your university count, up to 20.
+- **Faculty of Law** and **Faculty of Theology:** country modifiers. The theology faculty's character depends on who won the Academy.
+
+The winning party also pulls the Latinitas/Rhomanismos slider for twenty years. The task used to raise the question of the old gods on completion. Now only an Academy that Plethon's circle won does that.
+
+---
+
 ## Bureaucracies, and what funding them means
 
 The eleven Byzantine bureaucracies are now assigned to the Taxis/Dynatoi axis, so what you fund shapes what your state becomes. The bureaux that govern around the magnates drift you toward Taxis; the ones that govern through them drift you toward Dynatoi.
