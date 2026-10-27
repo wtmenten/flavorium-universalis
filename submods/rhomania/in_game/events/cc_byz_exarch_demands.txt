@@ -12,7 +12,8 @@
 #   2. Appetite and loyalty are genuinely different things. An exarch can be perfectly loyal
 #      and still want the Romagna, and a resentful one can want nothing.
 #
-# So this owns cc_byz_exarch_appetite (0..5) and touches loyalty only lightly, by one point,
+# So this owns cc_byz_exarch_appetite (0..5, on each exarchate since the West panel rework; see
+# scripted_effects/cc_byz_west_prefecture_effects.txt) and touches loyalty only lightly, by one point,
 # and only when the emperor's answer is unusually generous or unusually blunt.
 #
 # ENTRY CONDITION. Fires only while the empire still holds Italian territory directly. Once
@@ -50,7 +51,7 @@ cc_byz_demand.1 = {
 				desc = cc_byz_demand.1.desc_after_seizure
 			}
 			triggered_desc = {
-				trigger = { var:cc_byz_exarch_appetite >= 3 }
+				trigger = { scope:cc_byz_exarch ?= { cc_byz_exarch_appetite_at_least_trigger = { VALUE = 3 } } }
 				desc = cc_byz_demand.1.desc_persistent
 			}
 			triggered_desc = {
@@ -108,8 +109,7 @@ cc_byz_demand.1 = {
 		name = cc_byz_demand.1.a
 		ai_chance = { base = 45 }
 
-		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
-		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = 1 }
 		scope:cc_byz_exarch ?= {
 			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
@@ -137,8 +137,7 @@ cc_byz_demand.1 = {
 			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
-		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
-		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = 1 }
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_move_to_right
@@ -163,8 +162,7 @@ cc_byz_demand.1 = {
 			}
 		}
 
-		change_variable = { name = cc_byz_exarch_appetite  add = -1 }
-		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = -1 }
 		add_prestige = prestige_weak_bonus
 	}
 
@@ -187,8 +185,7 @@ cc_byz_demand.1 = {
 			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
-		change_variable = { name = cc_byz_exarch_appetite  add = -1 }
-		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = -1 }
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_minor_move_to_left
@@ -198,7 +195,7 @@ cc_byz_demand.1 = {
 	after = {
 		hidden_effect = {
 			if = {
-				limit = { var:cc_byz_exarch_appetite >= 3 }
+				limit = { scope:cc_byz_exarch ?= { cc_byz_exarch_appetite_at_least_trigger = { VALUE = 3 } } }
 				trigger_event_silently = { id = cc_byz_demand.2  years = 5 }
 			}
 		}
@@ -232,11 +229,11 @@ cc_byz_demand.2 = {
 		# GUARDED READ. has_variable beside a var: does NOT stop the var: being
 		# evaluated; every trigger in a block is evaluated, so an unset variable errors
 		# regardless. trigger_if is the idiom (banish_character.txt:9).
-		trigger_if = {
-			limit = { has_variable = cc_byz_exarch_appetite }
-			var:cc_byz_exarch_appetite >= 3
+		# Appetite is per exarch: SOME exarch has pressed hard enough to be refused twice.
+		any_subject = {
+			has_variable = cc_byz_is_exarchate
+			cc_byz_exarch_appetite_at_least_trigger = { VALUE = 3 }
 		}
-		trigger_else = { always = no }
 	}
 
 	illustration_tags = {
@@ -248,7 +245,10 @@ cc_byz_demand.2 = {
 		cc_byz_init_exarch_scores_effect = yes
 		cc_byz_init_debt_scores_effect = yes
 		random_subject = {
-			limit = { has_variable = cc_byz_is_exarchate }
+			limit = {
+				has_variable = cc_byz_is_exarchate
+				cc_byz_exarch_appetite_at_least_trigger = { VALUE = 3 }
+			}
 			save_scope_as = cc_byz_exarch
 		}
 		set_variable = { name = cc_byz_mem_refused_twice  value = yes }
@@ -272,7 +272,7 @@ cc_byz_demand.2 = {
 			change_variable = { name = cc_byz_exarch_loyalty  add = 2 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
-		set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		cc_byz_exarch_reset_appetite_effect = { EXARCH = scope:cc_byz_exarch }
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_large_move_to_right
@@ -311,7 +311,7 @@ cc_byz_demand.2 = {
 			}
 		}
 
-		set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		cc_byz_exarch_reset_appetite_effect = { EXARCH = scope:cc_byz_exarch }
 		scope:cc_byz_exarch ?= {
 			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
@@ -328,7 +328,7 @@ cc_byz_demand.2 = {
 		hidden_effect = {
 			if = {
 				limit = {
-					var:cc_byz_exarch_appetite >= 4
+					scope:cc_byz_exarch ?= { cc_byz_exarch_appetite_at_least_trigger = { VALUE = 4 } }
 					scope:cc_byz_exarch ?= { var:cc_byz_exarch_loyalty <= -2 }
 				}
 				trigger_event_silently = { id = cc_byz_demand.3  years = 4 }
@@ -419,7 +419,6 @@ cc_byz_demand.3 = {
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
 		add_legitimacy = legitimacy_mild_bonus
-		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
-		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = 1 }
 	}
 }

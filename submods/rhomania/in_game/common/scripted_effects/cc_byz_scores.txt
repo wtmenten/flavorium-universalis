@@ -107,7 +107,10 @@ cc_byz_init_bureau_scores_effect = {
 # thread fires on the overlord and reaches them through a saved scope, so initialising them
 # from the overlord's scope here would create a second, unrelated pair of variables on the
 # wrong country.
-#   cc_byz_exarch_appetite  0..5   how much more of Italy the exarch thinks should be his.
+#   cc_byz_exarch_appetite  0..5   how much more of his province the exarch thinks should be
+#                                  his. NOW ON EACH EXARCHATE, not here: see
+#                                  cc_byz_west_prefecture_effects.txt. Kept in this note for
+#                                  the history; no longer initialised on the overlord.
 #                                  Owned by the demand thread and deliberately NOT the same
 #                                  score as cc_byz_exarch_loyalty: an exarch can be perfectly
 #                                  loyal and still want the Romagna, and a resentful one can
@@ -119,14 +122,6 @@ cc_byz_init_exarch_scores_effect = {
 		limit = { NOT = { has_variable = cc_byz_papal_standing } }
 		set_variable = {
 			name = cc_byz_papal_standing
-			value = 0
-		}
-	}
-
-	if = {
-		limit = { NOT = { has_variable = cc_byz_exarch_appetite } }
-		set_variable = {
-			name = cc_byz_exarch_appetite
 			value = 0
 		}
 	}

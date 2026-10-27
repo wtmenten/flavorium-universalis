@@ -4,7 +4,8 @@
 #
 #   .1    the prefectures constituted     fired by cc_byz_the_west's on_start
 #   .10   the consistory convened         fired by cc_byz_io_convene_consistory
-#   .20   the recall summons              fired by cc_byz_west_recall_exarch, and it can fail
+#   .20   the recall summons              fired by cc_byz_west_pf_recall_<prefecture>, and it can fail
+#   .60   an exarch dies                  from on_ruler_death_delayed: confirm the son or send a new man
 #   .30   dissolving a prefecture         fired by cc_byz_io_dissolve_prefecture
 #   .35   the warning                     fired by cc_byz_west_signal_effect, with the modifier
 #   .40   the prefects rise               the civil war flashpoint
@@ -186,9 +187,19 @@ cc_byz_west.20 = {
 	immediate = {
 		cc_byz_init_exarch_scores_effect = yes
 
-		random_subject = {
-			limit = { has_variable = cc_byz_is_exarchate }
-			save_scope_as = cc_byz_recalled_exarch
+		# The per-prefecture recall names its man (cc_byz_west_pf_recall_effect); anything else
+		# that fires this falls back to picking one.
+		if = {
+			limit = { has_variable = cc_byz_west_recall_target }
+			var:cc_byz_west_recall_target ?= { save_scope_as = cc_byz_recalled_exarch }
+			remove_variable = cc_byz_west_recall_target
+		}
+		if = {
+			limit = { NOT = { exists = scope:cc_byz_recalled_exarch } }
+			random_subject = {
+				limit = { has_variable = cc_byz_is_exarchate }
+				save_scope_as = cc_byz_recalled_exarch
+			}
 		}
 
 		if = {
@@ -216,9 +227,11 @@ cc_byz_west.20 = {
 							trigger_else = { always = no }
 						}
 					}
+					# An exarch whose son was confirmed holds the office as family property and is
+					# slower to come. Per exarch now that confirmation is per prefecture.
 					modifier = {
 						factor = 0.6
-						has_variable = cc_byz_mem_west_hereditary
+						scope:cc_byz_recalled_exarch = { has_variable = cc_byz_exarch_hereditary }
 					}
 
 					set_variable = { name = cc_byz_mem_west_obeyed  value = yes }
@@ -1087,5 +1100,117 @@ cc_byz_west.93 = {
 			limit = { has_variable = cc_byz_mem_africa_coast }
 			add_country_modifier = { modifier = cc_byz_reward_trade  years = 25  mode = add_and_extend }
 		}
+	}
+}
+
+
+#############################################
+# .60  An exarch dies
+#
+# From on_ruler_death_delayed (on_action/cc_byz_exarchate.txt), fired on the overlord with
+# scope:cc_byz_exarch. By the time it fires the exarchate's own heir has already succeeded, so
+# the question is whether the empire lets that stand.
+#
+# Confirming the heir makes the office hereditary in that family, as the per-prefecture
+# confirm-son action does. Sending a new man seats one of the two ablest loyal courtiers with
+# set_new_ruler, the effect the appointment uses: grip rises, the exarch's loyalty starts again
+# from nothing, and the province may prefer the son. Overriding a confirmed right costs more.
+#############################################
+cc_byz_west.60 = {
+	type = country_event
+	title = cc_byz_west.60.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { scope:cc_byz_exarch ?= { has_variable = cc_byz_exarch_hereditary } }
+				desc = cc_byz_west.60.desc_hereditary
+			}
+			desc = cc_byz_west.60.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		exists = scope:cc_byz_exarch
+		scope:cc_byz_exarch = { has_variable = cc_byz_is_exarchate }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		scope:cc_byz_exarch.ruler ?= { save_scope_as = cc_byz_succ_heir }
+		ordered_character = {
+			limit = { cc_byz_west_succession_candidate_trigger = yes }
+			order_by = total_abilities
+			position = 0
+			check_range_bounds = no
+			save_scope_as = cc_byz_succ_cand_1
+		}
+		ordered_character = {
+			limit = { cc_byz_west_succession_candidate_trigger = yes }
+			order_by = total_abilities
+			position = 1
+			check_range_bounds = no
+			save_scope_as = cc_byz_succ_cand_2
+		}
+	}
+
+	# Confirm the heir in his father's office.
+	option = {
+		name = cc_byz_west.60.a
+		trigger = { scope:cc_byz_exarch = { NOT = { has_variable = cc_byz_exarch_hereditary } } }
+		ai_chance = { base = 60 }
+
+		set_variable = { name = cc_byz_mem_west_hereditary  value = yes }
+		scope:cc_byz_exarch = {
+			set_variable = { name = cc_byz_exarch_hereditary  value = yes }
+			cc_byz_exarch_add_loyalty_effect = { VALUE = 2 }
+		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+		cc_byz_west_autonomy_up_effect = yes
+	}
+
+	# The office passes in the family, as was agreed.
+	option = {
+		name = cc_byz_west.60.b
+		trigger = { scope:cc_byz_exarch = { has_variable = cc_byz_exarch_hereditary } }
+		ai_chance = { base = 70 }
+
+		scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
+	}
+
+	# Send a new man from the capital.
+	option = {
+		name = cc_byz_west.60.c
+		trigger = { exists = scope:cc_byz_succ_cand_1 }
+		ai_chance = { base = 25 }
+
+		cc_byz_west_send_new_exarch_effect = { CANDIDATE = scope:cc_byz_succ_cand_1 }
+	}
+
+	option = {
+		name = cc_byz_west.60.d
+		trigger = { exists = scope:cc_byz_succ_cand_2 }
+		ai_chance = { base = 10 }
+
+		cc_byz_west_send_new_exarch_effect = { CANDIDATE = scope:cc_byz_succ_cand_2 }
+	}
+
+	# Let the consistory name him. Only while it sits.
+	option = {
+		name = cc_byz_west.60.e
+		trigger = { has_variable = cc_byz_west_convened }
+		ai_chance = { base = 10 }
+
+		scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 3 }
+		cc_byz_west_autonomy_up_effect = yes
+	}
+
+	after = {
+		hidden_effect = { cc_byz_west_publish_effect = yes }
 	}
 }

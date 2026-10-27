@@ -745,7 +745,8 @@ Path: `gfx/interface/icons/modifier_types/<key>.dds`  ·  64x64  ·  1:1  ·  BC
 Path: `icons/situations/<key>.dds` + `illustrations/situation/<key>.dds`  ·  128x128 / 1080x440  ·  1:1 / 27:11  ·  BC3 / BC1
 
 `cc_cabinet_court`, `cc_subject_bonds`, `cc_byz_mamluk_confrontation` and `cc_byz_the_west`
-now have their 1080x440 backgrounds. `cc_byz_the_west` still wants a 128x128 header icon.
+now have their 1080x440 backgrounds. `cc_byz_the_west` also has its header icon, a straight
+copy of vanilla's `diplomatic_actions/lat_reintegrate_province.dds` (already 128x128 BC3, 8 mips).
 `cc_balance_of_power` is complete; `cc_invasion_mexico` has both files but its background is
 the malformed one above (1 mip, 1280x720 rather than 1080x440).
 

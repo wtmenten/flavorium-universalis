@@ -1,0 +1,52 @@
+﻿# Per-prefecture triggers for the West panel and its actions.
+#
+# The four prefectures are a fixed set, keyed italy, africa, spania, gaul, matching the
+# cc_byz_exarch_in_<key>_trigger family in cc_byz_west_triggers.txt. The panel's per-prefecture
+# buttons are generated copies (tools/generate_west_panel.py), one per prefecture, because a GUI
+# button cannot pass a country to an action.
+
+# Subject scope. This exarchate's own appetite (0..5) is at least VALUE. Guarded: unset reads
+# as failing.
+cc_byz_exarch_appetite_at_least_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_exarch_appetite }
+		var:cc_byz_exarch_appetite >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+# Subject scope. Loyalty at least VALUE (-5..5). Guarded.
+cc_byz_exarch_loyalty_at_least_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_exarch_loyalty }
+		var:cc_byz_exarch_loyalty >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+# Country (empire) scope. Prefecture PF has a seated exarch.
+cc_byz_west_pf_seated_trigger = {
+	any_subject = { cc_byz_exarch_in_$PF$_trigger = yes }
+}
+
+# The shared gate for every per-prefecture action's potential.
+cc_byz_west_pf_action_potential_trigger = {
+	has_dlc = "d008_fate_of_the_phoenix"
+	is_situation_active = situation:cc_byz_the_west
+	scope:actor = {
+		has_or_had_tag = BYZ
+		cc_byz_west_pf_seated_trigger = { PF = $PF$ }
+	}
+}
+
+# Character scope, from the overlord's .60. Someone the emperor could send west: the same
+# shape as cc_byz_appoint_exarch's selector (alive, adult, loyal, not a ruler), and not the heir
+# or a minister, so a succession in Carthage does not empty the cabinet.
+cc_byz_west_succession_candidate_trigger = {
+	is_alive = yes
+	is_adult = yes
+	is_loyal = yes
+	is_ruler = no
+	is_heir = no
+	NOT = { in_cabinet = yes }
+}

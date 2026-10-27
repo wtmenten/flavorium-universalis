@@ -1,0 +1,956 @@
+﻿# GENERATED FILE. Do not edit by hand: python tools/generate_west_panel.py
+#
+# Per-prefecture West actions. One copy per prefecture because a panel button cannot pass
+# a country: each wraps cc_byz_west_pf_save_effect plus one shared body in
+# scripted_effects/cc_byz_west_prefecture_effects.txt. type = situation with the usual
+# situation select_trigger, which is what binds scope:recipient to the parameter the panel
+# button passes. Cooldowns are timed variables on the empire, checked in allow so the
+# button tooltip says why it is disabled.
+
+cc_byz_west_pf_donative_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 30
+	automation_tick = monthly
+	automation_tick_frequency = 30
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_donative_cd_italy } }
+		}
+		scope:actor = { gold >= 75 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_donative_cd_italy  value = yes  years = 5 }
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_donative_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 12 }
+}
+
+cc_byz_west_pf_honours_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_honours_cd_italy } }
+		}
+		scope:actor = { prestige >= 25 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_honours_cd_italy  value = yes  years = 10 }
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_honours_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_west_pf_confirm_son_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+		scope:actor = { any_subject = { cc_byz_exarch_in_italy_trigger = yes  NOT = { has_variable = cc_byz_exarch_hereditary } } }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_needs_loyal_tt
+			scope:actor = {
+				any_subject = {
+					cc_byz_exarch_in_italy_trigger = yes
+					cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_confirm_son_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_strategos_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_strategos_cd_italy } }
+		}
+		scope:actor = { army_tradition >= 30 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_strategos_cd_italy  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_strategos_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}
+
+cc_byz_west_pf_recall_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_recall_cd_italy } }
+		}
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_recall_cd_italy  value = yes  years = 15 }
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_recall_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_charter_italy = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = italy }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_charter_cd_italy } }
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_charter_cd_italy  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = italy }
+			cc_byz_west_pf_charter_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}
+
+cc_byz_west_pf_donative_africa = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 30
+	automation_tick = monthly
+	automation_tick_frequency = 30
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = africa }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_donative_cd_africa } }
+		}
+		scope:actor = { gold >= 75 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_donative_cd_africa  value = yes  years = 5 }
+			cc_byz_west_pf_save_effect = { PF = africa }
+			cc_byz_west_pf_donative_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 12 }
+}
+
+cc_byz_west_pf_honours_africa = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = africa }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_honours_cd_africa } }
+		}
+		scope:actor = { prestige >= 25 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_honours_cd_africa  value = yes  years = 10 }
+			cc_byz_west_pf_save_effect = { PF = africa }
+			cc_byz_west_pf_honours_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_west_pf_confirm_son_africa = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = africa }
+		scope:actor = { any_subject = { cc_byz_exarch_in_africa_trigger = yes  NOT = { has_variable = cc_byz_exarch_hereditary } } }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_needs_loyal_tt
+			scope:actor = {
+				any_subject = {
+					cc_byz_exarch_in_africa_trigger = yes
+					cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_west_pf_save_effect = { PF = africa }
+			cc_byz_west_pf_confirm_son_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_strategos_africa = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = africa }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_strategos_cd_africa } }
+		}
+		scope:actor = { army_tradition >= 30 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_strategos_cd_africa  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = africa }
+			cc_byz_west_pf_strategos_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}
+
+cc_byz_west_pf_recall_africa = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = africa }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_recall_cd_africa } }
+		}
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_recall_cd_africa  value = yes  years = 15 }
+			cc_byz_west_pf_save_effect = { PF = africa }
+			cc_byz_west_pf_recall_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_donative_spania = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 30
+	automation_tick = monthly
+	automation_tick_frequency = 30
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = spania }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_donative_cd_spania } }
+		}
+		scope:actor = { gold >= 75 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_donative_cd_spania  value = yes  years = 5 }
+			cc_byz_west_pf_save_effect = { PF = spania }
+			cc_byz_west_pf_donative_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 12 }
+}
+
+cc_byz_west_pf_honours_spania = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = spania }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_honours_cd_spania } }
+		}
+		scope:actor = { prestige >= 25 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_honours_cd_spania  value = yes  years = 10 }
+			cc_byz_west_pf_save_effect = { PF = spania }
+			cc_byz_west_pf_honours_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_west_pf_confirm_son_spania = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = spania }
+		scope:actor = { any_subject = { cc_byz_exarch_in_spania_trigger = yes  NOT = { has_variable = cc_byz_exarch_hereditary } } }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_needs_loyal_tt
+			scope:actor = {
+				any_subject = {
+					cc_byz_exarch_in_spania_trigger = yes
+					cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_west_pf_save_effect = { PF = spania }
+			cc_byz_west_pf_confirm_son_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_strategos_spania = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = spania }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_strategos_cd_spania } }
+		}
+		scope:actor = { army_tradition >= 30 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_strategos_cd_spania  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = spania }
+			cc_byz_west_pf_strategos_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}
+
+cc_byz_west_pf_recall_spania = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = spania }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_recall_cd_spania } }
+		}
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_recall_cd_spania  value = yes  years = 15 }
+			cc_byz_west_pf_save_effect = { PF = spania }
+			cc_byz_west_pf_recall_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_donative_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 30
+	automation_tick = monthly
+	automation_tick_frequency = 30
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_donative_cd_gaul } }
+		}
+		scope:actor = { gold >= 75 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_donative_cd_gaul  value = yes  years = 5 }
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_donative_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 12 }
+}
+
+cc_byz_west_pf_honours_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_honours_cd_gaul } }
+		}
+		scope:actor = { prestige >= 25 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_honours_cd_gaul  value = yes  years = 10 }
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_honours_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 10 }
+}
+
+cc_byz_west_pf_confirm_son_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 12
+	automation_tick = monthly
+	automation_tick_frequency = 12
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+		scope:actor = { any_subject = { cc_byz_exarch_in_gaul_trigger = yes  NOT = { has_variable = cc_byz_exarch_hereditary } } }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_needs_loyal_tt
+			scope:actor = {
+				any_subject = {
+					cc_byz_exarch_in_gaul_trigger = yes
+					cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 1 }
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_confirm_son_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_strategos_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_strategos_cd_gaul } }
+		}
+		scope:actor = { army_tradition >= 30 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_strategos_cd_gaul  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_strategos_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}
+
+cc_byz_west_pf_recall_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_recall_cd_gaul } }
+		}
+		scope:actor = { stability >= 0 }
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_recall_cd_gaul  value = yes  years = 15 }
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_recall_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 4 }
+}
+
+cc_byz_west_pf_charter_gaul = {
+	type = situation
+	ai_tick = monthly
+	ai_tick_frequency = 60
+	automation_tick = monthly
+	automation_tick_frequency = 60
+	price = price:cc_byz_west_minor_price
+
+	select_trigger = {
+		looking_for_a = situation
+		target_flag = recipient
+		name = "choose_situation"
+		column = { data = name }
+		visible = {
+			situation:cc_byz_the_west = this
+			situation_is_active = yes
+		}
+	}
+
+	potential = {
+		cc_byz_west_pf_action_potential_trigger = { PF = gaul }
+	}
+
+	allow = {
+		custom_tooltip = {
+			text = cc_byz_west_pf_cooldown_tt
+			scope:actor = { NOT = { has_variable = cc_byz_west_charter_cd_gaul } }
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			set_variable = { name = cc_byz_west_charter_cd_gaul  value = yes  years = 20 }
+			cc_byz_west_pf_save_effect = { PF = gaul }
+			cc_byz_west_pf_charter_effect = yes
+			hidden_effect = { cc_byz_west_publish_effect = yes }
+		}
+	}
+
+	ai_will_do = { add = 6 }
+}

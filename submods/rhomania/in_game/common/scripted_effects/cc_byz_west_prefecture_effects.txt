@@ -1,0 +1,301 @@
+﻿# Per-prefecture effects for the West: the shared bodies of the generated per-prefecture actions
+# (generic_actions/cc_byz_west_prefecture_actions.txt, written by tools/generate_west_panel.py),
+# per-exarch appetite and loyalty, and what the panel reads.
+#
+# Prefecture keys: italy, africa, spania, gaul.
+#
+# State on the EMPIRE, for the panel (republished monthly by cc_byz_west_publish_effect):
+#   cc_byz_west_pf_<key>         the exarchate seated in that prefecture (a country)
+#   cc_byz_west_convened         set while the consistory sits in assembly
+#   cc_byz_west_votes_west       votes the exarchs cast together (the emperor has 3)
+#   cc_byz_west_<action>_cd_<key>  per-prefecture action cooldowns, timed
+#   cc_byz_west_recall_target    the exarch a per-prefecture recall names, read by cc_byz_west.20
+#
+# State on each EXARCHATE:
+#   cc_byz_exarch_loyalty        -5..5 (existing)
+#   cc_byz_exarch_appetite       0..5, NOW PER EXARCH. It used to be one number on the empire
+#                                even though each exarch has his own loyalty; an African exarch
+#                                inherited the Italian one's hunger. Old saves migrate on the
+#                                first monthly publish (below).
+#   cc_byz_exarch_hereditary     his son was confirmed: the office passes in his family
+#   cc_byz_exarch_kind           1 caretaker, 2 effective, 3 strategos, published for the panel
+#   cc_byz_exarch_senior         set while he is the consistory's Senior Exarch (two votes)
+#
+# State on the SITUATION, for the drift readout (cc_byz_west_track_drift_effect):
+#   cc_byz_west_grip_drift / cc_byz_west_autonomy_drift   change over the last twelve months
+
+
+###############################################################################
+# PER-EXARCH SCORES
+###############################################################################
+
+# Change an exarch's appetite. EXARCH is a scope (scope:cc_byz_exarch, scope:cc_ven_exarch...).
+cc_byz_exarch_add_appetite_effect = {
+	$EXARCH$ ?= {
+		if = {
+			limit = { NOT = { has_variable = cc_byz_exarch_appetite } }
+			set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		}
+		change_variable = { name = cc_byz_exarch_appetite  add = $VALUE$ }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+	}
+}
+
+cc_byz_exarch_reset_appetite_effect = {
+	$EXARCH$ ?= {
+		set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+	}
+}
+
+# Subject scope.
+cc_byz_exarch_add_loyalty_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_exarch_loyalty } }
+		set_variable = { name = cc_byz_exarch_loyalty  value = 0 }
+	}
+	change_variable = { name = cc_byz_exarch_loyalty  add = $VALUE$ }
+	clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+}
+
+
+###############################################################################
+# PER-PREFECTURE ACTIONS
+#
+# Each generated action calls cc_byz_west_pf_save_effect for its prefecture and then one of the
+# bodies below, all in EMPIRE scope with scope:cc_byz_pf_exarch saved.
+###############################################################################
+
+cc_byz_west_pf_save_effect = {
+	random_subject = {
+		limit = { cc_byz_exarch_in_$PF$_trigger = yes }
+		save_scope_as = cc_byz_pf_exarch
+	}
+}
+
+# A donative to one province's garrisons. A third of the full donative's cost and reach.
+cc_byz_west_pf_donative_effect = {
+	change_gold_effect = { scale = -1 }
+	save_scope_value_as = { name = cc_byz_west_delta  value = 1 }
+	cc_byz_west_grip_up_effect = yes
+	scope:cc_byz_pf_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 2 } }
+}
+
+# A court title for the exarch: patrikios, or for a man already one, magistros. Prestige for
+# loyalty, and it takes the edge off his appetite. Nothing about it gives the west more say.
+cc_byz_west_pf_honours_effect = {
+	add_prestige = -25
+	scope:cc_byz_pf_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 2 } }
+	cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_pf_exarch  VALUE = -1 }
+}
+
+# Confirm this exarch's son. Was one empire-wide decision that bound every prefecture at once;
+# it is now made one family at a time. The first confirmation is still the precedent
+# (cc_byz_mem_west_hereditary), which the recall roll and the succession event both read.
+cc_byz_west_pf_confirm_son_effect = {
+	set_variable = { name = cc_byz_mem_west_hereditary  value = yes }
+	save_scope_value_as = { name = cc_byz_west_delta  value = 8 }
+	cc_byz_west_autonomy_up_effect = yes
+	scope:cc_byz_pf_exarch = {
+		set_variable = { name = cc_byz_exarch_hereditary  value = yes }
+		cc_byz_exarch_add_loyalty_effect = { VALUE = 3 }
+	}
+	add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+	change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_right }
+}
+
+# Summon this exarch. cc_byz_west.20 reads cc_byz_west_recall_target instead of picking one.
+cc_byz_west_pf_recall_effect = {
+	add_country_modifier = { modifier = cc_byz_west_recall_issued  years = 15  mode = add_and_extend }
+	set_variable = { name = cc_byz_west_recall_target  value = scope:cc_byz_pf_exarch }
+	trigger_event_non_silently = { id = cc_byz_west.20 }
+}
+
+# A strategos sent to one province, with troops who will know him.
+cc_byz_west_pf_strategos_effect = {
+	add_country_modifier = { modifier = cc_byz_west_strategos_sent  years = 10  mode = add_and_extend }
+	save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+	cc_byz_west_autonomy_up_effect = yes
+	scope:cc_byz_pf_exarch = {
+		add_army_tradition = army_tradition_mild_bonus
+		add_manpower = { value = monthly_manpower  multiply = 8 }
+	}
+	change_societal_value = { type = cc_taxis_vs_cc_dynatoi  value = societal_value_minor_move_to_right }
+}
+
+# A commune's charter, in Italy or Gaul.
+cc_byz_west_pf_charter_effect = {
+	set_variable = { name = cc_byz_mem_west_charter  value = yes }
+	add_country_modifier = { modifier = cc_byz_west_charter_granted  years = 20  mode = add_and_extend }
+	add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_mild_bonus }
+	save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
+	cc_byz_west_autonomy_up_effect = yes
+	scope:cc_byz_pf_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
+}
+
+
+# Succession (cc_byz_west.60): seat CANDIDATE in scope:cc_byz_exarch. Empire scope.
+cc_byz_west_send_new_exarch_effect = {
+	save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+	cc_byz_west_grip_up_effect = yes
+	scope:cc_byz_exarch = {
+		set_new_ruler = $CANDIDATE$
+		set_variable = { name = cc_byz_exarch_loyalty  value = 0 }
+		# Overriding a confirmed right is a broken promise, and remembered as one.
+		if = {
+			limit = { has_variable = cc_byz_exarch_hereditary }
+			remove_variable = cc_byz_exarch_hereditary
+			cc_byz_exarch_add_loyalty_effect = { VALUE = -3 }
+		}
+	}
+	custom_tooltip = cc_byz_west_succ_resist_tt
+	hidden_effect = {
+		random_list = {
+			70 = {}
+			30 = {
+				scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = -2 } }
+				save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+				cc_byz_west_autonomy_up_effect = yes
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# WHAT THE PANEL READS
+###############################################################################
+
+# Empire scope. Run monthly from the situation's on_monthly, and after every per-prefecture
+# action so the panel updates without waiting for the month.
+#
+# NOT root. From on_monthly the root is the situation, so the empire is pinned to a named scope
+# and every write goes through it.
+cc_byz_west_publish_effect = {
+	save_scope_as = cc_byz_west_pub_empire
+	# Country scope, root = Byzantium (cc_byz_on_monthly_west_open). cc_byz_west_pf_<key>_open is
+# set while that prefecture is empty and could be filled.
+cc_byz_west_publish_open_effect = {
+	if = {
+		limit = { cc_byz_prefecture_open_$PF$_trigger = yes }
+		set_variable = { name = cc_byz_west_pf_$PF$_open  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_west_pf_$PF$_open
+	}
+}
+
+cc_byz_west_publish_pf_effect = { PF = italy }
+	cc_byz_west_publish_pf_effect = { PF = africa }
+	cc_byz_west_publish_pf_effect = { PF = spania }
+	cc_byz_west_publish_pf_effect = { PF = gaul }
+
+	# Each exarchate's kind, from its reform. The GUI cannot test reforms.
+	every_subject = {
+		limit = { has_variable = cc_byz_is_exarchate }
+		if = {
+			limit = { has_reform = government_reform:cc_byz_exarch_strategos_reform }
+			set_variable = { name = cc_byz_exarch_kind  value = 3 }
+		}
+		else_if = {
+			limit = { has_reform = government_reform:cc_byz_exarch_effective_reform }
+			set_variable = { name = cc_byz_exarch_kind  value = 2 }
+		}
+		else = {
+			set_variable = { name = cc_byz_exarch_kind  value = 1 }
+		}
+		if = {
+			limit = { NOT = { has_variable = cc_byz_exarch_appetite } }
+			set_variable = { name = cc_byz_exarch_appetite  value = 0 }
+		}
+	}
+
+	# MIGRATION. Appetite used to live here on the empire. Hand an old save's value to the
+	# exarchs once, then drop it.
+	if = {
+		limit = { has_variable = cc_byz_exarch_appetite }
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			set_variable = { name = cc_byz_exarch_appetite  value = scope:cc_byz_west_pub_empire.var:cc_byz_exarch_appetite }
+		}
+		remove_variable = cc_byz_exarch_appetite
+	}
+
+	# The consistory, for the second tab.
+	if = {
+		limit = {
+			international_organization:cc_byz_prefectures ?= {
+				parliament_type ?= parliament_type:cc_byz_consistorium_assembly
+			}
+		}
+		set_variable = { name = cc_byz_west_convened  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_west_convened
+	}
+	set_variable = { name = cc_byz_west_votes_west  value = 0 }
+	every_subject = {
+		limit = { has_variable = cc_byz_is_exarchate }
+		scope:cc_byz_west_pub_empire = { change_variable = { name = cc_byz_west_votes_west  add = 1 } }
+		if = {
+			limit = {
+				exists = international_organization:cc_byz_prefectures
+				has_special_status_in_international_organization = {
+					type = special_status:cc_byz_senior_exarch
+					international_organization = international_organization:cc_byz_prefectures
+				}
+			}
+			scope:cc_byz_west_pub_empire = { change_variable = { name = cc_byz_west_votes_west  add = 1 } }
+			set_variable = { name = cc_byz_exarch_senior  value = yes }
+		}
+		else = {
+			remove_variable = cc_byz_exarch_senior
+		}
+	}
+}
+
+cc_byz_west_publish_pf_effect = {
+	if = {
+		limit = { any_subject = { cc_byz_exarch_in_$PF$_trigger = yes } }
+		random_subject = {
+			limit = { cc_byz_exarch_in_$PF$_trigger = yes }
+			scope:cc_byz_west_pub_empire = { set_variable = { name = cc_byz_west_pf_$PF$  value = prev } }
+		}
+	}
+	else = {
+		remove_variable = cc_byz_west_pf_$PF$
+	}
+}
+
+# Situation scope, monthly. Every twelve months, record how far each counter moved since the
+# last reading. The panel shows it as "this year".
+cc_byz_west_track_drift_effect = {
+	if = {
+		limit = {
+			has_variable = cc_byz_imperial_grip
+			has_variable = cc_byz_western_autonomy
+		}
+		if = {
+			limit = { NOT = { has_variable = cc_byz_west_grip_snap } }
+			set_variable = { name = cc_byz_west_grip_snap  value = var:cc_byz_imperial_grip }
+			set_variable = { name = cc_byz_west_autonomy_snap  value = var:cc_byz_western_autonomy }
+			set_variable = { name = cc_byz_west_drift_month  value = 0 }
+			set_variable = { name = cc_byz_west_grip_drift  value = 0 }
+			set_variable = { name = cc_byz_west_autonomy_drift  value = 0 }
+		}
+		change_variable = { name = cc_byz_west_drift_month  add = 1 }
+		if = {
+			limit = { var:cc_byz_west_drift_month >= 12 }
+			set_variable = {
+				name = cc_byz_west_grip_drift
+				value = { value = var:cc_byz_imperial_grip  subtract = var:cc_byz_west_grip_snap }
+			}
+			set_variable = {
+				name = cc_byz_west_autonomy_drift
+				value = { value = var:cc_byz_western_autonomy  subtract = var:cc_byz_west_autonomy_snap }
+			}
+			set_variable = { name = cc_byz_west_grip_snap  value = var:cc_byz_imperial_grip }
+			set_variable = { name = cc_byz_west_autonomy_snap  value = var:cc_byz_western_autonomy }
+			set_variable = { name = cc_byz_west_drift_month  value = 0 }
+		}
+	}
+}

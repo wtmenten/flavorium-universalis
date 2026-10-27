@@ -1,132 +1,90 @@
 ﻿######################################################################
-# The West — situation panel
+# The West: situation panel
 #
-# Built alongside cc_byz_mamluk_confrontation.gui and for the same reason: a situation panel
-# comes from a .gui file named after the situation, not from the situation definition, and
-# Rhomania shipped neither. See that file's header for the full note.
+# GENERATED FILE. Do not edit by hand: python tools/generate_west_panel.py
 #
+# Breakdown tab (the default): header, the balance (two counters, the year's drift and the
+# map of endings), one card per prefecture with its exarch and its own actions, and the
+# empire-wide actions. Consistory tab: the vote arithmetic, the roster and the IO actions.
 #
-# THE TWO COUNTERS ARE DRAWN AS TWO SEPARATE BARS, AND THAT IS THE WHOLE POINT.
+# Reads, all republished by script because the GUI cannot run triggers or script values:
+#   situation  cc_byz_imperial_grip, cc_byz_western_autonomy, cc_byz_west_*_drift
+#   empire     cc_byz_west_pf_<key> (the exarchate), cc_byz_west_pf_<key>_open,
+#              cc_byz_west_convened, cc_byz_west_votes_west
+#   exarchate  cc_byz_exarch_loyalty, _appetite, _kind, _hereditary, _senior, _cession_cd
+# See scripted_effects/cc_byz_west_prefecture_effects.txt.
 #
-# cc_byz_imperial_grip and cc_byz_western_autonomy are INDEPENDENT, each 0..100. They are not
-# two ends of one slider. An empire can hold the west hard and have it want out hard at the
-# same time, and that combination is precisely the one the rising comes from: a grip the west
-# resents rather than a grip it has stopped needing.
-#
-# Drawing them as one opposed bar would say the opposite, and would say it more convincingly
-# than any tooltip could correct. So: two bars, stacked, each with its own scale, and a
-# separate tension line underneath for the state where both are high. The screenshot brief in
-# docs/assets/screenshots/Rhomania/README.md makes the same point about how to photograph it.
-#
-#
-# WHAT IT SHOWS
-#
-#   header    both counters as numbers, plus the unrest signal when it is lit
-#   card 1    the two counters as bars, and the tension reading
-#   card 2    the seated prefectures with their loyalty, from the player's subject list
-#   card 3    the consistory: vote arithmetic, emperor against the west
-#   card 4    the actions (situation_card_actions, filled by type = situation actions)
-#
-# Situation variables: cc_byz_imperial_grip, cc_byz_western_autonomy, cc_byz_west_ending
-# Country variables:   cc_byz_is_exarchate, cc_byz_exarch_loyalty (both on each SUBJECT)
-#
-# The prefecture list iterates Player.GetDiplomacy.GetSubjects and filters on the exarchate
-# flag, which is the same shape the main mod's subject ledger uses and is in-game verified.
+# The vanilla actions card is emptied: every action is a button on its card. The
+# illustration block is NOT overridden (see the Court Ledger for why).
 ######################################################################
 
 situation_panel = {
-
-	##################################### TOP HEADER #####################################
 
 	blockoverride "situation_top_subheader_content" {
 		hbox = {
 			layoutpolicy_horizontal = expanding
 			margin = { 8 0 }
 			spacing = 10
-
 			hbox = {
 				size = { 170 28 }
 				spacing = 5
-				text_single = {
-					fontsize = 13
-					default_format = "#weak"
-					text = "CC_BYZ_WEST_HDR_GRIP"
-				}
-				text_single = {
-					fontsize = 15
-					default_format = "#color_yellow"
-					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]"
-				}
+				text_single = { fontsize = 13  default_format = "#weak"  text = "CC_BYZ_WEST_HDR_GRIP" }
+				text_single = { fontsize = 15  default_format = "#color_yellow"  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]" }
 			}
-
 			expand = {}
-
-			# The unrest signal. Reads the SAME country modifier cc_byz_west_signal_effect
-			# applies, so the panel and the modifier list cannot disagree about whether trouble
-			# is brewing. HasModifier('x') is the datafunction form, per
-			# SituationView.GetPlayer.HasModifier('can_hire_privateers') in vanilla; there is no
-			# variable behind this signal to read with GetVariable.
-			text_single = {
-				fontsize = 14
-				default_format = "#color_red"
-				text = "CC_BYZ_WEST_HDR_RESTIVE"
-				visible = "[Player.HasModifier('cc_byz_west_restive')]"
-				tooltip = "CC_BYZ_WEST_HDR_RESTIVE_TT"
-			}
-
+			text_single = { fontsize = 14  default_format = "#color_red"  text = "CC_BYZ_WEST_HDR_RESTIVE"  visible = "[Player.HasModifier('cc_byz_west_restive')]"  tooltip = "CC_BYZ_WEST_HDR_RESTIVE_TT" }
 			expand = {}
-
 			hbox = {
 				size = { 170 28 }
 				spacing = 5
-				# NOT #color_purple: that text format does not exist. Vanilla's .gui files use
-				# color_yellow, color_green and color_red, and no purple among them.
-				text_single = {
-					fontsize = 15
-					default_format = "#color_red"
-					raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]"
-				}
-				text_single = {
-					fontsize = 13
-					default_format = "#weak"
-					text = "CC_BYZ_WEST_HDR_AUTONOMY"
-				}
+				text_single = { fontsize = 15  default_format = "#color_red"  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]" }
+				text_single = { fontsize = 13  default_format = "#weak"  text = "CC_BYZ_WEST_HDR_AUTONOMY" }
 			}
 		}
 	}
 
-	##################################### MAIN IMAGE #####################################
-	# DELIBERATELY NOT OVERRIDDEN. The default block in
-	# game/in_game/gui/panels/situation/common.gui:113 calls GetSituationIllustration(...),
-	# which resolves main_menu/gfx/interface/illustrations/situation/<situation key>.dds by
-	# naming convention alone, then applies scene_fade_vertical_up. cc_byz_the_west.dds is
-	# shipped from the MAIN mod's main_menu folder rather than this submod's, which is safe
-	# because this submod cannot load without the main mod. This panel previously overrode
-	# the block with a flat colour gradient, which is why the illustration never appeared.
-
 	blockoverride "situation_subheader_content" {}
-
-	##################################### MAIN CONTENT #####################################
+	blockoverride "situation_panel_main_content_top" {}
+	blockoverride "situation_panel_main_actions" {}
 
 	blockoverride "situation_panel_main_content" {
-
-		# ---- Card: the two counters ----
+		# Header card
 		vbox = {
 			layoutpolicy_horizontal = expanding
-			using = bg_dark_paper_card
-			using = bg_cabinet_card_frame
-			margin = { 10 8 }
-			spacing = 8
-
-			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
-			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
-			# every number, threshold and mechanical consequence lives behind this icon. The
-			# panel copy shipped as a briefing paper, which is not what a situation panel is
-			# for. Same idiom as the main mod's subject ledger.
+			size = { 510 40 }
+			using = bg_card_header_01_government
 			hbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 6
-				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_BALANCE" }
+				margin = { 10 0 }
+				icon = { size = { 24 24 }  texture = "gfx/interface/icons/situations/cc_byz_the_west.dds"  texture_density = 2 }
+				text_single = { fontsize = 16  text = "CC_BYZ_WEST_PANEL_HEADER" }
+				expand = {}
+				icon = {
+					size = { 20 20 }
+					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+					texture_density = 2
+					tooltipwidget = {
+						ContextualTooltipType = {
+							blockoverride "title_text" { text = "CC_BYZ_WEST_PANEL_HEADER" }
+							blockoverride "tooltip_content" {
+								text_multi = { autoresize = yes  multiline = yes  max_width = 330  text = "CC_BYZ_WEST_PANEL_HEADER_TT" }
+							}
+						}
+					}
+				}
+			}
+		}
+
+		vbox = {
+			layoutpolicy_horizontal = expanding
+			background = { using = color_whiteish_texture  alpha = 0.10 }
+			margin = { 10 8 }
+			spacing = 6
+			hbox = {
+				layoutpolicy_horizontal = expanding
+				spacing = 6
+				text_single = { fontsize = 14  align = left|nobaseline  text = "CC_BYZ_WEST_CARD_BALANCE" }
 				expand = {}
 				icon = {
 					size = { 20 20 }
@@ -136,41 +94,35 @@ situation_panel = {
 						ContextualTooltipType = {
 							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_BALANCE" }
 							blockoverride "tooltip_content" {
-								text_multi = {
-									autoresize = yes
-									multiline = yes
-									max_width = 340
-									text = "CC_BYZ_WEST_CARD_BALANCE_INFO"
-								}
+								text_multi = { autoresize = yes  multiline = yes  max_width = 340  text = "CC_BYZ_WEST_CARD_BALANCE_INFO" }
 							}
 						}
 					}
 				}
 			}
-			text_multi = {
-				autoresize = yes
-				multiline = yes
-				max_width = 480
-				fontsize = 12
-				default_format = "#weak"
-				text = "CC_BYZ_WEST_CARD_BALANCE_DESC"
-			}
-
+			widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+			text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 480  fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_CARD_BALANCE_DESC" }
 			vbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 2
 				hbox = {
 					layoutpolicy_horizontal = expanding
-					text_single = { fontsize = 14  text = "CC_BYZ_WEST_BAR_GRIP" }
+					spacing = 4
+					text_single = { fontsize = 13  align = left|nobaseline  text = "CC_BYZ_WEST_BAR_GRIP" }
 					expand = {}
-					text_single = {
-						fontsize = 14
-						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]/100"
+					hbox = {
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').IsSet]"
+						spacing = 3
+						text_single = { fontsize = 11  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').GetValue)]" }
+						text_single = { fontsize = 11  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').GetValue)]"  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').GetValue)]" }
+						text_single = { fontsize = 11  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_grip_drift').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+						text_single = { fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_THIS_YEAR" }
 					}
+					text_single = { fontsize = 14  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)]/100" }
 				}
 				progressbar = {
 					layoutpolicy_horizontal = expanding
-					size = { -1 12 }
+					size = { -1 10 }
 					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
 					progresstexture = "gfx/interface/progressbars/progress_bar_yellow.dds"
 					texture_density = 2
@@ -182,28 +134,28 @@ situation_panel = {
 					tooltip = "CC_BYZ_WEST_BAR_GRIP_TT"
 				}
 			}
-
 			vbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 2
 				hbox = {
 					layoutpolicy_horizontal = expanding
-					text_single = { fontsize = 14  text = "CC_BYZ_WEST_BAR_AUTONOMY" }
+					spacing = 4
+					text_single = { fontsize = 13  align = left|nobaseline  text = "CC_BYZ_WEST_BAR_AUTONOMY" }
 					expand = {}
-					text_single = {
-						fontsize = 14
-						raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]/100"
+					hbox = {
+						visible = "[SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').IsSet]"
+						spacing = 3
+						text_single = { fontsize = 11  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').GetValue)]" }
+						text_single = { fontsize = 11  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').GetValue)]"  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').GetValue)]" }
+						text_single = { fontsize = 11  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_west_autonomy_drift').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+						text_single = { fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_THIS_YEAR" }
 					}
+					text_single = { fontsize = 14  raw_text = "[FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)]/100" }
 				}
 				progressbar = {
 					layoutpolicy_horizontal = expanding
-					size = { -1 12 }
+					size = { -1 10 }
 					noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
-					# NOT progress_bar_purple.dds, which does not exist. The full set under
-					# main_menu/gfx/interface/progressbars is green, green_alt, grey_alt, red,
-					# red_alt, orange, yellange, yellow, brown_alt, goldish and whiteish. There
-					# is no purple and no blue outside loading_screen's own gfx root. orange
-					# reads as distinct from the yellow above it, which is all this needs.
 					progresstexture = "gfx/interface/progressbars/progress_bar_orange.dds"
 					texture_density = 2
 					spriteType = Corneredstretched
@@ -214,195 +166,1125 @@ situation_panel = {
 					tooltip = "CC_BYZ_WEST_BAR_AUTONOMY_TT"
 				}
 			}
-
-			# The dangerous cell of the two-by-two: held hard, and resenting it. Shown only when
-			# it is true, so the absence of this line is itself information.
-			text_single = {
-				fontsize = 13
-				default_format = "#color_red"
-				text = "CC_BYZ_WEST_TENSION_BOTH_HIGH"
-				tooltip = "CC_BYZ_WEST_TENSION_BOTH_HIGH_TT"
-				visible = "[And(GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue, '(CFixedPoint)59'), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]"
-			}
-			# The other legible cell: let go of, and gone.
-			text_single = {
-				fontsize = 13
-				default_format = "#weak"
-				text = "CC_BYZ_WEST_TENSION_DRIFTING"
-				tooltip = "CC_BYZ_WEST_TENSION_DRIFTING_TT"
-				visible = "[And(GreaterThan_CFixedPoint('(CFixedPoint)30', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]"
-			}
-		}
-
-		# ---- Card: the seated prefectures ----
-		vbox = {
-			layoutpolicy_horizontal = expanding
-			using = bg_dark_paper_card
-			using = bg_cabinet_card_frame
-			margin = { 10 8 }
-			spacing = 6
-
-			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
-			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
-			# every number, threshold and mechanical consequence lives behind this icon. The
-			# panel copy shipped as a briefing paper, which is not what a situation panel is
-			# for. Same idiom as the main mod's subject ledger.
+			text_single = { fontsize = 12  default_format = "#color_red"  text = "CC_BYZ_WEST_TENSION_BOTH_HIGH"  tooltip = "CC_BYZ_WEST_TENSION_BOTH_HIGH_TT"  visible = "[And(GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue, '(CFixedPoint)59'), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]" }
+			text_single = { fontsize = 12  default_format = "#weak"  text = "CC_BYZ_WEST_TENSION_DRIFTING"  tooltip = "CC_BYZ_WEST_TENSION_DRIFTING_TT"  visible = "[And(GreaterThan_CFixedPoint('(CFixedPoint)30', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue), GreaterThan_CFixedPoint(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue, '(CFixedPoint)59'))]" }
 			hbox = {
 				layoutpolicy_horizontal = expanding
-				spacing = 6
-				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_PREFECTURES" }
+				margin_top = 4
+				text_single = { fontsize = 12  default_format = "#weak"  text = "CC_BYZ_WEST_ENDINGS"  tooltip = "CC_BYZ_WEST_ENDINGS_TT" }
 				expand = {}
-				icon = {
-					size = { 20 20 }
-					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
-					texture_density = 2
-					tooltipwidget = {
-						ContextualTooltipType = {
-							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_PREFECTURES" }
-							blockoverride "tooltip_content" {
-								text_multi = {
-									autoresize = yes
-									multiline = yes
-									max_width = 340
-									text = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
-								}
-							}
-						}
+				text_single = { fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_AXIS_AUT" }
+			}
+			hbox = {
+				spacing = 4
+				widget = {
+					size = { 236 38 }
+					background = { using = color_whiteish_texture  alpha = 0.06 }
+					widget = {
+						size = { 236 38 }
+						visible = "[And(Not(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)), GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue))]"
+						background = { using = color_white_texture  alpha = 0.16 }
+					}
+					vbox = {
+						parentanchor = center
+						text_single = { fontsize = 12  align = center|nobaseline  text = "CC_BYZ_WEST_END_REABSORB" }
+						text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_END_REABSORB_REQ" }
+					}
+				}
+				widget = {
+					size = { 236 38 }
+					background = { using = color_whiteish_texture  alpha = 0.06 }
+					widget = {
+						size = { 236 38 }
+						visible = "[And(Not(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue)), Not(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)))]"
+						background = { using = color_white_texture  alpha = 0.16 }
+					}
+					vbox = {
+						parentanchor = center
+						text_single = { fontsize = 12  align = center|nobaseline  text = "CC_BYZ_WEST_END_DIARCHY" }
+						text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_END_DIARCHY_REQ" }
 					}
 				}
 			}
-			text_multi = {
-				autoresize = yes
-				multiline = yes
-				max_width = 480
-				fontsize = 12
-				default_format = "#weak"
-				text = "CC_BYZ_WEST_CARD_PREFECTURES_DESC"
+			hbox = {
+				spacing = 4
+				widget = {
+					size = { 236 38 }
+					background = { using = color_whiteish_texture  alpha = 0.06 }
+					widget = {
+						size = { 236 38 }
+						visible = "[And(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue), GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue))]"
+						background = { using = color_white_texture  alpha = 0.16 }
+					}
+					vbox = {
+						parentanchor = center
+						text_single = { fontsize = 12  align = center|nobaseline  text = "CC_BYZ_WEST_END_NEGLECT" }
+						text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_END_NEGLECT_REQ" }
+					}
+				}
+				widget = {
+					size = { 236 38 }
+					background = { using = color_whiteish_texture  alpha = 0.06 }
+					widget = {
+						size = { 236 38 }
+						visible = "[And(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_imperial_grip').GetValue), Not(GreaterThan_CFixedPoint('(CFixedPoint)50', SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable('cc_byz_western_autonomy').GetValue)))]"
+						background = { using = color_white_texture  alpha = 0.16 }
+					}
+					vbox = {
+						parentanchor = center
+						text_single = { fontsize = 12  align = center|nobaseline  text = "CC_BYZ_WEST_END_ACCLAIM" }
+						text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_END_ACCLAIM_REQ" }
+					}
+				}
 			}
+			text_single = { fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_DEADLINE"  tooltip = "CC_BYZ_WEST_ENDINGS_TT" }
+		}
 
-			# Iterates the player's subjects and shows only the exarchates. ignoreinvisible so
-			# the ordinary subjects filtered out here do not leave gaps in the list.
-			vbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 3
-				datamodel = "[Player.GetDiplomacy.GetSubjects]"
-				ignoreinvisible = yes
-				item = {
+		text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  default_format = "#weak"  margin_top = 4  text = "CC_BYZ_WEST_SEC_PREFECTURES"  tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_DESC" }
+		flowcontainer = {
+			direction = horizontal
+			wrap_count = 2
+			ignoreinvisible = yes
+			spacing = 6
+			# ---- italy ----
+			# Seated.
+			widget = {
+				size = { 246 270 }
+				visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_italy').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_byz_west_pf_italy').GetCountry]"
+				background = { using = color_whiteish_texture  alpha = 0.10 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					layoutpolicy_vertical = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_ITALY" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
 					hbox = {
 						layoutpolicy_horizontal = expanding
-						minimumsize = { -1 30 }
 						spacing = 6
-						visible = "[Country.MakeScope.GetVariable('cc_byz_is_exarchate').IsSet]"
-
 						country_flag_small = {}
-						text_single = {
-							fontsize = 14
-							minimumsize = { 190 -1 }
-							maximumsize = { 190 -1 }
-							text = "[Country.GetName]"
-						}
+						text_single = { fontsize = 14  align = left|nobaseline  max_width = 190  elide = right  text = "[Country.GetName]" }
 						expand = {}
-
-						text_single = {
-							fontsize = 12
-							default_format = "#weak"
-							text = "CC_BYZ_WEST_COL_LOYALTY"
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						widget = {
+							size = { 38 44 }
+							datacontext = "[Country.GetGovernment.GetRuler]"
+							portrait_standard_head_framed_button = {
+								size = { 38 44 }
+								onclick = "[ShowCharacter(Character.Self)]"
+							}
 						}
-						# Loyalty, -5..5, coloured by sign. Three mutually exclusive widgets
-						# rather than one, since there is no conditional-colour form.
-						text_single = {
-							minimumsize = { 34 -1 }  align = center  fontsize = 15
-							default_format = "#color_green"
-							visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"
-							raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
-						}
-						text_single = {
-							minimumsize = { 34 -1 }  align = center  fontsize = 15
-							default_format = "#color_red"
-							visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
-							raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
-						}
-						text_single = {
-							minimumsize = { 34 -1 }  align = center  fontsize = 15
-							default_format = "#weak"
-							visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"
-							raw_text = "0"
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  align = left|nobaseline  text = "[Country.GetGovernment.GetRuler.GetShortNameWithNoTooltip]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_1"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)1')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_2"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)2')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_3"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)3')]" }
+							hbox = {
+								spacing = 6
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_HEREDITARY"  tooltip = "CC_BYZ_WEST_TAG_HEREDITARY_TT"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_hereditary').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_SENIOR"  tooltip = "CC_BYZ_WEST_TAG_SENIOR"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_red"  text = "CC_BYZ_WEST_TAG_DISAFFECTED"  tooltip = "CC_BYZ_WEST_TAG_DISAFFECTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_disaffected')]" }
+								text_single = { fontsize = 10  default_format = "#color_green"  text = "CC_BYZ_WEST_TAG_CONTENTED"  tooltip = "CC_BYZ_WEST_TAG_CONTENTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_contented')]" }
+							}
 						}
 					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_LOYALTY"  tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO" }
+						expand = {}
+						text_single = { fontsize = 12  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = -5
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_APPETITE"  tooltip = "CC_BYZ_WEST_COL_APPETITE_TT" }
+						expand = {}
+						text_single = { fontsize = 12  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]/5" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]"
+						tooltip = "CC_BYZ_WEST_COL_APPETITE_TT"
+					}
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DONE"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet]" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DUE"  visible = "[Not(Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet)]" }
+					expand = {}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_donative_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_DONATIVE" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_honours_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_HONOURS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_confirm_son_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CONFIRM_SON" }
+						}
+					}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_strategos_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_STRATEGOS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_recall_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_RECALL" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_charter_italy"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CHARTER" }
+						}
+					}
+				}
+			}
+			# Empty.
+			widget = {
+				size = { 246 270 }
+				visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_italy').IsSet)]"
+				background = { using = color_black_texture  alpha = 0.18 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_ITALY" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_EMPTY" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 11  default_format = "#color_green"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_OPEN"  visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_italy_open').IsSet]" }
+					text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 228  fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_PF_ITALY_REQ"  visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_italy_open').IsSet)]" }
+					expand = {}
+				}
+			}
+			# ---- africa ----
+			# Seated.
+			widget = {
+				size = { 246 270 }
+				visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_africa').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_byz_west_pf_africa').GetCountry]"
+				background = { using = color_whiteish_texture  alpha = 0.10 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					layoutpolicy_vertical = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_AFRICA" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						country_flag_small = {}
+						text_single = { fontsize = 14  align = left|nobaseline  max_width = 190  elide = right  text = "[Country.GetName]" }
+						expand = {}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						widget = {
+							size = { 38 44 }
+							datacontext = "[Country.GetGovernment.GetRuler]"
+							portrait_standard_head_framed_button = {
+								size = { 38 44 }
+								onclick = "[ShowCharacter(Character.Self)]"
+							}
+						}
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  align = left|nobaseline  text = "[Country.GetGovernment.GetRuler.GetShortNameWithNoTooltip]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_1"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)1')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_2"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)2')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_3"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)3')]" }
+							hbox = {
+								spacing = 6
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_HEREDITARY"  tooltip = "CC_BYZ_WEST_TAG_HEREDITARY_TT"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_hereditary').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_SENIOR"  tooltip = "CC_BYZ_WEST_TAG_SENIOR"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_red"  text = "CC_BYZ_WEST_TAG_DISAFFECTED"  tooltip = "CC_BYZ_WEST_TAG_DISAFFECTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_disaffected')]" }
+								text_single = { fontsize = 10  default_format = "#color_green"  text = "CC_BYZ_WEST_TAG_CONTENTED"  tooltip = "CC_BYZ_WEST_TAG_CONTENTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_contented')]" }
+							}
+						}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_LOYALTY"  tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO" }
+						expand = {}
+						text_single = { fontsize = 12  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = -5
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_APPETITE"  tooltip = "CC_BYZ_WEST_COL_APPETITE_TT" }
+						expand = {}
+						text_single = { fontsize = 12  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]/5" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]"
+						tooltip = "CC_BYZ_WEST_COL_APPETITE_TT"
+					}
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DONE"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet]" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DUE"  visible = "[Not(Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet)]" }
+					expand = {}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_donative_africa"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_DONATIVE" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_honours_africa"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_HONOURS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_confirm_son_africa"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CONFIRM_SON" }
+						}
+					}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_strategos_africa"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_STRATEGOS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_recall_africa"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_RECALL" }
+						}
+					}
+				}
+			}
+			# Empty.
+			widget = {
+				size = { 246 270 }
+				visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_africa').IsSet)]"
+				background = { using = color_black_texture  alpha = 0.18 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_AFRICA" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_EMPTY" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 11  default_format = "#color_green"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_OPEN"  visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_africa_open').IsSet]" }
+					text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 228  fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_PF_AFRICA_REQ"  visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_africa_open').IsSet)]" }
+					expand = {}
+				}
+			}
+			# ---- spania ----
+			# Seated.
+			widget = {
+				size = { 246 270 }
+				visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_spania').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_byz_west_pf_spania').GetCountry]"
+				background = { using = color_whiteish_texture  alpha = 0.10 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					layoutpolicy_vertical = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_SPANIA" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						country_flag_small = {}
+						text_single = { fontsize = 14  align = left|nobaseline  max_width = 190  elide = right  text = "[Country.GetName]" }
+						expand = {}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						widget = {
+							size = { 38 44 }
+							datacontext = "[Country.GetGovernment.GetRuler]"
+							portrait_standard_head_framed_button = {
+								size = { 38 44 }
+								onclick = "[ShowCharacter(Character.Self)]"
+							}
+						}
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  align = left|nobaseline  text = "[Country.GetGovernment.GetRuler.GetShortNameWithNoTooltip]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_1"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)1')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_2"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)2')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_3"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)3')]" }
+							hbox = {
+								spacing = 6
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_HEREDITARY"  tooltip = "CC_BYZ_WEST_TAG_HEREDITARY_TT"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_hereditary').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_SENIOR"  tooltip = "CC_BYZ_WEST_TAG_SENIOR"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_red"  text = "CC_BYZ_WEST_TAG_DISAFFECTED"  tooltip = "CC_BYZ_WEST_TAG_DISAFFECTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_disaffected')]" }
+								text_single = { fontsize = 10  default_format = "#color_green"  text = "CC_BYZ_WEST_TAG_CONTENTED"  tooltip = "CC_BYZ_WEST_TAG_CONTENTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_contented')]" }
+							}
+						}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_LOYALTY"  tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO" }
+						expand = {}
+						text_single = { fontsize = 12  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = -5
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_APPETITE"  tooltip = "CC_BYZ_WEST_COL_APPETITE_TT" }
+						expand = {}
+						text_single = { fontsize = 12  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]/5" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]"
+						tooltip = "CC_BYZ_WEST_COL_APPETITE_TT"
+					}
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DONE"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet]" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DUE"  visible = "[Not(Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet)]" }
+					expand = {}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_donative_spania"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_DONATIVE" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_honours_spania"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_HONOURS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_confirm_son_spania"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CONFIRM_SON" }
+						}
+					}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_strategos_spania"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_STRATEGOS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_recall_spania"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_RECALL" }
+						}
+					}
+				}
+			}
+			# Empty.
+			widget = {
+				size = { 246 270 }
+				visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_spania').IsSet)]"
+				background = { using = color_black_texture  alpha = 0.18 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_SPANIA" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_EMPTY" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 11  default_format = "#color_green"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_OPEN"  visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_spania_open').IsSet]" }
+					text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 228  fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_PF_SPANIA_REQ"  visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_spania_open').IsSet)]" }
+					expand = {}
+				}
+			}
+			# ---- gaul ----
+			# Seated.
+			widget = {
+				size = { 246 270 }
+				visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_gaul').IsSet]"
+				datacontext = "[Player.MakeScope.GetVariable('cc_byz_west_pf_gaul').GetCountry]"
+				background = { using = color_whiteish_texture  alpha = 0.10 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					layoutpolicy_vertical = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_GAUL" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						country_flag_small = {}
+						text_single = { fontsize = 14  align = left|nobaseline  max_width = 190  elide = right  text = "[Country.GetName]" }
+						expand = {}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 6
+						widget = {
+							size = { 38 44 }
+							datacontext = "[Country.GetGovernment.GetRuler]"
+							portrait_standard_head_framed_button = {
+								size = { 38 44 }
+								onclick = "[ShowCharacter(Character.Self)]"
+							}
+						}
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 12  align = left|nobaseline  text = "[Country.GetGovernment.GetRuler.GetShortNameWithNoTooltip]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_1"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)1')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_2"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)2')]" }
+							text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_KIND_3"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_kind').GetValue, '(CFixedPoint)3')]" }
+							hbox = {
+								spacing = 6
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_HEREDITARY"  tooltip = "CC_BYZ_WEST_TAG_HEREDITARY_TT"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_hereditary').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_SENIOR"  tooltip = "CC_BYZ_WEST_TAG_SENIOR"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+								text_single = { fontsize = 10  default_format = "#color_red"  text = "CC_BYZ_WEST_TAG_DISAFFECTED"  tooltip = "CC_BYZ_WEST_TAG_DISAFFECTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_disaffected')]" }
+								text_single = { fontsize = 10  default_format = "#color_green"  text = "CC_BYZ_WEST_TAG_CONTENTED"  tooltip = "CC_BYZ_WEST_TAG_CONTENTED_TT"  visible = "[Country.HasModifier('cc_byz_exarch_contented')]" }
+							}
+						}
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_LOYALTY"  tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO" }
+						expand = {}
+						text_single = { fontsize = 12  default_format = "#color_green"  visible = "[GreaterThan_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "+[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#color_red"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)0', Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#weak"  visible = "[EqualTo_CFixedPoint(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue, '(CFixedPoint)0')]"  raw_text = "0" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_green_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = -5
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_loyalty').GetValue)]"
+						tooltip = "CC_BYZ_WEST_CARD_PREFECTURES_INFO"
+					}
+					hbox = {
+						layoutpolicy_horizontal = expanding
+						spacing = 4
+						text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_APPETITE"  tooltip = "CC_BYZ_WEST_COL_APPETITE_TT" }
+						expand = {}
+						text_single = { fontsize = 12  raw_text = "[FixedPointToInt(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]/5" }
+					}
+					progressbar = {
+						layoutpolicy_horizontal = expanding
+						size = { -1 10 }
+						noprogresstexture = "gfx/interface/progressbars/progress_bar_grey_alt.dds"
+						progresstexture = "gfx/interface/progressbars/progress_bar_red_alt.dds"
+						texture_density = 2
+						spriteType = Corneredstretched
+						spriteborder = { 12 0 }
+						min = 0
+						max = 5
+						value = "[FixedPointToFloat(Country.MakeScope.GetVariable('cc_byz_exarch_appetite').GetValue)]"
+						tooltip = "CC_BYZ_WEST_COL_APPETITE_TT"
+					}
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DONE"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet]" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_REVIEW_DUE"  visible = "[Not(Country.MakeScope.GetVariable('cc_byz_exarch_cession_cd').IsSet)]" }
+					expand = {}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_donative_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_DONATIVE" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_honours_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_HONOURS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_confirm_son_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CONFIRM_SON" }
+						}
+					}
+					hbox = {
+						spacing = 4
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_strategos_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_STRATEGOS" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_recall_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_RECALL" }
+						}
+						card_header_button_01 = {
+							size = { 74 22 }
+							scripted_action_tooltip = {
+								click_type = left
+								click_mode = single
+								action_name = "cc_byz_west_pf_charter_gaul"
+								actor = "[SituationView.GetPlayer]"
+								parameter = {
+									parameter_name = "recipient"
+									parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+								}
+							}
+							enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+							tooltipwidget = { using = action_tooltip_pop_out }
+							text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CHARTER" }
+						}
+					}
+				}
+			}
+			# Empty.
+			widget = {
+				size = { 246 270 }
+				visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_gaul').IsSet)]"
+				background = { using = color_black_texture  alpha = 0.18 }
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					margin = { 8 6 }
+					spacing = 3
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 10  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_GAUL" }
+					widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 13  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_EMPTY" }
+					text_single = { layoutpolicy_horizontal = expanding  fontsize = 11  default_format = "#color_green"  align = left|nobaseline  text = "CC_BYZ_WEST_PF_OPEN"  visible = "[Player.MakeScope.GetVariable('cc_byz_west_pf_gaul_open').IsSet]" }
+					text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 228  fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_PF_GAUL_REQ"  visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_pf_gaul_open').IsSet)]" }
+					expand = {}
 				}
 			}
 		}
 
-		# ---- Card: the consistory ----
-		#
-		# THE VOTE ARITHMETIC IS THE DESIGN AND IT IS WORTH SHOWING PLAINLY.
-		#
-		#   Augustus       3 votes
-		#   Senior Exarch  2 votes
-		#   each exarch    1 vote
-		#
-		# With one prefecture seated the emperor cannot lose, 3 to 1. With four he is outvoted
-		# 5 to 3 by the body he built. The danger scales with the reconquest itself, with no
-		# risk score anywhere to tune, and a player who cannot see the count cannot see that
-		# coming.
 		vbox = {
 			layoutpolicy_horizontal = expanding
-			using = bg_dark_paper_card
-			using = bg_cabinet_card_frame
+			background = { using = color_whiteish_texture  alpha = 0.10 }
 			margin = { 10 8 }
-			spacing = 6
-
-			# Title row with an info icon. THE FLAVOUR AND THE FIGURES ARE SEPARATED
-			# DELIBERATELY: the card body says what the thing is in the court's own voice, and
-			# every number, threshold and mechanical consequence lives behind this icon. The
-			# panel copy shipped as a briefing paper, which is not what a situation panel is
-			# for. Same idiom as the main mod's subject ledger.
+			spacing = 4
 			hbox = {
 				layoutpolicy_horizontal = expanding
 				spacing = 6
-				text_single = { fontsize = 15  text = "CC_BYZ_WEST_CARD_CONSISTORY" }
+				text_single = { fontsize = 14  align = left|nobaseline  text = "CC_BYZ_WEST_SEC_GOVERNING" }
 				expand = {}
-				icon = {
-					size = { 20 20 }
-					texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
-					texture_density = 2
-					tooltipwidget = {
-						ContextualTooltipType = {
-							blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_CONSISTORY" }
-							blockoverride "tooltip_content" {
-								text_multi = {
-									autoresize = yes
-									multiline = yes
-									max_width = 340
-									text = "CC_BYZ_WEST_CARD_CONSISTORY_INFO"
+			}
+			widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+			text_single = { layoutpolicy_horizontal = expanding  fontsize = 11  default_format = "#weak"  align = left|nobaseline  text = "CC_BYZ_WEST_GOVERNING_DESC" }
+			hbox = {
+				spacing = 6
+				vbox = {
+					spacing = 1
+					card_header_button_01 = {
+						size = { 156 22 }
+						scripted_action_tooltip = {
+							click_type = left
+							click_mode = single
+							action_name = "cc_byz_west_order_census"
+							actor = "[SituationView.GetPlayer]"
+							parameter = {
+								parameter_name = "recipient"
+								parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+							}
+						}
+						enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+						tooltipwidget = { using = action_tooltip_pop_out }
+						text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_WEST_ORDER_CENSUS" }
+					}
+					text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_ON_COOLDOWN"  visible = "[Player.HasModifier('cc_byz_west_census_taken')]" }
+				}
+				vbox = {
+					spacing = 1
+					card_header_button_01 = {
+						size = { 156 22 }
+						scripted_action_tooltip = {
+							click_type = left
+							click_mode = single
+							action_name = "cc_byz_west_donative"
+							actor = "[SituationView.GetPlayer]"
+							parameter = {
+								parameter_name = "recipient"
+								parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+							}
+						}
+						enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+						tooltipwidget = { using = action_tooltip_pop_out }
+						text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_WEST_DONATIVE" }
+					}
+					text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_ON_COOLDOWN"  visible = "[Player.HasModifier('cc_byz_west_donative_paid')]" }
+				}
+				vbox = {
+					spacing = 1
+					card_header_button_01 = {
+						size = { 156 22 }
+						scripted_action_tooltip = {
+							click_type = left
+							click_mode = single
+							action_name = "cc_byz_west_demand_tribute"
+							actor = "[SituationView.GetPlayer]"
+							parameter = {
+								parameter_name = "recipient"
+								parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+							}
+						}
+						enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+						tooltipwidget = { using = action_tooltip_pop_out }
+						text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_WEST_DEMAND_TRIBUTE" }
+					}
+					text_single = { fontsize = 10  default_format = "#weak"  align = center|nobaseline  text = "CC_BYZ_WEST_ON_COOLDOWN"  visible = "[Player.HasModifier('cc_byz_west_tribute_taken')]" }
+				}
+			}
+		}
+	}
+
+	blockoverride "situation_extra_tabs_content" {
+		button_secondary_tab_alt = {
+			using = layoutpolicy_expanding
+			blockoverride "tab_text" { text = "CC_BYZ_WEST_TAB_CONSISTORY" }
+			action_tooltip = {
+				title = "OPEN_TAB"
+				on_action = "[SituationView.Vars.Set( 'situation_tab', 'cc_byz_west_consistory' )]"
+			}
+			down = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_byz_west_consistory' )]"
+		}
+	}
+
+	blockoverride "situation_extra_tab_panels" {
+		scrollarea = {
+			visible = "[SituationView.Vars.HasValue( 'situation_tab', 'cc_byz_west_consistory' )]"
+			using = layoutpolicy_expanding
+			scrollbarpolicy_horizontal = always_off
+			autoresizeviewport = yes
+			viewportwidget = { widget = { scissor = yes } }
+			scrollbar_vertical = { using = Scrollbar_Vertical }
+			scrollwidget = {
+				vbox = {
+					layoutpolicy_horizontal = expanding
+					using = bg_secondary_inner_alt
+					margin = { 10 8 }
+					spacing = 6
+					vbox = {
+						layoutpolicy_horizontal = expanding
+						background = { using = color_whiteish_texture  alpha = 0.10 }
+						margin = { 10 8 }
+						spacing = 5
+						hbox = {
+							layoutpolicy_horizontal = expanding
+							spacing = 6
+							text_single = { fontsize = 14  align = left|nobaseline  text = "CC_BYZ_WEST_CARD_CONSISTORY" }
+							expand = {}
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/flat_icons/tabicons/info_flat_icon.dds"
+								texture_density = 2
+								tooltipwidget = {
+									ContextualTooltipType = {
+										blockoverride "title_text" { text = "CC_BYZ_WEST_CARD_CONSISTORY" }
+										blockoverride "tooltip_content" {
+											text_multi = { autoresize = yes  multiline = yes  max_width = 340  text = "CC_BYZ_WEST_CARD_CONSISTORY_INFO" }
+										}
+									}
 								}
 							}
 						}
+						widget = { size = { 32 2 }  background = { using = color_white_texture  alpha = 0.35 } }
+						text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 480  fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_CARD_CONSISTORY_DESC" }
+						text_single = { fontsize = 13  default_format = "#color_green"  text = "CC_BYZ_WEST_CONS_SITTING"  visible = "[Player.MakeScope.GetVariable('cc_byz_west_convened').IsSet]" }
+						text_single = { fontsize = 13  default_format = "#weak"  text = "CC_BYZ_WEST_CONS_DORMANT"  visible = "[Not(Player.MakeScope.GetVariable('cc_byz_west_convened').IsSet)]" }
+						hbox = {
+							layoutpolicy_horizontal = expanding
+							text_single = { fontsize = 13  text = "CC_BYZ_WEST_VOTES_EMPEROR" }
+							expand = {}
+							text_single = { fontsize = 13  text = "CC_BYZ_WEST_VOTES_WEST" }
+							text_single = { fontsize = 15  default_format = "#color_yellow"  raw_text = " [FixedPointToInt(Player.MakeScope.GetVariable('cc_byz_west_votes_west').GetValue)]" }
+						}
+						text_single = { fontsize = 12  default_format = "#color_green"  text = "CC_BYZ_WEST_VOTES_SAFE"  visible = "[GreaterThan_CFixedPoint('(CFixedPoint)3', Player.MakeScope.GetVariable('cc_byz_west_votes_west').GetValue)]" }
+						text_single = { fontsize = 12  default_format = "#color_yellow"  text = "CC_BYZ_WEST_VOTES_TIE"  visible = "[EqualTo_CFixedPoint(Player.MakeScope.GetVariable('cc_byz_west_votes_west').GetValue, '(CFixedPoint)3')]" }
+						text_single = { fontsize = 12  default_format = "#color_red"  text = "CC_BYZ_WEST_VOTES_LOST"  visible = "[GreaterThan_CFixedPoint(Player.MakeScope.GetVariable('cc_byz_west_votes_west').GetValue, '(CFixedPoint)3')]" }
+						vbox = {
+							layoutpolicy_horizontal = expanding
+							spacing = 2
+							datamodel = "[Player.GetDiplomacy.GetSubjects]"
+							ignoreinvisible = yes
+							item = {
+								hbox = {
+									layoutpolicy_horizontal = expanding
+									minimumsize = { -1 26 }
+									spacing = 6
+									visible = "[Country.MakeScope.GetVariable('cc_byz_is_exarchate').IsSet]"
+									country_flag_small = {}
+									text_single = { fontsize = 13  max_width = 220  elide = right  text = "[Country.GetName]" }
+									text_single = { fontsize = 10  default_format = "#color_yellow"  text = "CC_BYZ_WEST_TAG_SENIOR"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+									expand = {}
+									text_single = { fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_COL_VOTES" }
+									text_single = { fontsize = 13  raw_text = "2"  visible = "[Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet]" }
+									text_single = { fontsize = 13  raw_text = "1"  visible = "[Not(Country.MakeScope.GetVariable('cc_byz_exarch_senior').IsSet)]" }
+								}
+							}
+						}
+						text_multi = { layoutpolicy_horizontal = expanding  autoresize = yes  multiline = yes  max_width = 480  fontsize = 11  default_format = "#weak"  text = "CC_BYZ_WEST_CONS_QUESTIONS" }
+						hbox = {
+							spacing = 6
+							card_header_button_01 = {
+								size = { 156 22 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_byz_io_convene_consistory"
+									actor = "[SituationView.GetPlayer]"
+									parameter = {
+										parameter_name = "recipient"
+										parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+									}
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_IO_CONVENE_CONSISTORY" }
+							}
+							card_header_button_01 = {
+								size = { 156 22 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_byz_io_elevate_senior_exarch"
+									actor = "[SituationView.GetPlayer]"
+									parameter = {
+										parameter_name = "recipient"
+										parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+									}
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_IO_ELEVATE_SENIOR_EXARCH" }
+							}
+							card_header_button_01 = {
+								size = { 156 22 }
+								scripted_action_tooltip = {
+									click_type = left
+									click_mode = single
+									action_name = "cc_byz_io_dissolve_prefecture"
+									actor = "[SituationView.GetPlayer]"
+									parameter = {
+										parameter_name = "recipient"
+										parameter_value = "[SituationView.GetActiveSituation.GetSituation]"
+									}
+								}
+								enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+								tooltipwidget = { using = action_tooltip_pop_out }
+								text_single = { parentanchor = center  align = center  fontsize = 10  text = "CC_BYZ_WEST_BTN_CC_BYZ_IO_DISSOLVE_PREFECTURE" }
+							}
+						}
 					}
-				}
-			}
-			text_multi = {
-				autoresize = yes
-				multiline = yes
-				max_width = 480
-				fontsize = 12
-				default_format = "#weak"
-				text = "CC_BYZ_WEST_CARD_CONSISTORY_DESC"
-			}
-
-			hbox = {
-				layoutpolicy_horizontal = expanding
-				spacing = 8
-				text_single = { fontsize = 13  text = "CC_BYZ_WEST_VOTES_LEGEND" }
-				expand = {}
-				# GetMembersAmount, not GetNumberOfMembers. The latter is not a datafunction;
-				# InternationalOrganization exposes GetMembers, GetMembersAmount,
-				# GetMembersText, GetMembersInfo and IsCountryMember, and nothing else that
-				# counts.
-				text_single = {
-					fontsize = 13
-					default_format = "#weak"
-					raw_text = "[GetInternationalOrganization('cc_byz_prefectures').GetMembersAmount]"
 				}
 			}
 		}

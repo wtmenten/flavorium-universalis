@@ -148,3 +148,35 @@ cc_byz_on_yearly_exarch_cession = {
 		cc_byz_cession.1
 	}
 }
+
+
+# An exarch dies. Chained from on_ruler_death_delayed in cc_byz_on_actions.txt; root is the
+# exarchate, and by the next daily tick its heir has already succeeded. The overlord decides
+# whether that stands (cc_byz_west.60). Not behind cc_byz_pulse_cd: a death is not a mood piece.
+cc_byz_on_exarch_ruler_death = {
+	trigger = {
+		has_variable = cc_byz_is_exarchate
+		exists = overlord
+	}
+	effect = {
+		save_scope_as = cc_byz_exarch
+		overlord = { trigger_event_non_silently = { id = cc_byz_west.60 } }
+	}
+}
+
+
+# Which empty prefectures could take an exarch now, for the West panel. In country scope with
+# root = Byzantium, because the cc_byz_prefecture_open_*_trigger family compares owner ?= root
+# and would read the situation as root if evaluated from its on_monthly.
+cc_byz_on_monthly_west_open = {
+	trigger = {
+		has_or_had_tag = BYZ
+		is_situation_active = situation:cc_byz_the_west
+	}
+	effect = {
+		cc_byz_west_publish_open_effect = { PF = italy }
+		cc_byz_west_publish_open_effect = { PF = africa }
+		cc_byz_west_publish_open_effect = { PF = spania }
+		cc_byz_west_publish_open_effect = { PF = gaul }
+	}
+}

@@ -25,7 +25,8 @@
 
 
 #############################################
-# The seven. Governing.
+# Governing, empire-wide: census, donative, tribute. The four that act on one province are
+# per-prefecture now (cc_byz_west_prefecture_actions.txt).
 #############################################
 
 # ORDER A CENSUS. The thing a Roman administration did that nothing else in Europe could.
@@ -211,253 +212,21 @@ cc_byz_west_demand_tribute = {
 	ai_will_do = { add = 10 }
 }
 
-# SEND THE STRATEGOS WEST. Reinforcement, and a general in the west with troops of his own.
-cc_byz_west_send_strategos = {
-	type = situation
-	ai_tick = monthly
-	ai_tick_frequency = 24
-	automation_tick = monthly
-	automation_tick_frequency = 24
+# cc_byz_west_send_strategos: now one action per prefecture, cc_byz_west_pf_strategos_<prefecture>, generated into
+# cc_byz_west_prefecture_actions.txt by tools/generate_west_panel.py.
 
-	price = price:cc_byz_west_minor_price
 
-	select_trigger = {
-		looking_for_a = situation
-		target_flag = recipient
-		name = "choose_situation"
-		column = { data = name }
-		visible = {
-			situation:cc_byz_the_west = this
-			situation_is_active = yes
-		}
-	}
+# cc_byz_west_confirm_son: now one action per prefecture, cc_byz_west_pf_confirm_son_<prefecture>, generated into
+# cc_byz_west_prefecture_actions.txt by tools/generate_west_panel.py.
 
-	potential = {
-		has_dlc = "d008_fate_of_the_phoenix"
-		is_situation_active = situation:cc_byz_the_west
-		scope:actor = {
-			has_or_had_tag = BYZ
-			any_subject = { has_variable = cc_byz_is_exarchate }
-			NOT = { has_country_modifier = cc_byz_west_strategos_sent }
-		}
-	}
 
-	allow = {
-		scope:actor = { army_tradition >= 30 }
-	}
+# cc_byz_west_recall_exarch: now one action per prefecture, cc_byz_west_pf_recall_<prefecture>, generated into
+# cc_byz_west_prefecture_actions.txt by tools/generate_west_panel.py.
 
-	effect = {
-		scope:actor = {
-			add_country_modifier = {
-				modifier = cc_byz_west_strategos_sent
-				years = 20
-				mode = add
-			}
-			save_scope_value_as = { name = cc_byz_west_delta  value = 10 }
-			cc_byz_west_autonomy_up_effect = yes
 
-			every_subject = {
-				limit = { has_variable = cc_byz_is_exarchate }
-				add_army_tradition = army_tradition_mild_bonus
-				add_manpower = { value = monthly_manpower  multiply = 8 }
-			}
+# cc_byz_west_grant_charter: now one action per prefecture, cc_byz_west_pf_charter_<prefecture>, generated into
+# cc_byz_west_prefecture_actions.txt by tools/generate_west_panel.py.
 
-			change_societal_value = {
-				type = cc_taxis_vs_cc_dynatoi
-				value = societal_value_minor_move_to_right
-			}
-		}
-	}
-
-	ai_will_do = { add = 15 }
-}
-
-# CONFIRM THE EXARCH'S SON. The moment an office becomes a family's property.
-#
-# THE MOST CONSEQUENTIAL ACTION HERE, and the only one with no cooldown modifier: it can only
-# be taken once because the succession law it implies is the thing it sets.
-cc_byz_west_confirm_son = {
-	type = situation
-	ai_tick = monthly
-	ai_tick_frequency = 36
-	automation_tick = monthly
-	automation_tick_frequency = 36
-
-	price = price:cc_byz_west_minor_price
-
-	select_trigger = {
-		looking_for_a = situation
-		target_flag = recipient
-		name = "choose_situation"
-		column = { data = name }
-		visible = {
-			situation:cc_byz_the_west = this
-			situation_is_active = yes
-		}
-	}
-
-	potential = {
-		has_dlc = "d008_fate_of_the_phoenix"
-		is_situation_active = situation:cc_byz_the_west
-		scope:actor = {
-			has_or_had_tag = BYZ
-			any_subject = { has_variable = cc_byz_is_exarchate }
-			NOT = { has_variable = cc_byz_mem_west_hereditary }
-		}
-	}
-
-	allow = {
-		scope:actor = {
-			any_subject = {
-				has_variable = cc_byz_is_exarchate
-				trigger_if = {
-					limit = { has_variable = cc_byz_exarch_loyalty }
-					var:cc_byz_exarch_loyalty >= 1
-				}
-				trigger_else = { always = no }
-			}
-		}
-	}
-
-	effect = {
-		scope:actor = {
-			set_variable = { name = cc_byz_mem_west_hereditary  value = yes }
-			save_scope_value_as = { name = cc_byz_west_delta  value = 20 }
-			cc_byz_west_autonomy_up_effect = yes
-
-			every_subject = {
-				limit = { has_variable = cc_byz_is_exarchate }
-				change_variable = { name = cc_byz_exarch_loyalty  add = 3 }
-				clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
-			}
-
-			add_estate_satisfaction = {
-				type = estate_type:nobles_estate
-				value = estate_satisfaction_mild_bonus
-			}
-			change_societal_value = {
-				type = cc_taxis_vs_cc_dynatoi
-				value = societal_value_move_to_right
-			}
-		}
-	}
-
-	ai_will_do = { add = 5 }
-}
-
-# RECALL THE EXARCH. THE ONLY ACTION WHOSE OUTCOME THE EMPEROR DOES NOT CONTROL.
-#
-# The refusal chance reads off the loyalty the other six actions have been moving, which is the
-# point of having them. An emperor who has taken tribute twice, never paid the donative and
-# confirmed nobody's son is issuing an order to a man with no reason to obey it.
-#
-# Resolved in cc_byz_west.20, not here, because a refusal is an event and not a number.
-cc_byz_west_recall_exarch = {
-	type = situation
-	ai_tick = monthly
-	ai_tick_frequency = 24
-	automation_tick = monthly
-	automation_tick_frequency = 24
-
-	select_trigger = {
-		looking_for_a = situation
-		target_flag = recipient
-		name = "choose_situation"
-		column = { data = name }
-		visible = {
-			situation:cc_byz_the_west = this
-			situation_is_active = yes
-		}
-	}
-
-	potential = {
-		has_dlc = "d008_fate_of_the_phoenix"
-		is_situation_active = situation:cc_byz_the_west
-		scope:actor = {
-			has_or_had_tag = BYZ
-			any_subject = { has_variable = cc_byz_is_exarchate }
-			NOT = { has_country_modifier = cc_byz_west_recall_issued }
-		}
-	}
-
-	allow = {
-		scope:actor = { stability >= 0 }
-	}
-
-	effect = {
-		scope:actor = {
-			add_country_modifier = {
-				modifier = cc_byz_west_recall_issued
-				years = 15
-				mode = add
-			}
-			trigger_event_non_silently = cc_byz_west.20
-		}
-	}
-
-	ai_will_do = { add = 8 }
-}
-
-# GRANT A COMMUNE ITS CHARTER. Italy and Gaul only: the communes are a western European
-# phenomenon and there is nothing in Carthage or Cartagena to charter.
-cc_byz_west_grant_charter = {
-	type = situation
-	ai_tick = monthly
-	ai_tick_frequency = 24
-	automation_tick = monthly
-	automation_tick_frequency = 24
-
-	price = price:cc_byz_west_minor_price
-
-	select_trigger = {
-		looking_for_a = situation
-		target_flag = recipient
-		name = "choose_situation"
-		column = { data = name }
-		visible = {
-			situation:cc_byz_the_west = this
-			situation_is_active = yes
-		}
-	}
-
-	potential = {
-		has_dlc = "d008_fate_of_the_phoenix"
-		is_situation_active = situation:cc_byz_the_west
-		scope:actor = {
-			has_or_had_tag = BYZ
-			OR = {
-				any_subject = { cc_byz_exarch_in_italy_trigger = yes }
-				any_subject = { cc_byz_exarch_in_gaul_trigger = yes }
-			}
-			NOT = { has_country_modifier = cc_byz_west_charter_granted }
-		}
-	}
-
-	allow = {
-		always = yes
-	}
-
-	effect = {
-		scope:actor = {
-			add_country_modifier = {
-				modifier = cc_byz_west_charter_granted
-				years = 20
-				mode = add
-			}
-			add_estate_satisfaction = {
-				type = estate_type:burghers_estate
-				value = estate_satisfaction_mild_bonus
-			}
-			save_scope_value_as = { name = cc_byz_west_delta  value = 6 }
-			cc_byz_west_autonomy_up_effect = yes
-
-			# The first charter is the precedent every other commune cites.
-			set_variable = { name = cc_byz_mem_west_charter  value = yes }
-		}
-	}
-
-	ai_will_do = { add = 12 }
-}
 
 
 #############################################

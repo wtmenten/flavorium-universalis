@@ -53,11 +53,23 @@ on_religion_changed = {
 # monthly_country_pulse. Vanilla's copy (country_monthly.txt:1) carries a long on_actions list
 # and a random_events block, so this is chained rather than redefined, exactly like the others.
 #
-# ONLY ONE THING HANGS OFF THE MONTHLY PULSE, and it is deliberate that it stays that way. This
+# TWO THINGS HANG OFF THE MONTHLY PULSE, both narrowed to Byzantium at once, and it is
+# deliberate that the list stays short. This
 # runs for every country every month; the sub-action's own trigger narrows it to Byzantium
 # immediately, but anything added here is paid for twelve times as often as the yearly pulse.
 monthly_country_pulse = {
-	on_actions = { cc_byz_on_monthly_bureau_funding }
+	on_actions = {
+		cc_byz_on_monthly_bureau_funding
+		# The West panel's empty prefecture cards. Narrowed to Byzantium with the situation
+		# running, so it costs one tag test for everyone else.
+		cc_byz_on_monthly_west_open
+	}
+}
+
+# on_ruler_death_delayed. root = country, scope:old_ruler. Vanilla's copy carries events,
+# on_actions and an effect (union-of-crowns handling), so it is chained, never replaced.
+on_ruler_death_delayed = {
+	on_actions = { cc_byz_on_exarch_ruler_death }
 }
 
 yearly_country_pulse = {
