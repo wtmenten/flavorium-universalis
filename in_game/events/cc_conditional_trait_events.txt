@@ -10,6 +10,9 @@
 # ============================================================
 # cc_cond.1 — Capital Development Traits
 # Tier 1: dev > 30 (any age)    → urban_planner / prosperity_herald / merchant_syndic
+#   Each tier also takes capitals above its cap when the age has not unlocked the next
+#   tier yet; without that, dev > 40 in ages 1-2 and dev > 50 in ages 3-4 matched no
+#   option and the event showed only the dismiss button.
 # Tier 2: dev > 40 (age 3+)     → grand_architect / arts_patron / learned_courtier / reform_minded_counselor
 # Tier 3: dev > 50 (age 5+)     → master_urbanist / enlightenment_herald / progressive_rationalist / revolutionary_herald
 # ============================================================
@@ -251,7 +254,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:grand_architect
@@ -271,7 +281,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
@@ -297,7 +314,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:arts_patron
@@ -317,7 +341,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Not a ladder rung. The tier is a standing requirement for the post, so this buys standing, not the post.
@@ -343,7 +374,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:learned_courtier
@@ -363,7 +401,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
@@ -389,7 +434,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:reform_minded_counselor
@@ -409,7 +461,14 @@ cc_cond.1 = {
 				current_age = age_5_absolutism
 				current_age = age_6_revolutions
 			}
-			NOT = { capital.development > 50 }
+			# Tier 3 is age 5+, so before then a capital over 50 stays in this tier.
+			NOT = {
+				capital.development > 50
+				OR = {
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Not a ladder rung. The tier is a standing requirement for the post, so this buys standing, not the post.
@@ -430,7 +489,16 @@ cc_cond.1 = {
 		name = cc_cond.1.i
 		trigger = {
 			is_ai = yes
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:urban_planner
@@ -450,7 +518,16 @@ cc_cond.1 = {
 		name = cc_xp_toward_urban_planner
 		trigger = {
 			is_ai = no
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Ladder rung withheld: the ladder grants it once the tier is earned.
@@ -476,7 +553,16 @@ cc_cond.1 = {
 		name = cc_cond.1.j
 		trigger = {
 			scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 2 } }
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:prosperity_herald
@@ -496,7 +582,16 @@ cc_cond.1 = {
 		name = cc_xp_toward_prosperity_herald
 		trigger = {
 			NOT = { scope:minister = { cc_xp_dispatch_ready = { TRACK = adm  TIER = 2 } } }
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Not a ladder rung. The tier is a standing requirement for the post, so this buys standing, not the post.
@@ -522,7 +617,16 @@ cc_cond.1 = {
 		name = cc_cond.1.k
 		trigger = {
 			is_ai = yes
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			add_trait = trait:merchant_syndic
@@ -542,7 +646,16 @@ cc_cond.1 = {
 		name = cc_xp_toward_merchant_syndic
 		trigger = {
 			is_ai = no
-			NOT = { capital.development > 40 }
+			# Tier 2 is age 3+, so before then a capital over 40 stays in this tier.
+			NOT = {
+				capital.development > 40
+				OR = {
+					current_age = age_3_discovery
+					current_age = age_4_reformation
+					current_age = age_5_absolutism
+					current_age = age_6_revolutions
+				}
+			}
 		}
 		scope:minister = {
 			# Ladder rung withheld: the ladder grants it once the tier is earned.

@@ -132,3 +132,19 @@ cc_byz_on_yearly_west_rising = {
 		10 = cc_byz_west.40
 	}
 }
+
+# The five-year cession review. Separate from the thread pulse above for two reasons: it runs on
+# its own clock (cc_byz_exarch_cession_cd, five years, set per exarchate) rather than on the
+# shared 18-month floor, and it is administration rather than a story beat, so it neither waits
+# for the floor nor arms it. The trigger already narrows it to a year in which some exarchate is
+# due and the emperor holds land in its region, so the event fires every time it is reached.
+cc_byz_on_yearly_exarch_cession = {
+	trigger = {
+		has_dlc = "d008_fate_of_the_phoenix"
+		has_or_had_tag = BYZ
+		any_subject = { cc_byz_exarch_cession_due_trigger = yes }
+	}
+	events = {
+		cc_byz_cession.1
+	}
+}

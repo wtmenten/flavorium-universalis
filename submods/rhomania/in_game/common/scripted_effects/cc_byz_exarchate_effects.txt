@@ -6,7 +6,7 @@
 #
 # Both have to do the same eight things or the exarchate ends up half-built: seat it on the
 # right location, create the country, apply the terms of appointment, take the emperor's
-# religion, transfer and core the surrounding territory, seed the loyalty score, bias that
+# religion, transfer and core the prefecture's territory, seed the loyalty score, bias that
 # score by the terms, and grant the reconquest CB. Duplicating that in an event would drift
 # from the interaction within one release, and the interaction is the version that has been
 # tested in game.
@@ -67,22 +67,48 @@ cc_byz_create_exarchate_effect = {
 				}
 			}
 
-			scope:cc_byz_exarch_area = {
-				every_location_in_area = {
-					limit = {
-						owner ?= scope:cc_byz_exarch_overlord
-					}
-					change_location_owner = scope:cc_byz_exarch_country
-					add_core = scope:cc_byz_exarch_country
-					change_integration_level = core
-				}
-			}
-
 			scope:cc_byz_exarch_country = {
 				set_variable = {
 					name = cc_byz_is_exarchate
 					value = yes
 				}
+				# The first cession review comes five years after appointment, not at the next
+				# yearly pulse: the transfer below has just handed over everything there is.
+				set_variable = {
+					name = cc_byz_exarch_cession_cd
+					value = yes
+					years = 5
+				}
+				save_scope_as = cc_byz_exarch
+			}
+
+			# THE WHOLE PREFECTURE, not just the seat area. Everything the emperor holds
+			# directly in the region passes to the exarch, and so does whatever the empire's
+			# ordinary subjects hold there (cc_byz_exarch_absorbable_subject_trigger lists the
+			# arrangements that are exempt). Land gained in the region later reaches the
+			# exarchate through the five-year cession review, cc_byz_cession.1.
+			#
+			# Runs after cc_byz_is_exarchate is set because cc_byz_location_in_exarch_region_trigger
+			# reads the prefecture off scope:cc_byz_exarch through that variable.
+			scope:cc_byz_exarch_overlord = {
+				every_owned_location = {
+					limit = { cc_byz_location_in_exarch_region_trigger = yes }
+					change_location_owner = scope:cc_byz_exarch_country
+					add_core = scope:cc_byz_exarch_country
+					change_integration_level = core
+				}
+				every_subject = {
+					limit = { cc_byz_exarch_absorbable_subject_trigger = yes }
+					every_owned_location = {
+						limit = { cc_byz_location_in_exarch_region_trigger = yes }
+						change_location_owner = scope:cc_byz_exarch_country
+						add_core = scope:cc_byz_exarch_country
+						change_integration_level = core
+					}
+				}
+			}
+
+			scope:cc_byz_exarch_country = {
 				# Read by the friction and demand threads. Starts neutral; the terms of
 				# appointment and everything after them move it.
 				set_variable = {

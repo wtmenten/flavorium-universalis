@@ -676,6 +676,10 @@ cc_byz_bureaucracy.40 = {
 
 #############################################
 # .50  Entrenched and funded: a pillar of the state
+#
+# OWN FIFTEEN-YEAR COOLDOWN. The other three events on this pulse need something to be going
+# wrong, so a well-run empire fails all of them and this one took the whole roll every time
+# the shared 18-month floor lapsed. cc_byz_bureau_pillar_cd is timed and expires on its own.
 #############################################
 cc_byz_bureaucracy.50 = {
 	type = country_event
@@ -685,6 +689,7 @@ cc_byz_bureaucracy.50 = {
 
 	trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
+		NOT = { has_variable = cc_byz_bureau_pillar_cd }
 		any_current_bureaucracy = {
 			entrenchment >= 60
 			bureaucracy_maintenance >= 0.75
@@ -700,6 +705,7 @@ cc_byz_bureaucracy.50 = {
 		# Arms the submod-wide 18-month event floor. See cc_byz_pulse.txt.
 		cc_byz_pulse_stamp_effect = yes
 		cc_byz_init_bureau_scores_effect = yes
+		set_variable = { name = cc_byz_bureau_pillar_cd  value = yes  years = 15 }
 
 		random_current_bureaucracy = {
 			limit = {

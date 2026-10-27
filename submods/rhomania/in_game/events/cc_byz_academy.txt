@@ -1,0 +1,686 @@
+﻿namespace = cc_byz_academy
+
+# The Academy reopened: who teaches, what is taught, and in which language.
+#
+# The historical cast is the last Byzantine century. Demetrios Kydones translated Aquinas into
+# Greek in the 1350s and founded a party of Latinophrones. Gregory Palamas and the hesychast
+# monks won the Church. Gemistos Plethon taught Plato at Mistra and wrote a Laws that proposed
+# the old gods. The institutions are older: the Magnaura school under Bardas, and the
+# Pandidakterion of 1046 with its law faculty and its consul of the philosophers.
+#
+# ENTRY. Completing cc_byz_task_academy (five universities and Constantinople or Athens) calls
+# cc_byz_acad_open_effect, which fires .1. Runs once per campaign.
+#
+#   .1   who leads the Academy               sets the lean
+#   .2   the faculties                       unlocks rewards
+#   .3   the translation question            moves the lean, may unlock institution growth
+#   .4   the Patriarch objects               may reconcile the Church: +1 charter pick
+#   .5   the court schools dispute           a Court Ledger school may win: +1 pick
+#   .6   the charter                         pick 1-3 rewards; repeats until picks run out
+#   .80  hidden router
+#   .90  the Academy closes                  if both Constantinople and Athens are lost
+#
+# LEAN, -5..5. Latinophrones negative, Platonists positive, Palamites the middle. A minor
+# societal move accompanies every leaning choice at .1 and .3; the charter adds a 20-year drift
+# toward the winner, and the policy adds its own while enacted. At +4 or more and still
+# Orthodox, the finish fires cc_byz_hellenic.1, the old-rites on-ramp the task used to fire.
+#
+# REWARDS AND THEIR REQUIREMENTS (offered at .6; see the triggers file):
+#   policy       Imperial Academy, Elite Education       law or letters faculty (.2)
+#   literacy     +4 noble and burgher max literacy       letters faculty (.2) or a won
+#                at every university                      disputation (.5); nobles 35% literate
+#   institution  institution growth at every university   the Latin schoolmen translated (.3)
+#   tactics      0.01 military tactics per university,    military faculty (.2); a minister
+#                cap 0.2 at 20                            with mil 65+ or a military school
+#   law          cabinet and tax efficiency               law faculty (.2); a legal_scholar or
+#                                                         an administrative school
+#   theology     religious influence, flavoured by lean   the Church reconciled (.4)
+#
+# MINISTERS. Traits read, never granted: scholars (.1, .3), jurists and strategists (.2),
+# theologians (.4), and any minister who belongs to the disputing school (.5).
+#
+# PACING. 1-2 years between stages, so roughly 6-10 years end to end.
+
+
+#############################################
+# .1  Who leads the Academy
+#############################################
+cc_byz_academy.1 = {
+	type = country_event
+	title = cc_byz_academy.1.title
+	desc = cc_byz_academy.1.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = renaissance
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+	}
+
+	# The Latinophrones: Kydones and the men who read Aquinas.
+	option = {
+		name = cc_byz_academy.1.a
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_acad_latin  value = yes }
+		custom_tooltip = cc_byz_acad_lean_latin2_tt
+		hidden_effect = { cc_byz_acad_add_lean_effect = { value = -2 } }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+	}
+
+	# The Palamite monks. The Church's own learning.
+	option = {
+		name = cc_byz_academy.1.b
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_acad_palamite  value = yes }
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		add_religious_influence = 10
+	}
+
+	# Plethon's circle from Mistra.
+	option = {
+		name = cc_byz_academy.1.c
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_acad_platonist  value = yes }
+		custom_tooltip = cc_byz_acad_lean_hellenic2_tt
+		hidden_effect = { cc_byz_acad_add_lean_effect = { value = 2 } }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+	}
+
+	# A scholar from our own cabinet, answerable to the emperor rather than to a party.
+	option = {
+		name = cc_byz_academy.1.d
+		trigger = { cc_byz_acad_scholar_minister_trigger = yes }
+		ai_chance = { base = 20 }
+
+		add_prestige = prestige_weak_bonus
+		custom_tooltip = cc_byz_acad_unlock_literacy_tt
+		hidden_effect = { set_variable = { name = cc_byz_acad_u_literacy  value = yes } }
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_acad_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .2  The faculties
+#############################################
+cc_byz_academy.2 = {
+	type = country_event
+	title = cc_byz_academy.2.title
+	desc = cc_byz_academy.2.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+	}
+
+	# Law. Justinian's code, and a nomophylax to teach it.
+	option = {
+		name = cc_byz_academy.2.a
+		ai_chance = { base = 35 }
+
+		custom_tooltip = cc_byz_acad_unlock_law_tt
+		custom_tooltip = cc_byz_acad_unlock_policy_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_u_law  value = yes }
+			set_variable = { name = cc_byz_acad_u_policy  value = yes }
+		}
+	}
+
+	# Military science. Leo VI's Tactica and the old manuals.
+	option = {
+		name = cc_byz_academy.2.b
+		ai_chance = { base = 30 }
+
+		custom_tooltip = cc_byz_acad_unlock_tactics_tt
+		hidden_effect = { set_variable = { name = cc_byz_acad_u_tactics  value = yes } }
+	}
+
+	# Letters and rhetoric, the training of every official the empire ever had.
+	option = {
+		name = cc_byz_academy.2.c
+		ai_chance = { base = 35 }
+
+		custom_tooltip = cc_byz_acad_unlock_literacy_tt
+		custom_tooltip = cc_byz_acad_unlock_policy_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_u_literacy  value = yes }
+			set_variable = { name = cc_byz_acad_u_policy  value = yes }
+		}
+	}
+
+	# A jurist in the cabinet can carry law and letters together.
+	option = {
+		name = cc_byz_academy.2.d
+		trigger = { cc_byz_acad_jurist_minister_trigger = yes }
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_acad_unlock_law_tt
+		custom_tooltip = cc_byz_acad_unlock_literacy_tt
+		custom_tooltip = cc_byz_acad_unlock_policy_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_u_law  value = yes }
+			set_variable = { name = cc_byz_acad_u_literacy  value = yes }
+			set_variable = { name = cc_byz_acad_u_policy  value = yes }
+		}
+	}
+
+	# A strategist in the cabinet writes a new Tactica alongside the letters faculty.
+	option = {
+		name = cc_byz_academy.2.e
+		trigger = { cc_byz_acad_strategist_minister_trigger = yes }
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_acad_unlock_tactics_tt
+		custom_tooltip = cc_byz_acad_unlock_literacy_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_u_tactics  value = yes }
+			set_variable = { name = cc_byz_acad_u_literacy  value = yes }
+		}
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_acad_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .3  The translation question
+#############################################
+cc_byz_academy.3 = {
+	type = country_event
+	title = cc_byz_academy.3.title
+	desc = cc_byz_academy.3.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = institution
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+	}
+
+	# Translate Aquinas and the Latin schoolmen, as Kydones did.
+	option = {
+		name = cc_byz_academy.3.a
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_mem_acad_translated  value = yes }
+		custom_tooltip = cc_byz_acad_lean_latin2_tt
+		custom_tooltip = cc_byz_acad_unlock_institution_tt
+		hidden_effect = {
+			cc_byz_acad_add_lean_effect = { value = -2 }
+			set_variable = { name = cc_byz_acad_u_institution  value = yes }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+	}
+
+	# Greek texts only. The empire has its own books.
+	option = {
+		name = cc_byz_academy.3.b
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+	}
+
+	# Teach Plethon's Laws openly.
+	option = {
+		name = cc_byz_academy.3.c
+		ai_chance = { base = 25 }
+
+		custom_tooltip = cc_byz_acad_lean_hellenic2_tt
+		hidden_effect = { cc_byz_acad_add_lean_effect = { value = 2 } }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_penalty }
+	}
+
+	# A humanist in the cabinet translates both ways, as Bessarion would.
+	option = {
+		name = cc_byz_academy.3.d
+		trigger = {
+			cc_byz_acad_scholar_minister_trigger = yes
+			gold >= 100
+		}
+		ai_chance = { base = 30 }
+
+		add_gold = -100
+		set_variable = { name = cc_byz_mem_acad_translated  value = yes }
+		custom_tooltip = cc_byz_acad_unlock_institution_tt
+		hidden_effect = { set_variable = { name = cc_byz_acad_u_institution  value = yes } }
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_acad_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .4  The Patriarch objects
+#############################################
+cc_byz_academy.4 = {
+	type = country_event
+	title = cc_byz_academy.4.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { cc_byz_acad_lean_at_most_trigger = { VALUE = -2 } }
+				desc = cc_byz_academy.4.desc_latin
+			}
+			triggered_desc = {
+				trigger = { cc_byz_acad_lean_at_least_trigger = { VALUE = 2 } }
+				desc = cc_byz_academy.4.desc_platonist
+			}
+			desc = cc_byz_academy.4.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+	}
+
+	# Give the Church a chair of theology inside the Academy.
+	option = {
+		name = cc_byz_academy.4.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_acad_reconciled_tt
+		custom_tooltip = cc_byz_acad_unlock_theology_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_church_reconciled  value = yes }
+			change_variable = { name = cc_byz_acad_picks  add = 1 }
+			set_variable = { name = cc_byz_acad_u_theology  value = yes }
+			# The chair pulls the Academy one step back toward the middle.
+			if = {
+				limit = { cc_byz_acad_lean_at_least_trigger = { VALUE = 1 } }
+				cc_byz_acad_add_lean_effect = { value = -1 }
+			}
+			else_if = {
+				limit = { cc_byz_acad_lean_at_most_trigger = { VALUE = -1 } }
+				cc_byz_acad_add_lean_effect = { value = 1 }
+			}
+		}
+		custom_tooltip = cc_byz_acad_lean_toward_middle_tt
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+	}
+
+	# The Academy answers to the emperor.
+	option = {
+		name = cc_byz_academy.4.b
+		ai_chance = { base = 30 }
+
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_penalty }
+	}
+
+	# A theologian in the cabinet brokers terms that cost the Academy nothing.
+	option = {
+		name = cc_byz_academy.4.c
+		trigger = { cc_byz_acad_theologian_minister_trigger = yes }
+		ai_chance = { base = 60 }
+
+		custom_tooltip = cc_byz_acad_reconciled_tt
+		custom_tooltip = cc_byz_acad_unlock_theology_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_acad_church_reconciled  value = yes }
+			change_variable = { name = cc_byz_acad_picks  add = 1 }
+			set_variable = { name = cc_byz_acad_u_theology  value = yes }
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_acad_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .5  The court schools come to dispute
+#
+# Ties the chain to the Court Ledger schools. The most renowned seated school teaching an
+# academic curriculum sends its members; winning raises its renown and quality, earns a charter
+# pick and unlocks the literacy reward. Its odds rise with its quality, and again if one of its
+# members sits in the cabinet. With no such school (always the case for the AI, since schools
+# are player-only) the Academy can hire foreign masters instead.
+#############################################
+cc_byz_academy.5 = {
+	type = country_event
+	title = cc_byz_academy.5.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_acad_school_slot }
+				desc = cc_byz_academy.5.desc_school
+			}
+			desc = cc_byz_academy.5.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+		cc_byz_acad_pick_school_effect = yes
+	}
+
+	# --- With a court school ---
+
+	# Send them in. Odds follow the school's quality.
+	option = {
+		name = cc_byz_academy.5.a
+		trigger = {
+			has_variable = cc_byz_acad_school_slot
+			cc_byz_acad_school_member_minister_trigger = no
+		}
+		ai_chance = { base = 60 }
+
+		if = {
+			limit = { cc_byz_acad_school_quality_at_least_trigger = { VALUE = 60 } }
+			cc_byz_acad_dispute_roll_effect = { WIN = 70  LOSE = 30 }
+		}
+		else_if = {
+			limit = { cc_byz_acad_school_quality_at_least_trigger = { VALUE = 30 } }
+			cc_byz_acad_dispute_roll_effect = { WIN = 55  LOSE = 45 }
+		}
+		else = {
+			cc_byz_acad_dispute_roll_effect = { WIN = 40  LOSE = 60 }
+		}
+	}
+
+	# One of our ministers belongs to the school and leads the disputation.
+	option = {
+		name = cc_byz_academy.5.b
+		trigger = { cc_byz_acad_school_member_minister_trigger = yes }
+		ai_chance = { base = 70 }
+
+		if = {
+			limit = { cc_byz_acad_school_quality_at_least_trigger = { VALUE = 60 } }
+			cc_byz_acad_dispute_roll_effect = { WIN = 85  LOSE = 15 }
+		}
+		else_if = {
+			limit = { cc_byz_acad_school_quality_at_least_trigger = { VALUE = 30 } }
+			cc_byz_acad_dispute_roll_effect = { WIN = 70  LOSE = 30 }
+		}
+		else = {
+			cc_byz_acad_dispute_roll_effect = { WIN = 55  LOSE = 45 }
+		}
+	}
+
+	# Keep the schools and the Academy apart.
+	option = {
+		name = cc_byz_academy.5.c
+		trigger = { has_variable = cc_byz_acad_school_slot }
+		ai_chance = { base = 10 }
+
+		add_legitimacy = legitimacy_weak_bonus
+	}
+
+	# --- Without one ---
+
+	# Hire masters from abroad.
+	option = {
+		name = cc_byz_academy.5.d
+		trigger = {
+			NOT = { has_variable = cc_byz_acad_school_slot }
+			gold >= 100
+		}
+		ai_chance = { base = 60 }
+
+		add_gold = -100
+		custom_tooltip = cc_byz_acad_unlock_literacy_tt
+		hidden_effect = { set_variable = { name = cc_byz_acad_u_literacy  value = yes } }
+	}
+
+	option = {
+		name = cc_byz_academy.5.e
+		trigger = { NOT = { has_variable = cc_byz_acad_school_slot } }
+		ai_chance = { base = 40 }
+
+		add_prestige = prestige_weak_bonus
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_acad_schedule_next_effect = { min = 1  max = 2 }
+		}
+	}
+}
+
+
+#############################################
+# .6  The charter
+#
+# One reward per firing. If picks remain and something is still on offer, it fires again; when
+# it is done, cc_byz_acad_finish_effect applies the drift, opens Plethon's road if the lean is
+# high enough, and closes the chain.
+#############################################
+cc_byz_academy.6 = {
+	type = country_event
+	title = cc_byz_academy.6.title
+	desc = cc_byz_academy.6.desc
+	outcome = positive
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = institution
+	}
+
+	immediate = {
+		cc_byz_acad_stage_setup_effect = yes
+	}
+
+	option = {
+		name = cc_byz_academy.6.policy
+		trigger = { cc_byz_acad_can_take_policy_trigger = yes }
+		ai_chance = { base = 20 }
+
+		custom_tooltip = cc_byz_acad_reward_policy_tt
+		set_variable = { name = cc_byz_acad_r_policy  value = yes }
+	}
+
+	option = {
+		name = cc_byz_academy.6.literacy
+		trigger = { cc_byz_acad_can_take_literacy_trigger = yes }
+		ai_chance = { base = 20 }
+
+		custom_tooltip = cc_byz_acad_reward_literacy_tt
+		set_variable = { name = cc_byz_acad_r_literacy  value = yes }
+		hidden_effect = { cc_byz_acad_refresh_locations_effect = yes }
+	}
+
+	option = {
+		name = cc_byz_academy.6.institution
+		trigger = { cc_byz_acad_can_take_institution_trigger = yes }
+		ai_chance = { base = 15 }
+
+		custom_tooltip = cc_byz_acad_reward_institution_tt
+		set_variable = { name = cc_byz_acad_r_institution  value = yes }
+		hidden_effect = { cc_byz_acad_refresh_locations_effect = yes }
+	}
+
+	option = {
+		name = cc_byz_academy.6.tactics
+		trigger = { cc_byz_acad_can_take_tactics_trigger = yes }
+		ai_chance = { base = 25 }
+
+		custom_tooltip = cc_byz_acad_reward_tactics_tt
+		set_variable = { name = cc_byz_acad_r_tactics  value = yes }
+	}
+
+	option = {
+		name = cc_byz_academy.6.law
+		trigger = { cc_byz_acad_can_take_law_trigger = yes }
+		ai_chance = { base = 20 }
+
+		set_variable = { name = cc_byz_acad_r_law  value = yes }
+		add_country_modifier = { modifier = cc_byz_acad_law_faculty  years = -1  mode = add }
+	}
+
+	option = {
+		name = cc_byz_academy.6.theology
+		trigger = { cc_byz_acad_can_take_theology_trigger = yes }
+		ai_chance = { base = 15 }
+
+		cc_byz_acad_grant_theology_effect = yes
+	}
+
+	# Always available, and the only option when nothing is unlocked: the Academy opens without
+	# an endowment.
+	option = {
+		name = cc_byz_academy.6.none
+		ai_chance = { base = 1 }
+
+		add_prestige = prestige_weak_bonus
+		set_variable = { name = cc_byz_acad_picks  value = 1 }
+	}
+
+	after = {
+		hidden_effect = {
+			change_variable = { name = cc_byz_acad_picks  add = -1 }
+			if = {
+				limit = {
+					var:cc_byz_acad_picks >= 1
+					cc_byz_acad_any_reward_available_trigger = yes
+				}
+				trigger_event_non_silently = { id = cc_byz_academy.6 }
+			}
+			else = {
+				cc_byz_acad_finish_effect = yes
+			}
+		}
+	}
+}
+
+
+#############################################
+# .80  Router (hidden)
+#############################################
+cc_byz_academy.80 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	outcome = neutral
+	hidden = yes
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+		has_variable = cc_byz_acad_stage
+	}
+
+	immediate = {
+		if = {
+			limit = { cc_byz_acad_seat_held_trigger = no }
+			trigger_event_non_silently = { id = cc_byz_academy.90 }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_stage = 2 }
+			trigger_event_non_silently = { id = cc_byz_academy.2 }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_stage = 3 }
+			trigger_event_non_silently = { id = cc_byz_academy.3 }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_stage = 4 }
+			trigger_event_non_silently = { id = cc_byz_academy.4 }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_stage = 5 }
+			trigger_event_non_silently = { id = cc_byz_academy.5 }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_stage = 6 }
+			trigger_event_non_silently = { id = cc_byz_academy.6 }
+		}
+	}
+}
+
+
+#############################################
+# .90  The Academy closes
+#############################################
+cc_byz_academy.90 = {
+	type = country_event
+	title = cc_byz_academy.90.title
+	desc = cc_byz_academy.90.desc
+	outcome = negative
+
+	trigger = {
+		has_variable = cc_byz_acad_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	option = {
+		name = cc_byz_academy.90.a
+		set_variable = { name = cc_byz_mem_acad_lapsed  value = yes }
+		cc_byz_acad_close_effect = yes
+	}
+}

@@ -1,0 +1,242 @@
+﻿# The Academy chain: state, scheduling and rewards. See events/cc_byz_academy.txt.
+#
+# All effects run in BYZANTINE country scope unless stated.
+#
+# State:
+#   cc_byz_acad_active      the chain is running
+#   cc_byz_acad_done        the chain has resolved (once per campaign)
+#   cc_byz_acad_stage       1..6, the stage the router fires next
+#   cc_byz_acad_lean        -5..5. Negative is the Latin scholastics, positive Plethon's
+#                           Platonists, 0 the Palamite middle. Decides the theology flavour, the
+#                           charter's 20-year societal drift, the policy's drift, and at +4 or
+#                           more whether the old-rites thread opens (cc_byz_hellenic.1).
+#   cc_byz_acad_picks       charter picks left. 1, plus 1 for a reconciled Church (.4) and 1
+#                           for a court school winning the disputation (.5)
+#   cc_byz_acad_school_slot the court school slot (1-3) sent to dispute at .5
+#
+# Unlocks (cc_byz_acad_u_*) are set by choices along the chain; grants (cc_byz_acad_r_*) by the
+# charter. Rewards: policy, literacy, institution, tactics, law, theology.
+#
+# Memory variables:
+#   cc_byz_mem_acad_latin       the Latinophrones led the Academy
+#   cc_byz_mem_acad_palamite    the Palamite monks led it
+#   cc_byz_mem_acad_platonist   Plethon's circle led it
+#   cc_byz_mem_acad_translated  the Latin schoolmen were translated into Greek
+#   cc_byz_mem_acad_lapsed      the chain closed early
+
+
+cc_byz_acad_open_effect = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_byz_acad_active }
+			NOT = { has_variable = cc_byz_acad_done }
+		}
+		set_variable = { name = cc_byz_acad_active  value = yes }
+		set_variable = { name = cc_byz_acad_stage  value = 1 }
+		set_variable = { name = cc_byz_acad_lean  value = 0 }
+		set_variable = { name = cc_byz_acad_picks  value = 1 }
+		trigger_event_non_silently = { id = cc_byz_academy.1 }
+	}
+}
+
+# Called first by every visible stage. Saves the seat for loc and stamps the shared limiter so
+# the other Rhomania threads give way while the chain runs.
+cc_byz_acad_stage_setup_effect = {
+	cc_byz_pulse_stamp_effect = yes
+	if = {
+		limit = { owns_or_non_sovereign_subject_owns = location:constantinople }
+		location:constantinople = { save_scope_as = cc_acad_seat }
+	}
+	else = {
+		location:athens = { save_scope_as = cc_acad_seat }
+	}
+}
+
+cc_byz_acad_add_lean_effect = {
+	change_variable = { name = cc_byz_acad_lean  add = $value$ }
+	clamp_variable = { name = cc_byz_acad_lean  min = -5  max = 5 }
+}
+
+cc_byz_acad_schedule_next_effect = {
+	change_variable = { name = cc_byz_acad_stage  add = 1 }
+	trigger_event_silently = { id = cc_byz_academy.80  years = { $min$ $max$ } }
+}
+
+cc_byz_acad_close_effect = {
+	remove_variable = cc_byz_acad_active
+	remove_variable = cc_byz_acad_stage
+	remove_variable = cc_byz_acad_picks
+	remove_variable = cc_byz_acad_school_slot
+	set_variable = { name = cc_byz_acad_done  value = yes }
+}
+
+
+###############################################################################
+# COURT SCHOOLS
+###############################################################################
+
+# Pick the most renowned seated school with an academic curriculum for the disputation at .5.
+# Saves its seat as scope:cc_acad_school_seat for loc.
+cc_byz_acad_pick_school_effect = {
+	remove_variable = cc_byz_acad_school_slot
+	set_variable = { name = cc_byz_acad_school_best  value = -1 }
+	cc_byz_acad_consider_school_effect = { N = 1 }
+	cc_byz_acad_consider_school_effect = { N = 2 }
+	cc_byz_acad_consider_school_effect = { N = 3 }
+	remove_variable = cc_byz_acad_school_best
+	cc_byz_acad_save_school_seat_effect = yes
+}
+
+cc_byz_acad_consider_school_effect = {
+	if = {
+		limit = {
+			cc_byz_acad_school_fits_trigger = { N = $N$ }
+			# Guarded: a sibling has_variable does not stop the var: read being evaluated.
+			trigger_if = {
+				limit = { has_variable = cc_xp_school_$N$_renown }
+				var:cc_xp_school_$N$_renown > var:cc_byz_acad_school_best
+			}
+			trigger_else = { always = no }
+		}
+		set_variable = { name = cc_byz_acad_school_slot  value = $N$ }
+		set_variable = { name = cc_byz_acad_school_best  value = var:cc_xp_school_$N$_renown }
+	}
+}
+
+cc_byz_acad_save_school_seat_effect = {
+	if = {
+		limit = { has_variable = cc_byz_acad_school_slot }
+		if = {
+			limit = { var:cc_byz_acad_school_slot = 1 }
+			var:cc_xp_school_1_loc ?= { save_scope_as = cc_acad_school_seat }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_school_slot = 2 }
+			var:cc_xp_school_2_loc ?= { save_scope_as = cc_acad_school_seat }
+		}
+		else_if = {
+			limit = { var:cc_byz_acad_school_slot = 3 }
+			var:cc_xp_school_3_loc ?= { save_scope_as = cc_acad_school_seat }
+		}
+	}
+}
+
+# Push the disputing school's renown and quality. cc_xp_school_change clamps to 0-100.
+cc_byz_acad_school_change_effect = {
+	if = {
+		limit = { var:cc_byz_acad_school_slot = 1 }
+		cc_xp_school_change = { N = 1  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+	else_if = {
+		limit = { var:cc_byz_acad_school_slot = 2 }
+		cc_xp_school_change = { N = 2  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+	else_if = {
+		limit = { var:cc_byz_acad_school_slot = 3 }
+		cc_xp_school_change = { N = 3  RENOWN = $RENOWN$  QUALITY = $QUALITY$ }
+	}
+}
+
+# The disputation itself. WIN and LOSE are the two weights.
+cc_byz_acad_dispute_roll_effect = {
+	random_list = {
+		$WIN$ = {
+			custom_tooltip = cc_byz_acad_dispute_won_tt
+			hidden_effect = {
+				set_variable = { name = cc_byz_acad_school_won  value = yes }
+				change_variable = { name = cc_byz_acad_picks  add = 1 }
+				set_variable = { name = cc_byz_acad_u_literacy  value = yes }
+				cc_byz_acad_school_change_effect = { RENOWN = 10  QUALITY = 5 }
+			}
+		}
+		$LOSE$ = {
+			custom_tooltip = cc_byz_acad_dispute_lost_tt
+			hidden_effect = {
+				cc_byz_acad_school_change_effect = { RENOWN = -5  QUALITY = 0 }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# REWARDS
+###############################################################################
+
+# Location rewards. Adds the granted modifiers to every university we own, and removes them
+# where the university is gone. Run on grant and yearly (on_action/cc_byz_academy.txt), so
+# universities built later are covered.
+#
+# Known gap: a location we LOSE keeps the modifier, because finding it again would mean
+# iterating every location in the world each year. It is a permanent +4 literacy cap and a
+# little institution growth in one city; not worth that cost.
+cc_byz_acad_refresh_locations_effect = {
+	every_owned_location = {
+		if = {
+			limit = { has_building = building_type:university }
+			if = {
+				limit = {
+					root = { has_variable = cc_byz_acad_r_literacy }
+					NOT = { has_location_modifier = cc_byz_acad_literacy }
+				}
+				add_location_modifier = { modifier = cc_byz_acad_literacy  years = -1  mode = add }
+			}
+			if = {
+				limit = {
+					root = { has_variable = cc_byz_acad_r_institution }
+					NOT = { has_location_modifier = cc_byz_acad_institutions }
+				}
+				add_location_modifier = { modifier = cc_byz_acad_institutions  years = -1  mode = add }
+			}
+		}
+		else = {
+			if = {
+				limit = { has_location_modifier = cc_byz_acad_literacy }
+				remove_location_modifier = cc_byz_acad_literacy
+			}
+			if = {
+				limit = { has_location_modifier = cc_byz_acad_institutions }
+				remove_location_modifier = cc_byz_acad_institutions
+			}
+		}
+	}
+}
+
+# Theology faculty, flavoured by the lean.
+cc_byz_acad_grant_theology_effect = {
+	set_variable = { name = cc_byz_acad_r_theology  value = yes }
+	if = {
+		limit = { cc_byz_acad_lean_at_most_trigger = { VALUE = -2 } }
+		add_country_modifier = { modifier = cc_byz_acad_theology_latin  years = -1  mode = add }
+	}
+	else_if = {
+		limit = { cc_byz_acad_lean_at_least_trigger = { VALUE = 2 } }
+		add_country_modifier = { modifier = cc_byz_acad_theology_platonist  years = -1  mode = add }
+	}
+	else = {
+		add_country_modifier = { modifier = cc_byz_acad_theology_palamite  years = -1  mode = add }
+	}
+}
+
+# After the last charter pick. The 20-year drift toward the winner, and Plethon's road.
+cc_byz_acad_finish_effect = {
+	if = {
+		limit = { cc_byz_acad_lean_at_most_trigger = { VALUE = -2 } }
+		add_country_modifier = { modifier = cc_byz_acad_drift_latin  years = 20  mode = add_and_extend }
+	}
+	else_if = {
+		limit = { cc_byz_acad_lean_at_least_trigger = { VALUE = 2 } }
+		add_country_modifier = { modifier = cc_byz_acad_drift_hellenic  years = 20  mode = add_and_extend }
+	}
+	# THE OLD-RITES ON-RAMP. cc_byz_hellenic.1 used to fire on completing the Academy task; now
+	# only an Academy that Plethon's circle actually won raises the question. It is fire_only_once
+	# and makes no conversion itself (see the header of cc_byz_hellenic.txt).
+	if = {
+		limit = {
+			cc_byz_acad_lean_at_least_trigger = { VALUE = 4 }
+			cc_byz_faith_orthodox_trigger = yes
+		}
+		trigger_event_non_silently = { id = cc_byz_hellenic.1  days = 30 }
+	}
+	cc_byz_acad_close_effect = yes
+}

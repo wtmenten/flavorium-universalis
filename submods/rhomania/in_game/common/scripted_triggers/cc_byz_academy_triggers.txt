@@ -1,0 +1,204 @@
+﻿# The Academy chain: triggers. See events/cc_byz_academy.txt. Country scope unless stated.
+
+# The Academy has a home: Constantinople, or failing that Athens. The router checks this before
+# every stage; losing both closes the chain through .90.
+cc_byz_acad_seat_held_trigger = {
+	OR = {
+		owns_or_non_sovereign_subject_owns = location:constantinople
+		owns_or_non_sovereign_subject_owns = location:athens
+	}
+}
+
+# Guarded read of the lean, for desc and option triggers. Unset reads as 0.
+cc_byz_acad_lean_at_least_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_acad_lean }
+		var:cc_byz_acad_lean >= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_acad_lean_at_most_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_acad_lean }
+		var:cc_byz_acad_lean <= $VALUE$
+	}
+	trigger_else = { always = no }
+}
+
+# --- Ministers who open options. Plain has_trait reads; the chain never grants these, because
+# several are ladder rungs the experience system owns.
+
+cc_byz_acad_scholar_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = learned_courtier
+			has_trait = learned_counselor
+			has_trait = humanist_philosopher
+			has_trait = renaissance_humanist
+			has_trait = hellenistic_scholar
+		}
+	}
+}
+
+cc_byz_acad_jurist_minister_trigger = {
+	any_cabinet_character = { has_trait = legal_scholar }
+}
+
+cc_byz_acad_strategist_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = tactical_advisor
+			has_trait = offensive_strategist
+			has_trait = steppe_strategos
+			has_trait = infantry_drillmaster
+		}
+	}
+}
+
+cc_byz_acad_theologian_minister_trigger = {
+	any_cabinet_character = {
+		OR = {
+			has_trait = crown_theologian
+			has_trait = theological_statesman
+			has_trait = ecumenical_patriarch_advisor
+			has_trait = mystical_patriarch
+		}
+	}
+}
+
+# --- Court schools (the Court Ledger). Slot N is seated and teaches an academic curriculum:
+# law 1, theology 2, natural philosophy 3, letters 4, military science 5, rhetoric 9, history 12.
+cc_byz_acad_school_fits_trigger = {
+	cc_xp_school_is_seated = { N = $N$ }
+	trigger_if = {
+		limit = { has_variable = cc_xp_school_$N$_curriculum }
+		OR = {
+			var:cc_xp_school_$N$_curriculum = 1
+			var:cc_xp_school_$N$_curriculum = 2
+			var:cc_xp_school_$N$_curriculum = 3
+			var:cc_xp_school_$N$_curriculum = 4
+			var:cc_xp_school_$N$_curriculum = 5
+			var:cc_xp_school_$N$_curriculum = 9
+			var:cc_xp_school_$N$_curriculum = 12
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# A seated school of discipline TRACK (1 administrative, 3 military).
+cc_byz_acad_school_of_track_trigger = {
+	OR = {
+		cc_byz_acad_school_track_slot_trigger = { N = 1  TRACK = $TRACK$ }
+		cc_byz_acad_school_track_slot_trigger = { N = 2  TRACK = $TRACK$ }
+		cc_byz_acad_school_track_slot_trigger = { N = 3  TRACK = $TRACK$ }
+	}
+}
+
+cc_byz_acad_school_track_slot_trigger = {
+	cc_xp_school_is_seated = { N = $N$ }
+	trigger_if = {
+		limit = { has_variable = cc_xp_school_$N$_track }
+		var:cc_xp_school_$N$_track = $TRACK$
+	}
+	trigger_else = { always = no }
+}
+
+# A cabinet minister belongs to the school picked for the disputation (cc_byz_acad_school_slot).
+# One branch per slot rather than comparing against root.var:, which no vanilla file does.
+cc_byz_acad_school_member_minister_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_acad_school_slot }
+		OR = {
+			cc_byz_acad_slot_member_trigger = { N = 1 }
+			cc_byz_acad_slot_member_trigger = { N = 2 }
+			cc_byz_acad_slot_member_trigger = { N = 3 }
+		}
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_acad_slot_member_trigger = {
+	var:cc_byz_acad_school_slot = $N$
+	any_cabinet_character = {
+		trigger_if = {
+			limit = { has_variable = cc_xp_school }
+			var:cc_xp_school = $N$
+		}
+		trigger_else = { always = no }
+	}
+}
+
+# --- Charter rewards. Each is offered when unlocked, not yet granted, and its own requirement
+# holds. The requirement is stated in cc_byz_academy.6's description.
+
+cc_byz_acad_can_take_policy_trigger = {
+	has_variable = cc_byz_acad_u_policy
+	NOT = { has_variable = cc_byz_acad_r_policy }
+}
+
+cc_byz_acad_can_take_literacy_trigger = {
+	has_variable = cc_byz_acad_u_literacy
+	NOT = { has_variable = cc_byz_acad_r_literacy }
+	cc_byz_avg_literacy_nobles >= 35
+}
+
+cc_byz_acad_can_take_institution_trigger = {
+	has_variable = cc_byz_acad_u_institution
+	NOT = { has_variable = cc_byz_acad_r_institution }
+}
+
+cc_byz_acad_can_take_tactics_trigger = {
+	has_variable = cc_byz_acad_u_tactics
+	NOT = { has_variable = cc_byz_acad_r_tactics }
+	OR = {
+		any_cabinet_character = { mil >= 65 }
+		cc_byz_acad_school_of_track_trigger = { TRACK = 3 }
+	}
+}
+
+cc_byz_acad_can_take_law_trigger = {
+	has_variable = cc_byz_acad_u_law
+	NOT = { has_variable = cc_byz_acad_r_law }
+	OR = {
+		cc_byz_acad_jurist_minister_trigger = yes
+		cc_byz_acad_school_of_track_trigger = { TRACK = 1 }
+	}
+}
+
+cc_byz_acad_can_take_theology_trigger = {
+	has_variable = cc_byz_acad_u_theology
+	NOT = { has_variable = cc_byz_acad_r_theology }
+}
+
+cc_byz_acad_any_reward_available_trigger = {
+	OR = {
+		cc_byz_acad_can_take_policy_trigger = yes
+		cc_byz_acad_can_take_literacy_trigger = yes
+		cc_byz_acad_can_take_institution_trigger = yes
+		cc_byz_acad_can_take_tactics_trigger = yes
+		cc_byz_acad_can_take_law_trigger = yes
+		cc_byz_acad_can_take_theology_trigger = yes
+	}
+}
+
+# The disputing school's quality is at least VALUE (0-100).
+cc_byz_acad_school_quality_at_least_trigger = {
+	OR = {
+		cc_byz_acad_slot_quality_trigger = { N = 1  VALUE = $VALUE$ }
+		cc_byz_acad_slot_quality_trigger = { N = 2  VALUE = $VALUE$ }
+		cc_byz_acad_slot_quality_trigger = { N = 3  VALUE = $VALUE$ }
+	}
+}
+
+cc_byz_acad_slot_quality_trigger = {
+	trigger_if = {
+		limit = {
+			has_variable = cc_byz_acad_school_slot
+			has_variable = cc_xp_school_$N$_quality
+		}
+		var:cc_byz_acad_school_slot = $N$
+		var:cc_xp_school_$N$_quality >= $VALUE$
+	}
+	trigger_else = { always = no }
+}

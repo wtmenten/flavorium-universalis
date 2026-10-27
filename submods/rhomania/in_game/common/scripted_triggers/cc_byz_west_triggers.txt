@@ -250,3 +250,54 @@ cc_byz_location_in_exarch_region_trigger = {
 		}
 	}
 }
+
+# Country scope, a subject of the emperor. Whether its land inside a new prefecture's region
+# is folded into the exarchate at creation (cc_byz_create_exarchate_effect).
+#
+# The exempt list is every arrangement where the subject's land is not the empire's to
+# reassign: tributaries pay and keep their own crown, protectorates and holy protectorates
+# are under protection rather than rule, a shadow state's whole premise is a throne that
+# looks independent, and a union partner (vanilla union or the base mod's junior/lesser
+# partner types) shares a ruler rather than taking orders. Human-played subjects are never
+# stripped: in multiplayer that is another player's country.
+#
+# protectorate, holy_protectorate, shadow_state, junior_partner and lesser_partner are base
+# mod subject types. This submod requires the base mod, so they always exist.
+cc_byz_exarch_absorbable_subject_trigger = {
+	NOT = { has_variable = cc_byz_is_exarchate }
+	NOT = { is_subject_type = cc_byz_exarchate }
+	NOT = { is_subject_type = tributary }
+	NOT = { is_subject_type = protectorate }
+	NOT = { is_subject_type = holy_protectorate }
+	NOT = { is_subject_type = shadow_state }
+	NOT = { is_subject_type = junior_partner }
+	NOT = { is_subject_type = lesser_partner }
+	NOT = { exists = union }
+	is_human = no
+}
+
+# Country scope, an exarchate. True when the five-year cession review is due: the cooldown
+# has run out and the emperor still holds land directly somewhere in this prefecture's region.
+# Read by cc_byz_on_yearly_exarch_cession and cc_byz_cession.1.
+cc_byz_exarch_cession_due_trigger = {
+	has_variable = cc_byz_is_exarchate
+	NOT = { has_variable = cc_byz_exarch_cession_cd }
+	OR = {
+		AND = {
+			cc_byz_exarch_in_italy_trigger = yes
+			overlord ?= { any_owned_location = { region = region:italy_region } }
+		}
+		AND = {
+			cc_byz_exarch_in_africa_trigger = yes
+			overlord ?= { any_owned_location = { region = region:maghreb_region } }
+		}
+		AND = {
+			cc_byz_exarch_in_spania_trigger = yes
+			overlord ?= { any_owned_location = { region = region:iberia_region } }
+		}
+		AND = {
+			cc_byz_exarch_in_gaul_trigger = yes
+			overlord ?= { any_owned_location = { region = region:france_region } }
+		}
+	}
+}

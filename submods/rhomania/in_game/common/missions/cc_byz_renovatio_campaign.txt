@@ -502,29 +502,29 @@ cc_byz_renovatio_campaign = {
 	# The tree has no explicit positions, laying out from `requires` alone, so siblings added
 	# here cannot collide with anything.
 
-	# THE ON-RAMP, AND IT IS NOT A CONVERSION. Visible to an Orthodox emperor, because that is
-	# the only kind of emperor who can reopen the Academy. It makes the question askable; the
-	# answering is vanilla's movement, which this deliberately neither duplicates nor bypasses.
+	# THE ACADEMY CHAIN. Five universities and a seat for the Academy open events/
+	# cc_byz_academy.txt, which ends in a charter of rewards. It is also where the old-rites
+	# on-ramp now lives: only an Academy won by Plethon's circle fires cc_byz_hellenic.1, where
+	# completing this task used to fire it every time. The nobles' literacy check moved to the
+	# chain's literacy reward.
 	cc_byz_task_academy = {
 		icon = cc_byz_mission_coin
 		requires = { cc_byz_task_hippodrome }
 		enabled = {
 			custom_tooltip = {
-				text = cc_byz_tt_nobles_literate_35
-				cc_byz_avg_literacy_nobles >= 35
+				text = cc_byz_acad_5_universities_tt
+				cc_byz_acad_university_count >= 5
 			}
 			custom_tooltip = {
 				text = cc_byz_academy_tt
-				OR = {
-					owns_or_non_sovereign_subject_owns = location:athens
-					owns_or_non_sovereign_subject_owns = location:constantinople
-				}
+				cc_byz_acad_seat_held_trigger = yes
 			}
 		}
 		duration = 0
 		on_persistent_completion = {
 			add_prestige = prestige_mild_bonus
-			trigger_event_non_silently = { id = cc_byz_hellenic.1 }
+			custom_tooltip = cc_byz_acad_opens_chain_tt
+			hidden_effect = { cc_byz_acad_open_effect = yes }
 		}
 	}
 
@@ -977,20 +977,27 @@ cc_byz_renovatio_campaign = {
 	# T2c. UNDER THE LATIN POWERS.
 	######################################################################
 
+	# A marriage into a Catholic GREAT POWER, not any Catholic court: the point is a western
+	# king who cannot afford to see us fall. And the marriage must join the two successions, their
+	# ruler or heir to ours, so it reads as a possible union of crowns; see
+	# cc_byz_lat_candidate_trigger. Completing it opens the Latin Empress chain
+	# (events/cc_byz_latin_empress.txt) with the strongest such in-law as the partner.
 	cc_byz_task_latin_bride = {
 		icon = cc_byz_mission_crown
 		requires = { cc_byz_task_latin_powers }
 		enabled = {
-			any_country = {
-				religion = religion:catholic
-				has_royal_marriage_with = root
+			custom_tooltip = {
+				text = cc_byz_lat_bride_tt
+				any_country = { cc_byz_lat_candidate_trigger = yes }
 			}
 		}
 		duration = 0
 		on_persistent_completion = {
-			add_prestige = prestige_weak_bonus
+			add_prestige = prestige_mild_bonus
 			change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
 			add_country_modifier = { modifier = cc_byz_reward_confidence  years = 15  mode = add_and_extend }
+			custom_tooltip = cc_byz_lat_opens_chain_tt
+			hidden_effect = { cc_byz_lat_open_effect = yes }
 		}
 	}
 

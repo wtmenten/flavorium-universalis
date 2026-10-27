@@ -1,0 +1,38 @@
+﻿# The Academy chain's scaling rewards. See events/cc_byz_academy.txt.
+
+# Military science at the Academy: Leo VI's Tactica taught as a discipline. 0.01 military
+# tactics per university we own, capped at 20 universities (0.2).
+cc_byz_acad_tactics = {
+	potential_trigger = {
+		has_variable = cc_byz_acad_r_tactics
+	}
+
+	scales_with = {
+		value = cc_byz_acad_tactics_scale
+	}
+
+	military_tactics = 0.01
+}
+
+# The Imperial Academy policy pulls the societal value toward whoever won the Academy. The
+# policy itself is the same for both; the drift is here because a policy's modifier cannot
+# branch. Both gate on has_societal_value, as vanilla's byzantium.txt does for every entry.
+cc_byz_acad_policy_latin = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_policy = cc_byz_imperial_academy
+		cc_byz_acad_lean_at_most_trigger = { VALUE = -2 }
+	}
+
+	monthly_towards_latinization = societal_value_tiny_monthly_move
+}
+
+cc_byz_acad_policy_hellenic = {
+	potential_trigger = {
+		has_societal_value = societal_value_type:latinization_vs_hellenization
+		has_policy = cc_byz_imperial_academy
+		cc_byz_acad_lean_at_least_trigger = { VALUE = 2 }
+	}
+
+	monthly_towards_hellenization = societal_value_tiny_monthly_move
+}

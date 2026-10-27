@@ -5,8 +5,6 @@
 #
 # cc_xp.1    Service record readout, opened from the cc_xp_inspect_service_record
 #            character interaction. Displays only; changes nothing.
-# cc_xp.10   Ladder advancement notification. The advancement itself has already
-#            happened in cc_xp_ladder_advance; this only reports it.
 # cc_xp.11   Court examination sitting. Queued months earlier by the interaction;
 #            this is where the experience is actually awarded.
 # cc_xp.40   Weariness at the top: a very senior minister is worn down.
@@ -52,49 +50,6 @@ cc_xp.1 = {
 
 	option = {
 		name = cc_xp.1.a
-	}
-}
-
-
-###############################################################################
-# LADDER ADVANCEMENT NOTIFICATION
-#
-# Fired once per year by cc_xp_yearly_advance when at least one of the player's own
-# ministers moved up a rung. The swap has already been applied; nothing here changes
-# state, so the player closing this event cannot lose the advancement.
-#
-# Names one minister rather than listing all of them: more than one advancing in the
-# same year is rare (the four-year cooldown sees to that), and a single named person
-# reads better than a list. The rest are visible on their cards.
-###############################################################################
-
-cc_xp.10 = {
-	type = country_event
-	title = cc_xp.10.title
-	desc = cc_xp.10.desc
-	outcome = positive
-
-	illustration_tags = {
-		10 = interior
-	}
-
-	trigger = {
-		any_character = {
-			has_variable = cc_xp_advanced_recently
-		}
-	}
-
-	immediate = {
-		random_character = {
-			limit = {
-				has_variable = cc_xp_advanced_recently
-			}
-			save_scope_as = cc_xp_subject
-		}
-	}
-
-	option = {
-		name = cc_xp.10.a
 	}
 }
 

@@ -1,0 +1,217 @@
+﻿# The Latin Empress: state, scheduling and outcomes. See events/cc_byz_latin_empress.txt.
+#
+# All effects run in BYZANTINE country scope.
+#
+# State on Byzantium:
+#   cc_byz_lat_partner     the Catholic great power married into the dynasty (a country)
+#   cc_byz_lat_active      the chain is running
+#   cc_byz_lat_done        the chain has resolved (once per campaign; nothing clears this)
+#   cc_byz_lat_stage       1..6, the stage the router fires next
+#   cc_byz_lat_bond        0..10, how close the two courts have grown. Sets the settlement tier.
+#   cc_byz_lat_war_waits   years the crusade stage has been held back by a war
+#   cc_byz_lat_west        set on the WESTERN BRANCH: our princess went to their court,
+#                          rather than their princess coming to ours
+#   cc_byz_lat_princess    western branch only: the Byzantine princess (a character)
+#   cc_byz_lat_our_spouse  our ruler or heir in the marriage (a character)
+#   cc_byz_lat_their_spouse  their ruler or heir in the marriage (a character). The chain
+#                          lapses through .90 if either dies, they cease to be married, or
+#                          either stops being ruler or heir of their own country.
+#
+# Memory variables:
+#   cc_byz_mem_lat_orthodox_name   the empress took an Orthodox name and confession
+#   cc_byz_mem_lat_chapel          a Latin chapel was kept in the palace
+#   cc_byz_mem_lat_knights         Latin knights were taken into imperial service
+#   cc_byz_mem_lat_tournament      a western tournament was held in the capital
+#   cc_byz_mem_lat_privileges      the in-laws' merchants were given a quarter and exemptions
+#   cc_byz_mem_lat_crusade         a joint crusade was sworn
+#   cc_byz_mem_lat_lapsed          the partnership ended before the settlement
+#   cc_byz_mem_lat_princess_rome   western branch: the princess was received into the Roman Church
+#   cc_byz_mem_lat_princess_orthodox  western branch: she kept her faith at their court
+#   cc_byz_mem_lat_scholars        western branch: Greek scholars went west with her
+#   cc_byz_mem_lat_ceremonial      western branch: she carried the palace ceremonial west
+#   cc_byz_mem_lat_letters         western branch: her letters were used as intelligence
+#   cc_byz_lat_company_hired       the knights are in service and their pay will come due (.21)
+
+
+# Opening. Called from the Latin Bride mission task. Picks the strongest Catholic great power
+# married into the dynasty, records it and the couple, and fires .1 or .11. Does nothing if the chain already ran.
+cc_byz_lat_open_effect = {
+	if = {
+		limit = {
+			NOT = { has_variable = cc_byz_lat_active }
+			NOT = { has_variable = cc_byz_lat_done }
+		}
+		ordered_country = {
+			limit = { cc_byz_lat_candidate_trigger = yes }
+			order_by = great_power_score
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_lat_partner
+		}
+		if = {
+			limit = { exists = scope:cc_lat_partner }
+			set_variable = { name = cc_byz_lat_partner  value = scope:cc_lat_partner }
+			set_variable = { name = cc_byz_lat_active  value = yes }
+			set_variable = { name = cc_byz_lat_stage  value = 1 }
+			set_variable = { name = cc_byz_lat_bond  value = 3 }
+			set_variable = { name = cc_byz_lat_war_waits  value = 0 }
+			# THE COUPLE. The candidate trigger accepts the marriage in either direction, so
+			# first find which of our ruler and heir is the spouse. A MALE spouse is preferred:
+			# if one exists their princess has come to us and this is the Latin Empress branch.
+			# When both marriages exist at once the empress branch wins, since it is the one at
+			# home. Otherwise our spouse is a woman of the imperial house who has gone to their
+			# court: the western branch.
+			if = {
+				limit = {
+					ruler ?= {
+						is_female = no
+						cc_byz_lat_spouse_of_partner_succession_trigger = yes
+					}
+				}
+				ruler = { save_scope_as = cc_lat_our_spouse }
+			}
+			else_if = {
+				limit = {
+					heir ?= {
+						is_female = no
+						cc_byz_lat_spouse_of_partner_succession_trigger = yes
+					}
+				}
+				heir = { save_scope_as = cc_lat_our_spouse }
+			}
+			else_if = {
+				limit = { ruler ?= { cc_byz_lat_spouse_of_partner_succession_trigger = yes } }
+				ruler = { save_scope_as = cc_lat_our_spouse }
+			}
+			else = {
+				heir ?= { save_scope_as = cc_lat_our_spouse }
+			}
+			# Their side of the marriage: whichever of their ruler and heir is married to ours.
+			scope:cc_lat_partner = {
+				if = {
+					limit = { ruler ?= { is_spouse_of = scope:cc_lat_our_spouse } }
+					ruler = { save_scope_as = cc_lat_their_spouse }
+				}
+				else = {
+					heir ?= { save_scope_as = cc_lat_their_spouse }
+				}
+			}
+			set_variable = { name = cc_byz_lat_our_spouse  value = scope:cc_lat_our_spouse }
+			set_variable = { name = cc_byz_lat_their_spouse  value = scope:cc_lat_their_spouse }
+
+			if = {
+				limit = { scope:cc_lat_our_spouse = { is_female = no } }
+				trigger_event_non_silently = { id = cc_byz_latin.1 }
+			}
+			else = {
+				set_variable = { name = cc_byz_lat_west  value = yes }
+				set_variable = { name = cc_byz_lat_princess  value = scope:cc_lat_our_spouse }
+				trigger_event_non_silently = { id = cc_byz_latin.11 }
+			}
+		}
+	}
+}
+
+# Saves the chain's scopes from its variables. A var: pointing at a character who has since been
+# purged resolves to nothing, so ?= skips it and the scope stays unset; the validity trigger
+# reads an unset couple scope as a broken marriage.
+cc_byz_lat_save_scopes_effect = {
+	if = {
+		limit = { has_variable = cc_byz_lat_partner }
+		var:cc_byz_lat_partner ?= { save_scope_as = cc_lat_partner }
+	}
+	if = {
+		limit = { has_variable = cc_byz_lat_princess }
+		var:cc_byz_lat_princess ?= { save_scope_as = cc_lat_princess }
+	}
+	if = {
+		limit = { has_variable = cc_byz_lat_our_spouse }
+		var:cc_byz_lat_our_spouse ?= { save_scope_as = cc_lat_our_spouse }
+	}
+	if = {
+		limit = { has_variable = cc_byz_lat_their_spouse }
+		var:cc_byz_lat_their_spouse ?= { save_scope_as = cc_lat_their_spouse }
+	}
+}
+
+# Every visible stage calls this first, so loc can name the partner and the other Rhomania
+# threads give way while the chain runs.
+cc_byz_lat_stage_setup_effect = {
+	cc_byz_pulse_stamp_effect = yes
+	cc_byz_lat_save_scopes_effect = yes
+}
+
+cc_byz_lat_add_bond_effect = {
+	change_variable = { name = cc_byz_lat_bond  add = $value$ }
+	clamp_variable = { name = cc_byz_lat_bond  min = 0  max = 10 }
+}
+
+# The partner's opinion of us.
+cc_byz_lat_partner_opinion_effect = {
+	if = {
+		limit = { exists = scope:cc_lat_partner }
+		scope:cc_lat_partner = {
+			add_opinion = {
+				target = root
+				modifier = $modifier$
+			}
+		}
+	}
+}
+
+# Advance to the next stage and schedule the router. Called from the after block of every
+# stage. The router checks the partner first, so a partner lost during the wait closes the
+# chain through .90 rather than leaving it dead.
+cc_byz_lat_schedule_next_effect = {
+	change_variable = { name = cc_byz_lat_stage  add = 1 }
+	trigger_event_silently = { id = cc_byz_latin.80  years = { $min$ $max$ } }
+}
+
+cc_byz_lat_close_effect = {
+	remove_variable = cc_byz_lat_active
+	remove_variable = cc_byz_lat_stage
+	remove_variable = cc_byz_lat_war_waits
+	set_variable = { name = cc_byz_lat_done  value = yes }
+}
+
+# The crusade. Both courts get the claim; an AI partner is also bound by a 20-year alliance so
+# it answers the call when we declare. A human partner is never allied by script
+# (create_relation imposes the alliance without asking); they get the claim and decide for
+# themselves.
+cc_byz_lat_swear_crusade_effect = {
+	set_variable = { name = cc_byz_mem_lat_crusade  value = yes }
+	add_casus_belli = {
+		target = scope:cc_lat_target
+		type = casus_belli:cc_byz_cb_latin_crusade
+		years = 15
+	}
+	add_country_modifier = {
+		modifier = cc_byz_lat_crusade_preparations
+		years = 10
+		mode = add_and_extend
+	}
+	scope:cc_lat_partner = {
+		add_casus_belli = {
+			target = scope:cc_lat_target
+			type = casus_belli:cc_byz_cb_latin_crusade
+			years = 15
+		}
+		if = {
+			limit = {
+				is_ai = yes
+				NOT = {
+					has_mutual_scripted_relation = {
+						type = relation_type:alliance
+						target = root
+					}
+				}
+			}
+			create_relation = {
+				first = root
+				second = this
+				type = relation_type:alliance
+				years = 20
+			}
+		}
+	}
+}

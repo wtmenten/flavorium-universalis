@@ -1,0 +1,185 @@
+﻿# The Latin Empress: triggers. See events/cc_byz_latin_empress.txt.
+#
+# All in BYZANTINE country scope. The partner is stored as var:cc_byz_lat_partner.
+
+# A Catholic great power married into the dynasty. Shared by the mission task's enabled block
+# and the opening effect's partner search, so the two cannot drift apart.
+#
+# Scope is the candidate country; root is Byzantium.
+#
+# A MARRIAGE OF TWO SUCCESSIONS. The ruler or heir of the candidate must be married to our ruler
+# or heir, so the children of the marriage stand in line for both crowns and the match reads as a
+# possible union. A royal marriage is a country relation and can be made through any cadet prince,
+# so has_royal_marriage_with alone says nothing about that. Either direction counts: a Latin
+# empress in Constantinople, or a Byzantine princess as queen or crown princess in the west.
+cc_byz_lat_candidate_trigger = {
+	religion = religion:catholic
+	is_great_power = yes
+	has_royal_marriage_with = root
+	NOT = { is_at_war_with = root }
+	OR = {
+		ruler ?= { cc_byz_lat_spouse_of_our_succession_trigger = yes }
+		heir ?= { cc_byz_lat_spouse_of_our_succession_trigger = yes }
+	}
+}
+
+# Character scope; root is Byzantium. Married to our ruler or our heir.
+#
+# Each trigger_if carries a trigger_else = no: inside an OR, a trigger_if whose limit fails
+# evaluates TRUE, which would pass the whole check whenever we had no heir.
+cc_byz_lat_spouse_of_our_succession_trigger = {
+	OR = {
+		trigger_if = {
+			limit = { exists = root.ruler }
+			is_spouse_of = root.ruler
+		}
+		trigger_else = { always = no }
+		trigger_if = {
+			limit = { exists = root.heir }
+			is_spouse_of = root.heir
+		}
+		trigger_else = { always = no }
+	}
+}
+
+# Character scope (one of OUR ruler or heir); needs scope:cc_lat_partner. Married to the
+# partner's ruler or heir. Used once, by the opening effect, to tell the two branches apart.
+cc_byz_lat_spouse_of_partner_succession_trigger = {
+	OR = {
+		trigger_if = {
+			limit = { exists = scope:cc_lat_partner.ruler }
+			is_spouse_of = scope:cc_lat_partner.ruler
+		}
+		trigger_else = { always = no }
+		trigger_if = {
+			limit = { exists = scope:cc_lat_partner.heir }
+			is_spouse_of = scope:cc_lat_partner.heir
+		}
+		trigger_else = { always = no }
+	}
+}
+
+# The partner is still a partner. The router checks this before every stage; failing it sends
+# the chain to .90. Needs cc_byz_lat_save_scopes_effect to have run first.
+#
+# Two halves: the COURT (still Catholic, still a great power, still a royal marriage, not at war
+# with us) and the COUPLE (both alive, still married to each other, each still ruler or heir of
+# their own country). The union of crowns is left to vanilla: if the couple's line inherits both
+# thrones the engine creates it, and nothing here needs to.
+cc_byz_lat_partner_valid_trigger = {
+	cc_byz_lat_court_valid_trigger = yes
+	cc_byz_lat_couple_alive_trigger = yes
+	cc_byz_lat_couple_in_line_trigger = yes
+}
+
+cc_byz_lat_court_valid_trigger = {
+	trigger_if = {
+		limit = { exists = scope:cc_lat_partner }
+		scope:cc_lat_partner = {
+			religion = religion:catholic
+			is_great_power = yes
+			has_royal_marriage_with = root
+			NOT = { is_at_war_with = root }
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# Both spouses alive and still married to each other.
+cc_byz_lat_couple_alive_trigger = {
+	trigger_if = {
+		limit = {
+			exists = scope:cc_lat_our_spouse
+			exists = scope:cc_lat_their_spouse
+		}
+		scope:cc_lat_our_spouse = {
+			is_alive = yes
+			is_spouse_of = scope:cc_lat_their_spouse
+		}
+		scope:cc_lat_their_spouse = { is_alive = yes }
+	}
+	trigger_else = { always = no }
+}
+
+# Each spouse still ruler or heir of their own country. Checked on its own so .90 can say which
+# thing went wrong; a dead spouse fails this too, so read it after the alive check.
+cc_byz_lat_couple_in_line_trigger = {
+	trigger_if = {
+		limit = {
+			exists = scope:cc_lat_our_spouse
+			exists = scope:cc_lat_their_spouse
+			exists = scope:cc_lat_partner
+		}
+		scope:cc_lat_our_spouse = {
+			OR = {
+				is_ruler_of = root
+				is_heir_of = root
+			}
+		}
+		scope:cc_lat_their_spouse = {
+			OR = {
+				is_ruler_of = scope:cc_lat_partner
+				is_heir_of = scope:cc_lat_partner
+			}
+		}
+	}
+	trigger_else = { always = no }
+}
+
+# The bride is the spouse who moved: theirs in the empress branch, ours (the princess) in the
+# western branch. The groom is the other one. Used by .90 to say who died.
+cc_byz_lat_bride_alive_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_lat_west }
+		scope:cc_lat_our_spouse ?= { is_alive = yes }
+	}
+	trigger_else = {
+		scope:cc_lat_their_spouse ?= { is_alive = yes }
+	}
+}
+
+cc_byz_lat_groom_alive_trigger = {
+	trigger_if = {
+		limit = { has_variable = cc_byz_lat_west }
+		scope:cc_lat_their_spouse ?= { is_alive = yes }
+	}
+	trigger_else = {
+		scope:cc_lat_our_spouse ?= { is_alive = yes }
+	}
+}
+
+# At war with the partner itself. Picks the desc and options of the closing event.
+cc_byz_lat_at_war_with_partner_trigger = {
+	trigger_if = {
+		limit = {
+			has_variable = cc_byz_lat_partner
+			country_exists = var:cc_byz_lat_partner
+		}
+		is_at_war_with = var:cc_byz_lat_partner
+	}
+	trigger_else = { always = no }
+}
+
+# Either side at war. The crusade stage waits while this holds: nobody plans an expedition
+# while they are already fighting one.
+cc_byz_lat_either_at_war_trigger = {
+	trigger_if = {
+		limit = {
+			has_variable = cc_byz_lat_partner
+			country_exists = var:cc_byz_lat_partner
+		}
+		OR = {
+			at_war = yes
+			var:cc_byz_lat_partner = { at_war = yes }
+		}
+	}
+	trigger_else = { at_war = yes }
+}
+
+# A Muslim neighbour worth a crusade: borders the empire, independent.
+# Scope is the candidate country; root is Byzantium.
+cc_byz_lat_crusade_target_trigger = {
+	religion.group = religion_group:muslim
+	is_subject = no
+	is_neighbor_of = root
+}

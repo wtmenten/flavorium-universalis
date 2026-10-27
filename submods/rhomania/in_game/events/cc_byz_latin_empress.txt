@@ -1,0 +1,1182 @@
+﻿namespace = cc_byz_latin
+
+# The Latin Empress: a resurgent Roman empire married into a Catholic great power.
+#
+# The historical models are the Komnenian marriages (Bertha of Sulzbach, who became Irene;
+# Maria of Antioch), Yolanda of Montferrat under Andronikos II, the Latin favourites and
+# tournaments of Manuel I, the Venetian chrysobull of 1082, and the crusade proposals that
+# followed every western marriage. None of them was a simple alliance. Each brought a
+# household, a rite, a set of merchants and an expectation of help against the Turks.
+#
+# ENTRY. Completing the Latin Bride mission task (cc_byz_task_latin_bride) calls
+# cc_byz_lat_open_effect, which records the strongest Catholic great power married into the
+# dynasty as the partner and fires .1 or .11. Runs once per campaign.
+#
+# TWO BRANCHES. The task needs our ruler or heir married to theirs, in either direction.
+#   Latin Empress (.1, .2, .21): their princess came to Constantinople. The rite question is
+#     about her chapel in our palace, and her household brings knights east.
+#   Western branch (.11, .12): our princess went to their court, as Sophia Palaiologina went
+#     to Moscow. The rite question is hers to answer abroad, and what flows is Greek learning
+#     and ceremonial going west.
+# Flagged by cc_byz_lat_west. From .3 on the branches share their events; .6 and .90 pick
+# their text by branch.
+#
+#   .1     the empress arrives: which rite is kept in the palace
+#   .2     Latin knights at court
+#   .21    the company's pay comes due (5-8 years after .2, only if the knights were hired)
+#   .11    WESTERN BRANCH, replaces .1: our princess at their court, and her faith
+#   .12    WESTERN BRANCH, replaces .2: what she carries west (scholars, ceremonial, letters)
+#   .3     the merchants' privileges
+#   .4     the Pope's letter: reads cc_byz_union_stage and the faith
+#   .5     the crusade proposal. HELD while either court is at war; see the router
+#   .6     the settlement, tiered by cc_byz_lat_bond
+#   .80    hidden router
+#   .90    closing event, if the partner stops being a partner
+#
+# PACING. 2-3 years between stages, so roughly 10-14 years end to end, plus up to eight years
+# of waiting at the crusade if wars keep getting in the way. Every stage stamps the shared
+# cc_byz_pulse_cd limiter so the other Rhomania threads give way while this runs, but the
+# chain itself never waits on it.
+#
+# BOND. cc_byz_lat_bond runs 0..10 and starts at 3. Concessions to the in-laws raise it,
+# refusals lower it, and .6 reads it. See scripted_effects/cc_byz_latin_effects.txt.
+#
+# PARTNER VALIDITY. The router checks cc_byz_lat_partner_valid_trigger before every stage:
+# the court still Catholic, still a great power, still married into the dynasty, not at war
+# with us; and the couple both alive, still married, and each still ruler or heir of their own
+# country. Failing any of those fires .90, which closes the chain.
+#
+# THE UNION OF CROWNS IS VANILLA'S. The marriage joins two lines of succession, and the text
+# says so, but nothing here forces a union. If the couple's line inherits both thrones the
+# engine creates the union by its normal rules.
+
+
+#############################################
+# .1  The empress arrives
+#############################################
+cc_byz_latin.1 = {
+	type = country_event
+	title = cc_byz_latin.1.title
+	desc = cc_byz_latin.1.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# She takes an Orthodox name and confession, as Bertha of Sulzbach became Irene.
+	option = {
+		name = cc_byz_latin.1.a
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_lat_orthodox_name  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_orthodox_empress
+			years = 20
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+	}
+
+	# She keeps her rite and her confessor, and a Latin chapel opens in the Blachernae.
+	option = {
+		name = cc_byz_latin.1.b
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_mem_lat_chapel  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_latin_chapel
+			years = 25
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_penalty }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+	}
+
+	# A diplomat's answer: married by the Patriarch, her confessor kept privately.
+	option = {
+		name = cc_byz_latin.1.c
+		trigger = {
+			ruler ?= { dip >= 70 }
+			gold >= 100
+		}
+		ai_chance = { base = 15 }
+
+		add_gold = -100
+		set_variable = { name = cc_byz_mem_lat_orthodox_name  value = yes }
+		add_prestige = prestige_weak_bonus
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .2  Latin knights at court
+#############################################
+cc_byz_latin.2 = {
+	type = country_event
+	title = cc_byz_latin.2.title
+	desc = cc_byz_latin.2.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = armed
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# Take the company into service. Cheap now; its pay comes due later (.21).
+	option = {
+		name = cc_byz_latin.2.a
+		ai_chance = { base = 45 }
+
+		set_variable = { name = cc_byz_mem_lat_knights  value = yes }
+		set_variable = { name = cc_byz_lat_company_hired  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_latin_knights
+			years = 10
+			mode = add_and_extend
+		}
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+		custom_tooltip = cc_byz_lat_company_pay_tt
+		hidden_effect = {
+			trigger_event_silently = { id = cc_byz_latin.21  years = { 5 8 } }
+		}
+	}
+
+	# Hold a tournament instead, as Manuel I did at Antioch.
+	option = {
+		name = cc_byz_latin.2.b
+		trigger = { gold >= 150 }
+		ai_chance = { base = 35 }
+
+		add_gold = -150
+		set_variable = { name = cc_byz_mem_lat_tournament  value = yes }
+		add_prestige = prestige_mild_bonus
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+	}
+
+	# Thank them and send them home.
+	option = {
+		name = cc_byz_latin.2.c
+		ai_chance = { base = 20 }
+
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus1_tt
+			cc_byz_lat_add_bond_effect = { value = -1 }
+		}
+		add_estate_satisfaction = { type = estate_type:nobles_estate  value = estate_satisfaction_weak_bonus }
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .21  The company's pay comes due
+#
+# Queued by .2 option a, independent of the router, so it fires even if the chain has closed
+# in the meantime. The Catalan Company is the precedent: hired in 1303, unpaid by 1305, and
+# ravaging Thrace by 1306.
+#############################################
+cc_byz_latin.21 = {
+	type = country_event
+	title = cc_byz_latin.21.title
+	desc = cc_byz_latin.21.desc
+	outcome = negative
+
+	trigger = {
+		has_variable = cc_byz_lat_company_hired
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = angry
+	}
+
+	immediate = {
+		cc_byz_pulse_stamp_effect = yes
+		remove_variable = cc_byz_lat_company_hired
+	}
+
+	# Pay them in full and keep them.
+	option = {
+		name = cc_byz_latin.21.a
+		trigger = { gold >= 250 }
+		ai_chance = { base = 50 }
+
+		add_gold = -250
+		add_country_modifier = {
+			modifier = cc_byz_lat_latin_knights
+			years = 10
+			mode = add_and_extend
+		}
+	}
+
+	# Pay them off and send them west.
+	option = {
+		name = cc_byz_latin.21.b
+		trigger = { gold >= 100 }
+		ai_chance = { base = 35 }
+
+		add_gold = -100
+		if = {
+			limit = { has_country_modifier = cc_byz_lat_latin_knights }
+			remove_country_modifier = cc_byz_lat_latin_knights
+		}
+	}
+
+	# Refuse. They will take their pay from the provinces.
+	option = {
+		name = cc_byz_latin.21.c
+		ai_chance = { base = 15 }
+
+		if = {
+			limit = { has_country_modifier = cc_byz_lat_latin_knights }
+			remove_country_modifier = cc_byz_lat_latin_knights
+		}
+		add_country_modifier = {
+			modifier = cc_byz_lat_company_at_large
+			years = 5
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:peasants_estate  value = estate_satisfaction_mild_penalty }
+	}
+}
+
+
+#############################################
+# .11  WESTERN BRANCH: our princess at their court
+#
+# Replaces .1 when the marriage ran the other way. Her faith is the first question: a
+# Byzantine princess who goes over to Rome pleases her new court and costs us at home; one who
+# keeps her faith abroad is a standing reproach to her hosts.
+#############################################
+cc_byz_latin.11 = {
+	type = country_event
+	title = cc_byz_latin.11.title
+	desc = cc_byz_latin.11.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+		has_variable = cc_byz_lat_west
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = happy
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# She is received into the Roman Church.
+	option = {
+		name = cc_byz_latin.11.a
+		ai_chance = { base = 35 }
+
+		set_variable = { name = cc_byz_mem_lat_princess_rome  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_catholic_princess
+			years = 20
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_penalty }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_left }
+	}
+
+	# She keeps her faith and an Orthodox chaplain at their court.
+	option = {
+		name = cc_byz_latin.11.b
+		ai_chance = { base = 50 }
+
+		set_variable = { name = cc_byz_mem_lat_princess_orthodox  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_orthodox_queen_abroad
+			years = 20
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+	}
+
+	# A diplomat's answer: their rite in public, her own in private, and a dowry to smooth it.
+	option = {
+		name = cc_byz_latin.11.c
+		trigger = {
+			ruler ?= { dip >= 70 }
+			gold >= 100
+		}
+		ai_chance = { base = 15 }
+
+		add_gold = -100
+		add_prestige = prestige_weak_bonus
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .12  WESTERN BRANCH: what she carries west
+#
+# Replaces .2. In the empress branch the in-laws send knights east; here the traffic runs the
+# other way. Sophia Palaiologina brought the double-headed eagle and the palace ceremonial to
+# Moscow, and Greek scholars followed Byzantine embassies into Italy for a century before 1453.
+#############################################
+cc_byz_latin.12 = {
+	type = country_event
+	title = cc_byz_latin.12.title
+	desc = cc_byz_latin.12.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+		has_variable = cc_byz_lat_west
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = renaissance
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# Send scholars and manuscripts with her household.
+	option = {
+		name = cc_byz_latin.12.a
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_lat_scholars  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_scholars_abroad
+			years = 20
+			mode = add_and_extend
+		}
+		if = {
+			limit = { exists = scope:cc_lat_partner }
+			scope:cc_lat_partner = {
+				add_country_modifier = {
+					modifier = cc_byz_lat_greek_learning
+					years = 20
+					mode = add_and_extend
+				}
+			}
+		}
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+	}
+
+	# Let her keep the ceremonial of the Sacred Palace at their court.
+	option = {
+		name = cc_byz_latin.12.b
+		ai_chance = { base = 40 }
+
+		set_variable = { name = cc_byz_mem_lat_ceremonial  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_sacred_ceremonial
+			years = 20
+			mode = add_and_extend
+		}
+		add_legitimacy = legitimacy_weak_bonus
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+	}
+
+	# Read her letters as dispatches. They may notice.
+	option = {
+		name = cc_byz_latin.12.c
+		ai_chance = { base = 20 }
+
+		set_variable = { name = cc_byz_mem_lat_letters  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_princess_letters
+			years = 15
+			mode = add_and_extend
+		}
+		random_list = {
+			70 = {
+				custom_tooltip = cc_byz_lat_letters_unnoticed_tt
+			}
+			30 = {
+				custom_tooltip = cc_byz_lat_letters_discovered_tt
+				cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_affronted }
+				custom_tooltip = {
+					text = cc_byz_lat_bond_minus2_tt
+					cc_byz_lat_add_bond_effect = { value = -2 }
+				}
+			}
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+#############################################
+# .3  The merchants' privileges
+#############################################
+cc_byz_latin.3 = {
+	type = country_event
+	title = cc_byz_latin.3.title
+	desc = cc_byz_latin.3.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = trading
+		10 = economy
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# Grant the quarter and the exemption, as Alexios I did for Venice in 1082.
+	option = {
+		name = cc_byz_latin.3.a
+		ai_chance = { base = 30 }
+
+		set_variable = { name = cc_byz_mem_lat_privileges  value = yes }
+		add_country_modifier = {
+			modifier = cc_byz_lat_latin_quarter
+			years = 30
+			mode = add_and_extend
+		}
+		scope:cc_lat_partner = {
+			add_country_modifier = {
+				modifier = cc_byz_lat_privileges_in_romania
+				years = 30
+				mode = add_and_extend
+			}
+		}
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+	}
+
+	# Grant the quarter, keep the customs.
+	option = {
+		name = cc_byz_latin.3.b
+		ai_chance = { base = 50 }
+
+		add_country_modifier = {
+			modifier = cc_byz_lat_latin_quarter_taxed
+			years = 20
+			mode = add_and_extend
+		}
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+	}
+
+	# Refuse. The customs of Constantinople are not a wedding gift.
+	option = {
+		name = cc_byz_latin.3.c
+		ai_chance = { base = 20 }
+
+		add_estate_satisfaction = { type = estate_type:burghers_estate  value = estate_satisfaction_weak_bonus }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus1_tt
+			cc_byz_lat_add_bond_effect = { value = -1 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .4  The Pope's letter
+#
+# The papacy treats every western marriage into the dynasty as an opening for church union.
+# What the letter asks depends on where the union arc stands, recorded in immediate as
+# cc_byz_lat_pope_case so the option triggers read one plain variable:
+#   0 the emperor has taken up the old rites
+#   1 no union contacts yet
+#   2 contacts opened or union signed, not yet received
+#   3 union received, or the emperor has gone over to Rome
+#   4 union repudiated
+#############################################
+cc_byz_latin.4 = {
+	type = country_event
+	title = cc_byz_latin.4.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_pope_case = 0 }
+				desc = cc_byz_latin.4.desc_hellenic
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_pope_case = 2 }
+				desc = cc_byz_latin.4.desc_progress
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_pope_case = 3 }
+				desc = cc_byz_latin.4.desc_received
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_pope_case = 4 }
+				desc = cc_byz_latin.4.desc_repudiated
+			}
+			desc = cc_byz_latin.4.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = society
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+		cc_byz_init_union_scores_effect = yes
+		if = {
+			limit = { cc_byz_faith_hellenic_trigger = yes }
+			set_variable = { name = cc_byz_lat_pope_case  value = 0 }
+		}
+		# Not Orthodox and not Hellenic means the emperor has gone over to Rome himself. The
+		# union question is settled from Rome's side; treat it as received.
+		else_if = {
+			limit = { NOT = { cc_byz_faith_orthodox_trigger = yes } }
+			set_variable = { name = cc_byz_lat_pope_case  value = 3 }
+		}
+		else_if = {
+			limit = { var:cc_byz_union_stage = 0 }
+			set_variable = { name = cc_byz_lat_pope_case  value = 1 }
+		}
+		else_if = {
+			limit = { var:cc_byz_union_stage <= 2 }
+			set_variable = { name = cc_byz_lat_pope_case  value = 2 }
+		}
+		else_if = {
+			limit = { var:cc_byz_union_stage = 3 }
+			set_variable = { name = cc_byz_lat_pope_case  value = 3 }
+		}
+		else = {
+			set_variable = { name = cc_byz_lat_pope_case  value = 4 }
+		}
+	}
+
+	# --- No contacts yet ---
+
+	# Receive the legates. Opens the union arc exactly as the action would, without its cost.
+	option = {
+		name = cc_byz_latin.4.a
+		trigger = {
+			var:cc_byz_lat_pope_case = 1
+			country_exists = c:PAP
+			NOT = { has_country_modifier = mended_schism }
+		}
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_lat_opens_union_tt
+		hidden_effect = {
+			set_variable = { name = cc_byz_union_stage  value = 1 }
+			trigger_event_non_silently = { id = cc_byz_union.1  days = 30 }
+		}
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+	}
+
+	# A marriage is not a council.
+	option = {
+		name = cc_byz_latin.4.b
+		trigger = { var:cc_byz_lat_pope_case = 1 }
+		ai_chance = { base = 50 }
+
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus1_tt
+			cc_byz_lat_add_bond_effect = { value = -1 }
+		}
+	}
+
+	# --- Union under negotiation ---
+
+	# Let the in-laws speak for the union at Rome.
+	option = {
+		name = cc_byz_latin.4.c
+		trigger = { var:cc_byz_lat_pope_case = 2 }
+		ai_chance = { base = 60 }
+
+		add_country_modifier = {
+			modifier = cc_byz_lat_union_sponsors
+			years = 15
+			mode = add_and_extend
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_penalty }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+	}
+
+	# Ask them to keep out of it.
+	option = {
+		name = cc_byz_latin.4.d
+		trigger = { var:cc_byz_lat_pope_case = 2 }
+		ai_chance = { base = 40 }
+
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+	}
+
+	# --- Union received ---
+
+	option = {
+		name = cc_byz_latin.4.e
+		trigger = { var:cc_byz_lat_pope_case = 3 }
+		ai_chance = { base = 100 }
+
+		add_prestige = prestige_mild_bonus
+		cc_byz_init_exarch_scores_effect = yes
+		change_variable = { name = cc_byz_papal_standing  add = 1 }
+		clamp_variable = { name = cc_byz_papal_standing  min = -5  max = 5 }
+		custom_tooltip = cc_byz_lat_papal_standing_plus1_tt
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus1_tt
+			cc_byz_lat_add_bond_effect = { value = 1 }
+		}
+	}
+
+	# --- Union repudiated ---
+
+	# Send gifts to the in-laws to soften it.
+	option = {
+		name = cc_byz_latin.4.f
+		trigger = {
+			var:cc_byz_lat_pope_case = 4
+			gold >= 150
+		}
+		ai_chance = { base = 50 }
+
+		add_gold = -150
+	}
+
+	# Stand on the repudiation.
+	option = {
+		name = cc_byz_latin.4.g
+		trigger = { var:cc_byz_lat_pope_case = 4 }
+		ai_chance = { base = 50 }
+
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_affronted }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus2_tt
+			cc_byz_lat_add_bond_effect = { value = -2 }
+		}
+	}
+
+	# --- Hellenic emperor ---
+
+	option = {
+		name = cc_byz_latin.4.h
+		trigger = {
+			var:cc_byz_lat_pope_case = 0
+			gold >= 200
+		}
+		ai_chance = { base = 50 }
+
+		add_gold = -200
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus1_tt
+			cc_byz_lat_add_bond_effect = { value = -1 }
+		}
+	}
+
+	option = {
+		name = cc_byz_latin.4.i
+		trigger = { var:cc_byz_lat_pope_case = 0 }
+		ai_chance = { base = 50 }
+
+		add_prestige = prestige_weak_bonus
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_affronted }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus2_tt
+			cc_byz_lat_add_bond_effect = { value = -2 }
+		}
+	}
+
+	after = {
+		hidden_effect = {
+			remove_variable = cc_byz_lat_pope_case
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .5  The crusade proposal
+#
+# Only fired by the router, which holds it back while either court is at war and skips it if
+# no Muslim neighbour exists. The target is the strongest such neighbour.
+#############################################
+cc_byz_latin.5 = {
+	type = country_event
+	title = cc_byz_latin.5.title
+	desc = cc_byz_latin.5.desc
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+		any_country = { cc_byz_lat_crusade_target_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = military
+		10 = army
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+		ordered_country = {
+			limit = { cc_byz_lat_crusade_target_trigger = yes }
+			order_by = military_strength
+			max = 1
+			check_range_bounds = no
+			save_scope_as = cc_lat_target
+		}
+	}
+
+	# Take the cross with them.
+	option = {
+		name = cc_byz_latin.5.a
+		ai_chance = { base = 50 }
+
+		custom_tooltip = cc_byz_lat_crusade_tt
+		hidden_effect = {
+			cc_byz_lat_swear_crusade_effect = yes
+		}
+		add_prestige = prestige_mild_bonus
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_plus2_tt
+			cc_byz_lat_add_bond_effect = { value = 2 }
+		}
+	}
+
+	# Ask for money for the walls instead of an army in the field.
+	option = {
+		name = cc_byz_latin.5.b
+		ai_chance = { base = 30 }
+
+		add_gold = 150
+		add_prestige = prestige_weak_penalty
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+	}
+
+	# Decline. The last crusade that came east took Constantinople.
+	option = {
+		name = cc_byz_latin.5.c
+		ai_chance = { base = 20 }
+
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_rebuffed }
+		custom_tooltip = {
+			text = cc_byz_lat_bond_minus2_tt
+			cc_byz_lat_add_bond_effect = { value = -2 }
+		}
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_schedule_next_effect = { min = 2  max = 3 }
+		}
+	}
+}
+
+
+#############################################
+# .6  The settlement
+#############################################
+cc_byz_latin.6 = {
+	type = country_event
+	title = cc_byz_latin.6.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_lat_west
+					var:cc_byz_lat_bond >= 7
+				}
+				desc = cc_byz_latin.6.desc_kin_west
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_lat_west
+					var:cc_byz_lat_bond >= 4
+				}
+				desc = cc_byz_latin.6.desc_friends_west
+			}
+			triggered_desc = {
+				trigger = { has_variable = cc_byz_lat_west }
+				desc = cc_byz_latin.6.desc_cool_west
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_bond >= 7 }
+				desc = cc_byz_latin.6.desc_kin
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_bond >= 4 }
+				desc = cc_byz_latin.6.desc_friends
+			}
+			desc = cc_byz_latin.6.desc_cool
+		}
+	}
+	outcome = positive
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# Two houses that think of themselves as one family.
+	option = {
+		name = cc_byz_latin.6.a
+		trigger = { var:cc_byz_lat_bond >= 7 }
+		ai_chance = { base = 80 }
+
+		add_country_modifier = {
+			modifier = cc_byz_lat_western_kinship
+			years = 30
+			mode = add_and_extend
+		}
+		add_prestige = prestige_mild_bonus
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_kin }
+	}
+
+	# A friendship that will last while the marriage does.
+	option = {
+		name = cc_byz_latin.6.b
+		trigger = {
+			var:cc_byz_lat_bond >= 4
+			var:cc_byz_lat_bond < 7
+		}
+		ai_chance = { base = 80 }
+
+		add_country_modifier = {
+			modifier = cc_byz_lat_western_friendship
+			years = 20
+			mode = add_and_extend
+		}
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_honoured }
+	}
+
+	# The courts are polite and no closer than they were.
+	option = {
+		name = cc_byz_latin.6.c
+		trigger = { var:cc_byz_lat_bond < 4 }
+		ai_chance = { base = 80 }
+
+		add_legitimacy = legitimacy_weak_bonus
+	}
+
+	# Empress branch only: send the Latin household home and close the palace chapel.
+	option = {
+		name = cc_byz_latin.6.d
+		trigger = { NOT = { has_variable = cc_byz_lat_west } }
+		ai_chance = { base = 10 }
+
+		if = {
+			limit = { has_country_modifier = cc_byz_lat_latin_chapel }
+			remove_country_modifier = cc_byz_lat_latin_chapel
+		}
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_mild_bonus }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+		cc_byz_lat_partner_opinion_effect = { modifier = cc_byz_lat_affronted }
+	}
+
+	after = {
+		hidden_effect = {
+			cc_byz_lat_close_effect = yes
+		}
+	}
+}
+
+
+#############################################
+# .80  Router (hidden)
+#############################################
+cc_byz_latin.80 = {
+	type = country_event
+	title = empty_text
+	desc = empty_text
+	outcome = neutral
+	hidden = yes
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+		has_variable = cc_byz_lat_stage
+	}
+
+	immediate = {
+		cc_byz_lat_save_scopes_effect = yes
+		if = {
+			limit = { cc_byz_lat_partner_valid_trigger = no }
+			trigger_event_non_silently = { id = cc_byz_latin.90 }
+		}
+		else_if = {
+			limit = {
+				var:cc_byz_lat_stage = 2
+				has_variable = cc_byz_lat_west
+			}
+			trigger_event_non_silently = { id = cc_byz_latin.12 }
+		}
+		else_if = {
+			limit = { var:cc_byz_lat_stage = 2 }
+			trigger_event_non_silently = { id = cc_byz_latin.2 }
+		}
+		else_if = {
+			limit = { var:cc_byz_lat_stage = 3 }
+			trigger_event_non_silently = { id = cc_byz_latin.3 }
+		}
+		else_if = {
+			limit = { var:cc_byz_lat_stage = 4 }
+			trigger_event_non_silently = { id = cc_byz_latin.4 }
+		}
+		else_if = {
+			limit = { var:cc_byz_lat_stage = 5 }
+			# The crusade waits for peace on both sides, up to eight years. After that, or
+			# if there is no Muslim neighbour at all, the chain moves on to the settlement.
+			if = {
+				limit = {
+					NOT = { any_country = { cc_byz_lat_crusade_target_trigger = yes } }
+				}
+				set_variable = { name = cc_byz_lat_stage  value = 6 }
+				trigger_event_silently = { id = cc_byz_latin.80  years = 1 }
+			}
+			else_if = {
+				limit = { cc_byz_lat_either_at_war_trigger = yes }
+				if = {
+					limit = { var:cc_byz_lat_war_waits >= 8 }
+					set_variable = { name = cc_byz_lat_stage  value = 6 }
+				}
+				else = {
+					change_variable = { name = cc_byz_lat_war_waits  add = 1 }
+				}
+				trigger_event_silently = { id = cc_byz_latin.80  years = 1 }
+			}
+			else = {
+				trigger_event_non_silently = { id = cc_byz_latin.5 }
+			}
+		}
+		else_if = {
+			limit = { var:cc_byz_lat_stage = 6 }
+			trigger_event_non_silently = { id = cc_byz_latin.6 }
+		}
+	}
+}
+
+
+#############################################
+# .90  The partnership ends
+#############################################
+cc_byz_latin.90 = {
+	type = country_event
+	title = cc_byz_latin.90.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { cc_byz_lat_at_war_with_partner_trigger = yes }
+				desc = cc_byz_latin.90.desc_war
+			}
+			triggered_desc = {
+				trigger = {
+					cc_byz_lat_bride_alive_trigger = no
+					has_variable = cc_byz_lat_west
+				}
+				desc = cc_byz_latin.90.desc_bride_died_west
+			}
+			triggered_desc = {
+				trigger = { cc_byz_lat_bride_alive_trigger = no }
+				desc = cc_byz_latin.90.desc_bride_died
+			}
+			triggered_desc = {
+				trigger = {
+					cc_byz_lat_groom_alive_trigger = no
+					has_variable = cc_byz_lat_west
+				}
+				desc = cc_byz_latin.90.desc_widowed_west
+			}
+			triggered_desc = {
+				trigger = { cc_byz_lat_groom_alive_trigger = no }
+				desc = cc_byz_latin.90.desc_widowed
+			}
+			triggered_desc = {
+				trigger = {
+					cc_byz_lat_court_valid_trigger = yes
+					cc_byz_lat_couple_in_line_trigger = no
+				}
+				desc = cc_byz_latin.90.desc_succession
+			}
+			triggered_desc = {
+				trigger = {
+					has_variable = cc_byz_lat_west
+					var:cc_byz_lat_bond >= 6
+				}
+				desc = cc_byz_latin.90.desc_dowager_west
+			}
+			triggered_desc = {
+				trigger = { var:cc_byz_lat_bond >= 6 }
+				desc = cc_byz_latin.90.desc_dowager
+			}
+			desc = cc_byz_latin.90.desc
+		}
+	}
+	outcome = neutral
+
+	trigger = {
+		has_variable = cc_byz_lat_active
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		cc_byz_lat_stage_setup_effect = yes
+	}
+
+	# She stays in Constantinople, and the friendships she made stay with her.
+	option = {
+		name = cc_byz_latin.90.a
+		trigger = {
+			var:cc_byz_lat_bond >= 6
+			cc_byz_lat_at_war_with_partner_trigger = no
+			cc_byz_lat_bride_alive_trigger = yes
+		}
+		ai_chance = { base = 100 }
+
+		add_country_modifier = {
+			modifier = cc_byz_lat_dowager_court
+			years = 15
+			mode = add_and_extend
+		}
+	}
+
+	option = {
+		name = cc_byz_latin.90.b
+		ai_chance = { base = 50 }
+	}
+
+	# Send the Latin household home with her.
+	option = {
+		name = cc_byz_latin.90.c
+		trigger = { has_country_modifier = cc_byz_lat_latin_chapel }
+		ai_chance = { base = 30 }
+
+		remove_country_modifier = cc_byz_lat_latin_chapel
+		add_estate_satisfaction = { type = estate_type:clergy_estate  value = estate_satisfaction_weak_bonus }
+		change_societal_value = { type = latinization_vs_hellenization  value = societal_value_minor_move_to_right }
+	}
+
+	after = {
+		hidden_effect = {
+			set_variable = { name = cc_byz_mem_lat_lapsed  value = yes }
+			cc_byz_lat_close_effect = yes
+		}
+	}
+}

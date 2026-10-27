@@ -1,0 +1,85 @@
+﻿namespace = cc_byz_cession
+
+# The five-year cession review.
+#
+# At appointment the exarchate takes everything the emperor holds in its prefecture's region
+# (cc_byz_create_exarchate_effect). Land gained there afterwards, by conquest, inheritance or
+# a seizure reversed, stays with the emperor until this review. It runs once every five years
+# per exarchate, on cc_byz_exarch_cession_cd, and only in a year the emperor actually holds
+# ground in that region; the trigger lives in cc_byz_exarch_cession_due_trigger.
+#
+# NOT the same thing as cc_byz_demand.1. That is the exarch asking for one district on his own
+# initiative and it feeds appetite. This is the standing arrangement being applied to whatever
+# the empire has acquired since, and it comes from the palace's own clerks. Refusing it is
+# still felt in Ravenna, so it moves loyalty and appetite by one point each way.
+#
+# Fired by cc_byz_on_yearly_exarch_cession (on_action/cc_byz_exarchate.txt). Does not arm the
+# shared 18-month pulse floor: it is administration on its own clock, and arming the floor
+# would let a routine review crowd out the story threads.
+
+cc_byz_cession.1 = {
+	type = country_event
+	title = cc_byz_cession.1.title
+	desc = cc_byz_cession.1.desc
+	outcome = neutral
+
+	trigger = {
+		any_subject = { cc_byz_exarch_cession_due_trigger = yes }
+	}
+
+	illustration_tags = {
+		10 = interior
+		10 = professional
+	}
+
+	immediate = {
+		cc_byz_init_exarch_scores_effect = yes
+		random_subject = {
+			limit = { cc_byz_exarch_cession_due_trigger = yes }
+			save_scope_as = cc_byz_exarch
+			# Set here rather than per option so the review cannot repeat inside the five
+			# years whichever answer is given.
+			set_variable = {
+				name = cc_byz_exarch_cession_cd
+				value = yes
+				years = 5
+			}
+		}
+	}
+
+	# Hand it over. The arrangement made at appointment, applied as written.
+	option = {
+		name = cc_byz_cession.1.a
+		ai_chance = { base = 70 }
+		trigger = { exists = scope:cc_byz_exarch }
+
+		every_owned_location = {
+			limit = { cc_byz_location_in_exarch_region_trigger = yes }
+			change_location_owner = scope:cc_byz_exarch
+			add_core = scope:cc_byz_exarch
+		}
+		scope:cc_byz_exarch = {
+			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_variable = { name = cc_byz_exarch_appetite  add = -1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+	}
+
+	# Keep it. The districts stay under the palace's own officials until the next review.
+	option = {
+		name = cc_byz_cession.1.b
+		ai_chance = { base = 30 }
+
+		scope:cc_byz_exarch ?= {
+			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
+		}
+		change_variable = { name = cc_byz_exarch_appetite  add = 1 }
+		clamp_variable = { name = cc_byz_exarch_appetite  min = 0  max = 5 }
+		change_societal_value = {
+			type = cc_taxis_vs_cc_dynatoi
+			value = societal_value_minor_move_to_left
+		}
+	}
+}
