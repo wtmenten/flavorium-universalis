@@ -203,9 +203,15 @@ cc_xp_enroll_in_school = {
 	allow = {
 		scope:actor = {
 			cc_xp_enabled = yes
+			# A founded school, not a living member: a dormant school has none, and
+			# enrolling someone is the only way to wake it.
 			custom_tooltip = {
 				text = cc_xp_tt_needs_school
-				any_character = { cc_xp_is_school_member = yes }
+				OR = {
+					has_variable = cc_xp_school_1_founder
+					has_variable = cc_xp_school_2_founder
+					has_variable = cc_xp_school_3_founder
+				}
 			}
 			custom_tooltip = {
 				text = cc_xp_tt_needs_student
