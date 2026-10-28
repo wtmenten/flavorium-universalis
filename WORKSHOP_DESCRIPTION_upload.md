@@ -4,7 +4,7 @@
 
   
   
-**Compatible with EU5 1.3.* | Multiplayer synchronized**  
+**Compatible with EU5 1.4.* | Multiplayer synchronized**  
 **Languages:** English, Français, Deutsch, Español  
   
 
@@ -786,7 +786,7 @@ Many are mixed into existing tech trees, but there are also new mini-trees in ea
   * _[All]_ **Natural Philosophy** : Renaissance thinkers turned their gaze from scripture toward nature itself, cataloguing plants, studying the human body, and laying the ground for the empirical sciences.
 +2 life expectancy, +5% disease resistance 
   * _[ADM]_ **Civic Humanism** : Humanist thinkers argue that civic virtue, meaning active participation in governance, rhetoric, and public duty, is the highest expression of human excellence.
-+5% cabinet efficiency 
++20% cabinet efficiency 
   * _[All]_ **Church Patronage of Learning** : The Church has long been a patron of art and scholarship.
 +10% institution growth, +5% pop conversion _(Catholic or Orthodox or Lutheran or Calvinist or Anglican)_
   * _[All]_ **Scholastic Reform** : Catholic theologians have fused Aristotelian logic with Christian doctrine, creating a rigorous intellectual culture in our monasteries and cathedral schools.
@@ -800,9 +800,9 @@ Many are mixed into existing tech trees, but there are also new mini-trees in ea
   * _[All]_ **Civic Republican Ideals** : Renaissance republicanism drew on ancient Rome to argue that free citizens deliberating together produce wiser law than any monarch alone.
 +5% legislative efficiency _(Republic)_
   * _[All]_ **Classical Revival** : Neo-Confucian scholars have renewed attention to the classical texts of antiquity, re-examining the Four Books and Five Classics with fresh commentary.
-+5 max literacy, +5% cabinet efficiency _(East Asia capital)_
++5 max literacy, +20% cabinet efficiency _(East Asia capital)_
   * _[All]_ **Examination System Refinement** : Generations of scholarly refinement have made the examination system an extraordinarily precise instrument for selecting capable administrators.
-+10% cabinet efficiency _(East Asia capital)_
++40% cabinet efficiency _(East Asia capital)_
   * _[All]_ **Italian Masters** : The workshops of Florence, Venice, and Milan have produced an unbroken line of masters in painting, sculpture, and architecture.
 +10% art skill, +5% cultural influence _(Italian culture)_
   * _[ADM]_ **Offices of State** : Trade, colonies, embassies and the fleet are now each run by a standing office.
@@ -852,7 +852,7 @@ _(has Military Academy subject, has Elite Enclave subject or has Palatinate subj
   * _[ADM]_ **Confessional State Building** : The lesson drawn from the Wars of Religion is that a stable realm requires a unified confession, or at least a carefully managed one.
 +1 reform slots 
   * _[All]_ **Protestant Church-State** : Protestant reformers insisted that the Word of God, accessible to all who can read, must be the foundation of a Christian realm.
-+5 max literacy, +5% cabinet efficiency _(Lutheran or Calvinist or Anglican)_
++5 max literacy, +20% cabinet efficiency _(Lutheran or Calvinist or Anglican)_
   * _[All]_ **Lutheran Educational Legacy** : Luther's insistence on every Christian reading Scripture for themselves drove the establishment of parish schools across Protestant Europe.
 +5 max literacy _(Lutheran or Calvinist or Anglican, Europe capital)_
   * _[All]_ **Catholic Confessional Legacy** : The Council of Trent revitalized Catholic institutions, clarifying doctrine, reforming the clergy, and establishing new religious orders dedicated to education and pastoral care.
@@ -872,11 +872,11 @@ _(has Military Academy subject, has Elite Enclave subject or has Palatinate subj
   * _[All]_ **Sulh-e-Kul** : Akbar's doctrine of sulh-e-kul, or universal peace, argued that a wise ruler stands above sectarian division, drawing legitimacy from all his subjects regardless of faith.
 +10% integration speed, +10% cultural influence _(South Asia capital)_
   * _[All]_ **Court of Universal Tolerance** : Our court has become a meeting place for scholars of every tradition: Hindu pandits, Muslim ulama, Jain monks, Sikh teachers, and European missionaries all find a welcome audience.
-+5% cabinet efficiency _(South Asia capital)_
++20% cabinet efficiency _(South Asia capital)_
   * _[All]_ **State Orthodoxy** : By aligning state ritual and institutional practice with an orthodox tradition, whether Confucian, Buddhist, or Shinto, our government projects continuity, legitimacy, and cultural coherence across our realm.
-+5% pop conversion, +5% cabinet efficiency _(East Asia capital)_
++5% pop conversion, +20% cabinet efficiency _(East Asia capital)_
   * _[All]_ **Confucian Bureaucratic Faith** : Neo-Confucian state philosophy has fused ritual, ethics, and administrative technique into a seamless whole.
-+10% cabinet efficiency, +1 reform slots _(East Asia capital)_
++40% cabinet efficiency, +1 reform slots _(East Asia capital)_
   * _[DIP]_ **Balance of Power Doctrine** : The art of statecraft matures into a science of equilibrium: alliances assembled and dissolved, subsidies and guarantees, all turned to the single end of preventing any rival from dominating the continent.
 
   
@@ -892,11 +892,11 @@ _(has Military Academy subject, has Elite Enclave subject or has Palatinate subj
   * _[DIP]_ **Federal Charter** unlocks **Federal Charter Holder**. Issue federal charters to existing colonial and client territories.
 +1 dip rep 
   * _[All]_ **Late Absolutism Ideas** : The age of absolute monarchy has passed its zenith, but its achievements endure: centralized bureaucracies, permanent armies, and rationalized state finances are now the baseline from which even reformers must begin.
-+5% cabinet efficiency 
++20% cabinet efficiency 
   * _[ADM]_ **Enlightened Administration** : Enlightenment thought has reached the corridors of power.
 +5% legislative efficiency 
   * _[All]_ **Enlightened Despotism** : Frederick of Prussia, Catherine of Russia, and Joseph of Austria, the great enlightened despots, show that absolute power need not mean arbitrary power.
-+1 reform slots, +5% cabinet efficiency _(Monarchy)_
++1 reform slots, +20% cabinet efficiency _(Monarchy)_
   * _[All]_ **Reform from Above** : Faced with the threat of revolution from below, wise rulers choose reform from above.
 +5 max literacy _(Monarchy, Europe capital)_
   * _[DIP]_ **Mercantilist Legacy** : Two centuries of mercantilist policy have created sophisticated trading institutions: regulated companies, customs regimes, navigation acts, and state banks.
@@ -912,11 +912,11 @@ _(has Military Academy subject, has Elite Enclave subject or has Palatinate subj
   * _[All]_ **New Order Military Reform** : Reformist viziers and sultans have recognized that European military methods represent a genuine challenge.
 +10% tactics, +2% discipline _(Sunni or Shia or Ibadi, Middle East capital)_
   * _[All]_ **Qing Administrative Consolidation** : The Qing conquest has not replaced Chinese administrative culture; it has absorbed and perfected it.
-+10% cabinet efficiency _(East Asia capital)_
++40% cabinet efficiency _(East Asia capital)_
   * _[All]_ **Bureaucratic Peak** : Our administrative tradition has reached a summit of refinement.
 +1 reform slots, +1 max literacy _(East Asia capital)_
   * _[All]_ **Administrative Sophistication** : Indian states have developed elaborate traditions of revenue administration, provincial governance, and fiscal management.
-+5% cabinet efficiency, +20% loan capacity _(South Asia capital)_
++20% cabinet efficiency, +20% loan capacity _(South Asia capital)_
   * _[All]_ **Fiscal Administration** : The Maratha confederacy has demonstrated that decentralized revenue farming, when combined with effective military power and political skill, can build a formidable state from a fragmented beginning.
 +10% merchant power _(South Asia capital)_
   
@@ -1036,7 +1036,7 @@ cc_wc| 9| War council: active-war events, post-war reform proposals, outdated ge
   
 cc_fac| 3| Estate faction capture events  
   
-cc_xp| 55| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
+cc_xp| 62| Cabinet experience: service records, ladder advancement and branch choices, training postings, court examinations, weariness, institutional memory, rivalry between equals  
   
 cc_colonial| 6| Colonial divan: charter company events + decolonization crisis chain  
   
@@ -1050,11 +1050,13 @@ cc_invasion_mexico| 28| Mexican Conquest situation: expedition decisions, Mesoam
   
 cc_balance_of_power| 54| European Balance of Power situation: alignment, congresses, Napoleonic-era warfare/economy/diplomacy events, and the four endings  
   
-cc_office| 2| Household offices: the appointment picker and the notice that an advance has retired a post  
+cc_office| 13| Household offices: the appointment picker and the notice that an advance has retired a post  
+  
+cc_pty| 35| Factions: realignments, agendas, defections, term limits, the coup and the liberal uprising, and rare court chains between party ministers  
   
   
   
- _~544 events total_  
+ _~597 events total_  
   
 
 
