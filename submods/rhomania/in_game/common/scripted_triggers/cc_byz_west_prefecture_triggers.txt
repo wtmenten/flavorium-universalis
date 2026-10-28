@@ -50,3 +50,32 @@ cc_byz_west_succession_candidate_trigger = {
 	is_heir = no
 	NOT = { in_cabinet = yes }
 }
+
+# The situation's counters, guarded, for weights read outside the situation (cc_byz_west.60).
+cc_byz_west_grip_at_least_trigger = {
+	trigger_if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_imperial_grip }
+				var:cc_byz_imperial_grip >= $VALUE$
+			}
+			trigger_else = { always = no }
+		}
+	}
+	trigger_else = { always = no }
+}
+
+cc_byz_west_autonomy_at_least_trigger = {
+	trigger_if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			trigger_if = {
+				limit = { has_variable = cc_byz_western_autonomy }
+				var:cc_byz_western_autonomy >= $VALUE$
+			}
+			trigger_else = { always = no }
+		}
+	}
+	trigger_else = { always = no }
+}

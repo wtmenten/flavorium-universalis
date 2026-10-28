@@ -134,7 +134,50 @@ cc_byz_west_pf_charter_effect = {
 
 
 # Succession (cc_byz_west.60): seat CANDIDATE in scope:cc_byz_exarch. Empire scope.
+#
+# THE ROLL IS READ BEFORE ANYTHING CHANGES: the dead exarch's loyalty and whether his house held
+# the office by right are what the garrison is reacting to, so they are tested before the reset
+# below wipes them. Base 70 accept / 30 resist, then:
+#   accept  x1.5 candidate total_abilities 200+, x1.25 at 160+, x0.75 below 120
+#           x1.3 imperial grip 60+, x0.7 below 30
+#   resist  x1.5 western autonomy 60+, x0.7 below 30
+#           x1.5 the office was hereditary
+#           x1.5 the old exarch's loyalty was -2 or lower (his men were his, not ours)
+#           x0.7 it was 2 or higher
+# An accepted candidate of 180+ starts at loyalty 1 rather than 0. Resistance costs him 2
+# loyalty and raises autonomy by 5, as before.
 cc_byz_west_send_new_exarch_effect = {
+	custom_tooltip = cc_byz_west_succ_resist_tt
+	hidden_effect = {
+		random_list = {
+			70 = {
+				modifier = { factor = 1.5  $CANDIDATE$ = { total_abilities >= 200 } }
+				modifier = {
+					factor = 1.25
+					$CANDIDATE$ = {
+						total_abilities >= 160
+						total_abilities < 200
+					}
+				}
+				modifier = { factor = 0.75  $CANDIDATE$ = { total_abilities < 120 } }
+				modifier = { factor = 1.3  cc_byz_west_grip_at_least_trigger = { VALUE = 60 } }
+				modifier = { factor = 0.7  NOT = { cc_byz_west_grip_at_least_trigger = { VALUE = 30 } } }
+				set_local_variable = { name = cc_byz_succ_resisted  value = 0 }
+			}
+			30 = {
+				modifier = { factor = 1.5  cc_byz_west_autonomy_at_least_trigger = { VALUE = 60 } }
+				modifier = { factor = 0.7  NOT = { cc_byz_west_autonomy_at_least_trigger = { VALUE = 30 } } }
+				modifier = { factor = 1.5  scope:cc_byz_exarch = { has_variable = cc_byz_exarch_hereditary } }
+				modifier = {
+					factor = 1.5
+					scope:cc_byz_exarch = { NOT = { cc_byz_exarch_loyalty_at_least_trigger = { VALUE = -1 } } }
+				}
+				modifier = { factor = 0.7  scope:cc_byz_exarch = { cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 2 } } }
+				set_local_variable = { name = cc_byz_succ_resisted  value = 1 }
+			}
+		}
+	}
+
 	save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
 	cc_byz_west_grip_up_effect = yes
 	scope:cc_byz_exarch = {
@@ -147,12 +190,38 @@ cc_byz_west_send_new_exarch_effect = {
 			cc_byz_exarch_add_loyalty_effect = { VALUE = -3 }
 		}
 	}
-	custom_tooltip = cc_byz_west_succ_resist_tt
+	hidden_effect = {
+		if = {
+			limit = { local_var:cc_byz_succ_resisted = 1 }
+			scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = -2 } }
+			save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
+			cc_byz_west_autonomy_up_effect = yes
+		}
+		else_if = {
+			limit = { $CANDIDATE$ = { total_abilities >= 180 } }
+			scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
+		}
+	}
+}
+
+# The consistory names the successor (cc_byz_west.60 option e). Who it picks depends on whose
+# body it is: base 50 / 50 between a man the capital can live with and one of the west's own,
+# x1.5 toward the capital's man at grip 60+, x1.5 toward the west's at autonomy 60+, and x1.3
+# toward the capital's man while the dead exarch's loyalty was 2 or higher.
+cc_byz_west_consistory_names_effect = {
+	custom_tooltip = cc_byz_west_succ_consistory_tt
 	hidden_effect = {
 		random_list = {
-			70 = {}
-			30 = {
-				scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = -2 } }
+			50 = {
+				modifier = { factor = 1.5  cc_byz_west_grip_at_least_trigger = { VALUE = 60 } }
+				modifier = { factor = 1.3  scope:cc_byz_exarch = { cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 2 } } }
+				scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
+				save_scope_value_as = { name = cc_byz_west_delta  value = 2 }
+				cc_byz_west_autonomy_up_effect = yes
+			}
+			50 = {
+				modifier = { factor = 1.5  cc_byz_west_autonomy_at_least_trigger = { VALUE = 60 } }
+				scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = -1 } }
 				save_scope_value_as = { name = cc_byz_west_delta  value = 5 }
 				cc_byz_west_autonomy_up_effect = yes
 			}

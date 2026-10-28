@@ -1115,6 +1115,11 @@ cc_byz_west.93 = {
 # confirm-son action does. Sending a new man seats one of the two ablest loyal courtiers with
 # set_new_ruler, the effect the appointment uses: grip rises, the exarch's loyalty starts again
 # from nothing, and the province may prefer the son. Overriding a confirmed right costs more.
+#
+# THE ODDS ARE NOT FIXED. Whether the province accepts a new man reads his total abilities, the
+# empire's grip, the west's autonomy, the dead exarch's loyalty and whether the office was
+# hereditary; a consistory's choice reads grip against autonomy. The weights are documented on
+# cc_byz_west_send_new_exarch_effect and cc_byz_west_consistory_names_effect.
 #############################################
 cc_byz_west.60 = {
 	type = country_event
@@ -1156,6 +1161,15 @@ cc_byz_west.60 = {
 			check_range_bounds = no
 			save_scope_as = cc_byz_succ_cand_2
 		}
+		# For the option text: who is being weighed, in total ability points (0-300).
+		if = {
+			limit = { exists = scope:cc_byz_succ_cand_1 }
+			set_variable = { name = cc_byz_succ_cand_1_abil  value = scope:cc_byz_succ_cand_1.total_abilities }
+		}
+		if = {
+			limit = { exists = scope:cc_byz_succ_cand_2 }
+			set_variable = { name = cc_byz_succ_cand_2_abil  value = scope:cc_byz_succ_cand_2.total_abilities }
+		}
 	}
 
 	# Confirm the heir in his father's office.
@@ -1186,7 +1200,11 @@ cc_byz_west.60 = {
 	option = {
 		name = cc_byz_west.60.c
 		trigger = { exists = scope:cc_byz_succ_cand_1 }
-		ai_chance = { base = 25 }
+		ai_chance = {
+			base = 25
+			modifier = { factor = 2  scope:cc_byz_succ_cand_1 = { total_abilities >= 180 } }
+			modifier = { factor = 0.5  cc_byz_west_autonomy_at_least_trigger = { VALUE = 60 } }
+		}
 
 		cc_byz_west_send_new_exarch_effect = { CANDIDATE = scope:cc_byz_succ_cand_1 }
 	}
@@ -1194,7 +1212,11 @@ cc_byz_west.60 = {
 	option = {
 		name = cc_byz_west.60.d
 		trigger = { exists = scope:cc_byz_succ_cand_2 }
-		ai_chance = { base = 10 }
+		ai_chance = {
+			base = 10
+			modifier = { factor = 2  scope:cc_byz_succ_cand_2 = { total_abilities >= 180 } }
+			modifier = { factor = 0.5  cc_byz_west_autonomy_at_least_trigger = { VALUE = 60 } }
+		}
 
 		cc_byz_west_send_new_exarch_effect = { CANDIDATE = scope:cc_byz_succ_cand_2 }
 	}
@@ -1205,12 +1227,14 @@ cc_byz_west.60 = {
 		trigger = { has_variable = cc_byz_west_convened }
 		ai_chance = { base = 10 }
 
-		scope:cc_byz_exarch = { cc_byz_exarch_add_loyalty_effect = { VALUE = 1 } }
-		save_scope_value_as = { name = cc_byz_west_delta  value = 3 }
-		cc_byz_west_autonomy_up_effect = yes
+		cc_byz_west_consistory_names_effect = yes
 	}
 
 	after = {
-		hidden_effect = { cc_byz_west_publish_effect = yes }
+		hidden_effect = {
+			remove_variable = cc_byz_succ_cand_1_abil
+			remove_variable = cc_byz_succ_cand_2_abil
+			cc_byz_west_publish_effect = yes
+		}
 	}
 }
