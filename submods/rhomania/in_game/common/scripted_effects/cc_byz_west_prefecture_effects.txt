@@ -241,19 +241,7 @@ cc_byz_west_consistory_names_effect = {
 # and every write goes through it.
 cc_byz_west_publish_effect = {
 	save_scope_as = cc_byz_west_pub_empire
-	# Country scope, root = Byzantium (cc_byz_on_monthly_west_open). cc_byz_west_pf_<key>_open is
-# set while that prefecture is empty and could be filled.
-cc_byz_west_publish_open_effect = {
-	if = {
-		limit = { cc_byz_prefecture_open_$PF$_trigger = yes }
-		set_variable = { name = cc_byz_west_pf_$PF$_open  value = yes }
-	}
-	else = {
-		remove_variable = cc_byz_west_pf_$PF$_open
-	}
-}
-
-cc_byz_west_publish_pf_effect = { PF = italy }
+	cc_byz_west_publish_pf_effect = { PF = italy }
 	cc_byz_west_publish_pf_effect = { PF = africa }
 	cc_byz_west_publish_pf_effect = { PF = spania }
 	cc_byz_west_publish_pf_effect = { PF = gaul }
@@ -319,6 +307,18 @@ cc_byz_west_publish_pf_effect = { PF = italy }
 		else = {
 			remove_variable = cc_byz_exarch_senior
 		}
+	}
+}
+
+# Country scope, root = Byzantium (cc_byz_on_monthly_west_open). cc_byz_west_pf_<key>_open is
+# set while that prefecture is empty and could be filled.
+cc_byz_west_publish_open_effect = {
+	if = {
+		limit = { cc_byz_prefecture_open_$PF$_trigger = yes }
+		set_variable = { name = cc_byz_west_pf_$PF$_open  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_west_pf_$PF$_open
 	}
 }
 

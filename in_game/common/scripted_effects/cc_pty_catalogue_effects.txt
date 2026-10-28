@@ -307,6 +307,54 @@ cc_pty_create_leader_dispatch = {
 	}
 }
 
+# Country scope (cc_pty_top_up_candidates). Generate a cabinet candidate for slot SLOT from its archetype's estate.
+cc_pty_recruit_dispatch = {
+	if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 1 } }
+		cc_pty_create_candidate = { TYPE = 1 KEY = royalist ESTATE = nobles_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 2 } }
+		cc_pty_create_candidate = { TYPE = 2 KEY = aristocratic ESTATE = nobles_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 3 } }
+		cc_pty_create_candidate = { TYPE = 3 KEY = mercantile ESTATE = burghers_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 4 } }
+		cc_pty_create_candidate = { TYPE = 4 KEY = clerical ESTATE = clergy_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 5 } }
+		cc_pty_create_candidate = { TYPE = 5 KEY = military ESTATE = nobles_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 6 } }
+		cc_pty_create_candidate = { TYPE = 6 KEY = agrarian ESTATE = peasants_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 7 } }
+		cc_pty_create_candidate = { TYPE = 7 KEY = reformist ESTATE = burghers_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 8 } }
+		cc_pty_create_candidate = { TYPE = 8 KEY = absolutist ESTATE = nobles_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 9 } }
+		cc_pty_create_candidate = { TYPE = 9 KEY = regionalist ESTATE = nobles_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 10 } }
+		cc_pty_create_candidate = { TYPE = 10 KEY = colonial ESTATE = burghers_estate }
+	}
+	else_if = {
+		limit = { cc_pty_slot_is_type = { SLOT = $SLOT$ TYPE = 11 } }
+		cc_pty_create_candidate = { TYPE = 11 KEY = liberal ESTATE = burghers_estate }
+	}
+}
+
 # Country scope. Realignment score for every eligible archetype; incumbents get +20.
 cc_pty_score_all = {
 	if = {
@@ -636,46 +684,57 @@ cc_pty_assign_affiliation = {
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 1 } } }
 				cc_pty_join = { TYPE = 1 KEY = royalist }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 2 } } }
 				cc_pty_join = { TYPE = 2 KEY = aristocratic }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 3 } } }
 				cc_pty_join = { TYPE = 3 KEY = mercantile }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 4 } } }
 				cc_pty_join = { TYPE = 4 KEY = clerical }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 5 } } }
 				cc_pty_join = { TYPE = 5 KEY = military }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 6 } } }
 				cc_pty_join = { TYPE = 6 KEY = agrarian }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 7 } } }
 				cc_pty_join = { TYPE = 7 KEY = reformist }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 8 } } }
 				cc_pty_join = { TYPE = 8 KEY = absolutist }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 9 } } }
 				cc_pty_join = { TYPE = 9 KEY = regionalist }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 10 } } }
 				cc_pty_join = { TYPE = 10 KEY = colonial }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 			1 = {
 				trigger = { scope:cc_pty_country = { cc_pty_has_type = { TYPE = 11 } } }
 				cc_pty_join = { TYPE = 11 KEY = liberal }
+				set_variable = { name = cc_pty_aff_drawn value = yes }
 			}
 		}
 	}

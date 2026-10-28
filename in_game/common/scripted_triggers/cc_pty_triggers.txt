@@ -310,3 +310,34 @@ cc_pty_ce_seated = {
 		in_cabinet = yes
 	}
 }
+
+
+###############################################################################
+# CABINET CANDIDATES (see cc_pty_top_up_candidates)
+###############################################################################
+
+# Character scope, scope:cc_pty_country set. Someone the player could appoint to the cabinet.
+cc_pty_cabinet_candidate_base = {
+	is_alive = yes
+	is_adult = yes
+	NOT = { in_cabinet = yes }
+	is_ruler = no
+	is_heir = no
+	can_serve_in_cabinet_of = scope:cc_pty_country
+}
+
+cc_pty_cabinet_candidate_of_slot = {
+	cc_pty_cabinet_candidate_base = yes
+	cc_pty_member_of_slot = { SLOT = $SLOT$ }
+}
+
+# Character scope, scope:cc_pty_country set, after cc_pty_count_candidates. His party has three
+# or more candidates, so it can spare him without falling short itself.
+cc_pty_in_party_with_spares = {
+	OR = {
+		AND = { cc_pty_member_of_slot = { SLOT = 1 } scope:cc_pty_country = { var:cc_pty_1_cands >= 3 } }
+		AND = { cc_pty_member_of_slot = { SLOT = 2 } scope:cc_pty_country = { var:cc_pty_2_cands >= 3 } }
+		AND = { cc_pty_member_of_slot = { SLOT = 3 } scope:cc_pty_country = { var:cc_pty_3_cands >= 3 } }
+		AND = { cc_pty_member_of_slot = { SLOT = 4 } scope:cc_pty_country = { var:cc_pty_4_cands >= 3 } }
+	}
+}

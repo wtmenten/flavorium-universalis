@@ -788,6 +788,12 @@ def effects_file() -> str:
                       "Country scope (cc_pty.5). Generate a leader for slot SLOT from its archetype's estate.",
                       lambda t: f"cc_pty_create_leader = {{ SLOT = $SLOT$ TYPE = {t['id']} KEY = {t['key']} ESTATE = {SEAT[t['key']]['leader']} }}"))
     p.append("")
+    # No SLOT argument on the callee: cc_pty_create_candidate does not read one, and an unused
+    # argument is a compile error.
+    p.append(dispatch("cc_pty_recruit_dispatch",
+                      "Country scope (cc_pty_top_up_candidates). Generate a cabinet candidate for slot SLOT from its archetype's estate.",
+                      lambda t: f"cc_pty_create_candidate = {{ TYPE = {t['id']} KEY = {t['key']} ESTATE = {SEAT[t['key']]['leader']} }}"))
+    p.append("")
 
     # Realignment
     lines = []
@@ -840,8 +846,11 @@ def effects_file() -> str:
                       f"\tcc_pty_join = {{ TYPE = {i} KEY = {BY_ID[i]['key']} }}", "}"]
     lines += ["else = {", "\trandom_list = {"]
     for t in T:
+        # cc_pty_aff_drawn marks an even-draw member, attached to nothing in particular: the
+        # cabinet-candidate top-up (cc_pty_top_up_candidates) may move him to a short party.
         lines += [f"\t\t1 = {{", f"\t\t\ttrigger = {{ scope:cc_pty_country = {{ cc_pty_has_type = {{ TYPE = {t['id']} }} }} }}",
-                  f"\t\t\tcc_pty_join = {{ TYPE = {t['id']} KEY = {t['key']} }}", "\t\t}"]
+                  f"\t\t\tcc_pty_join = {{ TYPE = {t['id']} KEY = {t['key']} }}",
+                  "\t\t\tset_variable = { name = cc_pty_aff_drawn value = yes }", "\t\t}"]
     lines += ["\t}", "}"]
     p.append("# Character scope, scope:cc_pty_country set. Trait first, then estate, then an even draw\n"
              "# among the parties the court has. Within each, the first party the court has wins.")

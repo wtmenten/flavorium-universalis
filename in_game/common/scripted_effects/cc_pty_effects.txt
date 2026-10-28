@@ -14,6 +14,7 @@
 #   cc_pty_N_power        share of the chamber's seats, 0..100           (panel)
 #   cc_pty_N_leader       the party leader (character)                   (panel)
 #   cc_pty_N_members      seated ministers of the party                  (panel)
+#   cc_pty_N_cands        courtiers who could be appointed (cc_pty_count_candidates)
 #   cc_pty_N_c1 / _c2 / _c3   the party's three concerns this pass        (panel)
 #   cc_pty_N_mood         their sum, roughly -45..45
 #   cc_pty_N_target       what the party expects                         (panel)
@@ -48,6 +49,8 @@
 #
 # CHARACTER VARIABLES
 #   cc_pty_aff (archetype id) plus a cc_pty_member_<key> badge modifier
+#   cc_pty_aff_drawn (the party came from the even draw; free to reassign)
+#   cc_pty_generated_candidate (created by the cabinet-candidate top-up)
 #   cc_pty_years (years seated), cc_pty_term_served
 #
 # change_variable/clamp_variable on an unset variable errors, so every slot variable is
@@ -363,6 +366,9 @@ cc_pty_affiliate_court = {
 cc_pty_join = {
 	cc_pty_clear_member_badge = yes
 	cc_pty_clear_member_mood = yes
+	# A deliberate join (trait, estate, appointment, reassignment) is not an even-draw one; the
+	# draw branch of cc_pty_assign_affiliation sets the marker again after calling this.
+	remove_variable = cc_pty_aff_drawn
 	set_variable = { name = cc_pty_aff value = $TYPE$ }
 	add_character_modifier = { modifier = cc_pty_member_$KEY$ years = -1 mode = replace }
 }
@@ -2349,3 +2355,155 @@ cc_pty_accept_defection = {
 	cc_pty_recompute_all = yes
 }
 
+
+###############################################################################
+# CABINET CANDIDATES
+#
+# Every party should have at least two people at court the player could appoint to the
+# cabinet. The court is mostly nobles and crown men, so affiliation by estate and the even draw
+# leave the smaller parties (merchants, clergy, liberals, colonials) with one candidate or none,
+# and a party with nobody to appoint cannot be represented however the player feels about it.
+#
+# Yearly, player realms only, right after cc_pty_affiliate_court. For each party short of two:
+#   1. Reassign courtiers whose party came from the even draw (cc_pty_aff_drawn) and so are
+#      attached to nothing in particular, taken only from a party with three or more
+#      candidates, so the fix never starves another party.
+#   2. Generate the rest, from the party's leader estate (cc_pty_recruit_dispatch, generated).
+#      If that estate cannot sit in the cabinet under the current laws, the candidate comes
+#      from the crown estate, failing that the nobles, still as a member of the party.
+#
+# A candidate: adult, alive, not in the cabinet, not ruler or heir, and allowed by the
+# engine's own cabinet rules (can_serve_in_cabinet_of).
+###############################################################################
+
+# Country scope. Count each party's candidates into cc_pty_N_cands.
+cc_pty_count_candidates = {
+	set_variable = { name = cc_pty_$SLOT$_cands  value = 0 }
+	if = {
+		limit = { has_variable = cc_pty_$SLOT$_type }
+		every_character = {
+			limit = { cc_pty_cabinet_candidate_of_slot = { SLOT = $SLOT$ } }
+			scope:cc_pty_country = { change_variable = { name = cc_pty_$SLOT$_cands  add = 1 } }
+		}
+	}
+}
+
+# Country scope. One step of the top-up for slot SLOT: reassign one drawn courtier if a party
+# can spare one, otherwise generate one. Called twice per party, which is all a shortfall of two
+# can need.
+cc_pty_top_up_step = {
+	if = {
+		limit = {
+			has_variable = cc_pty_$SLOT$_type
+			var:cc_pty_$SLOT$_cands < 2
+		}
+		random_character = {
+			limit = {
+				cc_pty_cabinet_candidate_base = yes
+				has_variable = cc_pty_aff_drawn
+				NOT = { cc_pty_member_of_slot = { SLOT = $SLOT$ } }
+				cc_pty_in_party_with_spares = yes
+			}
+			save_scope_as = cc_pty_donor
+		}
+		if = {
+			limit = { exists = scope:cc_pty_donor }
+			cc_pty_release_donor_count = yes
+			# cc_pty_join_from_country_var, not cc_pty_with_type: the dispatch tests the
+			# country's slot variables and here the scope is the donor.
+			scope:cc_pty_donor = {
+				cc_pty_join_from_country_var = { VAR = cc_pty_$SLOT$_type }
+				set_variable = { name = cc_pty_aff_drawn  value = yes }
+			}
+			change_variable = { name = cc_pty_$SLOT$_cands  add = 1 }
+			clear_saved_scope = cc_pty_donor
+		}
+		else = {
+			cc_pty_recruit_dispatch = { SLOT = $SLOT$ }
+			change_variable = { name = cc_pty_$SLOT$_cands  add = 1 }
+		}
+	}
+}
+
+# Country scope, scope:cc_pty_donor saved: the donor's old party has one candidate fewer.
+cc_pty_release_donor_count = {
+	if = {
+		limit = { scope:cc_pty_donor = { cc_pty_member_of_slot = { SLOT = 1 } } }
+		change_variable = { name = cc_pty_1_cands  add = -1 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_donor = { cc_pty_member_of_slot = { SLOT = 2 } } }
+		change_variable = { name = cc_pty_2_cands  add = -1 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_donor = { cc_pty_member_of_slot = { SLOT = 3 } } }
+		change_variable = { name = cc_pty_3_cands  add = -1 }
+	}
+	else_if = {
+		limit = { scope:cc_pty_donor = { cc_pty_member_of_slot = { SLOT = 4 } } }
+		change_variable = { name = cc_pty_4_cands  add = -1 }
+	}
+}
+
+# Country scope, player realms. The yearly entry point.
+cc_pty_top_up_candidates = {
+	if = {
+		limit = { is_ai = no }
+		save_scope_as = cc_pty_country
+		cc_pty_count_candidates = { SLOT = 1 }
+		cc_pty_count_candidates = { SLOT = 2 }
+		cc_pty_count_candidates = { SLOT = 3 }
+		cc_pty_count_candidates = { SLOT = 4 }
+		cc_pty_top_up_step = { SLOT = 1 }
+		cc_pty_top_up_step = { SLOT = 1 }
+		cc_pty_top_up_step = { SLOT = 2 }
+		cc_pty_top_up_step = { SLOT = 2 }
+		cc_pty_top_up_step = { SLOT = 3 }
+		cc_pty_top_up_step = { SLOT = 3 }
+		cc_pty_top_up_step = { SLOT = 4 }
+		cc_pty_top_up_step = { SLOT = 4 }
+	}
+}
+
+# Called through cc_pty_recruit_dispatch (generated), which supplies the archetype and its
+# leader estate. Falls back to an estate the cabinet admits.
+cc_pty_create_candidate = {
+	if = {
+		limit = { estate_type_allowed_in_cabinet = { estate_type = estate_type:$ESTATE$ } }
+		create_character = {
+			create_in_limbo = yes
+			estate = estate_type:$ESTATE$
+			culture = root.culture
+			religion = root.religion
+			age = { 25 50 }
+			save_scope_as = cc_pty_new_candidate
+		}
+	}
+	else_if = {
+		limit = { estate_type_allowed_in_cabinet = { estate_type = estate_type:crown_estate } }
+		create_character = {
+			create_in_limbo = yes
+			estate = estate_type:crown_estate
+			culture = root.culture
+			religion = root.religion
+			age = { 25 50 }
+			save_scope_as = cc_pty_new_candidate
+		}
+	}
+	else = {
+		create_character = {
+			create_in_limbo = yes
+			estate = estate_type:nobles_estate
+			culture = root.culture
+			religion = root.religion
+			age = { 25 50 }
+			save_scope_as = cc_pty_new_candidate
+		}
+	}
+	scope:cc_pty_new_candidate ?= {
+		move_country = root
+		cc_pty_join = { TYPE = $TYPE$ KEY = $KEY$ }
+		set_variable = { name = cc_pty_generated_candidate  value = yes }
+	}
+	clear_saved_scope = cc_pty_new_candidate
+}
