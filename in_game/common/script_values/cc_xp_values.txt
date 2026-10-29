@@ -436,39 +436,135 @@ cc_xp_school_member_tick = {
 	}
 }
 
-# PROMINENCE. Renown is earned against the world, so the same two measures score both our
-# schools and the foreign universities they compete with (cc_xp_school_scan_rivals).
+# RENOWN TERMS. Renown is earned against the world, so the same measures score both our
+# schools (cc_xp_school_yearly_standing) and the foreign universities they compete with
+# (cc_xp_school_scan_rivals). The four terms below plus a teaching term make up a renown
+# target of at most 100, and a school reaches 100 only with top marks on every one:
 #
-# Location scope. How prominent a place is: development (a city of 50 maxes it), the
-# literacy of its people, and being a capital. At most 35.
-cc_xp_seat_prominence = {
-	value = 0
-	add = { value = development  multiply = 0.4  max = 20  min = 0 }
-	add = { value = average_location_literacy  multiply = 0.1  max = 10  min = 0 }
-	if = {
-		limit = { is_capital = yes }
-		add = 5
-	}
-}
+#   rank       realm rank and great-power standing    at most 25
+#   wealth     the seat's development                  at most 15
+#   learning   literacy of the seat's nobles/burghers  at most 20
+#   prestige   the realm's prestige                    at most 10
+#   teaching   quality (our schools) or a flat 15      at most 30
+#
+# A county of no account with a good school settles near 30; an empire whose great school
+# sits in a rich, lettered capital approaches 90.
 
-# Country scope. How prominent a realm is: prestige, rank, and great-power standing.
-# At most about 33.
-cc_xp_country_prominence = {
-	value = 0
-	add = { value = prestige  multiply = 0.15  max = 15  min = 0 }
-	add = { value = country_rank_level  multiply = 2 }
+# Country scope. 5 per rank level (county 5 to empire 20), 5 more for a great power.
+cc_xp_renown_rank = {
+	value = { value = country_rank_level  multiply = 5  min = 0 }
 	if = {
 		limit = { is_great_power = yes }
-		add = 10
+		add = 5
+	}
+	max = 25
+}
+
+# Country scope. A tenth of prestige, 0-10.
+cc_xp_renown_prestige = {
+	value = { value = prestige  multiply = 0.1  max = 10  min = 0 }
+}
+
+# Location scope. How rich the seat is: development, 0.3 a point, so a city of 50 maxes it.
+cc_xp_renown_wealth = {
+	value = { value = development  multiply = 0.3  max = 15  min = 0 }
+}
+
+# Location scope. Total size of the seat's noble and burgher pops: the people a school
+# draws on and teaches.
+cc_xp_seat_elite_size = {
+	value = 0
+	every_pop = {
+		limit = {
+			OR = {
+				pop_type = pop_type:nobles
+				pop_type = pop_type:burghers
+			}
+		}
+		add = pop_size
 	}
 }
 
-# Location scope. A foreign university's standing: its place, its realm, and a flat 15 for
-# being an old, established foundation. Compared against our schools' renown.
+# Location scope. Their literacy weighted by size, summed. Divided by the size above.
+cc_xp_seat_elite_literacy_sum = {
+	value = 0
+	every_pop = {
+		limit = {
+			OR = {
+				pop_type = pop_type:nobles
+				pop_type = pop_type:burghers
+			}
+		}
+		add = { value = pop_literacy  multiply = pop_size }
+	}
+}
+
+# Location scope. Average literacy (0-100) of the seat's nobles and burghers; 0 if it has none.
+cc_xp_seat_elite_literacy = {
+	value = 0
+	if = {
+		limit = { cc_xp_seat_elite_size > 0 }
+		add = cc_xp_seat_elite_literacy_sum
+		divide = cc_xp_seat_elite_size
+	}
+}
+
+# Location scope. A fifth of that literacy, 0-20.
+cc_xp_renown_learning = {
+	value = { value = cc_xp_seat_elite_literacy  multiply = 0.2  max = 20  min = 0 }
+}
+
+# Location scope. A foreign university's standing: its seat, its realm, and 15 for teaching,
+# what a school of quality 50 earns. Scored as fully established, because a foreign
+# foundation is old. Compared against our schools' renown.
 cc_xp_university_score = {
 	value = 15
-	add = cc_xp_seat_prominence
-	add = { value = owner.cc_xp_country_prominence }
+	add = cc_xp_renown_wealth
+	add = cc_xp_renown_learning
+	add = { value = owner.cc_xp_renown_rank }
+	add = { value = owner.cc_xp_renown_prestige }
+}
+
+# APTITUDE. Character scope. How able someone is in a discipline: their vanilla skill in it
+# (0-100) plus 3 for each seniority level above the first (up to 27). Gates who joins a
+# school of their own accord (its Admission setting) and sets the members' share of quality.
+cc_xp_aptitude_adm = {
+	value = adm
+	if = {
+		limit = { has_variable = cc_level }
+		add = { value = var:cc_level  subtract = 1  multiply = 3  min = 0 }
+	}
+}
+cc_xp_aptitude_dip = {
+	value = dip
+	if = {
+		limit = { has_variable = cc_level }
+		add = { value = var:cc_level  subtract = 1  multiply = 3  min = 0 }
+	}
+}
+cc_xp_aptitude_mil = {
+	value = mil
+	if = {
+		limit = { has_variable = cc_level }
+		add = { value = var:cc_level  subtract = 1  multiply = 3  min = 0 }
+	}
+}
+
+# Character scope. Aptitude in this member's own school discipline (cc_xp_school_track).
+cc_xp_aptitude_school = {
+	value = 0
+	if = {
+		limit = { var:cc_xp_school_track ?= 1 }
+		value = cc_xp_aptitude_adm
+	}
+	else_if = {
+		limit = { var:cc_xp_school_track ?= 2 }
+		value = cc_xp_aptitude_dip
+	}
+	else_if = {
+		limit = { var:cc_xp_school_track ?= 3 }
+		value = cc_xp_aptitude_mil
+	}
 }
 
 # Royal Chairs: one term of intensive teaching. A protege gains more than a seated

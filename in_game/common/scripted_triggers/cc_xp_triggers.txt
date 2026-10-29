@@ -442,6 +442,46 @@ cc_xp_school_can_change_curriculum = {
 	}
 }
 
+# Country scope. Slot N's Admission setting can be changed: 5 years between changes.
+cc_xp_school_can_change_admission = {
+	custom_tooltip = {
+		text = cc_xp_tt_school_exists
+		has_variable = cc_xp_school_$N$_founder
+	}
+	custom_tooltip = {
+		text = cc_xp_tt_school_admission_settled
+		NOT = { has_variable = cc_xp_school_$N$_adm_cd }
+	}
+}
+
+# Character scope; scope:cc_xp_school_court is the realm. Would this character join slot N
+# of their own accord (cc_xp_school_self_enrol)? Anyone of the realm, adult and free, whose
+# aptitude in the school's discipline meets its Admission bar (cc_xp_school_N_apt_min).
+# Graduates do not come back on their own; the crown can still enrol them by hand.
+cc_xp_school_would_enrol = {
+	is_alive = yes
+	is_adult = yes
+	NOT = { is_ruler = yes }
+	NOT = { has_variable = cc_xp_school }
+	NOT = { has_variable = cc_xp_alumnus }
+	NOT = { cc_xp_is_away = yes }
+	trigger_if = {
+		limit = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 1 } }
+		cc_xp_aptitude_adm >= scope:cc_xp_school_court.var:cc_xp_school_$N$_apt_min
+	}
+	trigger_else_if = {
+		limit = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 2 } }
+		cc_xp_aptitude_dip >= scope:cc_xp_school_court.var:cc_xp_school_$N$_apt_min
+	}
+	trigger_else_if = {
+		limit = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 3 } }
+		cc_xp_aptitude_mil >= scope:cc_xp_school_court.var:cc_xp_school_$N$_apt_min
+	}
+	trigger_else = {
+		always = no
+	}
+}
+
 # Character scope. Who may found one: someone senior enough to define a discipline,
 # and who actually has a discipline to define.
 cc_xp_can_found_school = {

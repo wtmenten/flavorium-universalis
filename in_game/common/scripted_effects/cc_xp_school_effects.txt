@@ -255,6 +255,8 @@ cc_xp_school_maintain = {
 			limit = { NOT = { has_variable = cc_xp_school_$N$_renown } }
 			cc_xp_school_init_standing = { N = $N$ }
 		}
+		# Schools founded before admission existed start at Low.
+		cc_xp_school_init_admission = { N = $N$ }
 
 		# A Rector who has left the cabinet without the duty ending cleanly.
 		if = {
@@ -751,26 +753,35 @@ cc_xp_school_rector_off = {
 #
 # Two numbers per school, both 0-100, both recomputed once a year by drifting toward a
 # target, and both pushed directly by actions and events (which then fade back toward
-# the target over the following years).
+# the target over the following years). Neither grows without limit: each settles where
+# its target is, and the target is set by the school's circumstances, not its age.
 #
 # RENOWN is how widely the school is known. It competes with the world.
-#   target = age            0.2 a year, at most 20 (at 100 years)
-#          + maturity x (   maturity = age / 100, at most 1: a school takes a century
-#              seat         cc_xp_seat_prominence, at most 35
-#            + realm        cc_xp_country_prominence, at most about 33
-#            + quality )    a fifth of quality, at most 20
+#   target = established x (  established = 20% at founding, +0.8% a year, full at 100 years
+#              rank         cc_xp_renown_rank        realm rank, great power      at most 25
+#            + prestige     cc_xp_renown_prestige    realm prestige               at most 10
+#            + wealth       cc_xp_renown_wealth      seat development             at most 15
+#            + learning     cc_xp_renown_learning    seat noble/burgher literacy  at most 20
+#            + teaching )   0.3 x quality                                         at most 30
 #          halved in exile, 0 while dormant. Rises 8% of the gap a year, falls 15%.
+#   The terms are defined in script_values/cc_xp_values.txt with the reasoning behind
+#   the weights. Foreign universities are scored on the same terms (cc_xp_university_score)
+#   so the two stay comparable.
 #   standing = 1 + the number of foreign universities whose cc_xp_university_score beats
 #   this school's renown (cc_xp_school_scan_rivals). Falling behind the leading foreign
 #   university brings rival events; standing first brings its own.
-#   Feeds: the realm renown modifier, scholar and artist arrivals, event options.
+#   Feeds: the realm renown modifier, scholar and artist arrivals, event options,
+#   capacity and self-enrolment.
 #
-# QUALITY is how good the teaching is. It is bought, not won.
+# QUALITY is how good the teaching is. It is bought and staffed, not won.
 #   target = funding        20 + 50 x the Culture budget slider (cultural_maintenance),
 #                           or a flat 35 before the realm can invest in culture
-#          + Rector         10, plus their seniority level
+#          + Rector         5, plus their seniority level, plus a tenth of their skill in
+#                           the school's discipline: 5 to 25
 #          + stability      5 while the curriculum has not changed in 10 years
-#          + senior members 3 per member of seniority 5 or more, at most 15
+#          + members        a fifth of the members' AVERAGE aptitude in the discipline, at
+#                           most 20. An average, so a small school of able members beats a
+#                           large school of indifferent ones.
 #          10 flat in exile, 0 while dormant. Drifts 20% of the gap a year.
 #
 # DORMANT (cc_xp_school_N_dormant): no living members at the yearly update. The school does
@@ -779,8 +790,9 @@ cc_xp_school_rector_off = {
 #   and the members' yearly experience; disputation options; curriculum unlocks.
 #
 # Per-slot state (country): cc_xp_school_N_ renown, quality, qscale, age, founded,
-# renown_target, quality_target, standing, cost, and the target breakdown r_age, r_seat,
-# r_realm, r_quality, q_funding, q_rector, q_stable, q_members, all for the panel.
+# renown_target, quality_target, standing, cost, capacity, apt (admission), apt_min,
+# apt_avg, enrol_chance, and the target breakdown maturity, r_rank, r_prestige, r_wealth,
+# r_learning, r_quality, q_funding, q_rector, q_stable, q_members, all for the panel.
 # Per-realm: cc_xp_school_rival_loc, cc_xp_school_rival_score, cc_xp_school_best_renown,
 # cc_xp_school_culture_pos and cc_xp_school_no_culture (the funding source, for the panel).
 ###############################################################################
@@ -799,6 +811,8 @@ cc_xp_school_init_standing = {
 	# while the interaction tooltip is built, when the quality written above cannot yet be
 	# read back. 0.9 is 0.5 + 40 / 100.
 	set_variable = { name = cc_xp_school_$N$_qscale   value = 0.9 }
+	set_variable = { name = cc_xp_school_$N$_capacity value = 4 }
+	cc_xp_school_init_admission = { N = $N$ }
 }
 
 cc_xp_school_set_qscale = {
@@ -851,45 +865,58 @@ cc_xp_school_yearly_standing = {
 		}
 
 		# ---- Renown target ----
-		# Maturity (0-100%, full at 100 years) scales the seat, realm and teaching terms, so
-		# a school takes about a century to be established however fine its seat. The
-		# published terms are the scaled ones, so the panel's rows add up to the target.
+		# Established (20-100%, full at 100 years) scales every term, so a new school is
+		# known only locally however fine its seat. The published terms are the scaled
+		# ones, so the panel's rows add up to the target.
 		set_variable = {
 			name = cc_xp_school_$N$_maturity
-			value = { value = var:cc_xp_school_$N$_age  max = 100 }
+			value = { value = var:cc_xp_school_$N$_age  multiply = 0.8  add = 20  max = 100 }
 		}
 		set_variable = {
-			name = cc_xp_school_$N$_r_age
-			value = { value = var:cc_xp_school_$N$_age  multiply = 0.2  max = 20 }
+			name = cc_xp_school_$N$_r_rank
+			value = { value = cc_xp_renown_rank  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
 		}
-		set_variable = { name = cc_xp_school_$N$_r_seat  value = 0 }
+		set_variable = {
+			name = cc_xp_school_$N$_r_prestige
+			value = { value = cc_xp_renown_prestige  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
+		}
+		set_variable = { name = cc_xp_school_$N$_r_wealth  value = 0 }
+		set_variable = { name = cc_xp_school_$N$_r_learning  value = 0 }
 		clear_saved_scope = cc_xp_school_seat_scope
 		var:cc_xp_school_$N$_loc ?= { save_scope_as = cc_xp_school_seat_scope }
 		if = {
-			limit = { exists = scope:cc_xp_school_seat_scope }
+			limit = {
+				exists = scope:cc_xp_school_seat_scope
+				NOT = { has_variable = cc_xp_school_$N$_exile }
+			}
 			set_variable = {
-				name = cc_xp_school_$N$_r_seat
+				name = cc_xp_school_$N$_r_wealth
 				value = {
-					value = scope:cc_xp_school_seat_scope.cc_xp_seat_prominence
+					value = scope:cc_xp_school_seat_scope.cc_xp_renown_wealth
+					multiply = var:cc_xp_school_$N$_maturity
+					divide = 100
+				}
+			}
+			set_variable = {
+				name = cc_xp_school_$N$_r_learning
+				value = {
+					value = scope:cc_xp_school_seat_scope.cc_xp_renown_learning
 					multiply = var:cc_xp_school_$N$_maturity
 					divide = 100
 				}
 			}
 		}
 		set_variable = {
-			name = cc_xp_school_$N$_r_realm
-			value = { value = cc_xp_country_prominence  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
-		}
-		set_variable = {
 			name = cc_xp_school_$N$_r_quality
-			value = { value = var:cc_xp_school_$N$_quality  multiply = 0.2  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
+			value = { value = var:cc_xp_school_$N$_quality  multiply = 0.3  multiply = var:cc_xp_school_$N$_maturity  divide = 100 }
 		}
 		set_variable = {
 			name = cc_xp_school_$N$_renown_target
 			value = {
-				value = var:cc_xp_school_$N$_r_age
-				add = var:cc_xp_school_$N$_r_seat
-				add = var:cc_xp_school_$N$_r_realm
+				value = var:cc_xp_school_$N$_r_rank
+				add = var:cc_xp_school_$N$_r_prestige
+				add = var:cc_xp_school_$N$_r_wealth
+				add = var:cc_xp_school_$N$_r_learning
 				add = var:cc_xp_school_$N$_r_quality
 				if = {
 					limit = { has_variable = cc_xp_school_$N$_exile }
@@ -902,6 +929,10 @@ cc_xp_school_yearly_standing = {
 				max = 100
 			}
 		}
+		# The terms the previous formula published. Nothing reads them any more.
+		remove_variable = cc_xp_school_$N$_r_age
+		remove_variable = cc_xp_school_$N$_r_seat
+		remove_variable = cc_xp_school_$N$_r_realm
 
 		# ---- Quality target ----
 		# Funding rides the vanilla Culture budget slider. Before the realm can invest in
@@ -916,36 +947,73 @@ cc_xp_school_yearly_standing = {
 		else = {
 			set_variable = { name = cc_xp_school_$N$_q_funding  value = 35 }
 		}
+
+		# Rector: 5, plus seniority, plus a tenth of their skill in this school's discipline.
 		set_variable = { name = cc_xp_school_$N$_q_rector  value = 0 }
 		clear_saved_scope = cc_xp_school_rector_scope
 		var:cc_xp_school_$N$_rector ?= { save_scope_as = cc_xp_school_rector_scope }
 		if = {
-			limit = { scope:cc_xp_school_rector_scope ?= { has_variable = cc_level } }
-			set_variable = {
-				name = cc_xp_school_$N$_q_rector
-				value = { value = 10  add = scope:cc_xp_school_rector_scope.var:cc_level }
+			limit = { exists = scope:cc_xp_school_rector_scope }
+			set_variable = { name = cc_xp_school_$N$_q_rector  value = 5 }
+			if = {
+				limit = { scope:cc_xp_school_rector_scope = { has_variable = cc_level } }
+				change_variable = { name = cc_xp_school_$N$_q_rector  add = scope:cc_xp_school_rector_scope.var:cc_level }
+			}
+			if = {
+				limit = { var:cc_xp_school_$N$_track ?= 1 }
+				change_variable = { name = cc_xp_school_$N$_q_rector  add = { value = scope:cc_xp_school_rector_scope.adm  divide = 10  max = 10 } }
+			}
+			else_if = {
+				limit = { var:cc_xp_school_$N$_track ?= 2 }
+				change_variable = { name = cc_xp_school_$N$_q_rector  add = { value = scope:cc_xp_school_rector_scope.dip  divide = 10  max = 10 } }
+			}
+			else_if = {
+				limit = { var:cc_xp_school_$N$_track ?= 3 }
+				change_variable = { name = cc_xp_school_$N$_q_rector  add = { value = scope:cc_xp_school_rector_scope.mil  divide = 10  max = 10 } }
 			}
 		}
-		else_if = {
-			limit = { exists = scope:cc_xp_school_rector_scope }
-			set_variable = { name = cc_xp_school_$N$_q_rector  value = 10 }
-		}
+
 		set_variable = { name = cc_xp_school_$N$_q_stable  value = 0 }
 		if = {
 			limit = { NOT = { has_variable = cc_xp_school_$N$_curr_cd } }
 			set_variable = { name = cc_xp_school_$N$_q_stable  value = 5 }
 		}
-		set_variable = { name = cc_xp_school_$N$_q_members  value = 0 }
+
+		# Members: one pass that also counts each member's years enrolled (for graduation)
+		# and sums their aptitude, so quality reads the average rather than a head count.
+		set_variable = { name = cc_xp_school_$N$_apt_sum  value = 0 }
+		set_variable = { name = cc_xp_school_$N$_apt_n  value = 0 }
 		every_character = {
 			limit = {
 				is_alive = yes
 				var:cc_xp_school ?= $N$
-				has_variable = cc_level
-				var:cc_level >= 5
 			}
-			scope:cc_xp_school_court = { change_variable = { name = cc_xp_school_$N$_q_members  add = 3 } }
+			if = {
+				limit = { NOT = { has_variable = cc_xp_school_years } }
+				set_variable = { name = cc_xp_school_years  value = 0 }
+			}
+			change_variable = { name = cc_xp_school_years  add = 1 }
+			save_scope_as = cc_xp_school_member
+			scope:cc_xp_school_court = {
+				change_variable = { name = cc_xp_school_$N$_apt_sum  add = scope:cc_xp_school_member.cc_xp_aptitude_school }
+				change_variable = { name = cc_xp_school_$N$_apt_n  add = 1 }
+			}
 		}
-		clamp_variable = { name = cc_xp_school_$N$_q_members  max = 15 }
+		set_variable = { name = cc_xp_school_$N$_apt_avg  value = 0 }
+		if = {
+			limit = { var:cc_xp_school_$N$_apt_n > 0 }
+			set_variable = {
+				name = cc_xp_school_$N$_apt_avg
+				value = { value = var:cc_xp_school_$N$_apt_sum  divide = var:cc_xp_school_$N$_apt_n }
+			}
+		}
+		set_variable = {
+			name = cc_xp_school_$N$_q_members
+			value = { value = var:cc_xp_school_$N$_apt_avg  multiply = 0.2  max = 20  min = 0 }
+		}
+		remove_variable = cc_xp_school_$N$_apt_sum
+		remove_variable = cc_xp_school_$N$_apt_n
+
 		if = {
 			limit = { has_variable = cc_xp_school_$N$_dormant }
 			set_variable = { name = cc_xp_school_$N$_quality_target  value = 0 }
@@ -1001,6 +1069,7 @@ cc_xp_school_yearly_standing = {
 		clamp_variable = { name = cc_xp_school_$N$_renown  min = 0  max = 100 }
 		clamp_variable = { name = cc_xp_school_$N$_quality  min = 0  max = 100 }
 		cc_xp_school_set_qscale = { N = $N$ }
+		cc_xp_school_set_capacity = { N = $N$ }
 
 		# How far the leading foreign university is ahead, for the rival events and panel.
 		# Uses last year's scan; cc_xp_school_scan_rivals runs after this.
@@ -1013,6 +1082,309 @@ cc_xp_school_yearly_standing = {
 			}
 		}
 	}
+}
+
+
+###############################################################################
+# CAPACITY, ADMISSION, SELF-ENROLMENT AND GRADUATION
+#
+# A school fills itself. Once a year each school may draw members from the realm's
+# characters of their own accord, and members who are not in the cabinet graduate after
+# a fixed term, which frees their places. The player can always enrol anyone by hand
+# (cc_xp_enroll_in_school); hand enrolment ignores both capacity and admission.
+#
+# CAPACITY  3 + renown / 20 + quality / 25, rounded down: 3 to 12. Self-enrolment stops
+#           at capacity; hand enrolment does not.
+# ADMISSION Low / Medium / High (cc_xp_school_N_apt 1-3), the least aptitude in the
+#           school's discipline (cc_xp_aptitude_school) a character needs to join of their
+#           own accord: 0 / 40 / 60. Changed from the school card, then 5 years before it
+#           can be changed again. Raising it never expels anyone. A Low school grows large
+#           and broad (see BREADTH below); a High school stays small and, because quality
+#           reads the members' average aptitude, good.
+# ENROLMENT Two rolls a year. Each succeeds with chance
+#               (15 + 0.3 x renown + 0.2 x quality)% x free places / capacity
+#           and enrols one eligible character, weighted toward aptitude, a primary or
+#           accepted culture, the state religion, the seat's culture, and proteges.
+#           Eligible: adult, alive, not the ruler, not away, not already a member or a
+#           graduate, aptitude at or above the admission bar. Cabinet ministers, proteges,
+#           the ruler's family and every other character of the realm all qualify.
+# GRADUATE  A member not in the cabinet graduates after GRADUATION_YEARS (8) years. They
+#           leave the school with cc_xp_alumnus = N and a permanent cc_xp_school_alumnus
+#           character modifier sized by the school's quality on the day (1x to 4x).
+#           Ministers stay enrolled while they hold office, and graduate at the first yearly
+#           update after leaving it if their term is served.
+#
+# Silent by design: the school card shows the membership against capacity.
+###############################################################################
+
+# Country scope. New and pre-existing schools start at Low admission.
+cc_xp_school_init_admission = {
+	if = {
+		limit = { NOT = { has_variable = cc_xp_school_$N$_apt } }
+		set_variable = { name = cc_xp_school_$N$_apt  value = 1 }
+		set_variable = { name = cc_xp_school_$N$_apt_min  value = 0 }
+	}
+}
+
+# Country scope. Yearly, after the drift.
+cc_xp_school_set_capacity = {
+	set_variable = {
+		name = cc_xp_school_$N$_capacity
+		value = {
+			value = 3
+			add = { value = var:cc_xp_school_$N$_renown  divide = 20 }
+			add = { value = var:cc_xp_school_$N$_quality  divide = 25 }
+			floor = yes
+		}
+	}
+	# The chance each self-enrolment roll succeeds, published for the panel.
+	set_variable = {
+		name = cc_xp_school_$N$_enrol_chance
+		value = {
+			value = 15
+			add = { value = var:cc_xp_school_$N$_renown  multiply = 0.3 }
+			add = { value = var:cc_xp_school_$N$_quality  multiply = 0.2 }
+			multiply = {
+				value = var:cc_xp_school_$N$_capacity
+				subtract = var:cc_xp_school_$N$_members
+				min = 0
+			}
+			divide = var:cc_xp_school_$N$_capacity
+			min = 0
+		}
+	}
+}
+
+# Country scope, monthly (human courts). Keeps the card's capacity and chance current.
+cc_xp_school_refresh_capacity = {
+	if = {
+		limit = {
+			has_variable = cc_xp_school_$N$_founder
+			has_variable = cc_xp_school_$N$_renown
+			has_variable = cc_xp_school_$N$_members
+		}
+		cc_xp_school_set_capacity = { N = $N$ }
+	}
+}
+
+# The Admission button on a school card: Low -> Medium -> High -> Low.
+cc_xp_school_do_admission = {
+	if = {
+		limit = { var:cc_xp_school_$N$_apt ?= 1 }
+		custom_tooltip = { text = cc_xp_school_tt_admission_to_2 }
+		hidden_effect = {
+			set_variable = { name = cc_xp_school_$N$_apt  value = 2 }
+			set_variable = { name = cc_xp_school_$N$_apt_min  value = 40 }
+		}
+	}
+	else_if = {
+		limit = { var:cc_xp_school_$N$_apt ?= 2 }
+		custom_tooltip = { text = cc_xp_school_tt_admission_to_3 }
+		hidden_effect = {
+			set_variable = { name = cc_xp_school_$N$_apt  value = 3 }
+			set_variable = { name = cc_xp_school_$N$_apt_min  value = 60 }
+		}
+	}
+	else = {
+		custom_tooltip = { text = cc_xp_school_tt_admission_to_1 }
+		hidden_effect = {
+			set_variable = { name = cc_xp_school_$N$_apt  value = 1 }
+			set_variable = { name = cc_xp_school_$N$_apt_min  value = 0 }
+		}
+	}
+	custom_tooltip = { text = cc_xp_school_tt_admission_keeps }
+	hidden_effect = {
+		set_variable = { name = cc_xp_school_$N$_adm_cd  value = yes  years = 5 }
+	}
+}
+
+# Country scope, yearly. Members not in the cabinet whose term is served graduate.
+cc_xp_school_graduate = {
+	if = {
+		limit = { has_variable = cc_xp_school_$N$_founder }
+		save_scope_as = cc_xp_school_court
+		every_character = {
+			limit = {
+				is_alive = yes
+				var:cc_xp_school ?= $N$
+				NOT = { in_cabinet = yes }
+				has_variable = cc_xp_school_years
+				var:cc_xp_school_years >= 8
+			}
+			cc_xp_school_graduate_member = { N = $N$ }
+		}
+	}
+}
+
+# Character scope; scope:cc_xp_school_court is their country.
+cc_xp_school_graduate_member = {
+	add_character_modifier = {
+		modifier = cc_xp_school_alumnus
+		years = -1
+		mode = replace
+		size = {
+			value = scope:cc_xp_school_court.var:cc_xp_school_$N$_quality
+			divide = 33
+			add = 1
+		}
+	}
+	set_variable = { name = cc_xp_alumnus  value = $N$ }
+	remove_variable = cc_xp_school
+	remove_variable = cc_xp_school_track
+	remove_variable = cc_xp_school_years
+}
+
+# Character scope; scope:cc_xp_school_court is the realm. Enrols them in slot N.
+cc_xp_school_self_enrol_member = {
+	cc_xp_init = yes
+	set_variable = { name = cc_xp_school  value = $N$ }
+	set_variable = { name = cc_xp_school_track  value = scope:cc_xp_school_court.var:cc_xp_school_$N$_track }
+	set_variable = { name = cc_xp_school_years  value = 0 }
+	scope:cc_xp_school_court = {
+		remove_variable = cc_xp_school_$N$_dormant
+		change_variable = { name = cc_xp_school_$N$_members  add = 1 }
+	}
+}
+
+# Country scope, yearly, after graduation. Two rolls for slot N.
+cc_xp_school_self_enrol = {
+	if = {
+		limit = {
+			has_variable = cc_xp_school_$N$_founder
+			has_variable = cc_xp_school_$N$_capacity
+		}
+		save_scope_as = cc_xp_school_court
+		cc_xp_school_init_admission = { N = $N$ }
+		# Graduation has just freed places; recount before rolling.
+		cc_xp_school_count_members = { N = $N$ }
+		cc_xp_school_set_capacity = { N = $N$ }
+		cc_xp_school_self_enrol_roll = { N = $N$ }
+		cc_xp_school_set_capacity = { N = $N$ }
+		cc_xp_school_self_enrol_roll = { N = $N$ }
+		cc_xp_school_set_capacity = { N = $N$ }
+	}
+}
+
+cc_xp_school_self_enrol_roll = {
+	if = {
+		limit = {
+			var:cc_xp_school_$N$_members < var:cc_xp_school_$N$_capacity
+			any_character = { cc_xp_school_would_enrol = { N = $N$ } }
+		}
+		random = {
+			chance = { value = var:cc_xp_school_$N$_enrol_chance }
+			random_character = {
+				limit = { cc_xp_school_would_enrol = { N = $N$ } }
+				weight = {
+					factor = 1
+					# Aptitude: 0.4x at 0, 1x at 30, 2.4x at 100.
+					modifier = {
+						factor = { value = cc_xp_aptitude_adm  add = 20  divide = 50 }
+						trigger = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 1 } }
+					}
+					modifier = {
+						factor = { value = cc_xp_aptitude_dip  add = 20  divide = 50 }
+						trigger = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 2 } }
+					}
+					modifier = {
+						factor = { value = cc_xp_aptitude_mil  add = 20  divide = 50 }
+						trigger = { scope:cc_xp_school_court = { var:cc_xp_school_$N$_track ?= 3 } }
+					}
+					# Culture: at home in the realm, tolerated, or neither.
+					modifier = {
+						factor = 1.5
+						trigger = {
+							exists = culture
+							scope:cc_xp_school_court = { has_primary_or_accepted_culture = prev.culture }
+						}
+					}
+					modifier = {
+						factor = 0.4
+						trigger = {
+							exists = culture
+							NOT = { scope:cc_xp_school_court = { has_primary_or_accepted_culture = prev.culture } }
+							NOT = { culture = { is_tolerated_in = scope:cc_xp_school_court } }
+						}
+					}
+					# The seat's own culture: the school teaches in their tongue.
+					modifier = {
+						factor = 1.5
+						trigger = {
+							scope:cc_xp_school_court = { has_variable = cc_xp_school_$N$_culture }
+							culture ?= scope:cc_xp_school_court.var:cc_xp_school_$N$_culture
+						}
+					}
+					# Religion: the state faith, or not.
+					modifier = {
+						factor = 1.5
+						trigger = { religion ?= scope:cc_xp_school_court.religion }
+					}
+					modifier = {
+						factor = 0.5
+						trigger = { NOT = { religion ?= scope:cc_xp_school_court.religion } }
+					}
+					# Proteges are being prepared for office; ministers have less time.
+					modifier = {
+						factor = 2
+						trigger = { has_variable = cc_protege }
+					}
+					modifier = {
+						factor = 0.75
+						trigger = { in_cabinet = yes }
+					}
+				}
+				cc_xp_school_self_enrol_member = { N = $N$ }
+			}
+		}
+	}
+}
+
+
+###############################################################################
+# BREADTH
+#
+# Every member, of whatever calibre, carries the school's discipline into the realm. One
+# country modifier per discipline, sized by the living members of all schools teaching it,
+# with diminishing returns: the first 4 count fully, the next 4 half, the next 8 a quarter
+# (at most 8, at 16 members). This is what a large Low-admission school is for.
+# Monthly, human courts (cc_xp_monthly_schools), after the members are counted.
+###############################################################################
+
+cc_xp_school_apply_breadth = {
+	cc_xp_school_breadth_track = { TRACK = 1  KEY = adm }
+	cc_xp_school_breadth_track = { TRACK = 2  KEY = dip }
+	cc_xp_school_breadth_track = { TRACK = 3  KEY = mil }
+}
+
+cc_xp_school_breadth_track = {
+	set_variable = { name = cc_xp_school_breadth_n  value = 0 }
+	if = {
+		limit = { var:cc_xp_school_1_track ?= $TRACK$  has_variable = cc_xp_school_1_members }
+		change_variable = { name = cc_xp_school_breadth_n  add = var:cc_xp_school_1_members }
+	}
+	if = {
+		limit = { var:cc_xp_school_2_track ?= $TRACK$  has_variable = cc_xp_school_2_members }
+		change_variable = { name = cc_xp_school_breadth_n  add = var:cc_xp_school_2_members }
+	}
+	if = {
+		limit = { var:cc_xp_school_3_track ?= $TRACK$  has_variable = cc_xp_school_3_members }
+		change_variable = { name = cc_xp_school_breadth_n  add = var:cc_xp_school_3_members }
+	}
+	if = {
+		limit = { var:cc_xp_school_breadth_n > 0 }
+		add_country_modifier = {
+			modifier = cc_xp_school_breadth_$KEY$
+			months = 2
+			mode = replace
+			desc = cc_xp_school_while_members
+			size = {
+				value = { value = var:cc_xp_school_breadth_n  max = 4 }
+				add = { value = var:cc_xp_school_breadth_n  subtract = 4  min = 0  max = 4  multiply = 0.5 }
+				add = { value = var:cc_xp_school_breadth_n  subtract = 8  min = 0  max = 8  multiply = 0.25 }
+			}
+		}
+	}
+	remove_variable = cc_xp_school_breadth_n
 }
 
 

@@ -43,7 +43,11 @@ ACTIONS = [
     ('scholars', 'cc_xp_school_scholars', 'cc_xp_school_can_act', 'cc_xp_school_do_scholars', 'CC_XP_SCHOOL_BTN_SCHOLARS'),
     ('disputation', None, 'cc_xp_school_can_act', 'cc_xp_school_do_disputation', 'CC_XP_SCHOOL_BTN_DISPUTATION'),
     ('curriculum', None, 'cc_xp_school_can_change_curriculum', 'cc_xp_school_do_curriculum', 'CC_XP_SCHOOL_BTN_CURRICULUM'),
+    ('admission', None, 'cc_xp_school_can_change_admission', 'cc_xp_school_do_admission', 'CC_XP_SCHOOL_BTN_ADMISSION'),
 ]
+# Actions whose button sits in a row of the card rather than the action bar at its foot.
+ROW_ACTIONS = {'admission'}
+ADMISSIONS = 3     # CC_XP_SCHOOL_ADMISSION_1..3 (Low, Medium, High)
 # Royal Chairs also needs someone to teach.
 EXTRA_ALLOW = {'chairs': 'cc_xp_school_has_members'}
 
@@ -122,10 +126,11 @@ def emit_loc() -> str:
     for n in SLOTS:
         out.append(
             f' CC_XP_SCHOOL_{n}_RENOWN_TT: "$CC_XP_SCHOOL_RENOWN_TT_HEAD${nl}{nl}'
-            f'$CC_XP_SCHOOL_TT_AGE$ #Y {lv(n, "r_age", "1")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_MATURITY$ #Y {lv(n, "maturity")}%#!{nl}'
-            f'$CC_XP_SCHOOL_TT_SEAT$ #Y {lv(n, "r_seat", "1")}#!{nl}'
-            f'$CC_XP_SCHOOL_TT_REALM$ #Y {lv(n, "r_realm", "1")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_RANK$ #Y {lv(n, "r_rank", "1")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_PRESTIGE$ #Y {lv(n, "r_prestige", "1")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_WEALTH$ #Y {lv(n, "r_wealth", "1")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_LEARNING$ #Y {lv(n, "r_learning", "1")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_TEACHING$ #Y {lv(n, "r_quality", "1")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_TARGET$ #Y {lv(n, "renown_target")}#!{nl}{nl}'
             f'$CC_XP_SCHOOL_RENOWN_TT_FOOT$"')
@@ -134,12 +139,18 @@ def emit_loc() -> str:
             f'$CC_XP_SCHOOL_TT_FUNDING$ #Y {lv(n, "q_funding")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_RECTOR$ #Y {lv(n, "q_rector")}#!{nl}'
             f'$CC_XP_SCHOOL_TT_STABLE$ #Y {lv(n, "q_stable")}#!{nl}'
-            f'$CC_XP_SCHOOL_TT_SENIORS$ #Y {lv(n, "q_members")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_MEMBERS_APT$ #Y {lv(n, "q_members", "1")}#! ($CC_XP_SCHOOL_TT_APT_AVG$ {lv(n, "apt_avg")}){nl}'
             f'$CC_XP_SCHOOL_TT_TARGET$ #Y {lv(n, "quality_target")}#!{nl}{nl}'
             f'$CC_XP_SCHOOL_QUALITY_TT_FOOT$ #Y {lv(n, "qscale", "2")}#!"')
         out.append(f' CC_XP_SCHOOL_{n}_STANDING: "$CC_XP_SCHOOL_STANDING_PREFIX$ {lv(n, "standing")}"')
         out.append(f' CC_XP_SCHOOL_{n}_COST: "{lv(n, "cost", "1")} @gold!$CC_XP_SCHOOL_PER_MONTH$"')
         out.append(f' CC_XP_SCHOOL_{n}_FOUNDED: "$CC_XP_SCHOOL_FOUNDED_PREFIX$ {lv(n, "founded")}"')
+        out.append(f' CC_XP_SCHOOL_{n}_MEMBERS: "{lv(n, "members")} / {lv(n, "capacity")}"')
+        out.append(
+            f' CC_XP_SCHOOL_{n}_MEMBERS_TT: "$CC_XP_SCHOOL_MEMBERS_TT${nl}{nl}'
+            f'$CC_XP_SCHOOL_TT_CAPACITY$ #Y {lv(n, "capacity")}#!{nl}'
+            f'$CC_XP_SCHOOL_TT_ENROL_CHANCE$ #Y {lv(n, "enrol_chance")}%#!{nl}'
+            f'$CC_XP_SCHOOL_TT_APT_AVG$ #Y {lv(n, "apt_avg")}#!"')
     return '\n'.join(out) + '\n'
 
 
@@ -251,9 +262,9 @@ def funding_row(cost: str) -> str:
 }}'''
 
 
-def button(n: int, key: str, label_key: str) -> str:
+def button(n: int, key: str, label_key: str, size: str = '92 28') -> str:
     return f'''card_header_button_01 = {{
-	size = {{ 92 28 }}
+	size = {{ {size} }}
 	scripted_action_tooltip = {{
 		click_type = left
 		click_mode = single
@@ -285,8 +296,11 @@ def emit_card(n: int) -> str:
             f'visible = "[GreaterThan_CFixedPoint({var(n, "cost")}.GetValue, \'(CFixedPoint)0\')]"  '
             f'text = "CC_XP_SCHOOL_{n}_COST" }}')
     members = (f'hbox = {{\n\tlayoutpolicy_horizontal = expanding\n\tspacing = 6\n\t{label("CC_XP_SCHOOL_MEMBERS_LABEL")}\n'
-               f'\ttext_single = {{ fontsize = 12  align = left|nobaseline  raw_text = "[{var(n, "members")}.GetValue|0]"  tooltip = "CC_XP_SCHOOL_MEMBERS_TT" }}\n'
+               f'\ttext_single = {{ fontsize = 12  align = left|nobaseline  text = "CC_XP_SCHOOL_{n}_MEMBERS"  tooltip = "CC_XP_SCHOOL_{n}_MEMBERS_TT" }}\n'
                f'\texpand = {{}}\n}}')
+    admission = choice_row(n, 'CC_XP_SCHOOL_ADMISSION_LABEL', 'apt', ADMISSIONS, 'CC_XP_SCHOOL_ADMISSION_{}',
+                           'CC_XP_SCHOOL_ADMISSION_{}_TT',
+                           button(n, 'admission', 'CC_XP_SCHOOL_BTN_ADMISSION', '70 22'))
     no_rector = f'''hbox = {{
 	layoutpolicy_horizontal = expanding
 	spacing = 6
@@ -304,7 +318,7 @@ def emit_card(n: int) -> str:
 	}}
 	expand = {{}}
 }}'''
-    buttons = '\n'.join(button(n, key, lbl) for key, _, _, _, lbl in ACTIONS)
+    buttons = '\n'.join(button(n, key, lbl) for key, _, _, _, lbl in ACTIONS if key not in ROW_ACTIONS)
 
     left = '\n\n'.join([
         portrait(n, 'founder', 'CC_XP_SCHOOL_FOUNDER_LABEL', 'CC_XP_SCHOOL_FOUNDER_TT', True),
@@ -318,12 +332,13 @@ def emit_card(n: int) -> str:
         choice_row(n, 'CC_XP_SCHOOL_CURRICULUM_LABEL', 'curriculum', CURRICULA, 'CC_XP_CURRICULUM_{}', 'CC_XP_CURRICULUM_{}_TT'),
         funding_row(cost),
         members,
+        admission,
         'expand = {}',
     ])
 
     return f'''template cc_xp_school_card_{n} {{
 	layoutpolicy_horizontal = expanding
-	size = {{ -1 236 }}
+	size = {{ -1 262 }}
 	background = {{ using = color_whiteish_texture  alpha = 0.10 }}
 
 	vbox = {{
