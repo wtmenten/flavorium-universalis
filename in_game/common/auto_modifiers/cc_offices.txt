@@ -16,7 +16,7 @@ cc_office_seneschal = {
 	scales_with = { value = cc_office_seneschal_scale }
 
 	country_cabinet_efficiency = 0.32
-	court_spending_efficiency = 0.05
+	global_monthly_control = 0.01
 	nobles_estate_agenda_impact = 0.08
 }
 
@@ -32,7 +32,7 @@ cc_office_master_of_coin = {
 	scales_with = { value = cc_office_master_of_coin_scale }
 
 	global_trade_center_power = 0.06
-	court_spending_efficiency = 0.08
+	tax_income_efficiency = 0.03
 	burghers_estate_agenda_impact = 0.08
 }
 
@@ -96,8 +96,9 @@ cc_office_keeper_of_the_wardrobe = {
 
 	scales_with = { value = cc_office_keeper_of_the_wardrobe_scale }
 
-	court_spending_efficiency = 0.1
+	court_spending_efficiency = 0.07
 	monthly_prestige = 0.02
+	artist_salary_modifier = -0.1
 }
 
 # Chancellor of the Rolls [core] adm tier 2
@@ -129,7 +130,8 @@ cc_office_master_of_the_mint = {
 	scales_with = { value = cc_office_master_of_the_mint_scale }
 
 	global_trade_center_power = 0.08
-	court_spending_efficiency = 0.06
+	monthly_inflation = -0.0005
+	minting_income_factor = 0.05
 }
 
 # Court Chamberlain [core] adm tier 2
@@ -143,7 +145,7 @@ cc_office_court_chamberlain = {
 
 	scales_with = { value = cc_office_court_chamberlain_scale }
 
-	court_spending_efficiency = 0.12
+	court_spending_efficiency = 0.08
 	global_crown_estate_power = 0.04
 }
 
@@ -240,6 +242,17 @@ cc_office_court_astrologer = {
 	clergy_estate_agenda_impact = 0.05
 }
 
+cc_office_court_astrologer_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_court_astrologer_filled
+		NOT = { has_advance = enlightened_court }
+	}
+
+	monthly_prestige = -0.02
+}
+
 # Grand Inquisitor [religion] adm tier 2
 cc_office_grand_inquisitor = {
 	requires_real = yes
@@ -254,6 +267,17 @@ cc_office_grand_inquisitor = {
 	global_heretic_pop_conversion_speed_modifier = 0.15
 	clergy_estate_agenda_impact = 0.08
 	stability_cost_efficiency = 0.05
+}
+
+cc_office_grand_inquisitor_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_grand_inquisitor_filled
+		has_advance = inquisition_advance
+	}
+
+	tolerance_heretic = -1
 }
 
 # Ecclesiarch of the Court [religion] adm tier 2
@@ -348,7 +372,7 @@ cc_office_consistory_superintendent = {
 	scales_with = { value = cc_office_consistory_superintendent_scale }
 
 	global_pop_conversion_speed_modifier = 0.08
-	court_spending_efficiency = 0.06
+	monthly_religious_influence = 0.05
 	clergy_estate_agenda_impact = 0.08
 }
 
@@ -398,6 +422,17 @@ cc_office_constable = {
 	nobles_estate_agenda_impact = 0.06
 }
 
+cc_office_constable_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_constable_filled
+		has_advance = noble_officers
+	}
+
+	global_crown_estate_power = -0.02
+}
+
 # Consul of Merchants [government] dip tier 2
 cc_office_consul_of_merchants = {
 	requires_real = yes
@@ -443,6 +478,17 @@ cc_office_keeper_of_the_kurultai = {
 	land_morale = 0.05
 	nobles_estate_agenda_impact = 0.1
 	monthly_legitimacy = 0.02
+}
+
+cc_office_keeper_of_the_kurultai_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_keeper_of_the_kurultai_filled
+		has_advance = kurultai_advance
+	}
+
+	global_crown_estate_power = -0.02
 }
 
 # Master of the Yam [government] dip tier 2
@@ -492,6 +538,17 @@ cc_office_hansa_factor = {
 	global_trade_protection_factor = 0.1
 }
 
+cc_office_hansa_factor_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_hansa_factor_filled
+		has_advance = north_german_hanseatic_traditions
+	}
+
+	burghers_estate_target_satisfaction = -0.05
+}
+
 # Postelnic [culture] dip tier 2
 cc_office_postelnic = {
 	requires_real = yes
@@ -504,7 +561,7 @@ cc_office_postelnic = {
 	scales_with = { value = cc_office_postelnic_scale }
 
 	diplomatic_reputation = 1
-	antagonism_received_modifier = -0.08
+	subject_loyalty = 5
 	country_cabinet_efficiency = 0.24
 }
 
@@ -552,8 +609,19 @@ cc_office_state_inquisitor = {
 	scales_with = { value = cc_office_state_inquisitor_scale }
 
 	stability_cost_efficiency = 0.1
-	antagonism_received_modifier = -0.06
+	spy_network_construction = 0.1
 	global_monthly_control = 0.02
+}
+
+cc_office_state_inquisitor_cost = {
+	requires_real = yes
+
+	potential_trigger = {
+		has_variable = cc_office_state_inquisitor_filled
+		has_advance = ven_state_inquisition
+	}
+
+	diplomatic_reputation = -0.5
 }
 
 # Priore of the Council [culture] adm tier 2
@@ -600,7 +668,7 @@ cc_office_master_of_siege_works = {
 	scales_with = { value = cc_office_master_of_siege_works_scale }
 
 	siege_ability = 0.1
-	court_spending_efficiency = 0.04
+	fort_maintenance_efficiency = 0.05
 }
 
 # Keeper of the Wampum [region] dip tier 1
@@ -646,7 +714,7 @@ cc_office_keeper_of_regnal_chronicles = {
 
 	monthly_prestige = 0.03
 	monthly_legitimacy = 0.02
-	global_monthly_literacy = 0.005
+	skill_of_new_artists = 0.05
 }
 
 # Master of the Road [region] dip tier 2
@@ -662,7 +730,7 @@ cc_office_master_of_the_silk_road = {
 
 	global_trade_center_power = 0.08
 	trade_range_modifier = 0.1
-	diplomatic_range_modifier = 0.1
+	tariff_income = 0.1
 }
 
 # Master of Ceremonies [region] dip tier 2

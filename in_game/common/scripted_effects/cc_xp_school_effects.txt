@@ -1034,8 +1034,16 @@ cc_xp_school_scan_rivals = {
 			save_scope_as = cc_xp_school_rival_candidate
 
 			scope:cc_xp_school_court = {
+				# THE RIVAL IS CONTINENTAL. The rival behind the poaching and student events
+				# (cc_xp_school.40/.41) and the renown gap that rolls them is the best university
+				# on our capital's continent: a Byzantine master is courted by Paris or Bologna,
+				# not by a school in Vietnam. Standing below stays a world ranking, as the panel
+				# and cc_xp_school.42 describe it.
 				if = {
-					limit = { scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_rival_score }
+					limit = {
+						scope:cc_xp_school_rival_candidate = { continent = scope:cc_xp_school_court.capital.continent }
+						scope:cc_xp_school_rival_candidate.cc_xp_university_score > var:cc_xp_school_rival_score
+					}
 					set_variable = { name = cc_xp_school_rival_score  value = scope:cc_xp_school_rival_candidate.cc_xp_university_score }
 					set_variable = { name = cc_xp_school_rival_loc  value = scope:cc_xp_school_rival_candidate }
 				}

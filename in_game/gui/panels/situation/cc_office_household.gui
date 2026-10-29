@@ -24,7 +24,7 @@
 
 # A held office. Expects its holder as the Character datacontext (cc_office_<key>_holder).
 template cc_office_held_card {
-	size = { 230 186 }
+	size = { 230 214 }
 	background = { using = color_whiteish_texture  alpha = 0.10 }
 
 	vbox = {
@@ -83,6 +83,15 @@ template cc_office_held_card {
 			fontsize = 11
 			block "office_effects" {}
 		}
+		# What holding the post costs: the household upkeep, and any price of its own.
+		text_multi = {
+			layoutpolicy_horizontal = expanding
+			autoresize = yes
+			multiline = yes
+			max_width = 212
+			fontsize = 10
+			block "office_costs" {}
+		}
 		text_single = {
 			layoutpolicy_horizontal = expanding
 			fontsize = 10
@@ -97,7 +106,7 @@ template cc_office_held_card {
 
 # An office the realm has but nobody holds.
 template cc_office_open_card {
-	size = { 230 140 }
+	size = { 230 168 }
 	background = { using = color_black_texture  alpha = 0.18 }
 
 	vbox = {
@@ -135,6 +144,15 @@ template cc_office_open_card {
 			max_width = 212
 			fontsize = 11
 			block "office_effects" {}
+		}
+		# What holding the post costs: the household upkeep, and any price of its own.
+		text_multi = {
+			layoutpolicy_horizontal = expanding
+			autoresize = yes
+			multiline = yes
+			max_width = 212
+			fontsize = 10
+			block "office_costs" {}
 		}
 		text_single = {
 			layoutpolicy_horizontal = expanding
@@ -239,6 +257,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_seneschal_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_seneschal_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_seneschal_costs" }
 						blockoverride "office_scale" { text = "cc_office_seneschal_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_seneschal_retiring_tt" }
@@ -272,6 +291,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_coin_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_coin_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_coin_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_coin_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_master_of_coin_retiring_tt" }
@@ -305,6 +325,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_herald_of_arms_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_herald_of_arms_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_herald_of_arms_costs" }
 						blockoverride "office_scale" { text = "cc_office_herald_of_arms_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_herald_of_arms_retiring_tt" }
@@ -338,6 +359,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_marshal_of_the_court_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_marshal_of_the_court_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_marshal_of_the_court_costs" }
 						blockoverride "office_scale" { text = "cc_office_marshal_of_the_court_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_marshal_of_the_court_retiring_tt" }
@@ -371,6 +393,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_clerk_of_the_signet_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_clerk_of_the_signet_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_clerk_of_the_signet_costs" }
 						blockoverride "office_scale" { text = "cc_office_clerk_of_the_signet_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_clerk_of_the_signet_retiring_tt" }
@@ -404,6 +427,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_wardrobe_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wardrobe_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_wardrobe_costs" }
 						blockoverride "office_scale" { text = "cc_office_keeper_of_the_wardrobe_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_keeper_of_the_wardrobe_retiring_tt" }
@@ -437,6 +461,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_chancellor_of_the_rolls_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_rolls_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_chancellor_of_the_rolls_costs" }
 						blockoverride "office_scale" { text = "cc_office_chancellor_of_the_rolls_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_chancellor_of_the_rolls_retiring_tt" }
@@ -470,6 +495,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_the_mint_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_mint_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_mint_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_the_mint_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -500,6 +526,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_court_chamberlain_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_court_chamberlain_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_court_chamberlain_costs" }
 						blockoverride "office_scale" { text = "cc_office_court_chamberlain_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -530,6 +557,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_protocol_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_protocol_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_protocol_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_protocol_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -560,6 +588,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_intendant_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_intendant_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_intendant_costs" }
 						blockoverride "office_scale" { text = "cc_office_intendant_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -590,6 +619,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_permanent_secretary_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_permanent_secretary_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_permanent_secretary_costs" }
 						blockoverride "office_scale" { text = "cc_office_permanent_secretary_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -620,6 +650,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_tenure" { text = "cc_office_director_of_public_instruction_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_director_of_public_instruction_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_director_of_public_instruction_costs" }
 						blockoverride "office_scale" { text = "cc_office_director_of_public_instruction_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -650,6 +681,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_court_chaplain_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_court_chaplain_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_court_chaplain_costs" }
 						blockoverride "office_scale" { text = "cc_office_court_chaplain_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -680,6 +712,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_court_astrologer_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_court_astrologer_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_court_astrologer_costs" }
 						blockoverride "office_scale" { text = "cc_office_court_astrologer_scale_line" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_court_astrologer_retiring_tt" }
@@ -713,6 +746,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_grand_inquisitor_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_grand_inquisitor_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_grand_inquisitor_costs" }
 						blockoverride "office_scale" { text = "cc_office_grand_inquisitor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -743,6 +777,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_ecclesiarch_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_ecclesiarch_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_ecclesiarch_costs" }
 						blockoverride "office_scale" { text = "cc_office_ecclesiarch_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -773,6 +808,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_qadi_of_the_court_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_qadi_of_the_court_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_qadi_of_the_court_costs" }
 						blockoverride "office_scale" { text = "cc_office_qadi_of_the_court_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -803,6 +839,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_court_ulema_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_court_ulema_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_court_ulema_costs" }
 						blockoverride "office_scale" { text = "cc_office_court_ulema_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -833,6 +870,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_court_pandit_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_court_pandit_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_court_pandit_costs" }
 						blockoverride "office_scale" { text = "cc_office_court_pandit_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -863,6 +901,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_sangha_preceptor_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_sangha_preceptor_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_sangha_preceptor_costs" }
 						blockoverride "office_scale" { text = "cc_office_sangha_preceptor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -893,6 +932,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_consistory_superintendent_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_consistory_superintendent_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_consistory_superintendent_costs" }
 						blockoverride "office_scale" { text = "cc_office_consistory_superintendent_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -923,6 +963,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_tenure" { text = "cc_office_confessional_overseer_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_confessional_overseer_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_confessional_overseer_costs" }
 						blockoverride "office_scale" { text = "cc_office_confessional_overseer_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -953,6 +994,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_steward_of_the_demesne_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_steward_of_the_demesne_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_steward_of_the_demesne_costs" }
 						blockoverride "office_scale" { text = "cc_office_steward_of_the_demesne_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -983,6 +1025,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_constable_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_constable_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_constable_costs" }
 						blockoverride "office_scale" { text = "cc_office_constable_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1013,6 +1056,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_consul_of_merchants_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_consul_of_merchants_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_consul_of_merchants_costs" }
 						blockoverride "office_scale" { text = "cc_office_consul_of_merchants_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1043,6 +1087,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_chancellor_of_the_see_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_see_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_chancellor_of_the_see_costs" }
 						blockoverride "office_scale" { text = "cc_office_chancellor_of_the_see_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1073,6 +1118,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_kurultai_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_kurultai_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_kurultai_costs" }
 						blockoverride "office_scale" { text = "cc_office_keeper_of_the_kurultai_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1103,6 +1149,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_the_yam_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_yam_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_yam_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_the_yam_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1133,6 +1180,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_phanariote_secretary_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_phanariote_secretary_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_phanariote_secretary_costs" }
 						blockoverride "office_scale" { text = "cc_office_phanariote_secretary_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1163,6 +1211,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_hansa_factor_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_hansa_factor_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_hansa_factor_costs" }
 						blockoverride "office_scale" { text = "cc_office_hansa_factor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1193,6 +1242,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_postelnic_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_postelnic_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_postelnic_costs" }
 						blockoverride "office_scale" { text = "cc_office_postelnic_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1223,6 +1273,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_voivode_of_the_court_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_voivode_of_the_court_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_voivode_of_the_court_costs" }
 						blockoverride "office_scale" { text = "cc_office_voivode_of_the_court_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1253,6 +1304,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_herald_of_the_table_of_ranks_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_herald_of_the_table_of_ranks_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_herald_of_the_table_of_ranks_costs" }
 						blockoverride "office_scale" { text = "cc_office_herald_of_the_table_of_ranks_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1283,6 +1335,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_state_inquisitor_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_state_inquisitor_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_state_inquisitor_costs" }
 						blockoverride "office_scale" { text = "cc_office_state_inquisitor_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1313,6 +1366,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_priori_of_the_council_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_priori_of_the_council_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_priori_of_the_council_costs" }
 						blockoverride "office_scale" { text = "cc_office_priori_of_the_council_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1343,6 +1397,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_jokamachi_warden_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_jokamachi_warden_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_jokamachi_warden_costs" }
 						blockoverride "office_scale" { text = "cc_office_jokamachi_warden_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1373,6 +1428,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_siege_works_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_siege_works_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_siege_works_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_siege_works_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1403,6 +1459,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_tenure" { text = "cc_office_keeper_of_the_wampum_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wampum_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_wampum_costs" }
 						blockoverride "office_scale" { text = "cc_office_keeper_of_the_wampum_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1433,6 +1490,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_tenure" { text = "cc_office_speaker_of_the_elders_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_speaker_of_the_elders_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_speaker_of_the_elders_costs" }
 						blockoverride "office_scale" { text = "cc_office_speaker_of_the_elders_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1463,6 +1521,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_tenure" { text = "cc_office_keeper_of_regnal_chronicles_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_regnal_chronicles_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_regnal_chronicles_costs" }
 						blockoverride "office_scale" { text = "cc_office_keeper_of_regnal_chronicles_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1493,6 +1552,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_the_silk_road_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_silk_road_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_silk_road_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_the_silk_road_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1523,6 +1583,7 @@ template cc_office_household_content {
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_tenure" { text = "cc_office_master_of_ceremonies_tenure_line" }
 						blockoverride "office_effects" { text = "cc_office_master_of_ceremonies_fx_held" }
+						blockoverride "office_costs" { text = "cc_office_master_of_ceremonies_costs" }
 						blockoverride "office_scale" { text = "cc_office_master_of_ceremonies_scale_line" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1561,6 +1622,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_seneschal" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_seneschal_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_seneschal_costs" }
 						blockoverride "office_requirement" { text = "cc_office_seneschal_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_seneschal_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_seneschal_retiring_tt" }
@@ -1592,6 +1654,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_coin" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_master_of_coin_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_coin_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_coin_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_master_of_coin_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_master_of_coin_retiring_tt" }
@@ -1623,6 +1686,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_herald_of_arms" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_herald_of_arms_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_herald_of_arms_costs" }
 						blockoverride "office_requirement" { text = "cc_office_herald_of_arms_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_herald_of_arms_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_herald_of_arms_retiring_tt" }
@@ -1654,6 +1718,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_marshal_of_the_court" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_marshal_of_the_court_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_marshal_of_the_court_costs" }
 						blockoverride "office_requirement" { text = "cc_office_marshal_of_the_court_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_marshal_of_the_court_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_marshal_of_the_court_retiring_tt" }
@@ -1685,6 +1750,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_clerk_of_the_signet" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_clerk_of_the_signet_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_clerk_of_the_signet_costs" }
 						blockoverride "office_requirement" { text = "cc_office_clerk_of_the_signet_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_clerk_of_the_signet_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_clerk_of_the_signet_retiring_tt" }
@@ -1716,6 +1782,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_keeper_of_the_wardrobe" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wardrobe_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_wardrobe_costs" }
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wardrobe_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_keeper_of_the_wardrobe_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_keeper_of_the_wardrobe_retiring_tt" }
@@ -1747,6 +1814,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_chancellor_of_the_rolls" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_rolls_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_chancellor_of_the_rolls_costs" }
 						blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_rolls_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_chancellor_of_the_rolls_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_chancellor_of_the_rolls_retiring_tt" }
@@ -1778,6 +1846,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_the_mint" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_mint_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_mint_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_mint_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1806,6 +1875,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_court_chamberlain" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_court_chamberlain_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_court_chamberlain_costs" }
 						blockoverride "office_requirement" { text = "cc_office_court_chamberlain_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1834,6 +1904,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_protocol" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_master_of_protocol_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_protocol_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_protocol_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1862,6 +1933,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_intendant" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_intendant_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_intendant_costs" }
 						blockoverride "office_requirement" { text = "cc_office_intendant_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1890,6 +1962,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_permanent_secretary" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_permanent_secretary_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_permanent_secretary_costs" }
 						blockoverride "office_requirement" { text = "cc_office_permanent_secretary_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1918,6 +1991,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_director_of_public_instruction" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CORE" }
 						blockoverride "office_effects" { text = "cc_office_director_of_public_instruction_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_director_of_public_instruction_costs" }
 						blockoverride "office_requirement" { text = "cc_office_director_of_public_instruction_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1946,6 +2020,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_court_chaplain" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_court_chaplain_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_court_chaplain_costs" }
 						blockoverride "office_requirement" { text = "cc_office_court_chaplain_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -1974,6 +2049,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_court_astrologer" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_court_astrologer_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_court_astrologer_costs" }
 						blockoverride "office_requirement" { text = "cc_office_court_astrologer_req" }
 						blockoverride "office_retiring" {
 							text_single = { fontsize = 10  align = right|nobaseline  visible = "[Player.MakeScope.GetVariable('cc_office_court_astrologer_retiring').IsSet]"  text = "CC_OFFICE_RETIRING"  tooltip = "cc_office_court_astrologer_retiring_tt" }
@@ -2005,6 +2081,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_grand_inquisitor" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_grand_inquisitor_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_grand_inquisitor_costs" }
 						blockoverride "office_requirement" { text = "cc_office_grand_inquisitor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2033,6 +2110,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_ecclesiarch" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_ecclesiarch_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_ecclesiarch_costs" }
 						blockoverride "office_requirement" { text = "cc_office_ecclesiarch_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2061,6 +2139,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_qadi_of_the_court" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_qadi_of_the_court_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_qadi_of_the_court_costs" }
 						blockoverride "office_requirement" { text = "cc_office_qadi_of_the_court_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2089,6 +2168,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_court_ulema" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_court_ulema_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_court_ulema_costs" }
 						blockoverride "office_requirement" { text = "cc_office_court_ulema_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2117,6 +2197,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_court_pandit" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_court_pandit_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_court_pandit_costs" }
 						blockoverride "office_requirement" { text = "cc_office_court_pandit_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2145,6 +2226,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_sangha_preceptor" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_sangha_preceptor_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_sangha_preceptor_costs" }
 						blockoverride "office_requirement" { text = "cc_office_sangha_preceptor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2173,6 +2255,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_consistory_superintendent" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_consistory_superintendent_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_consistory_superintendent_costs" }
 						blockoverride "office_requirement" { text = "cc_office_consistory_superintendent_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2201,6 +2284,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_confessional_overseer" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_RELIGION" }
 						blockoverride "office_effects" { text = "cc_office_confessional_overseer_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_confessional_overseer_costs" }
 						blockoverride "office_requirement" { text = "cc_office_confessional_overseer_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2229,6 +2313,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_steward_of_the_demesne" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_steward_of_the_demesne_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_steward_of_the_demesne_costs" }
 						blockoverride "office_requirement" { text = "cc_office_steward_of_the_demesne_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2257,6 +2342,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_constable" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_constable_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_constable_costs" }
 						blockoverride "office_requirement" { text = "cc_office_constable_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2285,6 +2371,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_consul_of_merchants" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_consul_of_merchants_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_consul_of_merchants_costs" }
 						blockoverride "office_requirement" { text = "cc_office_consul_of_merchants_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2313,6 +2400,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_chancellor_of_the_see" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_chancellor_of_the_see_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_chancellor_of_the_see_costs" }
 						blockoverride "office_requirement" { text = "cc_office_chancellor_of_the_see_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2341,6 +2429,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_keeper_of_the_kurultai" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_kurultai_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_kurultai_costs" }
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_kurultai_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2369,6 +2458,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_the_yam" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_GOVERNMENT" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_yam_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_yam_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_yam_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2397,6 +2487,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_phanariote_secretary" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_phanariote_secretary_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_phanariote_secretary_costs" }
 						blockoverride "office_requirement" { text = "cc_office_phanariote_secretary_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2425,6 +2516,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_hansa_factor" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_hansa_factor_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_hansa_factor_costs" }
 						blockoverride "office_requirement" { text = "cc_office_hansa_factor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2453,6 +2545,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_postelnic" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_postelnic_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_postelnic_costs" }
 						blockoverride "office_requirement" { text = "cc_office_postelnic_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2481,6 +2574,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_voivode_of_the_court" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_voivode_of_the_court_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_voivode_of_the_court_costs" }
 						blockoverride "office_requirement" { text = "cc_office_voivode_of_the_court_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2509,6 +2603,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_herald_of_the_table_of_ranks" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_herald_of_the_table_of_ranks_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_herald_of_the_table_of_ranks_costs" }
 						blockoverride "office_requirement" { text = "cc_office_herald_of_the_table_of_ranks_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2537,6 +2632,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_state_inquisitor" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_state_inquisitor_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_state_inquisitor_costs" }
 						blockoverride "office_requirement" { text = "cc_office_state_inquisitor_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2565,6 +2661,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_priori_of_the_council" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_priori_of_the_council_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_priori_of_the_council_costs" }
 						blockoverride "office_requirement" { text = "cc_office_priori_of_the_council_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2593,6 +2690,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_jokamachi_warden" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_jokamachi_warden_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_jokamachi_warden_costs" }
 						blockoverride "office_requirement" { text = "cc_office_jokamachi_warden_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2621,6 +2719,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_siege_works" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_CULTURE" }
 						blockoverride "office_effects" { text = "cc_office_master_of_siege_works_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_siege_works_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_siege_works_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2649,6 +2748,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_keeper_of_the_wampum" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_the_wampum_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_the_wampum_costs" }
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_the_wampum_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2677,6 +2777,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_speaker_of_the_elders" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_effects" { text = "cc_office_speaker_of_the_elders_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_speaker_of_the_elders_costs" }
 						blockoverride "office_requirement" { text = "cc_office_speaker_of_the_elders_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2705,6 +2806,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_keeper_of_regnal_chronicles" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_effects" { text = "cc_office_keeper_of_regnal_chronicles_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_keeper_of_regnal_chronicles_costs" }
 						blockoverride "office_requirement" { text = "cc_office_keeper_of_regnal_chronicles_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2733,6 +2835,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_the_silk_road" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_effects" { text = "cc_office_master_of_the_silk_road_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_the_silk_road_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_the_silk_road_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {
@@ -2761,6 +2864,7 @@ template cc_office_household_content {
 						blockoverride "office_name" { text = "cc_office_master_of_ceremonies" }
 						blockoverride "office_family" { text = "CC_OFFICE_FAMILY_REGION" }
 						blockoverride "office_effects" { text = "cc_office_master_of_ceremonies_fx_base" }
+						blockoverride "office_costs" { text = "cc_office_master_of_ceremonies_costs" }
 						blockoverride "office_requirement" { text = "cc_office_master_of_ceremonies_req" }
 						blockoverride "office_button" {
 							card_header_button_01 = {

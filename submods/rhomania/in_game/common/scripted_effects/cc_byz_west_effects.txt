@@ -25,6 +25,22 @@
 # and let the provinces be strong. Reabsorption pays better in raw modifiers and requires
 # keeping the west weak, which means never getting the manpower or the revenue out of it.
 
+# THE CORNERS DO NOT END THE SITUATION ON CONTACT ANY MORE. They used to: the situation opens at
+# grip 50 and autonomy 20, one step from Reabsorption, and a single loyal Italian prefecture
+# reached it in about a decade. That ended the West around 1520 with almost nothing recovered
+# and no warning. Now, outside the Age of Revolutions deadline:
+#
+#   1. THE GATE. No corner counts until the situation has run fifty years (cc_byz_west_months
+#      >= 600) and at least two prefectures are seated. Until then the counters still move and
+#      the panel says what is missing.
+#   2. HOLDING THE CORNER. Entering a corner starts a five-year count (cc_byz_west_corner,
+#      cc_byz_west_corner_months) and fires a warning, cc_byz_west.85, which can steer back.
+#      Leaving the corner resets the count.
+#   3. THE CLIMAX. Five years held fires cc_byz_west.86, where the emperor shapes the ending he
+#      has earned. Its options set cc_byz_west_ending, and can_end and on_ending take it from
+#      there to the ending events (.90-.93) as before.
+#
+# The thresholds of the corners are unchanged.
 cc_byz_west_check_endings_effect = {
 	if = {
 		limit = {
@@ -33,37 +49,10 @@ cc_byz_west_check_endings_effect = {
 			has_variable = cc_byz_west_ending
 			var:cc_byz_west_ending = 0
 		}
-
-		# Ordered most specific first. Acclamation is checked before neglect because a
-		# collapsed grip with a strong west is a different event from a collapsed grip with
-		# nothing on the other side of it.
+		cc_byz_west_track_age_effect = yes
 		if = {
-			limit = {
-				var:cc_byz_imperial_grip >= 65
-				var:cc_byz_western_autonomy < 35
-			}
-			set_variable = { name = cc_byz_west_ending  value = 1 }
-		}
-		else_if = {
-			limit = {
-				var:cc_byz_imperial_grip >= 60
-				var:cc_byz_western_autonomy >= 60
-			}
-			set_variable = { name = cc_byz_west_ending  value = 2 }
-		}
-		else_if = {
-			limit = {
-				var:cc_byz_western_autonomy >= 80
-				var:cc_byz_imperial_grip < 40
-			}
-			set_variable = { name = cc_byz_west_ending  value = 3 }
-		}
-		else_if = {
-			limit = {
-				var:cc_byz_imperial_grip < 25
-				var:cc_byz_western_autonomy < 30
-			}
-			set_variable = { name = cc_byz_west_ending  value = 4 }
+			limit = { NOT = { current_age_or_later = { age = age_6_revolutions } } }
+			cc_byz_west_track_corner_effect = yes
 		}
 
 		# ---- SECOND TIER: the deadline ----
@@ -82,7 +71,7 @@ cc_byz_west_check_endings_effect = {
 		# The thresholds are deliberately looser than the first tier and the diarchy is checked
 		# first, so an empire that governed the west well and let it be strong gets the good
 		# ending on the buzzer rather than being dropped into neglect on a technicality.
-		else_if = {
+		if = {
 			limit = { current_age_or_later = { age = age_6_revolutions } }
 
 			if = {
@@ -110,6 +99,147 @@ cc_byz_west_check_endings_effect = {
 				# Neither counter got anywhere. Nobody governed the west, including us.
 				set_variable = { name = cc_byz_west_ending  value = 4 }
 			}
+		}
+	}
+}
+
+
+# Situation scope, monthly. How long the West has run, and whether the endings are open yet.
+# cc_byz_west_months starts at 0 on saves from before this existed: their fifty years begin now.
+cc_byz_west_track_age_effect = {
+	if = {
+		limit = { NOT = { has_variable = cc_byz_west_months } }
+		set_variable = { name = cc_byz_west_months  value = 0 }
+	}
+	change_variable = { name = cc_byz_west_months  add = 1 }
+	set_variable = {
+		name = cc_byz_west_years
+		value = { value = var:cc_byz_west_months  divide = 12  floor = yes }
+	}
+	if = {
+		limit = {
+			var:cc_byz_west_months >= 600
+			var:cc_byz_empire ?= {
+				any_subject = {
+					count >= 2
+					has_variable = cc_byz_is_exarchate
+				}
+			}
+		}
+		set_variable = { name = cc_byz_west_gate_open  value = yes }
+	}
+	else = {
+		remove_variable = cc_byz_west_gate_open
+	}
+}
+
+# Situation scope, monthly, before the deadline age. Which corner the counters are in, how long
+# they have held it, and the warning and climax. Corner ids match cc_byz_west_ending.
+cc_byz_west_track_corner_effect = {
+	set_variable = { name = cc_byz_west_in_corner  value = 0 }
+	# Ordered most specific first, as the endings always were.
+	if = {
+		limit = {
+			var:cc_byz_imperial_grip >= 65
+			var:cc_byz_western_autonomy < 35
+		}
+		set_variable = { name = cc_byz_west_in_corner  value = 1 }
+	}
+	else_if = {
+		limit = {
+			var:cc_byz_imperial_grip >= 60
+			var:cc_byz_western_autonomy >= 60
+		}
+		set_variable = { name = cc_byz_west_in_corner  value = 2 }
+	}
+	else_if = {
+		limit = {
+			var:cc_byz_western_autonomy >= 80
+			var:cc_byz_imperial_grip < 40
+		}
+		set_variable = { name = cc_byz_west_in_corner  value = 3 }
+	}
+	else_if = {
+		limit = {
+			var:cc_byz_imperial_grip < 25
+			var:cc_byz_western_autonomy < 30
+		}
+		set_variable = { name = cc_byz_west_in_corner  value = 4 }
+	}
+
+	if = {
+		limit = {
+			has_variable = cc_byz_west_gate_open
+			var:cc_byz_west_in_corner > 0
+		}
+		if = {
+			limit = {
+				has_variable = cc_byz_west_corner
+				var:cc_byz_west_corner = var:cc_byz_west_in_corner
+			}
+			change_variable = { name = cc_byz_west_corner_months  add = 1 }
+		}
+		else = {
+			# A new corner: start the count and say so.
+			set_variable = { name = cc_byz_west_corner  value = var:cc_byz_west_in_corner }
+			set_variable = { name = cc_byz_west_corner_months  value = 0 }
+			var:cc_byz_empire ?= { trigger_event_non_silently = { id = cc_byz_west.85 } }
+		}
+		set_variable = {
+			name = cc_byz_west_corner_years
+			value = { value = var:cc_byz_west_corner_months  divide = 12  floor = yes }
+		}
+		if = {
+			limit = {
+				var:cc_byz_west_corner_months >= 60
+				NOT = { has_variable = cc_byz_west_climax_fired }
+			}
+			set_variable = { name = cc_byz_west_climax_fired  value = yes }
+			var:cc_byz_empire ?= { trigger_event_non_silently = { id = cc_byz_west.86 } }
+		}
+	}
+	else = {
+		remove_variable = cc_byz_west_corner
+		remove_variable = cc_byz_west_corner_months
+		remove_variable = cc_byz_west_corner_years
+	}
+}
+
+# Country scope (Byzantium). Steer the counters eight points back toward the middle, from
+# whichever side they are on. Used by the warning, cc_byz_west.85.
+cc_byz_west_steer_to_centre_effect = {
+	if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			if = {
+				limit = { var:cc_byz_imperial_grip > 50 }
+				change_variable = { name = cc_byz_imperial_grip  add = -8 }
+			}
+			else = {
+				change_variable = { name = cc_byz_imperial_grip  add = 8 }
+			}
+			if = {
+				limit = { var:cc_byz_western_autonomy > 50 }
+				change_variable = { name = cc_byz_western_autonomy  add = -8 }
+			}
+			else = {
+				change_variable = { name = cc_byz_western_autonomy  add = 8 }
+			}
+			clamp_variable = { name = cc_byz_imperial_grip  min = 0  max = 100 }
+			clamp_variable = { name = cc_byz_western_autonomy  min = 0  max = 100 }
+			remove_variable = cc_byz_west_corner
+			remove_variable = cc_byz_west_corner_months
+			remove_variable = cc_byz_west_corner_years
+		}
+	}
+}
+
+# Country scope (Byzantium). The climax's choice: settle the West on corner VALUE.
+cc_byz_west_settle_effect = {
+	if = {
+		limit = { is_situation_active = situation:cc_byz_the_west }
+		situation:cc_byz_the_west = {
+			set_variable = { name = cc_byz_west_ending  value = $VALUE$ }
 		}
 	}
 }

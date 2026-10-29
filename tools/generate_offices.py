@@ -122,6 +122,8 @@ AGE_ORDER = ['age_1_traditions', 'age_2_renaissance', 'age_3_discovery',
 # unlock    advance that makes the office available; None means available from game start
 # obsolete  advance that retires the office; None means it never retires
 # mod       the auto_modifier body, before level scaling
+# cost      optional: a price of holding the post, applied at full strength by its own
+#           auto_modifier (cc_office_<key>_cost) and never scaled by seniority
 # desc      loc description, one or two plain sentences
 ###############################################################################
 
@@ -129,13 +131,13 @@ OFFICES = [
     # ------------------------------------------------------------------ CORE ---
     dict(key='seneschal', name='Seneschal', track='adm', tier=1, family='core',
          unlock=None, obsolete='chancery_records',
-         mod={'country_cabinet_efficiency': 0.32, 'court_spending_efficiency': 0.05,
+         mod={'country_cabinet_efficiency': 0.32, 'global_monthly_control': 0.01,
               'nobles_estate_agenda_impact': 0.08},
          desc="Runs the household and the lord's own lands. Superseded once written chancery "
               "records make the office a clerical one."),
     dict(key='master_of_coin', name='Master of Coin', track='adm', tier=1, family='core',
          unlock=None, obsolete='standardized_coins',
-         mod={'global_trade_center_power': 0.06, 'court_spending_efficiency': 0.08,
+         mod={'global_trade_center_power': 0.06, 'tax_income_efficiency': 0.03,
               'burghers_estate_agenda_impact': 0.08},
          desc="Keeps the treasure chest and pays the household's bills. Standardized coinage "
               "turns the post into a mint office."),
@@ -158,7 +160,8 @@ OFFICES = [
               "chancery once records are kept systematically."),
     dict(key='keeper_of_the_wardrobe', name='Keeper of the Wardrobe', track='adm', tier=1,
          family='core', unlock='non_inheritable_offices', obsolete='absolutist_court',
-         mod={'court_spending_efficiency': 0.10, 'monthly_prestige': 0.02},
+         mod={'court_spending_efficiency': 0.07, 'monthly_prestige': 0.02,
+              'artist_salary_modifier': -0.10},
          desc="Holds the household purse separately from the treasury, which is what makes it "
               "useful. The absolutist court folds it into the civil list."),
     dict(key='chancellor_of_the_rolls', name='Chancellor of the Rolls', track='adm', tier=2,
@@ -169,12 +172,13 @@ OFFICES = [
               "made. A modern bureaucracy makes the rolls a department rather than a person."),
     dict(key='master_of_the_mint', name='Master of the Mint', track='adm', tier=2,
          family='core', unlock='standardized_coins', obsolete=None,
-         mod={'global_trade_center_power': 0.08, 'court_spending_efficiency': 0.06},
+         mod={'global_trade_center_power': 0.08, 'monthly_inflation': -0.0005,
+              'minting_income_factor': 0.05},
          desc="Answers for the weight and fineness of the coin, and for what the crown makes "
               "by striking it."),
     dict(key='court_chamberlain', name='Court Chamberlain', track='adm', tier=2, family='core',
          unlock='regulate_court_procedures', obsolete=None,
-         mod={'court_spending_efficiency': 0.12, 'global_crown_estate_power': 0.04},
+         mod={'court_spending_efficiency': 0.08, 'global_crown_estate_power': 0.04},
          desc="Controls access to the ruler and the order of the court day. Regulated "
               "procedure is what gives the office its power."),
     dict(key='master_of_protocol', name='Master of Protocol', track='dip', tier=2,
@@ -207,12 +211,14 @@ OFFICES = [
     dict(key='court_astrologer', name='Court Astrologer', track='adm', tier=1,
          family='religion', unlock=None, obsolete='enlightened_court',
          mod={'research_speed': 0.06, 'clergy_estate_agenda_impact': 0.05},
+         cost={'monthly_prestige': -0.02},
          desc="Reads the heavens for the timing of decisions. The enlightened court stops "
               "asking."),
     dict(key='grand_inquisitor', name='Grand Inquisitor', track='adm', tier=2,
          family='religion', unlock='inquisition_advance', obsolete=None,
          mod={'global_heretic_pop_conversion_speed_modifier': 0.15,
               'clergy_estate_agenda_impact': 0.08, 'stability_cost_efficiency': 0.05},
+         cost={'tolerance_heretic': -1},
          desc="Answers for the orthodoxy of the realm's subjects, with the authority to act "
               "on it."),
     dict(key='ecclesiarch', name='Ecclesiarch of the Court', track='adm', tier=2,
@@ -243,7 +249,7 @@ OFFICES = [
               "monasteries."),
     dict(key='consistory_superintendent', name='Consistory Superintendent', track='adm',
          tier=2, family='religion', unlock='protestant_administration_tax', obsolete=None,
-         mod={'global_pop_conversion_speed_modifier': 0.08, 'court_spending_efficiency': 0.06,
+         mod={'global_pop_conversion_speed_modifier': 0.08, 'monthly_religious_influence': 0.05,
               'clergy_estate_agenda_impact': 0.08},
          desc="Administers a church the crown has taken responsibility for, including its "
               "revenues."),
@@ -260,6 +266,7 @@ OFFICES = [
     dict(key='constable', name='Constable', track='mil', tier=2, family='government',
          unlock='noble_officers', obsolete=None,
          mod={'land_morale': 0.06, 'discipline': 0.02, 'nobles_estate_agenda_impact': 0.06},
+         cost={'global_crown_estate_power': -0.02},
          desc="Commands in the ruler's name and answers for the conduct of noble officers."),
     dict(key='consul_of_merchants', name='Consul of Merchants', track='dip', tier=2,
          family='government', unlock='free_merchants', obsolete=None,
@@ -274,6 +281,7 @@ OFFICES = [
          family='government', unlock='kurultai_advance', obsolete=None,
          mod={'land_morale': 0.05, 'nobles_estate_agenda_impact': 0.10,
               'monthly_legitimacy': 0.02},
+         cost={'global_crown_estate_power': -0.02},
          desc="Summons the assembly, keeps its precedents and counts its voices."),
     dict(key='master_of_the_yam', name='Master of the Yam', track='dip', tier=2,
          family='government', unlock='yams_of_the_great_khan', obsolete=None,
@@ -291,10 +299,11 @@ OFFICES = [
     dict(key='hansa_factor', name='Hansa Factor', track='dip', tier=2, family='culture',
          unlock='north_german_hanseatic_traditions', obsolete=None,
          mod={'global_trade_center_power': 0.08, 'global_trade_protection_factor': 0.10},
+         cost={'burghers_estate_target_satisfaction': -0.05},
          desc="Holds the court's interest in the league's counting houses abroad."),
     dict(key='postelnic', name='Postelnic', track='dip', tier=2, family='culture',
          unlock='romanian_the_postelnic_bureaucracy', obsolete=None,
-         mod={'diplomatic_reputation': 1, 'antagonism_received_modifier': -0.08,
+         mod={'diplomatic_reputation': 1, 'subject_loyalty': 5,
               'country_cabinet_efficiency': 0.24},
          desc="Chamberlain and foreign secretary in one post, which is how the voivode's court "
               "was actually run."),
@@ -311,8 +320,9 @@ OFFICES = [
               "for a clerk."),
     dict(key='state_inquisitor', name='State Inquisitor', track='dip', tier=3,
          family='culture', unlock='ven_state_inquisition', obsolete=None,
-         mod={'stability_cost_efficiency': 0.10, 'antagonism_received_modifier': -0.06,
+         mod={'stability_cost_efficiency': 0.10, 'spy_network_construction': 0.10,
               'global_monthly_control': 0.02},
+         cost={'diplomatic_reputation': -0.5},
          desc="Watches the republic's own servants. Reports to the council and to nobody else."),
     dict(key='priori_of_the_council', name='Priore of the Council', track='adm', tier=2,
          family='culture', unlock='sie_council_priori', obsolete=None,
@@ -326,7 +336,7 @@ OFFICES = [
          desc="Governs the town that has grown up under the castle walls."),
     dict(key='master_of_siege_works', name='Master of Siege Works', track='mil', tier=2,
          family='culture', unlock='chinese_siege_engineers', obsolete=None,
-         mod={'siege_ability': 0.10, 'court_spending_efficiency': 0.04},
+         mod={'siege_ability': 0.10, 'fort_maintenance_efficiency': 0.05},
          desc="Keeps the engineers and their drawings between wars, which is when they are "
               "actually made."),
 
@@ -343,12 +353,12 @@ OFFICES = [
     dict(key='keeper_of_regnal_chronicles', name='Keeper of the Chronicles', track='adm',
          tier=1, family='region', unlock='regnal_chronicles', obsolete=None,
          mod={'monthly_prestige': 0.03, 'monthly_legitimacy': 0.02,
-              'global_monthly_literacy': 0.005},
+              'skill_of_new_artists': 0.05},
          desc="Keeps the list of rulers and what each is to be remembered for."),
     dict(key='master_of_the_silk_road', name='Master of the Road', track='dip', tier=2,
          family='region', unlock='silk_road', obsolete=None,
          mod={'global_trade_center_power': 0.08, 'trade_range_modifier': 0.10,
-              'diplomatic_range_modifier': 0.10},
+              'tariff_income': 0.10},
          desc="Answers for the caravans, the tolls they pay and the escorts they are owed."),
     dict(key='master_of_ceremonies', name='Master of Ceremonies', track='dip', tier=2,
          family='region', unlock='courtly_competition', obsolete=None,
@@ -527,6 +537,9 @@ def validate(advances: dict, modtypes: set) -> list:
         for mname in o['mod']:
             if mname not in modtypes:
                 errs.append(f'{k}: modifier does not exist in vanilla: {mname}')
+        for mname in o.get('cost', {}):
+            if mname not in modtypes:
+                errs.append(f'{k}: cost modifier does not exist in vanilla: {mname}')
 
     return errs
 
@@ -611,6 +624,20 @@ def emit_auto_modifiers() -> str:
         for mname, mval in o['mod'].items():
             out.append(f'\t{mname} = {mval}\n')
         out.append('}\n\n')
+        if o.get('cost'):
+            # The post's own price. Not scaled: a senior holder costs what a junior one does.
+            out.append(f'cc_office_{k}_cost = {{\n')
+            out.append('\trequires_real = yes\n\n')
+            out.append('\tpotential_trigger = {\n')
+            out.append(f'\t\thas_variable = cc_office_{k}_filled\n')
+            if o['unlock']:
+                out.append(f'\t\thas_advance = {o["unlock"]}\n')
+            if o['obsolete']:
+                out.append(f'\t\tNOT = {{ has_advance = {o["obsolete"]} }}\n')
+            out.append('\t}\n\n')
+            for mname, mval in o['cost'].items():
+                out.append(f'\t{mname} = {mval}\n')
+            out.append('}\n\n')
 
     out.append('# Household upkeep. One entry scaling on how many offices are filled, rather\n'
                '# than a cost line inside each office, because an office block is multiplied by\n'
@@ -1198,7 +1225,7 @@ GUI_HEADER = '''################################################################
 
 # A held office. Expects its holder as the Character datacontext (cc_office_<key>_holder).
 template cc_office_held_card {
-\tsize = { 230 186 }
+\tsize = { 230 214 }
 \tbackground = { using = color_whiteish_texture  alpha = 0.10 }
 
 \tvbox = {
@@ -1257,6 +1284,15 @@ template cc_office_held_card {
 \t\t\tfontsize = 11
 \t\t\tblock "office_effects" {}
 \t\t}
+\t\t# What holding the post costs: the household upkeep, and any price of its own.
+\t\ttext_multi = {
+\t\t\tlayoutpolicy_horizontal = expanding
+\t\t\tautoresize = yes
+\t\t\tmultiline = yes
+\t\t\tmax_width = 212
+\t\t\tfontsize = 10
+\t\t\tblock "office_costs" {}
+\t\t}
 \t\ttext_single = {
 \t\t\tlayoutpolicy_horizontal = expanding
 \t\t\tfontsize = 10
@@ -1271,7 +1307,7 @@ template cc_office_held_card {
 
 # An office the realm has but nobody holds.
 template cc_office_open_card {
-\tsize = { 230 140 }
+\tsize = { 230 168 }
 \tbackground = { using = color_black_texture  alpha = 0.18 }
 
 \tvbox = {
@@ -1309,6 +1345,15 @@ template cc_office_open_card {
 \t\t\tmax_width = 212
 \t\t\tfontsize = 11
 \t\t\tblock "office_effects" {}
+\t\t}
+\t\t# What holding the post costs: the household upkeep, and any price of its own.
+\t\ttext_multi = {
+\t\t\tlayoutpolicy_horizontal = expanding
+\t\t\tautoresize = yes
+\t\t\tmultiline = yes
+\t\t\tmax_width = 212
+\t\t\tfontsize = 10
+\t\t\tblock "office_costs" {}
 \t\t}
 \t\ttext_single = {
 \t\t\tlayoutpolicy_horizontal = expanding
@@ -1472,6 +1517,7 @@ def emit_gui() -> str:
         held.append(f'\t\t\t\t\t\tblockoverride "office_family" {{ text = "CC_OFFICE_FAMILY_{o["family"].upper()}" }}\n')
         held.append(f'\t\t\t\t\t\tblockoverride "office_tenure" {{ text = "cc_office_{k}_tenure_line" }}\n')
         held.append(f'\t\t\t\t\t\tblockoverride "office_effects" {{ text = "cc_office_{k}_fx_held" }}\n')
+        held.append(f'\t\t\t\t\t\tblockoverride "office_costs" {{ text = "cc_office_{k}_costs" }}\n')
         held.append(f'\t\t\t\t\t\tblockoverride "office_scale" {{ text = "cc_office_{k}_scale_line" }}\n')
         ret = _retiring(k, bool(o['obsolete']))
         if ret:
@@ -1491,6 +1537,7 @@ def emit_gui() -> str:
         open_.append(f'\t\t\t\t\t\tblockoverride "office_name" {{ text = "cc_office_{k}" }}\n')
         open_.append(f'\t\t\t\t\t\tblockoverride "office_family" {{ text = "CC_OFFICE_FAMILY_{o["family"].upper()}" }}\n')
         open_.append(f'\t\t\t\t\t\tblockoverride "office_effects" {{ text = "cc_office_{k}_fx_base" }}\n')
+        open_.append(f'\t\t\t\t\t\tblockoverride "office_costs" {{ text = "cc_office_{k}_costs" }}\n')
         open_.append(f'\t\t\t\t\t\tblockoverride "office_requirement" {{ text = "cc_office_{k}_req" }}\n')
         ret = _retiring(k, bool(o['obsolete']))
         if ret:
@@ -1594,6 +1641,8 @@ def emit_loc() -> str:
                f'a half times, and grows another {TENURE_PER_YEAR * 100:.10g}% for each year in '
                f'office, up to {TENURE_CAP_YEARS} years."\n')
     out.append(' CC_OFFICE_UPKEEP_TT: "for every post filled"\n')
+    out.append(' CC_OFFICE_COST_TT: "while the post is held, whoever holds it"\n')
+    out.append(' CC_OFFICE_COSTS_LABEL: "Costs:"\n')
     out.append(f' {UPKEEP_KEY}: "Household Upkeep"\n')
     out.append(f' {UPKEEP_KEY}_desc: "Every post the court fills costs something to keep up. '
                f'A full household of {SLOT_CAP} runs at '
@@ -1655,6 +1704,8 @@ def emit_loc() -> str:
         # office's tooltip: the cost of taking THIS one is the same whichever it is.
         lines.append(format_modifier('court_spending_efficiency', UPKEEP_PER_OFFICE,
                                      MODTYPES) + ' $CC_OFFICE_UPKEEP_TT$')
+        lines += [format_modifier(mn, mv, MODTYPES) + ' $CC_OFFICE_COST_TT$'
+                  for mn, mv in o.get('cost', {}).items()]
         lines.append('')
         lines.append(f'$cc_office_{k}_req$')
         lines.append('$CC_OFFICE_SCALES_TT$')
@@ -1667,6 +1718,13 @@ def emit_loc() -> str:
         base = [format_modifier(mn, mv, MODTYPES) for mn, mv in o['mod'].items()]
         out.append(f' cc_office_{k}_fx_held: "' + '\\n'.join(held) + '"\n')
         out.append(f' cc_office_{k}_fx_base: "' + '\\n'.join(base) + '"\n')
+        # Costs, on every card: the household upkeep every post pays, then the post's own.
+        costs = [format_modifier('court_spending_efficiency', UPKEEP_PER_OFFICE, MODTYPES)
+                 + ' $CC_OFFICE_UPKEEP_TT$']
+        costs += [format_modifier(mn, mv, MODTYPES) for mn, mv in o.get('cost', {}).items()]
+        out.append(f' cc_office_{k}_costs: "#weak $CC_OFFICE_COSTS_LABEL$#! ' + ', '.join(costs) + '"\n')
+        if o.get('cost'):
+            out.append(f' AUTO_MODIFIER_NAME_cc_office_{k}_cost: "{n}: cost of the post"\n')
         out.append(f' cc_office_{k}_scale_line: "x[{scale}|2] from seniority and years in office"\n')
         out.append(f' cc_office_{k}_tenure_line: "In office '
                    f"[Player.MakeScope.GetVariable('cc_office_{k}_tenure').GetValue|0] years\"\n")

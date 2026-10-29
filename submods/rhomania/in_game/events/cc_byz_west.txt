@@ -1238,3 +1238,244 @@ cc_byz_west.60 = {
 		}
 	}
 }
+
+
+#############################################
+# .85  The West is settling
+#
+# Fired by cc_byz_west_track_corner_effect when the counters enter a corner after the gate
+# (fifty years, two prefectures). Five years held fires the climax, .86. Steering back costs
+# something and moves both counters eight points toward the middle, which leaves the corner and
+# resets the count.
+#############################################
+cc_byz_west.85 = {
+	type = country_event
+	title = cc_byz_west.85.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 1 } }
+				desc = cc_byz_west.85.desc_reabsorb
+			}
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 2 } }
+				desc = cc_byz_west.85.desc_diarchy
+			}
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 3 } }
+				desc = cc_byz_west.85.desc_acclaim
+			}
+			desc = cc_byz_west.85.desc_neglect
+		}
+	}
+	outcome = neutral
+
+	trigger = { is_situation_active = situation:cc_byz_the_west }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	# Let it come.
+	option = {
+		name = cc_byz_west.85.a
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 0.3
+				situation:cc_byz_the_west ?= {
+					OR = {
+						var:cc_byz_west_corner = 3
+						var:cc_byz_west_corner = 4
+					}
+				}
+			}
+		}
+		custom_tooltip = cc_byz_west_settle_countdown_tt
+	}
+
+	# Steer it back.
+	option = {
+		name = cc_byz_west.85.b
+		trigger = {
+			gold >= 150
+			political_influence >= 20
+		}
+		ai_chance = { base = 40 }
+
+		add_gold = -150
+		add_political_influence = -20
+		custom_tooltip = cc_byz_west_steer_tt
+		hidden_effect = { cc_byz_west_steer_to_centre_effect = yes }
+	}
+}
+
+
+#############################################
+# .86  The settlement of the West
+#
+# Fired once the counters have held a corner for five years. Every option settles the West on
+# that corner by setting cc_byz_west_ending; the ending events (.90-.93) then fire from
+# on_ending as before. What the emperor chooses here is the form the ending takes.
+#############################################
+cc_byz_west.86 = {
+	type = country_event
+	title = cc_byz_west.86.title
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 1 } }
+				desc = cc_byz_west.86.desc_reabsorb
+			}
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 2 } }
+				desc = cc_byz_west.86.desc_diarchy
+			}
+			triggered_desc = {
+				trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 3 } }
+				desc = cc_byz_west.86.desc_acclaim
+			}
+			desc = cc_byz_west.86.desc_neglect
+		}
+	}
+	outcome = neutral
+
+	trigger = { is_situation_active = situation:cc_byz_the_west }
+
+	illustration_tags = {
+		10 = interior
+		10 = regular
+	}
+
+	immediate = {
+		# The man the diarchy would crown: the Senior Exarch, or failing one the most loyal.
+		random_subject = {
+			limit = { has_variable = cc_byz_exarch_senior }
+			save_scope_as = cc_byz_west_colleague
+		}
+		if = {
+			limit = { NOT = { exists = scope:cc_byz_west_colleague } }
+			random_subject = {
+				limit = {
+					has_variable = cc_byz_is_exarchate
+					cc_byz_exarch_loyalty_at_least_trigger = { VALUE = 1 }
+				}
+				save_scope_as = cc_byz_west_colleague
+			}
+		}
+	}
+
+	# ---- Reabsorption ----
+
+	# Fold the prefectures back into the themes.
+	option = {
+		name = cc_byz_west.86.a
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 1 } }
+		ai_chance = { base = 60 }
+
+		add_country_modifier = { modifier = cc_byz_west_writs_of_reunion  years = 25  mode = add_and_extend }
+		cc_byz_west_settle_effect = { VALUE = 1 }
+	}
+
+	# Keep the exarchs on, as the emperor's governors.
+	option = {
+		name = cc_byz_west.86.b
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 1 } }
+		ai_chance = { base = 40 }
+
+		add_stability = stability_mild_bonus
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			cc_byz_exarch_add_loyalty_effect = { VALUE = 2 }
+		}
+		cc_byz_west_settle_effect = { VALUE = 1 }
+	}
+
+	# ---- The diarchy ----
+
+	# Crown a Caesar of the West.
+	option = {
+		name = cc_byz_west.86.c
+		trigger = {
+			situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 2 }
+			exists = scope:cc_byz_west_colleague
+		}
+		ai_chance = { base = 60 }
+
+		add_prestige = prestige_severe_bonus
+		add_legitimacy = legitimacy_mild_penalty
+		scope:cc_byz_west_colleague = {
+			add_country_modifier = { modifier = cc_byz_west_caesar  years = -1  mode = add }
+			cc_byz_exarch_add_loyalty_effect = { VALUE = 3 }
+		}
+		cc_byz_west_settle_effect = { VALUE = 2 }
+	}
+
+	# A colleague in name; the treasury stays in Constantinople.
+	option = {
+		name = cc_byz_west.86.d
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 2 } }
+		ai_chance = { base = 40 }
+
+		add_legitimacy = legitimacy_mild_bonus
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			cc_byz_exarch_add_loyalty_effect = { VALUE = -1 }
+		}
+		cc_byz_west_settle_effect = { VALUE = 2 }
+	}
+
+	# ---- The acclamation ----
+
+	# Accept what the armies have done.
+	option = {
+		name = cc_byz_west.86.e
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 3 } }
+		ai_chance = { base = 50 }
+
+		add_stability = stability_mild_bonus
+		add_prestige = prestige_mild_penalty
+		cc_byz_west_settle_effect = { VALUE = 3 }
+	}
+
+	# The purple is not the army's to give.
+	option = {
+		name = cc_byz_west.86.f
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 3 } }
+		ai_chance = { base = 50 }
+
+		add_country_modifier = { modifier = cc_byz_west_purple_kept  years = 25  mode = add_and_extend }
+		every_subject = {
+			limit = { has_variable = cc_byz_is_exarchate }
+			cc_byz_exarch_add_loyalty_effect = { VALUE = -2 }
+		}
+		cc_byz_west_settle_effect = { VALUE = 3 }
+	}
+
+	# ---- Neglect ----
+
+	# Let them go quietly.
+	option = {
+		name = cc_byz_west.86.g
+		trigger = { situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 4 } }
+		ai_chance = { base = 50 }
+
+		add_stability = stability_mild_bonus
+		cc_byz_west_settle_effect = { VALUE = 4 }
+	}
+
+	# One last tour of inspection, for the record.
+	option = {
+		name = cc_byz_west.86.h
+		trigger = {
+			situation:cc_byz_the_west ?= { var:cc_byz_west_corner = 4 }
+			gold >= 100
+		}
+		ai_chance = { base = 50 }
+
+		add_gold = -100
+		add_prestige = prestige_mild_bonus
+		cc_byz_west_settle_effect = { VALUE = 4 }
+	}
+}

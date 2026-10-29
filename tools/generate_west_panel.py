@@ -220,7 +220,12 @@ def emit_loc() -> str:
           ' CC_BYZ_WEST_PANEL_HEADER_TT: "Grip and autonomy are two separate counters. Each prefecture card shows its exarch and the actions that act on that province alone. The empire-wide actions are on the Governing card, and the consistory has its own tab."',
           ' CC_BYZ_WEST_THIS_YEAR: "this year"',
           ' CC_BYZ_WEST_ENDINGS: "Where this ends"',
-          ' CC_BYZ_WEST_ENDINGS_TT: "The situation ends as soon as the counters reach a corner. If neither has by the Age of Revolutions, the nearest corner is taken. The highlighted cell is the half each counter is in now."',
+          ' CC_BYZ_WEST_ENDINGS_TT: "No corner counts until the West has run fifty years with at least two prefectures seated. After that, holding a corner for five years settles the West there, with a warning when the count starts and a final choice when it ends. If nothing is settled by the Age of Revolutions, the nearest corner is taken. The highlighted cell is the half each counter is in now."',
+          ' CC_BYZ_WEST_GATE: "Endings locked: [FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable(\'cc_byz_west_years\').GetValue)] of 50 years, and two prefectures needed"',
+          ' CC_BYZ_WEST_SETTLING_1: "Settling toward reabsorption: year [FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable(\'cc_byz_west_corner_years\').GetValue)] of 5"',
+          ' CC_BYZ_WEST_SETTLING_2: "Settling toward the diarchy: year [FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable(\'cc_byz_west_corner_years\').GetValue)] of 5"',
+          ' CC_BYZ_WEST_SETTLING_3: "Settling toward the acclamation: year [FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable(\'cc_byz_west_corner_years\').GetValue)] of 5"',
+          ' CC_BYZ_WEST_SETTLING_4: "Settling toward neglect: year [FixedPointToInt(SituationView.GetActiveSituation.GetSituation.MakeScope.GetVariable(\'cc_byz_west_corner_years\').GetValue)] of 5"',
           ' CC_BYZ_WEST_END_REABSORB: "Reabsorbed"',
           ' CC_BYZ_WEST_END_REABSORB_REQ: "Grip 65+, autonomy below 35"',
           ' CC_BYZ_WEST_END_DIARCHY: "The diarchy"',
@@ -431,6 +436,11 @@ def balance_card() -> list[str]:
     l += ind(ending_cell('CC_BYZ_WEST_END_ACCLAIM', 'CC_BYZ_WEST_END_ACCLAIM_REQ', f'And({g_lo}, {a_hi})'), 2)
     l += ['\t}',
           '\ttext_single = { fontsize = 10  default_format = "#weak"  text = "CC_BYZ_WEST_DEADLINE"  tooltip = "CC_BYZ_WEST_ENDINGS_TT" }',
+          # The gate, then the countdown once a corner is being held.
+          f"\ttext_single = {{ fontsize = 11  default_format = \"#weak\"  text = \"CC_BYZ_WEST_GATE\"  tooltip = \"CC_BYZ_WEST_ENDINGS_TT\"  visible = \"[Not({SIT}.GetVariable('cc_byz_west_gate_open').IsSet)]\" }}",
+          ] + [
+          f"\ttext_single = {{ fontsize = 12  default_format = \"#color_yellow\"  text = \"CC_BYZ_WEST_SETTLING_{n}\"  tooltip = \"CC_BYZ_WEST_ENDINGS_TT\"  visible = \"[EqualTo_CFixedPoint({SIT}.GetVariable('cc_byz_west_corner').GetValue, '(CFixedPoint){n}')]\" }}"
+          for n in (1, 2, 3, 4)] + [
           '}']
     return l
 
