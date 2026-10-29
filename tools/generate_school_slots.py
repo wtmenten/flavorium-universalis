@@ -43,10 +43,13 @@ ACTIONS = [
     ('scholars', 'cc_xp_school_scholars', 'cc_xp_school_can_act', 'cc_xp_school_do_scholars', 'CC_XP_SCHOOL_BTN_SCHOLARS'),
     ('disputation', None, 'cc_xp_school_can_act', 'cc_xp_school_do_disputation', 'CC_XP_SCHOOL_BTN_DISPUTATION'),
     ('curriculum', None, 'cc_xp_school_can_change_curriculum', 'cc_xp_school_do_curriculum', 'CC_XP_SCHOOL_BTN_CURRICULUM'),
-    ('admission', None, 'cc_xp_school_can_change_admission', 'cc_xp_school_do_admission', 'CC_XP_SCHOOL_BTN_ADMISSION'),
+    # One per Admission level, drawn as a radio group so any level can be picked directly.
+    ('admission_1', None, 'cc_xp_school_can_admission_1', 'cc_xp_school_do_admission_1', 'CC_XP_SCHOOL_ADMISSION_1'),
+    ('admission_2', None, 'cc_xp_school_can_admission_2', 'cc_xp_school_do_admission_2', 'CC_XP_SCHOOL_ADMISSION_2'),
+    ('admission_3', None, 'cc_xp_school_can_admission_3', 'cc_xp_school_do_admission_3', 'CC_XP_SCHOOL_ADMISSION_3'),
 ]
 # Actions whose button sits in a row of the card rather than the action bar at its foot.
-ROW_ACTIONS = {'admission'}
+ROW_ACTIONS = {'admission_1', 'admission_2', 'admission_3'}
 ADMISSIONS = 3     # CC_XP_SCHOOL_ADMISSION_1..3 (Low, Medium, High)
 # Royal Chairs also needs someone to teach.
 EXTRA_ALLOW = {'chairs': 'cc_xp_school_has_members'}
@@ -282,6 +285,32 @@ def button(n: int, key: str, label_key: str, size: str = '92 28') -> str:
 }}'''
 
 
+def admission_row(n: int) -> str:
+    """Admission as a radio group: one round checkbox per level, pressed for the current one.
+    Same widget vanilla uses for the trade policy strategy (automation_lateralview.gui)."""
+    radios = []
+    for i in range(1, ADMISSIONS + 1):
+        radios.append(f'''hbox = {{
+	spacing = 3
+	checkbox_round_alt = {{
+		size = {{ 20 20 }}
+		down = "{eq(n, 'apt', i)}"
+		scripted_action_tooltip = {{
+			click_type = left
+			click_mode = single
+			action_name = "cc_xp_school_{n}_admission_{i}"
+			actor = "[Player]"
+		}}
+		enabled = "[PdxGuiWidget.IsUberButtonEnabled]"
+		tooltipwidget = {{ using = action_tooltip_pop_out }}
+	}}
+	text_single = {{ fontsize = 12  align = left|nobaseline  text = "CC_XP_SCHOOL_ADMISSION_{i}"  tooltip = "CC_XP_SCHOOL_ADMISSION_{i}_TT" }}
+}}''')
+    return (f'hbox = {{\n\tlayoutpolicy_horizontal = expanding\n\tspacing = 10\n'
+            f'\t{label("CC_XP_SCHOOL_ADMISSION_LABEL")}\n'
+            + '\n'.join(ind(r, 1) for r in radios) + '\n\texpand = {}\n}')
+
+
 def emit_card(n: int) -> str:
     kinds = '\n'.join(
         f'text_single = {{ fontsize = 19  align = left|nobaseline  visible = "{eq(n, "kind", k)}"  text = "CC_XP_SCHOOL_KIND_{k}" }}'
@@ -298,9 +327,7 @@ def emit_card(n: int) -> str:
     members = (f'hbox = {{\n\tlayoutpolicy_horizontal = expanding\n\tspacing = 6\n\t{label("CC_XP_SCHOOL_MEMBERS_LABEL")}\n'
                f'\ttext_single = {{ fontsize = 12  align = left|nobaseline  text = "CC_XP_SCHOOL_{n}_MEMBERS"  tooltip = "CC_XP_SCHOOL_{n}_MEMBERS_TT" }}\n'
                f'\texpand = {{}}\n}}')
-    admission = choice_row(n, 'CC_XP_SCHOOL_ADMISSION_LABEL', 'apt', ADMISSIONS, 'CC_XP_SCHOOL_ADMISSION_{}',
-                           'CC_XP_SCHOOL_ADMISSION_{}_TT',
-                           button(n, 'admission', 'CC_XP_SCHOOL_BTN_ADMISSION', '70 22'))
+    admission = admission_row(n)
     no_rector = f'''hbox = {{
 	layoutpolicy_horizontal = expanding
 	spacing = 6

@@ -590,21 +590,68 @@ cc_xp_milestone_marriage = {
 }
 
 # root = country, scope:winner = country, scope:loser = country, scope:war = war.
-# Listed in cc_war_on_actions.txt alongside the mod's other on_winning_war hooks.
+# Hung on on_pre_winning_war in cc_war_on_actions.txt: before the peace terms run, so the
+# war and its war score are still live.
+#
+# ONCE PER WAR. This fires for every peace signed in a war, and a war against a large
+# alliance can end in dozens of separate peaces. It used to pay scope:winner's whole cabinet
+# 40 military experience on every one, which took a cabinet to level 10 and the top
+# military tier in a single HRE war. Now each realm is paid at most twice per war,
+# recorded in variable lists on the war itself:
+#   decisive  40 (cc_xp_milestone_war), once: the peace is with the enemy war leader and
+#             our side's war score is at least 10
+#   minor     10 (cc_xp_milestone_war_minor), once: any other peace we win in it, which is
+#             a separate peace with a lesser enemy, or a white peace
+# The realm paid is root, the country whose peace this is, and only if it is on the
+# winning side.
 cc_xp_milestone_war = {
+	trigger = {
+		scope_type = country
+		exists = scope:war
+		exists = scope:winner
+		NOT = { this = scope:loser }
+		cc_xp_country_is_tracked = yes
+		any_cabinet_character = { in_cabinet = yes }
+		OR = {
+			this = scope:winner
+			scope:war = {
+				OR = {
+					AND = { is_an_attacker = root  is_an_attacker = scope:winner }
+					AND = { is_a_defender = root  is_a_defender = scope:winner }
+				}
+			}
+		}
+	}
+
 	effect = {
-		scope:winner ?= {
-			if = {
-				limit = {
-					cc_xp_country_is_tracked = yes
-					any_cabinet_character = { in_cabinet = yes }
+		if = {
+			limit = {
+				NOT = { scope:war = { is_target_in_variable_list = { name = cc_xp_war_paid  target = root } } }
+				scope:war = {
+					OR = {
+						attacker_leader = scope:loser
+						defender_leader = scope:loser
+					}
 				}
-				every_cabinet_character = {
-					limit = { in_cabinet = yes }
-					cc_xp_gain_mil = { AMOUNT = cc_xp_milestone_war }
-					cc_xp_task_family = { FAMILY = war }
-					cc_xp_recompute = yes
-				}
+				war_score_in_war_whole_side = { war = scope:war  value >= 10 }
+			}
+			scope:war = { add_to_variable_list = { name = cc_xp_war_paid  target = root } }
+			every_cabinet_character = {
+				limit = { in_cabinet = yes }
+				cc_xp_gain_mil = { AMOUNT = cc_xp_milestone_war }
+				cc_xp_task_family = { FAMILY = war }
+				cc_xp_recompute = yes
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { scope:war = { is_target_in_variable_list = { name = cc_xp_war_paid_minor  target = root } } }
+			}
+			scope:war = { add_to_variable_list = { name = cc_xp_war_paid_minor  target = root } }
+			every_cabinet_character = {
+				limit = { in_cabinet = yes }
+				cc_xp_gain_mil = { AMOUNT = cc_xp_milestone_war_minor }
+				cc_xp_recompute = yes
 			}
 		}
 	}

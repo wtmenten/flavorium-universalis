@@ -811,7 +811,7 @@ cc_xp_school_init_standing = {
 	# while the interaction tooltip is built, when the quality written above cannot yet be
 	# read back. 0.9 is 0.5 + 40 / 100.
 	set_variable = { name = cc_xp_school_$N$_qscale   value = 0.9 }
-	set_variable = { name = cc_xp_school_$N$_capacity value = 4 }
+	set_variable = { name = cc_xp_school_$N$_capacity value = 13 }
 	cc_xp_school_init_admission = { N = $N$ }
 }
 
@@ -929,10 +929,6 @@ cc_xp_school_yearly_standing = {
 				max = 100
 			}
 		}
-		# The terms the previous formula published. Nothing reads them any more.
-		remove_variable = cc_xp_school_$N$_r_age
-		remove_variable = cc_xp_school_$N$_r_seat
-		remove_variable = cc_xp_school_$N$_r_realm
 
 		# ---- Quality target ----
 		# Funding rides the vanilla Culture budget slider. Before the realm can invest in
@@ -1093,11 +1089,12 @@ cc_xp_school_yearly_standing = {
 # a fixed term, which frees their places. The player can always enrol anyone by hand
 # (cc_xp_enroll_in_school); hand enrolment ignores both capacity and admission.
 #
-# CAPACITY  3 + renown / 20 + quality / 25, rounded down: 3 to 12. Self-enrolment stops
-#           at capacity; hand enrolment does not.
+# CAPACITY  3 x (3 + renown / 20 + quality / 25), rounded down: 9 to 36. Self-enrolment
+#           stops at capacity; hand enrolment does not.
 # ADMISSION Low / Medium / High (cc_xp_school_N_apt 1-3), the least aptitude in the
 #           school's discipline (cc_xp_aptitude_school) a character needs to join of their
-#           own accord: 0 / 40 / 60. Changed from the school card, then 5 years before it
+#           own accord: 0 / 40 / 60. Picked directly from radio buttons on the school card
+#           (one action per level, cc_xp_school_do_admission_1-3), then 5 years before it
 #           can be changed again. Raising it never expels anyone. A Low school grows large
 #           and broad (see BREADTH below); a High school stays small and, because quality
 #           reads the members' average aptitude, good.
@@ -1134,6 +1131,7 @@ cc_xp_school_set_capacity = {
 			value = 3
 			add = { value = var:cc_xp_school_$N$_renown  divide = 20 }
 			add = { value = var:cc_xp_school_$N$_quality  divide = 25 }
+			multiply = 3
 			floor = yes
 		}
 	}
@@ -1167,36 +1165,20 @@ cc_xp_school_refresh_capacity = {
 	}
 }
 
-# The Admission button on a school card: Low -> Medium -> High -> Low.
-cc_xp_school_do_admission = {
-	if = {
-		limit = { var:cc_xp_school_$N$_apt ?= 1 }
-		custom_tooltip = { text = cc_xp_school_tt_admission_to_2 }
-		hidden_effect = {
-			set_variable = { name = cc_xp_school_$N$_apt  value = 2 }
-			set_variable = { name = cc_xp_school_$N$_apt_min  value = 40 }
-		}
-	}
-	else_if = {
-		limit = { var:cc_xp_school_$N$_apt ?= 2 }
-		custom_tooltip = { text = cc_xp_school_tt_admission_to_3 }
-		hidden_effect = {
-			set_variable = { name = cc_xp_school_$N$_apt  value = 3 }
-			set_variable = { name = cc_xp_school_$N$_apt_min  value = 60 }
-		}
-	}
-	else = {
-		custom_tooltip = { text = cc_xp_school_tt_admission_to_1 }
-		hidden_effect = {
-			set_variable = { name = cc_xp_school_$N$_apt  value = 1 }
-			set_variable = { name = cc_xp_school_$N$_apt_min  value = 0 }
-		}
-	}
+# The Admission radio buttons on a school card, one action per level, so any level can be
+# picked directly. LEVEL 1-3 is Low / Medium / High; MIN is its aptitude bar.
+cc_xp_school_set_admission = {
+	custom_tooltip = { text = cc_xp_school_tt_admission_to_$LEVEL$ }
 	custom_tooltip = { text = cc_xp_school_tt_admission_keeps }
 	hidden_effect = {
+		set_variable = { name = cc_xp_school_$N$_apt  value = $LEVEL$ }
+		set_variable = { name = cc_xp_school_$N$_apt_min  value = $MIN$ }
 		set_variable = { name = cc_xp_school_$N$_adm_cd  value = yes  years = 5 }
 	}
 }
+cc_xp_school_do_admission_1 = { cc_xp_school_set_admission = { N = $N$  LEVEL = 1  MIN = 0 } }
+cc_xp_school_do_admission_2 = { cc_xp_school_set_admission = { N = $N$  LEVEL = 2  MIN = 40 } }
+cc_xp_school_do_admission_3 = { cc_xp_school_set_admission = { N = $N$  LEVEL = 3  MIN = 60 } }
 
 # Country scope, yearly. Members not in the cabinet whose term is served graduate.
 cc_xp_school_graduate = {
