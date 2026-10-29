@@ -131,7 +131,7 @@ OFFICES = [
     # ------------------------------------------------------------------ CORE ---
     dict(key='seneschal', name='Seneschal', track='adm', tier=1, family='core',
          unlock=None, obsolete='chancery_records',
-         mod={'country_cabinet_efficiency': 0.32, 'global_monthly_control': 0.01,
+         mod={'country_cabinet_efficiency': 0.32, 'global_monthly_control': 0.0025,
               'nobles_estate_agenda_impact': 0.08},
          desc="Runs the household and the lord's own lands. Superseded once written chancery "
               "records make the office a clerical one."),
@@ -864,6 +864,7 @@ cc_office_vacate = {
         out.append('\t\t}\n')
         out.append(f'\t\tcc_office_vacate = {{ OFFICE = {k} }}\n')
         out.append('\t\tchange_variable = { name = cc_office_retired_any  add = 1 }\n')
+        out.append(f'\t\tset_variable = {{ name = cc_office_gone_{k}  value = yes  months = 1 }}\n')
         out.append('\t}\n')
     # An automated post that no longer exists gives its automation slot back, whether or
     # not anyone held it when it was retired.
@@ -1255,11 +1256,26 @@ def emit_events() -> str:
     out.append(f'{VACATED_EVENT} = {{\n')
     out.append('\ttype = country_event\n')
     out.append(f'\ttitle = {VACATED_EVENT}.title\n')
-    out.append(f'\tdesc = {VACATED_EVENT}.desc\n')
+    # The opening, then one line for each office this pass wound up (cc_office_gone_<key>,
+    # set by cc_office_retire_obsolete). Usually one; an advance can close two at once.
+    out.append('\tdesc = {\n')
+    out.append(f'\t\tdesc = {VACATED_EVENT}.desc\n')
+    retirable = [o for o in OFFICES if o['obsolete'] or o['unlock'] is not None]
+    for o in retirable:
+        k = o['key']
+        out.append('\t\ttriggered_desc = {\n')
+        out.append(f'\t\t\ttrigger = {{ has_variable = cc_office_gone_{k} }}\n')
+        out.append(f'\t\t\tdesc = {VACATED_EVENT}.gone_{k}\n')
+        out.append('\t\t}\n')
+    out.append('\t}\n')
     out.append('\toutcome = neutral\n\n')
     out.append('\tillustration_tags = {\n\t\t10 = interior\n\t}\n\n')
     out.append('\toption = {\n')
     out.append(f'\t\tname = {VACATED_EVENT}.a\n')
+    out.append('\t}\n\n')
+    out.append('\tafter = {\n')
+    for o in retirable:
+        out.append(f'\t\tremove_variable = cc_office_gone_{o["key"]}\n')
     out.append('\t}\n')
     out.append('}\n\n')
 
@@ -1726,8 +1742,17 @@ def emit_loc() -> str:
                'might fill one. Which office suits [Character.GetName]?"\n')
     out.append(f' {PICKER_EVENT}.none: "No suitable office stands open."\n')
     out.append(f' {VACATED_EVENT}.title: "An Office Passes"\n')
-    out.append(f' {VACATED_EVENT}.desc: "What the office did is now done another way, and the '
+    out.append(f' {VACATED_EVENT}.desc: "What an office did is now done another way, and the '
                'post is wound up. Its holder returns to ordinary service."\n')
+    for o in OFFICES:
+        if not (o['obsolete'] or o['unlock'] is not None):
+            continue
+        k, n = o['key'], o['name']
+        if o['obsolete']:
+            why = f"now that [ShowAdvanceName('{o['obsolete']}')] has been adopted"
+        else:
+            why = "now that the advance that opened it is gone"
+        out.append(f' {VACATED_EVENT}.gone_{k}: "\\n\\nThe post of #Y {n}#! is closed, {why}."\n')
     out.append(f' {VACATED_EVENT}.a: "So offices end."\n\n')
 
     # The appointment interaction. Kept here rather than hand-written so the office count

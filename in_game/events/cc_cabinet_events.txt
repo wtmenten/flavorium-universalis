@@ -619,15 +619,16 @@ cc_cabinet.3 = {
 		add_prestige = prestige_weak_penalty
 	}
 
-	# TIER 5a. Disaster, prosecuted. Recovers part of the money and makes an enemy of a serving
-	# minister: cc_minister_resentful is what cc_cabinet_biyearly_resentful watches, so this
+	# TIER 5a. Disaster, prosecuted. The money is gone either way: the trial claws back part of
+	# it, so the loss is 1.5x monthly income against burying it at 2.5x, at the price of an
+	# enemy in a serving minister: cc_minister_resentful is what cc_cabinet_biyearly_resentful watches, so this
 	# hands the consequence to the rivalry thread rather than ending it here.
 	option = {
 		name = cc_cabinet.3.a_disaster_prosecute
 		trigger = { var:cc_funds_outcome = 5 }
 		ai_chance = { base = 50 }
 
-		add_gold = { value = monthly_income_trade_and_tax  multiply = 0.8  min = 20  max = 160 }
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -1.5  max = -30 }
 		add_prestige = prestige_weak_penalty
 		add_estate_satisfaction = {
 			type = estate_type:nobles_estate
@@ -638,8 +639,8 @@ cc_cabinet.3 = {
 		}
 	}
 
-	# TIER 5b. Disaster, buried. No recovery, no quarrel, and a debased coinage that outlasts
-	# everyone who agreed to it. The scaling is on the modifier rather than the inflation, since
+	# TIER 5b. Disaster, buried. The whole hole covered from the treasury (2.5x monthly income,
+	# uncapped), no quarrel, and a debased coinage that outlasts everyone who agreed to it. The scaling is on the modifier rather than the inflation, since
 	# add_inflation is permanent and a senior minister stealing more should not also mean the
 	# currency never recovers.
 	option = {
@@ -647,6 +648,7 @@ cc_cabinet.3 = {
 		trigger = { var:cc_funds_outcome = 5 }
 		ai_chance = { base = 50 }
 
+		add_gold = { value = monthly_income_trade_and_tax  multiply = -2.5  max = -50 }
 		add_inflation = inflation_weak_penalty
 		add_country_modifier = {
 			modifier = cc_funds_embezzled

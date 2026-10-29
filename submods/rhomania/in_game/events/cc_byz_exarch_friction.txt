@@ -294,7 +294,12 @@ cc_byz_exarch.1 = {
 		}
 	}
 
-	# Confirm it. He was appointed to decide things.
+	# THE FIRST PRECEDENT. Each answer moves the exarch's loyalty and the West's two counters
+	# (imperial grip, western autonomy, 0-100) and, for a confirmation, his appetite: what he
+	# learns here about how far he can go is what the later friction events read.
+
+	# Confirm it. He was appointed to decide things. He is pleased, and he has learned that he
+	# can: the West governs itself a little more and he will want a little more.
 	option = {
 		name = cc_byz_exarch.1.a
 		ai_chance = { base = 40 }
@@ -303,21 +308,40 @@ cc_byz_exarch.1 = {
 			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
+		cc_byz_exarch_add_appetite_effect = { EXARCH = scope:cc_byz_exarch  VALUE = 1 }
+		save_scope_value_as = { name = cc_byz_west_delta  value = 4 }
+		cc_byz_west_autonomy_up_effect = yes
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_minor_move_to_right
 		}
 	}
 
-	# Overrule it, and require that the next one comes to the capital first.
+	# Overrule it, and require that the next one comes to the capital first. The capital's
+	# hand is felt in the West, and the exarch resents it; one already acting as a strategos
+	# resents it more.
 	option = {
 		name = cc_byz_exarch.1.b
 		ai_chance = { base = 40 }
 
 		scope:cc_byz_exarch ?= {
-			change_variable = { name = cc_byz_exarch_loyalty  add = -1 }
+			# Read before the change: the strategos description is the loyalty <= -1 case.
+			if = {
+				limit = {
+					has_variable = cc_byz_exarch_loyalty
+					var:cc_byz_exarch_loyalty <= -1
+				}
+				change_variable = { name = cc_byz_exarch_loyalty  add = -3 }
+			}
+			else = {
+				cc_byz_exarch_add_loyalty_effect = { VALUE = -2 }
+			}
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 4 }
+		cc_byz_west_grip_up_effect = yes
+		save_scope_value_as = { name = cc_byz_west_delta  value = -2 }
+		cc_byz_west_autonomy_up_effect = yes
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_move_to_left
@@ -326,7 +350,8 @@ cc_byz_exarch.1 = {
 	}
 
 	# Confirm it publicly and correct him privately. Costs nothing visible and requires a
-	# ruler who can write the second letter well enough that it lands.
+	# ruler who can write the second letter well enough that it lands: he keeps his dignity,
+	# the capital keeps its say, and the West gains only a little room.
 	option = {
 		name = cc_byz_exarch.1.c
 		ai_chance = { base = 20 }
@@ -338,6 +363,10 @@ cc_byz_exarch.1 = {
 			change_variable = { name = cc_byz_exarch_loyalty  add = 1 }
 			clamp_variable = { name = cc_byz_exarch_loyalty  min = -5  max = 5 }
 		}
+		save_scope_value_as = { name = cc_byz_west_delta  value = 2 }
+		cc_byz_west_grip_up_effect = yes
+		save_scope_value_as = { name = cc_byz_west_delta  value = 1 }
+		cc_byz_west_autonomy_up_effect = yes
 		change_societal_value = {
 			type = cc_taxis_vs_cc_dynatoi
 			value = societal_value_minor_move_to_left
