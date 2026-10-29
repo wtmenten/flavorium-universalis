@@ -746,7 +746,17 @@ def emit_values() -> str:
         out.append('\t\tadd = 1\n')
         out.append('\t}\n')
     out.append('}\n\n')
-    out.append(f'cc_office_slot_cap = {{\n\tvalue = {SLOT_CAP}\n}}\n')
+    out.append(f'cc_office_slot_cap = {{\n\tvalue = {SLOT_CAP}\n}}\n\n')
+
+    out.append('# How many offices are set to fill themselves. Shares the slot cap: a court\n'
+               '# may automate as many posts as it may fill.\n')
+    out.append('cc_office_auto_count = {\n\tvalue = 0\n')
+    for o in OFFICES:
+        out.append('\tif = {\n')
+        out.append(f'\t\tlimit = {{ has_variable = cc_office_{o["key"]}_auto }}\n')
+        out.append('\t\tadd = 1\n')
+        out.append('\t}\n')
+    out.append('}\n')
     return ''.join(out)
 
 
@@ -855,6 +865,19 @@ cc_office_vacate = {
         out.append(f'\t\tcc_office_vacate = {{ OFFICE = {k} }}\n')
         out.append('\t\tchange_variable = { name = cc_office_retired_any  add = 1 }\n')
         out.append('\t}\n')
+    # An automated post that no longer exists gives its automation slot back, whether or
+    # not anyone held it when it was retired.
+    for o in OFFICES:
+        if not o['obsolete'] and o['unlock'] is None:
+            continue
+        k = o['key']
+        out.append('\tif = {\n')
+        out.append('\t\tlimit = {\n')
+        out.append(f'\t\t\thas_variable = cc_office_{k}_auto\n')
+        out.append(f'\t\t\tNOT = {{ cc_office_{k}_exists = yes }}\n')
+        out.append('\t\t}\n')
+        out.append(f'\t\tremove_variable = cc_office_{k}_auto\n')
+        out.append('\t}\n')
     out.append('\n\tif = {\n')
     out.append('\t\tlimit = {\n')
     out.append('\t\t\tis_ai = no\n')
@@ -935,6 +958,42 @@ cc_office_vacate = {
     out.append('\n\t# The panel prints a count against the cap. GUI reads variables, not\n')
     out.append('\t# script values, so the count has to be materialised here.\n')
     out.append('\tset_variable = { name = cc_office_filled_var  value = cc_office_filled_count }\n')
+    out.append('\tset_variable = { name = cc_office_auto_var  value = cc_office_auto_count }\n')
+    out.append('}\n\n')
+
+    # ---- Automation ----
+    out.append('# AUTOMATION. A post flagged cc_office_<key>_auto (the gear on its card) is\n'
+               '# filled whenever it stands open, by the most senior minister trained for it and\n'
+               '# free of other posts: the same minister ' + PANEL_APPOINT_EVENT + ' would list\n'
+               '# first. It pays the ordinary appointment price and waits, without unsetting\n'
+               '# anything, while the household is full, the treasury cannot pay or nobody\n'
+               '# qualifies. It never replaces a sitting holder, so tenure is never lost to it.\n'
+               '#\n'
+               '# Plain ifs rather than an else_if chain, so one pass can fill several posts.\n'
+               '# cc_office_filled_count is re-read on each, so the cap holds mid-pass.\n'
+               '# Called from the monthly pulse and when a post is first automated.\n')
+    out.append('cc_office_auto_fill = {\n')
+    for o in OFFICES:
+        k = o['key']
+        tier = f'cc_xp_tier_at_least = {{ TRACK = {o["track"]}  TIER = {o["tier"]} }}'
+        out.append('\tif = {\n')
+        out.append('\t\tlimit = {\n')
+        out.append(f'\t\t\thas_variable = cc_office_{k}_auto\n')
+        out.append(f'\t\t\tcc_office_{k}_vacant = yes\n')
+        out.append('\t\t\tcc_office_filled_count < cc_office_slot_cap\n')
+        out.append('\t\t\tcan_pay_price = price:cc_office_appointment\n')
+        out.append(f'\t\t\tany_cabinet_character = {{ cc_office_can_be_appointed = yes  {tier} }}\n')
+        out.append('\t\t}\n')
+        out.append('\t\tordered_cabinet_character = {\n')
+        out.append(f'\t\t\tlimit = {{ cc_office_can_be_appointed = yes  {tier} }}\n')
+        out.append('\t\t\torder_by = cc_xp_order_seniority\n')
+        out.append('\t\t\tposition = 0\n')
+        out.append('\t\t\tcheck_range_bounds = no\n')
+        out.append('\t\t\tsave_scope_as = office_holder\n')
+        out.append('\t\t}\n')
+        out.append('\t\tpay_price = price:cc_office_appointment\n')
+        out.append(f'\t\tcc_office_appoint = {{ OFFICE = {k} }}\n')
+        out.append('\t}\n')
     out.append('}\n\n')
 
     out.append('# scope:target = a minister who has just died or left the cabinet. Exact, and\n'
@@ -1051,7 +1110,8 @@ def emit_actions() -> str:
     out = [BOM, BANNER,
            '#\n'
            '# Household tab card buttons. Appoint fires ' + PANEL_APPOINT_EVENT + ' with the most\n'
-           '# senior eligible ministers as options; Dismiss vacates the post.\n\n']
+           '# senior eligible ministers as options; Dismiss vacates the post; Automate\n'
+           '# toggles whether the post fills itself (cc_office_auto_fill).\n\n']
     for o in OFFICES:
         k = o['key']
         out.append(f'# {o["name"]}\n')
@@ -1101,8 +1161,46 @@ def emit_actions() -> str:
         out.append('\t\t\tcustom_tooltip = { text = cc_office_tt_dismiss }\n')
         out.append('\t\t\thidden_effect = {\n')
         out.append(f'\t\t\t\tcc_office_vacate = {{ OFFICE = {k} }}\n')
+        # A dismissal is a decision to leave the post open. Left automated, the next
+        # monthly fill would put the most senior candidate straight back in, who is
+        # usually the minister just dismissed.
+        out.append(f'\t\t\t\tremove_variable = cc_office_{k}_auto\n')
         out.append('\t\t\t\tcc_office_publish_roster = yes\n')
         out.append('\t\t\t}\n')
+        out.append('\t\t}\n\t}\n\n')
+        out.append('\tai_will_do = {\n\t\tadd = { value = 0 }\n\t}\n}\n\n')
+
+        # The gear toggle. Turning it on fills the post at once if it stands open.
+        out.append(f'cc_office_{k}_automate = {{\n')
+        out.append('\ttype = owncountry\n')
+        out.append('\tai_tick = never\n\n')
+        out.append('\tpotential = {\n')
+        out.append('\t\tscope:actor = {\n\t\t\tcc_xp_enabled = yes\n')
+        out.append(f'\t\t\tcc_office_{k}_exists = yes\n')
+        out.append('\t\t}\n\t}\n\n')
+        out.append('\tallow = {\n\t\tscope:actor = {\n')
+        out.append('\t\t\ttrigger_if = {\n')
+        out.append(f'\t\t\t\tlimit = {{ NOT = {{ has_variable = cc_office_{k}_auto }} }}\n')
+        out.append('\t\t\t\tcustom_tooltip = {\n')
+        out.append('\t\t\t\t\ttext = cc_office_tt_auto_room\n')
+        out.append('\t\t\t\t\tcc_office_auto_count < cc_office_slot_cap\n')
+        out.append('\t\t\t\t}\n')
+        out.append('\t\t\t}\n')
+        out.append('\t\t}\n\t}\n\n')
+        out.append('\teffect = {\n\t\tscope:actor = {\n')
+        out.append('\t\t\tif = {\n')
+        out.append(f'\t\t\t\tlimit = {{ has_variable = cc_office_{k}_auto }}\n')
+        out.append('\t\t\t\tcustom_tooltip = { text = cc_office_tt_auto_off }\n')
+        out.append(f'\t\t\t\thidden_effect = {{ remove_variable = cc_office_{k}_auto }}\n')
+        out.append('\t\t\t}\n')
+        out.append('\t\t\telse = {\n')
+        out.append('\t\t\t\tcustom_tooltip = { text = cc_office_tt_auto_on }\n')
+        out.append('\t\t\t\thidden_effect = {\n')
+        out.append(f'\t\t\t\t\tset_variable = {{ name = cc_office_{k}_auto  value = yes }}\n')
+        out.append('\t\t\t\t\tcc_office_auto_fill = yes\n')
+        out.append('\t\t\t\t}\n')
+        out.append('\t\t\t}\n')
+        out.append('\t\t\thidden_effect = { cc_office_publish_roster = yes }\n')
         out.append('\t\t}\n\t}\n\n')
         out.append('\tai_will_do = {\n\t\tadd = { value = 0 }\n\t}\n}\n\n')
     return ''.join(out)
@@ -1429,6 +1527,24 @@ def _button(action: str, label: str) -> str:
             f'}}')
 
 
+# Vanilla's automation checkbox (the gold gear, gfx/interface/buttons/checkbox_auto.dds),
+# shown pressed while the post is automated. Same type the economy and colonial charter
+# panels use for their own automation toggles.
+def _auto_button(k: str) -> str:
+    return (f'button_checkbox_auto = {{\n'
+            f'\tsize = {{ 22 22 }}\n'
+            f'\tdown = "[{_var(k, "auto")}.IsSet]"\n'
+            f'\tscripted_action_tooltip = {{\n'
+            f'\t\tclick_type = left\n'
+            f'\t\tclick_mode = single\n'
+            f'\t\taction_name = "cc_office_{k}_automate"\n'
+            f'\t\tactor = "[Player]"\n'
+            f'\t}}\n'
+            f'\tenabled = "[PdxGuiWidget.IsUberButtonEnabled]"\n'
+            f'\ttooltipwidget = {{ using = action_tooltip_pop_out }}\n'
+            f'}}')
+
+
 def _retiring(k: str, has_obsolete: bool) -> str:
     if not has_obsolete:
         return ''
@@ -1476,6 +1592,12 @@ def emit_gui() -> str:
                + str(SLOT_CAP) + '"\n')
     out.append('\t\t\t\t\t\ttooltip = "CC_OFFICE_FILLED_TT"\n')
     out.append('\t\t\t\t\t}\n')
+    out.append('\t\t\t\t\ttext_single = { fontsize = 12  default_format = "#weak"  margin_left = 12  text = "CC_OFFICE_AUTO_LABEL" }\n')
+    out.append('\t\t\t\t\ttext_single = {\n\t\t\t\t\t\tfontsize = 15\n')
+    out.append("\t\t\t\t\t\traw_text = \"[FixedPointToInt(Player.MakeScope.GetVariable('cc_office_auto_var').GetValue)]/"
+               + str(SLOT_CAP) + '"\n')
+    out.append('\t\t\t\t\t\ttooltip = "CC_OFFICE_AUTO_TT"\n')
+    out.append('\t\t\t\t\t}\n')
     out.append('\t\t\t\t\texpand = {}\n')
     # The tab's explainer lives in an info icon at the end of the summary row.
     out.append('\t\t\t\t\ticon = {\n')
@@ -1522,7 +1644,8 @@ def emit_gui() -> str:
         ret = _retiring(k, bool(o['obsolete']))
         if ret:
             held.append(_block('office_retiring', ret, 6))
-        held.append(_block('office_button', _button(f'cc_office_{k}_dismiss', 'CC_OFFICE_BTN_DISMISS'), 6))
+        held.append(_block('office_button', _auto_button(k) + '\n'
+                           + _button(f'cc_office_{k}_dismiss', 'CC_OFFICE_BTN_DISMISS'), 6))
         held.append('\t\t\t\t\t}\n')
     grid('CC_OFFICE_HELD_HEADER', held)
 
@@ -1542,7 +1665,8 @@ def emit_gui() -> str:
         ret = _retiring(k, bool(o['obsolete']))
         if ret:
             open_.append(_block('office_retiring', ret, 6))
-        open_.append(_block('office_button', _button(f'cc_office_{k}_appoint', 'CC_OFFICE_BTN_APPOINT'), 6))
+        open_.append(_block('office_button', _auto_button(k) + '\n'
+                            + _button(f'cc_office_{k}_appoint', 'CC_OFFICE_BTN_APPOINT'), 6))
         open_.append('\t\t\t\t\t}\n')
     grid('CC_OFFICE_OPEN_HEADER', open_)
 
@@ -1654,7 +1778,19 @@ def emit_loc() -> str:
     out.append(' CC_OFFICE_TAB_NOTE: "Researching an advance can open a post at court, and a '
                'later advance can close one. A minister holds one post at a time, and the '
                f'household supports {SLOT_CAP} in all. Appoint from an open post\'s card, or '
-               'from a minister\'s own interaction menu."\n')
+               'from a minister\'s own interaction menu. The gear on a card automates the '
+               'post, so it is filled whenever it stands open."\n')
+    out.append(' CC_OFFICE_AUTO_LABEL: "Automated"\n')
+    out.append(' CC_OFFICE_AUTO_TT: "Posts set to fill themselves, out of the most the '
+               'household supports. At the start of each month, an automated post that stands '
+               'open is given to the most senior minister trained for it and free of other '
+               'posts, at the usual appointment cost."\n')
+    out.append(f' cc_office_tt_auto_room: "Fewer than {SLOT_CAP} posts are automated"\n')
+    out.append(' cc_office_tt_auto_on: "Whenever the post stands open, the most senior minister '
+               'trained for it and free of other posts is appointed, at the usual appointment '
+               'cost. A sitting holder is never replaced. If the post is open now, it is filled '
+               'now."\n')
+    out.append(' cc_office_tt_auto_off: "The post is no longer filled automatically."\n')
     # Card and panel strings.
     out.append(' CC_OFFICE_FILLED_TT: "Posts filled, out of the most the household supports. '
                'Each filled post costs court spending efficiency."\n')
@@ -1673,7 +1809,7 @@ def emit_loc() -> str:
         out.append(f' CC_OFFICE_FAMILY_{fam}: "{label}"\n')
     out.append(' cc_office_tt_room: "The household has a post free"\n')
     out.append(' cc_office_tt_dismiss: "The holder leaves the post and returns to ordinary '
-               'service. The post stands open."\n')
+               'service. The post stands open and is no longer filled automatically."\n')
     out.append(f' {PANEL_APPOINT_EVENT}.title: "An Appointment"\n')
     out.append(f' {PANEL_APPOINT_EVENT}.desc: "A post at court stands open. These ministers are '
                'trained for it and free of other posts, the most senior first."\n')
@@ -1739,6 +1875,9 @@ def emit_loc() -> str:
         out.append(f' cc_office_{k}_dismiss: "Dismiss the {n}"\n')
         out.append(f' cc_office_{k}_dismiss_desc: "Release the {n} from the post. They return '
                    'to ordinary service and the post stands open."\n')
+        out.append(f' cc_office_{k}_automate: "Automate the {n}"\n')
+        out.append(f' cc_office_{k}_automate_desc: "Keep the post of {n} filled with the most '
+                   'senior minister trained for it."\n')
         if o['obsolete']:
             out.append(f' cc_office_{k}_retiring_tt: "Retires when [ShowAdvanceName(\'{o["obsolete"]}\')] '
                        'is researched, which the realm can do now. Its holder is released and the '

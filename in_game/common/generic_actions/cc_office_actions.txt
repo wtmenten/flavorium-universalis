@@ -5,7 +5,8 @@
 # auto_modifiers keyed on country variables rather than traits.
 #
 # Household tab card buttons. Appoint fires cc_office.3 with the most
-# senior eligible ministers as options; Dismiss vacates the post.
+# senior eligible ministers as options; Dismiss vacates the post; Automate
+# toggles whether the post fills itself (cc_office_auto_fill).
 
 # Seneschal
 cc_office_seneschal_appoint = {
@@ -75,8 +76,55 @@ cc_office_seneschal_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = seneschal }
+				remove_variable = cc_office_seneschal_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_seneschal_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_seneschal_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_seneschal_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_seneschal_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_seneschal_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_seneschal_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -153,8 +201,55 @@ cc_office_master_of_coin_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_coin }
+				remove_variable = cc_office_master_of_coin_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_coin_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_coin_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_coin_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_coin_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_coin_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_coin_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -231,8 +326,55 @@ cc_office_herald_of_arms_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = herald_of_arms }
+				remove_variable = cc_office_herald_of_arms_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_herald_of_arms_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_herald_of_arms_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_herald_of_arms_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_herald_of_arms_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_herald_of_arms_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_herald_of_arms_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -309,8 +451,55 @@ cc_office_marshal_of_the_court_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = marshal_of_the_court }
+				remove_variable = cc_office_marshal_of_the_court_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_marshal_of_the_court_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_marshal_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_marshal_of_the_court_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_marshal_of_the_court_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_marshal_of_the_court_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_marshal_of_the_court_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -387,8 +576,55 @@ cc_office_clerk_of_the_signet_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = clerk_of_the_signet }
+				remove_variable = cc_office_clerk_of_the_signet_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_clerk_of_the_signet_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_clerk_of_the_signet_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_clerk_of_the_signet_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_clerk_of_the_signet_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_clerk_of_the_signet_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_clerk_of_the_signet_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -465,8 +701,55 @@ cc_office_keeper_of_the_wardrobe_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = keeper_of_the_wardrobe }
+				remove_variable = cc_office_keeper_of_the_wardrobe_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_wardrobe_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_wardrobe_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_keeper_of_the_wardrobe_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_keeper_of_the_wardrobe_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_keeper_of_the_wardrobe_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_keeper_of_the_wardrobe_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -543,8 +826,55 @@ cc_office_chancellor_of_the_rolls_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = chancellor_of_the_rolls }
+				remove_variable = cc_office_chancellor_of_the_rolls_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_chancellor_of_the_rolls_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_chancellor_of_the_rolls_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_chancellor_of_the_rolls_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_chancellor_of_the_rolls_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_chancellor_of_the_rolls_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_chancellor_of_the_rolls_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -621,8 +951,55 @@ cc_office_master_of_the_mint_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_the_mint }
+				remove_variable = cc_office_master_of_the_mint_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_mint_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_mint_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_the_mint_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_the_mint_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_the_mint_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_the_mint_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -699,8 +1076,55 @@ cc_office_court_chamberlain_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = court_chamberlain }
+				remove_variable = cc_office_court_chamberlain_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_chamberlain_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_chamberlain_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_court_chamberlain_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_court_chamberlain_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_court_chamberlain_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_court_chamberlain_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -777,8 +1201,55 @@ cc_office_master_of_protocol_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_protocol }
+				remove_variable = cc_office_master_of_protocol_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_protocol_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_protocol_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_protocol_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_protocol_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_protocol_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_protocol_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -855,8 +1326,55 @@ cc_office_intendant_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = intendant }
+				remove_variable = cc_office_intendant_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_intendant_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_intendant_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_intendant_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_intendant_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_intendant_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_intendant_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -933,8 +1451,55 @@ cc_office_permanent_secretary_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = permanent_secretary }
+				remove_variable = cc_office_permanent_secretary_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_permanent_secretary_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_permanent_secretary_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_permanent_secretary_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_permanent_secretary_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_permanent_secretary_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_permanent_secretary_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1011,8 +1576,55 @@ cc_office_director_of_public_instruction_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = director_of_public_instruction }
+				remove_variable = cc_office_director_of_public_instruction_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_director_of_public_instruction_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_director_of_public_instruction_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_director_of_public_instruction_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_director_of_public_instruction_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_director_of_public_instruction_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_director_of_public_instruction_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1089,8 +1701,55 @@ cc_office_court_chaplain_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = court_chaplain }
+				remove_variable = cc_office_court_chaplain_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_chaplain_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_chaplain_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_court_chaplain_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_court_chaplain_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_court_chaplain_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_court_chaplain_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1167,8 +1826,55 @@ cc_office_court_astrologer_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = court_astrologer }
+				remove_variable = cc_office_court_astrologer_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_astrologer_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_astrologer_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_court_astrologer_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_court_astrologer_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_court_astrologer_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_court_astrologer_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1245,8 +1951,55 @@ cc_office_grand_inquisitor_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = grand_inquisitor }
+				remove_variable = cc_office_grand_inquisitor_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_grand_inquisitor_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_grand_inquisitor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_grand_inquisitor_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_grand_inquisitor_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_grand_inquisitor_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_grand_inquisitor_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1323,8 +2076,55 @@ cc_office_ecclesiarch_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = ecclesiarch }
+				remove_variable = cc_office_ecclesiarch_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_ecclesiarch_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_ecclesiarch_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_ecclesiarch_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_ecclesiarch_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_ecclesiarch_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_ecclesiarch_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1401,8 +2201,55 @@ cc_office_qadi_of_the_court_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = qadi_of_the_court }
+				remove_variable = cc_office_qadi_of_the_court_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_qadi_of_the_court_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_qadi_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_qadi_of_the_court_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_qadi_of_the_court_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_qadi_of_the_court_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_qadi_of_the_court_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1479,8 +2326,55 @@ cc_office_court_ulema_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = court_ulema }
+				remove_variable = cc_office_court_ulema_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_ulema_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_ulema_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_court_ulema_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_court_ulema_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_court_ulema_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_court_ulema_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1557,8 +2451,55 @@ cc_office_court_pandit_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = court_pandit }
+				remove_variable = cc_office_court_pandit_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_court_pandit_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_court_pandit_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_court_pandit_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_court_pandit_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_court_pandit_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_court_pandit_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1635,8 +2576,55 @@ cc_office_sangha_preceptor_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = sangha_preceptor }
+				remove_variable = cc_office_sangha_preceptor_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_sangha_preceptor_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_sangha_preceptor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_sangha_preceptor_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_sangha_preceptor_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_sangha_preceptor_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_sangha_preceptor_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1713,8 +2701,55 @@ cc_office_consistory_superintendent_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = consistory_superintendent }
+				remove_variable = cc_office_consistory_superintendent_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_consistory_superintendent_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_consistory_superintendent_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_consistory_superintendent_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_consistory_superintendent_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_consistory_superintendent_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_consistory_superintendent_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1791,8 +2826,55 @@ cc_office_confessional_overseer_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = confessional_overseer }
+				remove_variable = cc_office_confessional_overseer_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_confessional_overseer_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_confessional_overseer_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_confessional_overseer_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_confessional_overseer_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_confessional_overseer_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_confessional_overseer_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1869,8 +2951,55 @@ cc_office_steward_of_the_demesne_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = steward_of_the_demesne }
+				remove_variable = cc_office_steward_of_the_demesne_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_steward_of_the_demesne_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_steward_of_the_demesne_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_steward_of_the_demesne_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_steward_of_the_demesne_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_steward_of_the_demesne_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_steward_of_the_demesne_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -1947,8 +3076,55 @@ cc_office_constable_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = constable }
+				remove_variable = cc_office_constable_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_constable_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_constable_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_constable_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_constable_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_constable_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_constable_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2025,8 +3201,55 @@ cc_office_consul_of_merchants_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = consul_of_merchants }
+				remove_variable = cc_office_consul_of_merchants_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_consul_of_merchants_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_consul_of_merchants_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_consul_of_merchants_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_consul_of_merchants_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_consul_of_merchants_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_consul_of_merchants_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2103,8 +3326,55 @@ cc_office_chancellor_of_the_see_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = chancellor_of_the_see }
+				remove_variable = cc_office_chancellor_of_the_see_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_chancellor_of_the_see_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_chancellor_of_the_see_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_chancellor_of_the_see_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_chancellor_of_the_see_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_chancellor_of_the_see_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_chancellor_of_the_see_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2181,8 +3451,55 @@ cc_office_keeper_of_the_kurultai_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = keeper_of_the_kurultai }
+				remove_variable = cc_office_keeper_of_the_kurultai_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_kurultai_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_kurultai_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_keeper_of_the_kurultai_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_keeper_of_the_kurultai_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_keeper_of_the_kurultai_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_keeper_of_the_kurultai_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2259,8 +3576,55 @@ cc_office_master_of_the_yam_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_the_yam }
+				remove_variable = cc_office_master_of_the_yam_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_yam_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_yam_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_the_yam_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_the_yam_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_the_yam_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_the_yam_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2337,8 +3701,55 @@ cc_office_phanariote_secretary_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = phanariote_secretary }
+				remove_variable = cc_office_phanariote_secretary_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_phanariote_secretary_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_phanariote_secretary_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_phanariote_secretary_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_phanariote_secretary_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_phanariote_secretary_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_phanariote_secretary_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2415,8 +3826,55 @@ cc_office_hansa_factor_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = hansa_factor }
+				remove_variable = cc_office_hansa_factor_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_hansa_factor_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_hansa_factor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_hansa_factor_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_hansa_factor_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_hansa_factor_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_hansa_factor_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2493,8 +3951,55 @@ cc_office_postelnic_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = postelnic }
+				remove_variable = cc_office_postelnic_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_postelnic_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_postelnic_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_postelnic_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_postelnic_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_postelnic_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_postelnic_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2571,8 +4076,55 @@ cc_office_voivode_of_the_court_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = voivode_of_the_court }
+				remove_variable = cc_office_voivode_of_the_court_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_voivode_of_the_court_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_voivode_of_the_court_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_voivode_of_the_court_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_voivode_of_the_court_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_voivode_of_the_court_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_voivode_of_the_court_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2649,8 +4201,55 @@ cc_office_herald_of_the_table_of_ranks_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = herald_of_the_table_of_ranks }
+				remove_variable = cc_office_herald_of_the_table_of_ranks_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_herald_of_the_table_of_ranks_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_herald_of_the_table_of_ranks_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_herald_of_the_table_of_ranks_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_herald_of_the_table_of_ranks_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_herald_of_the_table_of_ranks_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_herald_of_the_table_of_ranks_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2727,8 +4326,55 @@ cc_office_state_inquisitor_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = state_inquisitor }
+				remove_variable = cc_office_state_inquisitor_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_state_inquisitor_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_state_inquisitor_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_state_inquisitor_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_state_inquisitor_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_state_inquisitor_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_state_inquisitor_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2805,8 +4451,55 @@ cc_office_priori_of_the_council_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = priori_of_the_council }
+				remove_variable = cc_office_priori_of_the_council_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_priori_of_the_council_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_priori_of_the_council_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_priori_of_the_council_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_priori_of_the_council_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_priori_of_the_council_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_priori_of_the_council_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2883,8 +4576,55 @@ cc_office_jokamachi_warden_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = jokamachi_warden }
+				remove_variable = cc_office_jokamachi_warden_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_jokamachi_warden_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_jokamachi_warden_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_jokamachi_warden_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_jokamachi_warden_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_jokamachi_warden_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_jokamachi_warden_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -2961,8 +4701,55 @@ cc_office_master_of_siege_works_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_siege_works }
+				remove_variable = cc_office_master_of_siege_works_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_siege_works_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_siege_works_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_siege_works_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_siege_works_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_siege_works_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_siege_works_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -3039,8 +4826,55 @@ cc_office_keeper_of_the_wampum_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = keeper_of_the_wampum }
+				remove_variable = cc_office_keeper_of_the_wampum_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_the_wampum_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_the_wampum_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_keeper_of_the_wampum_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_keeper_of_the_wampum_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_keeper_of_the_wampum_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_keeper_of_the_wampum_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -3117,8 +4951,55 @@ cc_office_speaker_of_the_elders_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = speaker_of_the_elders }
+				remove_variable = cc_office_speaker_of_the_elders_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_speaker_of_the_elders_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_speaker_of_the_elders_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_speaker_of_the_elders_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_speaker_of_the_elders_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_speaker_of_the_elders_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_speaker_of_the_elders_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -3195,8 +5076,55 @@ cc_office_keeper_of_regnal_chronicles_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = keeper_of_regnal_chronicles }
+				remove_variable = cc_office_keeper_of_regnal_chronicles_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_keeper_of_regnal_chronicles_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_keeper_of_regnal_chronicles_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_keeper_of_regnal_chronicles_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_keeper_of_regnal_chronicles_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_keeper_of_regnal_chronicles_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_keeper_of_regnal_chronicles_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -3273,8 +5201,55 @@ cc_office_master_of_the_silk_road_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_the_silk_road }
+				remove_variable = cc_office_master_of_the_silk_road_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_the_silk_road_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_the_silk_road_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_the_silk_road_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_the_silk_road_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_the_silk_road_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_the_silk_road_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
@@ -3351,8 +5326,55 @@ cc_office_master_of_ceremonies_dismiss = {
 			custom_tooltip = { text = cc_office_tt_dismiss }
 			hidden_effect = {
 				cc_office_vacate = { OFFICE = master_of_ceremonies }
+				remove_variable = cc_office_master_of_ceremonies_auto
 				cc_office_publish_roster = yes
 			}
+		}
+	}
+
+	ai_will_do = {
+		add = { value = 0 }
+	}
+}
+
+cc_office_master_of_ceremonies_automate = {
+	type = owncountry
+	ai_tick = never
+
+	potential = {
+		scope:actor = {
+			cc_xp_enabled = yes
+			cc_office_master_of_ceremonies_exists = yes
+		}
+	}
+
+	allow = {
+		scope:actor = {
+			trigger_if = {
+				limit = { NOT = { has_variable = cc_office_master_of_ceremonies_auto } }
+				custom_tooltip = {
+					text = cc_office_tt_auto_room
+					cc_office_auto_count < cc_office_slot_cap
+				}
+			}
+		}
+	}
+
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_variable = cc_office_master_of_ceremonies_auto }
+				custom_tooltip = { text = cc_office_tt_auto_off }
+				hidden_effect = { remove_variable = cc_office_master_of_ceremonies_auto }
+			}
+			else = {
+				custom_tooltip = { text = cc_office_tt_auto_on }
+				hidden_effect = {
+					set_variable = { name = cc_office_master_of_ceremonies_auto  value = yes }
+					cc_office_auto_fill = yes
+				}
+			}
+			hidden_effect = { cc_office_publish_roster = yes }
 		}
 	}
 
