@@ -1964,9 +1964,12 @@ FAMILY_EVENTS = {
         dict(title='A Sermon at Court',
              body='They preached before the whole court, and the sermon is being repeated in every church in the capital.',
              options=[
-                 ('Have it printed.', None, ['add_religious_influence = religious_influence_mild_bonus', _xp(10)]),
-                 ('A good sermon. Nothing more.', None, ['add_stability = stability_weak_bonus']),
-                 ('Have them preach it across the realm.', 'senior', ['add_religious_influence = religious_influence_mild_bonus', 'add_stability = stability_weak_bonus', _xp(20)]),
+                 # Three different currencies: printing is bought with gold and spreads the
+                 # court's name; letting it rest pleases the clergy, whose pulpit it was; a
+                 # preaching tour spends the court's political capital on order at home.
+                 ('Have it printed.', None, ['add_gold = { value = monthly_income_trade_and_tax  multiply = -1  max = -15  min = -300 }', 'add_religious_influence = religious_influence_mild_bonus', 'add_prestige = prestige_weak_bonus', _xp(10)]),
+                 ('A good sermon. Nothing more.', None, [_sat('clergy', 'weak_bonus')]),
+                 ('Have them preach it across the realm.', 'senior', ['add_political_influence = political_influence_weak_penalty', 'add_stability = stability_mild_bonus', _xp(20)]),
              ]),
         dict(title='A Matter of Conscience',
              body='They have refused to endorse a decision of the crown, and say so openly.',

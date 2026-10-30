@@ -893,14 +893,27 @@ cc_byz_debt.20 = {
 	#
 	# Three qualifying pressures rather than loans alone, since a realm can badly need cash
 	# without having borrowed yet, and the war branch already has its own written description.
+	#
+	# HAVING A LOAN IS NOT PRESSURE. The first version passed on num_loans > 0 alone, so it
+	# fired for a treasury holding several times what it owed. Each test is now measured
+	# against the realm's own scale rather than a flat sum:
+	#   in debt     loans outstanding, and the treasury cannot clear them
+	#   short       loans outstanding, and less than a month's trade and tax income in hand
+	#   at war      less than three months' trade and tax income in hand
 	trigger = {
 		has_societal_value = societal_value_type:cc_taxis_vs_cc_dynatoi
 		OR = {
-			num_loans > 0
-			gold < 200
+			AND = {
+				num_loans > 0
+				gold < total_debt
+			}
+			AND = {
+				num_loans > 0
+				gold < monthly_income_trade_and_tax
+			}
 			AND = {
 				at_war = yes
-				gold < 1000
+				gold < { value = monthly_income_trade_and_tax  multiply = 3 }
 			}
 		}
 		NOT = { has_country_modifier = cc_byz_revenue_farmed }
